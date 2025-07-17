@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(java:*)",
+      "Bash(pkill:*)",
+      "Bash(./mvnw:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(true)"
+    ],
+    "deny": []
+  }
+}
