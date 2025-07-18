@@ -164,7 +164,8 @@ public class JeamlitAgent {
             
             try {
                 // Create a custom class loader that can define classes from bytes
-                CustomClassLoader loader = new CustomClassLoader(getClass().getClassLoader());
+                final URL[] classPathUrls = JeamlitAgent.createClassPathUrls(classpath);
+                final CustomClassLoader loader = new CustomClassLoader(classPathUrls, getClass().getClassLoader()); // TRYING SOMETHING DIFFERENT
                 Class<?> newClass = loader.defineClass(className, classBytes);
                 loadedClasses.put(className, newClass);
                 
@@ -178,10 +179,24 @@ public class JeamlitAgent {
         }
     }
 
+    // TODO REFACTO
+    public static URL[] createClassPathUrls(final String classpath) throws Exception {
+        String[] paths = classpath.split(":");
+        java.net.URL[] urls = new java.net.URL[paths.length];
+
+        for (int i = 0; i < paths.length; i++) {
+            java.io.File file = new java.io.File(paths[i]);
+            urls[i] = file.toURI().toURL();
+        }
+
+        return urls;
+    }
+
 
     private static class CustomClassLoader extends URLClassLoader {
-        public CustomClassLoader(ClassLoader parent) {
-            super(new URL[0], parent);
+
+        public CustomClassLoader(final URL[] urls, final ClassLoader parent) {
+            super(urls, parent);
         }
 
         public Class<?> defineClass(String name, byte[] bytes) {

@@ -14,7 +14,7 @@ public class TestJBangIntegration {
         Jt.text("Test result: " + String.join(" → ", list));
         
         if (Jt.button("Test Dependency Loading")) {
-            Jt.text("✅ Guava Lists class loaded successfully!");
+            Jt.text("✅ Guava Lists class loaded successfully! Here's one: ");
             Jt.text("📦 Dependency resolution is working!");
         }
     }

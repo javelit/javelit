@@ -3,9 +3,7 @@ package tech.catheu.jeamlit.cli;
 import dev.jbang.dependencies.DependencyResolver;
 import dev.jbang.dependencies.ModularClassPath;
 import dev.jbang.source.Project;
-import dev.jbang.source.ResourceRef;
 import dev.jbang.source.Source;
-import dev.jbang.source.sources.JavaSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -20,11 +18,15 @@ import java.awt.Desktop;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import static tech.catheu.jeamlit.agent.JeamlitAgent.createClassPathUrls;
 
 @Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",
          description = "Streamlit-like framework for Java")
@@ -80,7 +82,7 @@ public class JeamlitCLI implements Callable<Integer> {
             // Initial compilation
             logger.info("Compiling " + javaFile + "...");
             if (!hotReloader.reloadFile(javaFilePath)) {
-                System.err.println("Failed to compile " + javaFile);
+                logger.error("Failed to compile " + javaFile);
                 return 1;
             }
             logger.info("Compilation successful");
@@ -93,23 +95,21 @@ public class JeamlitCLI implements Callable<Integer> {
                 try {
                     // Get the main class name from file path
                     String className = getClassName(javaFilePath);
-                    System.out.println("Trying to load class: " + className);
+                    logger.info("Trying to load class: " + className);
                     
                     // Create a custom classloader that can see the classpath
-                    // FIXME CYRIL - ENSURE DEPENDENCIES AR RELOADED HERE
-                    java.net.URLClassLoader appClassLoader = createClassLoader(fullClasspath);
+                    URL[] urls = createClassPathUrls(fullClasspath);
+                    java.net.URLClassLoader appClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
                     
                     // Load and run the class
                     Class<?> appClass = appClassLoader.loadClass(className);
-                    System.out.println("Successfully loaded class: " + appClass.getName());
+                    logger.info("Successfully loaded class: " + appClass.getName());
                     
                     java.lang.reflect.Method mainMethod = appClass.getMethod("main", String[].class);
                     mainMethod.invoke(null, new Object[]{new String[]{}});
                     
                 } catch (Exception e) {
                     logger.error("Error running app", e);
-                    System.err.println("Full error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-                    e.printStackTrace();
                     throw new RuntimeException("Error running app: " + e.getMessage(), e);
                 }
             });
@@ -201,28 +201,16 @@ public class JeamlitCLI implements Callable<Integer> {
             String name = javaFile.getFileName().toString();
             return name.substring(0, name.lastIndexOf('.'));
         }
-        
-        private java.net.URLClassLoader createClassLoader(final String classpath) throws Exception {
-            String[] paths = classpath.split(":");
-            java.net.URL[] urls = new java.net.URL[paths.length];
-            
-            for (int i = 0; i < paths.length; i++) {
-                java.io.File file = new java.io.File(paths[i]);
-                urls[i] = file.toURI().toURL();
-            }
-            
-            return new java.net.URLClassLoader(urls, this.getClass().getClassLoader());
-        }
-        
+
         private void openBrowser(String url) {
             try {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(new URI(url));
                 } else {
-                    System.out.println("Desktop not supported, cannot open browser automatically");
+                    logger.warn("Desktop not supported, cannot open browser automatically");
                 }
             } catch (Exception e) {
-                System.out.println("Could not open browser: " + e.getMessage());
+                logger.error("Could not open browser: " + e.getMessage());
             }
         }
     }
