@@ -24,12 +24,19 @@ import tech.catheu.jeamlit.core.SessionState;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static tech.catheu.jeamlit.components.JsConstants.LIT_DEPENDENCY;
 
 public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
     private final int port;
+    private final String headersFile;
     private Undertow server;
     private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private AppRunner appRunner;
 
@@ -37,8 +44,9 @@ public class JeamlitServer {
         void run(String sessionId) throws Exception;
     }
 
-    public JeamlitServer(int port) {
+    public JeamlitServer(int port, String headersFile) {
         this.port = port;
+        this.headersFile = headersFile;
     }
 
     public void setAppRunner(AppRunner runner) {
@@ -95,8 +103,8 @@ public class JeamlitServer {
                 @Override
                 protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
                     try {
-                        String data = message.getData();
-                        Map<String, Object> msg = objectMapper.readValue(data, Map.class);
+                        final String data = message.getData();
+                        final Map<String, Object> msg = objectMapper.readValue(data, Map.class);
                         handleMessage(sessionId, msg);
                     } catch (Exception e) {
                         logger.error("Error handling message", e);
@@ -106,6 +114,7 @@ public class JeamlitServer {
                 @Override
                 protected void onCloseMessage(CloseMessage cm, WebSocketChannel channel) {
                     sessions.remove(sessionId);
+                    sessionRegisteredTypes.remove(sessionId);
                     Jt.clearSession(sessionId);
                 }
             });
@@ -146,49 +155,54 @@ public class JeamlitServer {
             throw new IllegalStateException("No app runner configured");
         }
 
+        Jt.ExecutionResult result = null;
         Jt.beginExecution(sessionId);
         try {
             appRunner.run(sessionId);
-
-            Jt.ExecutionResult result = Jt.endExecution();
-
-            // Collect component registrations
-            Set<String> registeredTypes = new HashSet<>();
-            List<String> registrations = new ArrayList<>();
-
-            for (JtComponent<?> component : result.jtComponents) {
-                String componentType = component.getClass().getSimpleName();
-                if (!registeredTypes.contains(componentType) && component.needsRegistration()) {
-                    registrations.add(component.register());
-                    registeredTypes.add(componentType);
-                }
-            }
-
-            // Collect component HTML
-            List<String> componentHtml = new ArrayList<>();
-            for (JtComponent<?> component : result.jtComponents) {
-                componentHtml.add(component.render());
-            }
-
-            // Send to frontend
-            Map<String, Object> response = new HashMap<>();
-            response.put("type", "render");
-            response.put("html", String.join("\n", componentHtml));
-            if (!registrations.isEmpty()) {
-                response.put("registrations", registrations);
-            }
-
-            // Debug output
-            logger.debug("Sending response:");
-            logger.debug("  Components HTML: " + componentHtml.size());
-            logger.debug("  Registrations: " + registrations.size());
-            logger.debug("  HTML content: " + String.join("\n", componentHtml));
-
-            sendMessage(sessionId, response);
         } catch (Exception e) {
-            Jt.endExecution(); // Clean up context
-            throw e;
+            // TODO CYRIL IMPROVE ERROR MANAGEMENT
+            throw new RuntimeException("Failed to run ");
+        } finally {
+            result = Jt.endExecution();
         }
+        if (result == null) {
+            // TODO CYRIL IMPROVE ERROR MANAGEMENT
+            throw new RuntimeException("Failed to run ");
+        }
+
+        // Collect component registrations
+        final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(sessionId, k -> new HashSet<>());
+        final List<String> registrations = new ArrayList<>();
+
+        for (JtComponent<?> component : result.jtComponents) {
+            String componentType = component.getClass().getSimpleName();
+            if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
+                registrations.add(component.register());
+                sessionRegisteredTypesForThisSession.add(componentType);
+            }
+        }
+
+        // Collect component HTML
+        final List<String> componentHtml = new ArrayList<>();
+        for (JtComponent<?> component : result.jtComponents) {
+            componentHtml.add(component.render());
+        }
+
+        // Send to frontend
+        final Map<String, Object> response = new HashMap<>();
+        response.put("type", "render");
+        response.put("html", String.join("\n", componentHtml));
+        if (!registrations.isEmpty()) {
+            response.put("registrations", registrations);
+        }
+
+        // Debug output
+        logger.debug("Sending response:");
+        logger.debug("  Components HTML: " + componentHtml.size());
+        logger.debug("  Registrations: " + registrations.size());
+        logger.debug("  HTML content: " + String.join("\n", componentHtml));
+
+        sendMessage(sessionId, response);
     }
 
     private void sendMessage(String sessionId, Map<String, Object> message) {
@@ -252,6 +266,10 @@ public class JeamlitServer {
                             margin: 10px 0;
                         }
                     </style>
+                    %s
+                    <script type="module">
+                      import '%s';
+                    </script>
                 </head>
                 <body>
                     <div id="app" class="container">
@@ -281,22 +299,35 @@ public class JeamlitServer {
                             if (message.type === 'render') {
                                 // Handle new component system
                                 if (message.registrations) {
-                                    message.registrations.forEach(registration => {
-                                        if (!document.getElementById('jeamlit-registrations')) {
-                                            const div = document.createElement('div');
-                                            div.id = 'jeamlit-registrations';
-                                            div.style.display = 'none';
-                                            document.body.appendChild(div);
-                                        }
-                                        document.getElementById('jeamlit-registrations').innerHTML += registration;
-                                        // Execute any scripts in the registration
-                                        const scripts = document.getElementById('jeamlit-registrations').getElementsByTagName('script');
-                                        for (let script of scripts) {
-                                            if (!script.executed) {
-                                                eval(script.innerHTML);
-                                                script.executed = true;
-                                            }
-                                        }
+                                    // Ensure a hidden container is present
+                                    let container = document.getElementById('jeamlit-registrations');
+                                    if (!container) {
+                                      container = document.createElement('div');
+                                      container.id = 'jeamlit-registrations';
+                                      container.style.display = 'none';
+                                      document.body.appendChild(container);
+                                    }
+                
+                                    message.registrations.forEach((registration) => {
+                                        // Parse the registration HTML safely
+                                        const template = document.createElement('template');
+                                        template.innerHTML = registration;
+                                        const fragment = template.content;
+                
+                                        // Execute all <script> tags inside the fragment
+                                        fragment.querySelectorAll('script').forEach((script) => {
+                                          const newScript = document.createElement('script');
+                                          if (script.type) newScript.type = script.type;
+                                          if (script.src) {
+                                            newScript.src = script.src;
+                                          } else {
+                                            newScript.textContent = script.textContent;
+                                          }
+                                          document.head.appendChild(newScript);
+                                        });
+                
+                                        // Inject the rest of the HTML (custom elements etc.)
+                                        container.appendChild(fragment);
                                     });
                                 }
                 
@@ -334,6 +365,27 @@ public class JeamlitServer {
                     </script>
                 </body>
                 </html>
-                """.formatted(port);
+                """.formatted(loadCustomHeaders(), LIT_DEPENDENCY, port);
+    }
+
+    private String loadCustomHeaders() {
+        if (headersFile == null) {
+            return "";
+        }
+
+        final Path headerPath = Paths.get(headersFile);
+        if (!Files.exists(headerPath)) {
+            logger.debug("Headers file {} does not exist, skipping custom headers", headersFile);
+            return "";
+        }
+
+        try {
+            String content = Files.readString(headerPath);
+            logger.info("Loaded custom headers from {}", headersFile);
+            return content;
+        } catch (Exception e) {
+            logger.warn("Failed to load headers file {}: {}", headersFile, e.getMessage());
+            return "";
+        }
     }
 }

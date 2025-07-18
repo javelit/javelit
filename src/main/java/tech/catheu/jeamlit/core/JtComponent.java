@@ -3,8 +3,6 @@ package tech.catheu.jeamlit.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import java.util.UUID;
-
 /**
  * Base class for all Jeamlit components.
  * 
@@ -91,13 +89,5 @@ public abstract class JtComponent<T> {
     protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior
     }
-    
-    /**
-     * Check if this component type needs registration.
-     * Uses a simple class name check for now.
-     */
-    public boolean needsRegistration() {
-        // This will be handled by the component registry
-        return true;
-    }
+
 }

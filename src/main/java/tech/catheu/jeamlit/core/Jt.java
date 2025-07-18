@@ -27,15 +27,15 @@ public class Jt {
     }
     
     public static ExecutionResult endExecution() {
-        ExecutionContext context = currentContext.get();
+        final ExecutionContext context = currentContext.get();
         if (context == null) {
             throw new IllegalStateException("No active execution context");
         }
         
-        SessionState session = sessions.get(context.getSessionId());
+        final SessionState session = sessions.get(context.getSessionId());
         session.updateWidgetStates(context.getWidgetStates());
         
-        ExecutionResult result = new ExecutionResult(
+        final ExecutionResult result = new ExecutionResult(
             context.getJtComponents(),
             context.getSessionId()
         );
@@ -92,7 +92,7 @@ public class Jt {
         context.addJtComponent(button);
         return button.returnValue();
     }
-    
+
     public static int slider(String label) {
         return slider(label, 0, 100, 50);
     }

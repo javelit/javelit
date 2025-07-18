@@ -60,6 +60,9 @@ public class JeamlitCLI implements Callable<Integer> {
         @Option(names = {"--classpath", "-cp"}, description = "Additional classpath entries")
         private String classpath;
         
+        @Option(names = {"--headers-file"}, description = "File containing additional HTML headers", defaultValue = "jt_headers.html")
+        private String headersFile;
+        
         @Override
         public Integer call() throws Exception {
             final Path javaFilePath = Paths.get(javaFile);
@@ -88,7 +91,7 @@ public class JeamlitCLI implements Callable<Integer> {
             logger.info("Compilation successful");
             
             // Create server
-            JeamlitServer server = new JeamlitServer(port);
+            JeamlitServer server = new JeamlitServer(port, headersFile);
             
             // Create app runner that uses reflection to invoke main method
             server.setAppRunner(sessionId -> {
