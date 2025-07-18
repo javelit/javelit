@@ -65,6 +65,25 @@
             <artifactId>picocli</artifactId>
             <version>4.7.5</version>
         </dependency>
+
+        <!-- JBang for dependency resolution -->
+        <dependency>
+            <groupId>dev.jbang</groupId>
+            <artifactId>jbang-cli</artifactId>
+            <version>0.127.18</version>
+        </dependency>
+        <!-- need to add this one which is runtimeOnly in jbang https://github.com/jbangdev/jbang/blob/d69682ca032fc7784ef42f3918802ddad8ab6150/build.gradle#L145 -->
+        <dependency>
+            <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+            <artifactId>standalone-static</artifactId>
+            <version>2.4.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-xml</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

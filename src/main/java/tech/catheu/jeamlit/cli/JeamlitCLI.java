@@ -1,5 +1,11 @@
 package tech.catheu.jeamlit.cli;
 
+import dev.jbang.dependencies.DependencyResolver;
+import dev.jbang.dependencies.ModularClassPath;
+import dev.jbang.source.Project;
+import dev.jbang.source.ResourceRef;
+import dev.jbang.source.Source;
+import dev.jbang.source.sources.JavaSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -11,11 +17,13 @@ import tech.catheu.jeamlit.server.JeamlitServer;
 import tech.catheu.jeamlit.watcher.FileWatcher;
 
 import java.awt.Desktop;
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",
@@ -23,6 +31,17 @@ import java.util.concurrent.Callable;
 public class JeamlitCLI implements Callable<Integer> {
     
     private static final Logger logger = LoggerFactory.getLogger(JeamlitCLI.class);
+
+    private static final Method DEPENDENCY_COLLECT_REFLECTION;
+
+    static {
+        try {
+            DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod("collectBinaryDependencies");
+            DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     @Command(name = "run", description = "Run a Jeamlit application")
     static class RunCommand implements Callable<Integer> {
@@ -54,7 +73,7 @@ public class JeamlitCLI implements Callable<Integer> {
             logger.info("Starting Jeamlit with file {}", javaFilePath.toAbsolutePath());
             
             // Set up hot reloader
-            final String fullClasspath = buildClasspath(classpath);
+            final String fullClasspath = buildClasspath(classpath, javaFilePath);
             logger.info("Using classpath {}", fullClasspath);
             JeamlitAgent.HotReloader hotReloader = new JeamlitAgent.HotReloader(fullClasspath);
             
@@ -77,6 +96,7 @@ public class JeamlitCLI implements Callable<Integer> {
                     System.out.println("Trying to load class: " + className);
                     
                     // Create a custom classloader that can see the classpath
+                    // FIXME CYRIL - ENSURE DEPENDENCIES AR RELOADED HERE
                     java.net.URLClassLoader appClassLoader = createClassLoader(fullClasspath);
                     
                     // Load and run the class
@@ -139,26 +159,31 @@ public class JeamlitCLI implements Callable<Integer> {
             
             return 0;
         }
-        
-        private String buildClasspath(String additionalClasspath) {
-            StringBuilder cp = new StringBuilder();
-            
+
+        // FIXME CYRIL CLEAN THIS
+        private String buildClasspath(String additionalClasspath, Path javaFilePath) {
+            final StringBuilder cp = new StringBuilder();
             // Add current directory (for standalone Java files)
             cp.append(".");
-            
             // Add target/classes directory (for compiled Maven classes)
             cp.append(":target/classes");
-            
-            // Add Maven dependencies (simplified - in real implementation, we'd parse pom.xml)
-            // For now, assume standard Maven repository structure
-            String userHome = System.getProperty("user.home");
-            cp.append(":").append(userHome).append("/.m2/repository/io/undertow/undertow-core/2.3.10.Final/undertow-core-2.3.10.Final.jar");
             // TODO: Add proper Maven dependency resolution
-            
+            // add cli classpath
             if (additionalClasspath != null && !additionalClasspath.isEmpty()) {
                 cp.append(":").append(additionalClasspath);
             }
-            
+            // add jbang style deps
+            final Source source = JavaSource.forResourceRef(ResourceRef.forFile(javaFilePath), null);
+            final var test = Project.builder().build(javaFilePath);
+            final Source mainSource = test.getMainSource();
+            final List<String> dependencies = getDependenciesFrom(mainSource);
+            if (!dependencies.isEmpty()) {
+                final DependencyResolver resolver = new DependencyResolver();
+                resolver.addDependencies(dependencies);
+                final ModularClassPath modularClasspath = resolver.resolve();
+                cp.append(":").append(modularClasspath.getClassPath());
+            }
+
             return cp.toString();
         }
         
@@ -203,7 +228,15 @@ public class JeamlitCLI implements Callable<Integer> {
             }
         }
     }
-    
+
+    private static List<String> getDependenciesFrom(final Source mainSource) {
+        try {
+            return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public Integer call() throws Exception {
         CommandLine.usage(this, System.out);
