@@ -160,7 +160,6 @@ public class JeamlitCLI implements Callable<Integer> {
             return 0;
         }
 
-        // FIXME CYRIL CLEAN THIS
         private String buildClasspath(String additionalClasspath, Path javaFilePath) {
             final StringBuilder cp = new StringBuilder();
             // Add current directory (for standalone Java files)
@@ -173,9 +172,8 @@ public class JeamlitCLI implements Callable<Integer> {
                 cp.append(":").append(additionalClasspath);
             }
             // add jbang style deps
-            final Source source = JavaSource.forResourceRef(ResourceRef.forFile(javaFilePath), null);
-            final var test = Project.builder().build(javaFilePath);
-            final Source mainSource = test.getMainSource();
+            final Project jbangProject = Project.builder().build(javaFilePath);
+            final Source mainSource = jbangProject.getMainSource();
             final List<String> dependencies = getDependenciesFrom(mainSource);
             if (!dependencies.isEmpty()) {
                 final DependencyResolver resolver = new DependencyResolver();
@@ -187,7 +185,7 @@ public class JeamlitCLI implements Callable<Integer> {
             return cp.toString();
         }
         
-        private String getClassName(Path javaFile) {
+        private String getClassName(final Path javaFile) {
             String fileName = javaFile.toString();
             
             // Find the source root (src/main/java)
@@ -204,7 +202,7 @@ public class JeamlitCLI implements Callable<Integer> {
             return name.substring(0, name.lastIndexOf('.'));
         }
         
-        private java.net.URLClassLoader createClassLoader(String classpath) throws Exception {
+        private java.net.URLClassLoader createClassLoader(final String classpath) throws Exception {
             String[] paths = classpath.split(":");
             java.net.URL[] urls = new java.net.URL[paths.length];
             
