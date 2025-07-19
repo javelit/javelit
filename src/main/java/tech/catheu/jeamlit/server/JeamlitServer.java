@@ -28,7 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static tech.catheu.jeamlit.components.JsConstants.LIT_DEPENDENCY;
+import static tech.catheu.jeamlit.components.JsConstants.*;
 
 public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
@@ -136,6 +136,7 @@ public class JeamlitServer {
 
         if ("component_update".equals(type)) {
             String componentId = (String) message.get("componentId");
+            // TODO IMPLEMENT - mark callback here
             Object value = message.get("value");
 
             // Now componentId is the same as the key - this is the fix!
@@ -226,9 +227,9 @@ public class JeamlitServer {
 
     private SessionState getSessionState(String sessionId) {
         try {
-            java.lang.reflect.Field field = Jt.class.getDeclaredField("sessions");
+            final java.lang.reflect.Field field = Jt.class.getDeclaredField("sessions");
             field.setAccessible(true);
-            Map<String, SessionState> sessions = (Map<String, SessionState>) field.get(null);
+            final Map<String, SessionState> sessions = (Map<String, SessionState>) field.get(null);
             return sessions.get(sessionId);
         } catch (Exception e) {
             logger.error("Error accessing session state", e);
@@ -242,33 +243,100 @@ public class JeamlitServer {
                 <html>
                 <head>
                     <title>Jeamlit App</title>
+                    <link rel="stylesheet" href="%s">
                     <style>
+                        %s
+                        
                         body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            font-family: var(--jt-font-family);
                             margin: 0;
-                            padding: 20px;
-                            background-color: #f5f5f5;
+                            padding: var(--jt-spacing-xl);
+                            background-color: var(--jt-bg-secondary);
+                            color: var(--jt-text-primary);
+                            line-height: var(--jt-line-height-normal);
                         }
                         .container {
                             max-width: 800px;
                             margin: 0 auto;
-                            background: white;
-                            padding: 20px;
-                            border-radius: 8px;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            background: var(--jt-bg-primary);
+                            padding: var(--jt-spacing-xl);
+                            border-radius: var(--jt-border-radius-lg);
+                            box-shadow: var(--jt-shadow);
                         }
                         .error {
                             background-color: #fee;
                             border: 1px solid #fcc;
-                            color: #c00;
-                            padding: 10px;
-                            border-radius: 4px;
-                            margin: 10px 0;
+                            color: var(--jt-danger-color);
+                            padding: var(--jt-spacing-md);
+                            border-radius: var(--jt-border-radius);
+                            margin: var(--jt-spacing-md) 0;
                         }
                     </style>
                     %s
                     <script type="module">
-                      import '%s';
+                      import { LitElement, html, css } from '%s';
+                      
+                      class JtTooltip extends LitElement {
+                          static styles = css`
+                              :host {
+                                  position: relative;
+                                  display: inline-block;
+                              }
+                              
+                              .tooltip-trigger {
+                                  cursor: help;
+                                  color: var(--jt-text-secondary);
+                                  font-size: var(--jt-font-size-sm);
+                                  margin-left: var(--jt-spacing-xs);
+                              }
+                              
+                              .tooltip-content {
+                                  position: absolute;
+                                  bottom: 100%%;
+                                  left: 50%%;
+                                  transform: translateX(-50%%);
+                                  background: var(--jt-text-primary);
+                                  color: var(--jt-text-white);
+                                  padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+                                  border-radius: var(--jt-border-radius-sm);
+                                  font-size: var(--jt-font-size-sm);
+                                  white-space: nowrap;
+                                  z-index: 1000;
+                                  opacity: 0;
+                                  visibility: hidden;
+                                  transition: opacity var(--jt-transition-fast), visibility var(--jt-transition-fast);
+                                  margin-bottom: var(--jt-spacing-xs);
+                              }
+                              
+                              .tooltip-content::after {
+                                  content: '';
+                                  position: absolute;
+                                  top: 100%%;
+                                  left: 50%%;
+                                  transform: translateX(-50%%);
+                                  border: 4px solid transparent;
+                                  border-top-color: var(--jt-text-primary);
+                              }
+                              
+                              :host(:hover) .tooltip-content {
+                                  opacity: 1;
+                                  visibility: visible;
+                              }
+                          `;
+                          
+                          static properties = {
+                              text: { type: String }
+                          };
+                          
+                          render() {
+                              return html`
+                                  <span class="tooltip-trigger">?</span>
+                                  <div class="tooltip-content">${this.text}</div>
+                              `;
+                          }
+                      }
+                      
+                      customElements.define('jt-tooltip', JtTooltip);
                     </script>
                 </head>
                 <body>
@@ -365,7 +433,7 @@ public class JeamlitServer {
                     </script>
                 </body>
                 </html>
-                """.formatted(loadCustomHeaders(), LIT_DEPENDENCY, port);
+                """.formatted(MATERIAL_SYMBOLS_CDN, DESIGN_SYSTEM_CSS, loadCustomHeaders(), LIT_DEPENDENCY, port);
     }
 
     private String loadCustomHeaders() {

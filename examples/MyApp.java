@@ -1,6 +1,7 @@
 import tech.catheu.jeamlit.core.Jt;
 
 public class MyApp {
+
     public static void main(String[] args) {
         // Button with session state
         Jt.sessionState().putIfAbsent("clicks", 0);

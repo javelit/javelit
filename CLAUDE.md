@@ -52,3 +52,20 @@ src/main/resources/         # Application resources
 - Standard Maven directory structure
 - See DESIGN_DECISIONS.md for architectural details
 - ignore TODO.md
+- all examples and test apps should be put in the examples folder
+
+### Implementation of Components
+- Do not create or update methods in Jt,  like Jt.button(), Jt.theNewComponent(). I will do this later. 
+- Focus on the quality of the component themselves.
+- Make sure to look at streamlit doc. I will share the links. Make sure to also look at it during implementation.
+- Make sure to build a proper plans for each component, especially if they are complex. It's ok if the task becomes very big.
+- always use a builder pattern like it's done in the existing components
+- use the same color effects and animations as streamlit components
+- Ensure things compile regularly
+- always use lit. To defined components
+- again make sure to follow the same spec as streamlit
+- There is 1 exception to this: do not add args/kwargs equivalent (varargs and Map parameters). Just put a comment instead, saying it's not implemented.
+- For a component that will have to support use_container_width:
+    - Main containers (:host in lit css) should always be in display block
+    - Then :host([use-container-width]) .[REPLACE_BY_SOME_INTERNAL_CLASS] { width: 100%; }
+- Main containers (:host in lit css) should always be in display block 

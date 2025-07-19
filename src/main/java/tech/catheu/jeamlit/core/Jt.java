@@ -69,9 +69,9 @@ public class Jt {
         return textComponent.returnValue();
     }
     
-    public static String title(final String text) {
+    public static String title(final String body) {
         ExecutionContext context = getContext();
-        TitleComponent titleComponent = new TitleComponent.Builder(text).build();
+        TitleComponent titleComponent = new TitleComponent.Builder(body).build();
         context.addJtComponent(titleComponent);
         return titleComponent.returnValue();
     }
@@ -115,7 +115,7 @@ public class Jt {
             () -> new SliderComponent.Builder(label).min(min).max(max).value(defaultValue).help(null).disabled(false).build(), true);
 
         context.addJtComponent(slider);
-        return slider.returnValue();
+        return slider.returnValue().intValue();
     }
     
     public static TypedSessionState sessionState() {

@@ -98,7 +98,7 @@ public class JeamlitCLI implements Callable<Integer> {
                 try {
                     // Get the main class name from file path
                     String className = getClassName(javaFilePath);
-                    logger.info("Trying to load class: " + className);
+                    logger.debug("Trying to load class: {}", className);
                     
                     // Create a custom classloader that can see the classpath
                     URL[] urls = createClassPathUrls(fullClasspath);
@@ -106,7 +106,7 @@ public class JeamlitCLI implements Callable<Integer> {
                     
                     // Load and run the class
                     Class<?> appClass = appClassLoader.loadClass(className);
-                    logger.info("Successfully loaded class: " + appClass.getName());
+                    logger.debug("Successfully loaded class: {}", appClass.getName());
                     
                     java.lang.reflect.Method mainMethod = appClass.getMethod("main", String[].class);
                     mainMethod.invoke(null, new Object[]{new String[]{}});
