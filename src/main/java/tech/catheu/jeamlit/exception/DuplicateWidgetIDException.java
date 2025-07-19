@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.core;
+package tech.catheu.jeamlit.exception;
 
 /**
  * Exception thrown when two widgets have the same automatically generated or explicit key.

@@ -20,6 +20,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.exception.CompilationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,18 +39,18 @@ import static tech.catheu.jeamlit.components.JsConstants.*;
 public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
     private final int port;
-    private final String headersFile;
     private final JeamlitAgent.HotReloader hotReloader;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final String customHeaders;
 
     public JeamlitServer(int port, @Nullable String headersFile, @Nonnull JeamlitAgent.HotReloader hotReloader) {
         this.port = port;
-        this.headersFile = headersFile;
         this.hotReloader = hotReloader;
+        this.customHeaders = loadCustomHeaders(headersFile);
     }
 
     public void start() {
@@ -427,29 +428,30 @@ public class JeamlitServer {
                 </html>
                 """.formatted(MATERIAL_SYMBOLS_CDN,
                               DESIGN_SYSTEM_CSS,
-                              loadCustomHeaders(),
+                              customHeaders,
                               LIT_DEPENDENCY,
                               port);
     }
 
-    private String loadCustomHeaders() {
+    private static String loadCustomHeaders(final @Nullable String headersFile) {
         if (headersFile == null) {
             return "";
         }
-
         final Path headerPath = Paths.get(headersFile);
         if (!Files.exists(headerPath)) {
-            logger.debug("Headers file {} does not exist, skipping custom headers", headersFile);
-            return "";
+            throw new IllegalArgumentException("Custom headers file not found: " + headersFile);
         }
-
         try {
-            String content = Files.readString(headerPath);
+            final String content = Files.readString(headerPath);
             logger.info("Loaded custom headers from {}", headersFile);
+            // poor's man logic to check if the header looks valid and help the user debug in case of mistake
+            // best would be to check full validity
+            if (!content.replaceAll("\\s", "").startsWith("<")) {
+                logger.warn("The custom headers do not start with an html tag. You may want to double check the custom headers if the frontend is not able to load. Here is the custom headers: \n{}", content);
+            }
             return content;
         } catch (Exception e) {
-            logger.warn("Failed to load headers file {}: {}", headersFile, e.getMessage());
-            return "";
+            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile), e);
         }
     }
 }

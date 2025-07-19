@@ -1,5 +1,7 @@
 package tech.catheu.jeamlit.core;
 
+import tech.catheu.jeamlit.exception.DuplicateWidgetIDException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

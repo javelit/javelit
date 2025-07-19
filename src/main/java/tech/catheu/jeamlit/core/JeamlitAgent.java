@@ -3,6 +3,8 @@ package tech.catheu.jeamlit.core;
 import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.exception.AppRunException;
+import tech.catheu.jeamlit.exception.CompilationException;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -25,8 +27,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static tech.catheu.jeamlit.agent.FileNameUtils.classFilePathFor;
-import static tech.catheu.jeamlit.agent.FileNameUtils.classNameFor;
+import static tech.catheu.jeamlit.core.FileNameUtils.classFilePathFor;
+import static tech.catheu.jeamlit.core.FileNameUtils.classNameFor;
 
 public class JeamlitAgent {
 
@@ -79,7 +81,7 @@ public class JeamlitAgent {
         /**
          * @return the JtComponents after the end of the execution of the app
          * @throws CompilationException: if the main method was not defined as expected
-         * @throws AppRunException:      if the main method call raised an exception
+         * @throws AppRunException :      if the main method call raised an exception
          */
         public List<JtComponent<?>> runApp(final String sessionId) {
             if (mainMethod.get() == null) {

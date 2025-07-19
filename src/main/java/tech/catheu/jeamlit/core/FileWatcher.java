@@ -1,12 +1,10 @@
-package tech.catheu.jeamlit.watcher;
+package tech.catheu.jeamlit.core;
 
 import io.methvin.watcher.DirectoryChangeEvent;
 import io.methvin.watcher.DirectoryChangeListener;
 import io.methvin.watcher.DirectoryWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.catheu.jeamlit.core.JeamlitAgent;
-import tech.catheu.jeamlit.core.JeamlitServer;
 
 import java.io.IOException;
 import java.nio.file.Path;

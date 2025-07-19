@@ -8,7 +8,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import tech.catheu.jeamlit.core.JeamlitAgent;
 import tech.catheu.jeamlit.core.JeamlitServer;
-import tech.catheu.jeamlit.watcher.FileWatcher;
+import tech.catheu.jeamlit.core.FileWatcher;
 
 import java.awt.Desktop;
 import java.net.URI;

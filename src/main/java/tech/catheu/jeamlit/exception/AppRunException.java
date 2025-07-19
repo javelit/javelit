@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.core;
+package tech.catheu.jeamlit.exception;
 
 public class AppRunException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.agent;
+package tech.catheu.jeamlit.core;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
