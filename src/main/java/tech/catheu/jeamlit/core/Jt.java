@@ -47,7 +47,7 @@ public class Jt {
     public static class ExecutionResult {
         public final List<JtComponent<?>> jtComponents;
         public final String sessionId;
-        
+
         public ExecutionResult(List<JtComponent<?>> jtComponents, String sessionId) {
             this.jtComponents = jtComponents;
             this.sessionId = sessionId;
@@ -69,9 +69,9 @@ public class Jt {
         return textComponent.returnValue();
     }
     
-    public static String title(final String body) {
+    public static String title(final String text) {
         ExecutionContext context = getContext();
-        TitleComponent titleComponent = new TitleComponent.Builder(body).build();
+        TitleComponent titleComponent = new TitleComponent.Builder(text).build();
         context.addJtComponent(titleComponent);
         return titleComponent.returnValue();
     }
@@ -93,10 +93,6 @@ public class Jt {
         return button.returnValue();
     }
 
-    public static int slider(String label) {
-        return slider(label, 0, 100, 50);
-    }
-    
     public static int slider(String label, int min, int max) {
         return slider(label, min, max, min);
     }
@@ -127,9 +123,5 @@ public class Jt {
     public static void clearSession(String sessionId) {
         sessions.remove(sessionId);
     }
-    
-    // Package-private method for server to access context
-    static ExecutionContext getCurrentContext() {
-        return currentContext.get();
-    }
+
 }

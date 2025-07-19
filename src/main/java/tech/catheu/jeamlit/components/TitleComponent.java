@@ -18,6 +18,7 @@ public class TitleComponent extends JtComponent<String> {
         this.width = builder.width;
     }
     
+    @SuppressWarnings("unused")
     public static class Builder implements JtComponentBuilder<TitleComponent> {
         private String body;
         private String anchor;

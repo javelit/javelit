@@ -72,12 +72,4 @@ public class FileWatcher {
             }
         }
     }
-    
-    public boolean isRunning() {
-        return watcher != null && !watcherFuture.isDone();
-    }
-    
-    public Path getWatchedFile() {
-        return watchedFile;
-    }
 }

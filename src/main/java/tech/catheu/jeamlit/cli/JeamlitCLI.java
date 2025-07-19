@@ -48,18 +48,23 @@ public class JeamlitCLI implements Callable<Integer> {
     @Command(name = "run", description = "Run a Jeamlit application")
     static class RunCommand implements Callable<Integer> {
         
+        @SuppressWarnings("unused")
         @Parameters(index = "0", description = "Java file to run")
         private String javaFile;
         
+        @SuppressWarnings("unused")
         @Option(names = {"-p", "--port"}, description = "Port to run server on", defaultValue = "8080")
         private int port;
         
+        @SuppressWarnings("unused")
         @Option(names = {"--no-browser"}, description = "Don't open browser automatically")
         private boolean noBrowser;
         
+        @SuppressWarnings("unused")
         @Option(names = {"--classpath", "-cp"}, description = "Additional classpath entries")
         private String classpath;
-        
+
+        @SuppressWarnings("unused")
         @Option(names = {"--headers-file"}, description = "File containing additional HTML headers", defaultValue = "jt_headers.html")
         private String headersFile;
         

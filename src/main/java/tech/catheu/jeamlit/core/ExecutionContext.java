@@ -38,11 +38,6 @@ public class ExecutionContext {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends JtComponent<?>> T getComponent(String key, Supplier<T> factory) {
-        return getComponent(key, factory, false);
-    }
-
-    @SuppressWarnings("unchecked")
     public <T extends JtComponent<?>> T getComponent(String key, Supplier<T> factory, boolean isExplicitKey) {
         JtComponent<?> component = componentRegistry.get(key);
         if (component == null) {
@@ -70,23 +65,6 @@ public class ExecutionContext {
             }
         }
         return (T) component;
-    }
-
-    public JtComponent<?> getComponentById(String componentId) {
-        // First check if it's a registered component by key
-        for (Map.Entry<String, JtComponent<?>> entry : componentRegistry.entrySet()) {
-            JtComponent<?> component = entry.getValue();
-            if (component.getId().equals(componentId)) {
-                return component;
-            }
-        }
-        // Also check active components
-        for (JtComponent<?> component : jtComponents) {
-            if (component.getId().equals(componentId)) {
-                return component;
-            }
-        }
-        return null;
     }
 
 

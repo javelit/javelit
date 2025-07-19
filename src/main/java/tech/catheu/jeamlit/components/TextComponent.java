@@ -10,6 +10,7 @@ public class TextComponent extends JtComponent<String> {
     private final String help;
     private final String width;
 
+    @SuppressWarnings("unused")
     public static class Builder implements JtComponentBuilder<TextComponent> {
         private String body;
         private String help;

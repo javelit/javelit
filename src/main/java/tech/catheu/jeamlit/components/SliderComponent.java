@@ -40,6 +40,7 @@ public class SliderComponent extends JtComponent<Double> {
         this.currentValue = builder.value;
     }
     
+    @SuppressWarnings("unused")
     public static class Builder implements JtComponentBuilder<SliderComponent> {
         private final String label;
         private double min = 0.0;
