@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.server;
+package tech.catheu.jeamlit.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.Handlers;
@@ -16,13 +16,18 @@ import io.undertow.websockets.core.CloseMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtComponent;
-import tech.catheu.jeamlit.core.SessionState;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,27 +39,21 @@ public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
     private final int port;
     private final String headersFile;
+    private final JeamlitAgent.HotReloader hotReloader;
+
     private Undertow server;
     private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private AppRunner appRunner;
 
-    public interface AppRunner {
-        void run(String sessionId) throws Exception;
-    }
-
-    public JeamlitServer(int port, String headersFile) {
+    public JeamlitServer(int port, @Nullable String headersFile, @Nonnull JeamlitAgent.HotReloader hotReloader) {
         this.port = port;
         this.headersFile = headersFile;
-    }
-
-    public void setAppRunner(AppRunner runner) {
-        this.appRunner = runner;
+        this.hotReloader = hotReloader;
     }
 
     public void start() {
-        PathHandler pathHandler = Handlers.path()
+        final PathHandler pathHandler = Handlers.path()
                 .addPrefixPath("/ws", Handlers.websocket(new WebSocketHandler()))
                 .addPrefixPath("/static", new ResourceHandler(
                         new ClassPathResourceManager(getClass().getClassLoader(), "static")
@@ -83,8 +82,18 @@ public class JeamlitServer {
     }
 
     public void notifyReload() {
-        // Trigger re-run for all connected sessions
-        for (String sessionId : sessions.keySet()) {
+        // reload the app and re-run the app for all sessions
+        try {
+            hotReloader.reloadFile();
+        } catch (CompilationException e) {
+            // FIXME CYRIL - here on CompilationException failure, report the error properly
+            // use sendError or something like that
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        for (final String sessionId : sessions.keySet()) {
             try {
                 runApp(sessionId);
             } catch (Exception e) {
@@ -95,13 +104,13 @@ public class JeamlitServer {
 
     private class WebSocketHandler implements WebSocketConnectionCallback {
         @Override
-        public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
-            String sessionId = UUID.randomUUID().toString();
+        public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
+            final String sessionId = UUID.randomUUID().toString();
             sessions.put(sessionId, channel);
 
             channel.getReceiveSetter().set(new AbstractReceiveListener() {
                 @Override
-                protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
+                protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
                     try {
                         final String data = message.getData();
                         final Map<String, Object> msg = objectMapper.readValue(data, Map.class);
@@ -112,7 +121,7 @@ public class JeamlitServer {
                 }
 
                 @Override
-                protected void onCloseMessage(CloseMessage cm, WebSocketChannel channel) {
+                protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
                     sessions.remove(sessionId);
                     sessionRegisteredTypes.remove(sessionId);
                     Jt.clearSession(sessionId);
@@ -120,6 +129,16 @@ public class JeamlitServer {
             });
 
             channel.resumeReceives();
+
+            try {
+                hotReloader.reloadFile();
+            } catch (CompilationException e) {
+                // FIXME CYRIL - here on CompilationException failure, report the error properly
+                // use sendError or something like that
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
             // Send initial render
             try {
@@ -131,18 +150,19 @@ public class JeamlitServer {
         }
     }
 
-    private void handleMessage(String sessionId, Map<String, Object> message) throws Exception {
+    private void handleMessage(final String sessionId, final Map<String, Object> message) throws Exception {
         String type = (String) message.get("type");
 
         if ("component_update".equals(type)) {
-            String componentId = (String) message.get("componentId");
-            // TODO IMPLEMENT - mark callback here
-            Object value = message.get("value");
+            final String componentId = (String) message.get("componentId");
+            // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
+            final Object value = message.get("value");
 
-            // Now componentId is the same as the key - this is the fix!
-            SessionState session = getSessionState(sessionId);
+            final SessionState session = Jt.sessions.get(sessionId);
             if (session != null) {
                 session.getWidgetStates().put(componentId, value);
+            } else {
+                throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(sessionId));
             }
 
             // Re-run app
@@ -151,32 +171,18 @@ public class JeamlitServer {
 
     }
 
-    private void runApp(String sessionId) throws Exception {
-        if (appRunner == null) {
-            throw new IllegalStateException("No app runner configured");
-        }
-
-        Jt.ExecutionResult result = null;
-        Jt.beginExecution(sessionId);
-        try {
-            appRunner.run(sessionId);
-        } catch (Exception e) {
-            // TODO CYRIL IMPROVE ERROR MANAGEMENT
-            throw new RuntimeException("Failed to run ");
-        } finally {
-            result = Jt.endExecution();
-        }
-        if (result == null) {
-            // TODO CYRIL IMPROVE ERROR MANAGEMENT
-            throw new RuntimeException("Failed to run ");
-        }
-
-        // Collect component registrations
-        final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(sessionId, k -> new HashSet<>());
+    private void runApp(final String sessionId) {
+        final List<JtComponent<?>> resultJtComponents = hotReloader.runApp(sessionId);
+        // Collect component registrations to send to the frontend
+        final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(
+                sessionId,
+                k -> new HashSet<>());
         final List<String> registrations = new ArrayList<>();
 
-        for (JtComponent<?> component : result.jtComponents) {
-            String componentType = component.getClass().getSimpleName();
+        for (final JtComponent<?> component : resultJtComponents) {
+            // FIXME CYRIL - would be better if we were able to identify if a Component was updated, and if so, add it to the list - useful for custom components written by the user
+            //   (on the frontend side, if the component is implemented with lit, this will still mean the logic will have to support a removal / register of the component)
+            final String componentType = component.getClass().getSimpleName();
             if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
                 registrations.add(component.register());
                 sessionRegisteredTypesForThisSession.add(componentType);
@@ -184,30 +190,27 @@ public class JeamlitServer {
         }
 
         // Collect component HTML
-        final List<String> componentHtml = new ArrayList<>();
-        for (JtComponent<?> component : result.jtComponents) {
-            componentHtml.add(component.render());
-        }
+        final List<String> componentsHtml = resultJtComponents.stream().map(JtComponent::render).toList();
 
         // Send to frontend
         final Map<String, Object> response = new HashMap<>();
         response.put("type", "render");
-        response.put("html", String.join("\n", componentHtml));
+        response.put("html", String.join("\n", componentsHtml));
         if (!registrations.isEmpty()) {
             response.put("registrations", registrations);
         }
 
         // Debug output
         logger.debug("Sending response:");
-        logger.debug("  Components HTML: " + componentHtml.size());
+        logger.debug("  Components HTML: " + componentsHtml.size());
         logger.debug("  Registrations: " + registrations.size());
-        logger.debug("  HTML content: " + String.join("\n", componentHtml));
+        logger.debug("  HTML content: " + String.join("\n", componentsHtml));
 
         sendMessage(sessionId, response);
     }
 
-    private void sendMessage(String sessionId, Map<String, Object> message) {
-        WebSocketChannel channel = sessions.get(sessionId);
+    private void sendMessage(final String sessionId, final Map<String, Object> message) {
+        final WebSocketChannel channel = sessions.get(sessionId);
         if (channel != null) {
             try {
                 String json = objectMapper.writeValueAsString(message);
@@ -218,24 +221,13 @@ public class JeamlitServer {
         }
     }
 
-    private void sendError(String sessionId, String error) {
-        Map<String, Object> message = new HashMap<>();
+    private void sendError(final String sessionId, final String error) {
+        final Map<String, Object> message = new HashMap<>();
         message.put("type", "error");
         message.put("error", error);
         sendMessage(sessionId, message);
     }
 
-    private SessionState getSessionState(String sessionId) {
-        try {
-            final java.lang.reflect.Field field = Jt.class.getDeclaredField("sessions");
-            field.setAccessible(true);
-            final Map<String, SessionState> sessions = (Map<String, SessionState>) field.get(null);
-            return sessions.get(sessionId);
-        } catch (Exception e) {
-            logger.error("Error accessing session state", e);
-            return null;
-        }
-    }
 
     private String getIndexHtml() {
         return """
@@ -246,7 +238,7 @@ public class JeamlitServer {
                     <link rel="stylesheet" href="%s">
                     <style>
                         %s
-                        
+                
                         body {
                             font-family: var(--jt-font-family);
                             margin: 0;
@@ -275,21 +267,21 @@ public class JeamlitServer {
                     %s
                     <script type="module">
                       import { LitElement, html, css } from '%s';
-                      
+                
                       class JtTooltip extends LitElement {
                           static styles = css`
                               :host {
                                   position: relative;
                                   display: inline-block;
                               }
-                              
+                
                               .tooltip-trigger {
                                   cursor: help;
                                   color: var(--jt-text-secondary);
                                   font-size: var(--jt-font-size-sm);
                                   margin-left: var(--jt-spacing-xs);
                               }
-                              
+                
                               .tooltip-content {
                                   position: absolute;
                                   bottom: 100%%;
@@ -307,7 +299,7 @@ public class JeamlitServer {
                                   transition: opacity var(--jt-transition-fast), visibility var(--jt-transition-fast);
                                   margin-bottom: var(--jt-spacing-xs);
                               }
-                              
+                
                               .tooltip-content::after {
                                   content: '';
                                   position: absolute;
@@ -317,17 +309,17 @@ public class JeamlitServer {
                                   border: 4px solid transparent;
                                   border-top-color: var(--jt-text-primary);
                               }
-                              
+                
                               :host(:hover) .tooltip-content {
                                   opacity: 1;
                                   visibility: visible;
                               }
                           `;
-                          
+                
                           static properties = {
                               text: { type: String }
                           };
-                          
+                
                           render() {
                               return html`
                                   <span class="tooltip-trigger">?</span>
@@ -335,7 +327,7 @@ public class JeamlitServer {
                               `;
                           }
                       }
-                      
+                
                       customElements.define('jt-tooltip', JtTooltip);
                     </script>
                 </head>
@@ -433,7 +425,11 @@ public class JeamlitServer {
                     </script>
                 </body>
                 </html>
-                """.formatted(MATERIAL_SYMBOLS_CDN, DESIGN_SYSTEM_CSS, loadCustomHeaders(), LIT_DEPENDENCY, port);
+                """.formatted(MATERIAL_SYMBOLS_CDN,
+                              DESIGN_SYSTEM_CSS,
+                              loadCustomHeaders(),
+                              LIT_DEPENDENCY,
+                              port);
     }
 
     private String loadCustomHeaders() {

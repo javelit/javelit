@@ -1,65 +1,44 @@
 package tech.catheu.jeamlit.cli;
 
-import dev.jbang.dependencies.DependencyResolver;
-import dev.jbang.dependencies.ModularClassPath;
-import dev.jbang.source.Project;
-import dev.jbang.source.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import tech.catheu.jeamlit.agent.JeamlitAgent;
-import tech.catheu.jeamlit.server.JeamlitServer;
+import tech.catheu.jeamlit.core.JeamlitAgent;
+import tech.catheu.jeamlit.core.JeamlitServer;
 import tech.catheu.jeamlit.watcher.FileWatcher;
 
 import java.awt.Desktop;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.concurrent.Callable;
 
-import static tech.catheu.jeamlit.agent.JeamlitAgent.createClassPathUrls;
 
 @Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",
-         description = "Streamlit-like framework for Java")
+        description = "Streamlit-like framework for Java")
 public class JeamlitCLI implements Callable<Integer> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JeamlitCLI.class);
 
-    private static final Method DEPENDENCY_COLLECT_REFLECTION;
-
-    static {
-        try {
-            DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod("collectBinaryDependencies");
-            DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
     @Command(name = "run", description = "Run a Jeamlit application")
     static class RunCommand implements Callable<Integer> {
-        
+
         @SuppressWarnings("unused")
-        @Parameters(index = "0", description = "Java file to run")
-        private String javaFile;
-        
+        @Parameters(index = "0", description = "The Jeamlit app Java file to run")
+        private String appPath;
+
         @SuppressWarnings("unused")
         @Option(names = {"-p", "--port"}, description = "Port to run server on", defaultValue = "8080")
         private int port;
-        
+
         @SuppressWarnings("unused")
         @Option(names = {"--no-browser"}, description = "Don't open browser automatically")
         private boolean noBrowser;
-        
+
         @SuppressWarnings("unused")
         @Option(names = {"--classpath", "-cp"}, description = "Additional classpath entries")
         private String classpath;
@@ -67,150 +46,74 @@ public class JeamlitCLI implements Callable<Integer> {
         @SuppressWarnings("unused")
         @Option(names = {"--headers-file"}, description = "File containing additional HTML headers", defaultValue = "jt_headers.html")
         private String headersFile;
-        
+
         @Override
         public Integer call() throws Exception {
-            final Path javaFilePath = Paths.get(javaFile);
+            if (!parametersAreValid()) {
+                return 1;
+            }
+
+            final Path javaFilePath = Paths.get(appPath);
+            logger.info("Starting Jeamlit on file {}", javaFilePath.toAbsolutePath());
             if (!Files.exists(javaFilePath)) {
-                logger.error("File not found: {}", javaFile);
+                logger.error("File not found: {}", javaFilePath.toAbsolutePath());
                 return 1;
             }
-            if (!javaFile.endsWith(".java")) {
-                logger.error("File {} does not look like a java file. File should end with .java", javaFile);
-                return 1;
-            }
-            
-            logger.info("Starting Jeamlit with file {}", javaFilePath.toAbsolutePath());
-            
+
             // Set up hot reloader
-            final String fullClasspath = buildClasspath(classpath, javaFilePath);
+            final String fullClasspath = ClasspathUtils.buildClasspath(classpath, javaFilePath);
             logger.info("Using classpath {}", fullClasspath);
-            JeamlitAgent.HotReloader hotReloader = new JeamlitAgent.HotReloader(fullClasspath);
-            
-            // Initial compilation
-            logger.info("Compiling " + javaFile + "...");
-            if (!hotReloader.reloadFile(javaFilePath)) {
-                logger.error("Failed to compile " + javaFile);
-                return 1;
-            }
-            logger.info("Compilation successful");
-            
+            final JeamlitAgent.HotReloader hotReloader = new JeamlitAgent.HotReloader(fullClasspath, javaFilePath);
+
+            // CYRIL - NOTE - we could start a first compilation here to gain time but it's an optimization
+            // could be done in another thread, the server may take some time to spin up
+
             // Create server
-            JeamlitServer server = new JeamlitServer(port, headersFile);
-            
-            // Create app runner that uses reflection to invoke main method
-            server.setAppRunner(sessionId -> {
-                try {
-                    // Get the main class name from file path
-                    String className = getClassName(javaFilePath);
-                    logger.debug("Trying to load class: {}", className);
-                    
-                    // Create a custom classloader that can see the classpath
-                    URL[] urls = createClassPathUrls(fullClasspath);
-                    java.net.URLClassLoader appClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
-                    
-                    // Load and run the class
-                    Class<?> appClass = appClassLoader.loadClass(className);
-                    logger.debug("Successfully loaded class: {}", appClass.getName());
-                    
-                    java.lang.reflect.Method mainMethod = appClass.getMethod("main", String[].class);
-                    mainMethod.invoke(null, new Object[]{new String[]{}});
-                    
-                } catch (Exception e) {
-                    logger.error("Error running app", e);
-                    throw new RuntimeException("Error running app: " + e.getMessage(), e);
-                }
-            });
-            
+            final JeamlitServer server = new JeamlitServer(port, headersFile, hotReloader);
+
             // Set up file watcher
-            FileWatcher fileWatcher = new FileWatcher(javaFile, changedFile -> {
-                logger.info("File changed: " + changedFile);
-                logger.info("Reloading...");
-                if (hotReloader.reloadFile(changedFile)) {
-                    logger.info("Reloading successful");
-                    server.notifyReload();
-                } else {
-                    // TODO CYRIL - if failure notify the server with an error message
-                    logger.error("Reloading failed");
-                }
-            });
-            
+            final FileWatcher fileWatcher = new FileWatcher(appPath, server);
+
             // Start everything
+            final String url = "http://localhost:" + port;
             try {
                 server.start();
                 fileWatcher.start();
-                
-                String url = "http://localhost:" + port;
-                logger.info("Server started at: " + url);
-                
-                // Open browser if requested
-                if (!noBrowser) {
-                    openBrowser(url);
-                }
-
+                logger.info("Server started at {} ", url);
                 logger.info("Press Ctrl+C to stop");
-                
-                // Add shutdown hook
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    logger.info("Shutting down...");
-                    fileWatcher.stop();
-                    server.stop();
-                }));
-                
-                // Keep running
-                Thread.currentThread().join();
-                
             } catch (Exception e) {
                 logger.error("Error starting server", e);
                 return 1;
             }
-            
+            if (!noBrowser) {
+                openBrowser(url);
+            }
+
+            // wait for interruption
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Shutting down...");
+                fileWatcher.stop();
+                server.stop();
+            }));
+            Thread.currentThread().join();
+
             return 0;
         }
 
-        private String buildClasspath(String additionalClasspath, Path javaFilePath) {
-            final StringBuilder cp = new StringBuilder();
-            // Add current directory (for standalone Java files)
-            cp.append(".");
-            // Add target/classes directory (for compiled Maven classes)
-            cp.append(":target/classes");
-            // TODO: Add proper Maven dependency resolution
-            // add cli classpath
-            if (additionalClasspath != null && !additionalClasspath.isEmpty()) {
-                cp.append(":").append(additionalClasspath);
+        private boolean parametersAreValid() {
+            boolean parametersAreValid = true;
+            if (!appPath.endsWith(".java")) {
+                // note: I know a Java file could in theory not end with .java but I want to reduce other issues downstream
+                logger.error("File {} does not look like a java file. File should end with .java",
+                             appPath);
+                parametersAreValid = false;
             }
-            // add jbang style deps
-            final Project jbangProject = Project.builder().build(javaFilePath);
-            final Source mainSource = jbangProject.getMainSource();
-            final List<String> dependencies = getDependenciesFrom(mainSource);
-            if (!dependencies.isEmpty()) {
-                final DependencyResolver resolver = new DependencyResolver();
-                resolver.addDependencies(dependencies);
-                final ModularClassPath modularClasspath = resolver.resolve();
-                cp.append(":").append(modularClasspath.getClassPath());
-            }
+            // perform other parameter checks here
 
-            return cp.toString();
-        }
-        
-        private String getClassName(final Path javaFile) {
-            String fileName = javaFile.toString();
-            
-            // Find the source root (src/main/java)
-            int srcIndex = fileName.indexOf("src/main/java/");
-            if (srcIndex != -1) {
-                // Extract the part after src/main/java/
-                String relativePath = fileName.substring(srcIndex + "src/main/java/".length());
-                // Convert to class name
-                return relativePath.replace('/', '.').replace(".java", "");
-            }
-            
-            // Handle files in current directory or other locations
-            String name = javaFile.getFileName().toString();
-            return name.substring(0, name.lastIndexOf('.'));
+            return parametersAreValid;
         }
 
-        private void openBrowser(String url) {
+        private void openBrowser(final String url) {
             try {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(new URI(url));
@@ -218,16 +121,8 @@ public class JeamlitCLI implements Callable<Integer> {
                     logger.warn("Desktop not supported, cannot open browser automatically");
                 }
             } catch (Exception e) {
-                logger.error("Could not open browser: " + e.getMessage());
+                logger.error("Could not open browser. Please open browser manually: " + e.getMessage());
             }
-        }
-    }
-
-    private static List<String> getDependenciesFrom(final Source mainSource) {
-        try {
-            return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -236,11 +131,11 @@ public class JeamlitCLI implements Callable<Integer> {
         CommandLine.usage(this, System.out);
         return 0;
     }
-    
+
     public static void main(String[] args) {
         int exitCode = new CommandLine(new JeamlitCLI())
-            .addSubcommand("run", new RunCommand())
-            .execute(args);
+                .addSubcommand("run", new RunCommand())
+                .execute(args);
         System.exit(exitCode);
     }
 }

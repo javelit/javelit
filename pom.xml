@@ -113,8 +113,8 @@
                             <classifier>agent</classifier>
                             <archive>
                                 <manifestEntries>
-                                    <Premain-Class>tech.catheu.jeamlit.agent.JeamlitAgent</Premain-Class>
-                                    <Agent-Class>tech.catheu.jeamlit.agent.JeamlitAgent</Agent-Class>
+                                    <Premain-Class>tech.catheu.jeamlit.core.JeamlitAgent</Premain-Class>
+                                    <Agent-Class>tech.catheu.jeamlit.core.JeamlitAgent</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                 </manifestEntries>

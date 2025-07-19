@@ -3,6 +3,7 @@ package tech.catheu.jeamlit.core;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
 import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
@@ -11,10 +12,13 @@ import tech.catheu.jeamlit.components.TextComponent;
 // main interface for developers - should only contain syntactic sugar, no core logic
 public class Jt {
     private static final ThreadLocal<ExecutionContext> currentContext = new ThreadLocal<>();
-    private static final Map<String, SessionState> sessions = new ConcurrentHashMap<>();
+    static final Map<String, SessionState> sessions = new ConcurrentHashMap<>();
 
-    public static void beginExecution(String sessionId) {
-        ExecutionContext context = new ExecutionContext(sessionId);
+    protected static void beginExecution(final String sessionId) {
+        if (currentContext.get() != null) {
+            throw new RuntimeException("Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
+        }
+        final ExecutionContext context = new ExecutionContext(sessionId);
         currentContext.set(context);
         
         if (!sessions.containsKey(sessionId)) {
@@ -26,19 +30,15 @@ public class Jt {
         return sessions;
     }
     
-    public static ExecutionResult endExecution() {
+    protected static @Nonnull List<JtComponent<?>> endExecution() {
         final ExecutionContext context = currentContext.get();
         if (context == null) {
-            throw new IllegalStateException("No active execution context");
+            throw new IllegalStateException("No active execution context. Please reach out to support.");
         }
-        
         final SessionState session = sessions.get(context.getSessionId());
         session.updateWidgetStates(context.getWidgetStates());
         
-        final ExecutionResult result = new ExecutionResult(
-            context.getJtComponents(),
-            context.getSessionId()
-        );
+        final List<JtComponent<?>> result = context.getJtComponents();
         
         currentContext.remove();
         return result;
@@ -46,11 +46,9 @@ public class Jt {
     
     public static class ExecutionResult {
         public final List<JtComponent<?>> jtComponents;
-        public final String sessionId;
 
-        public ExecutionResult(List<JtComponent<?>> jtComponents, String sessionId) {
+        public ExecutionResult(List<JtComponent<?>> jtComponents) {
             this.jtComponents = jtComponents;
-            this.sessionId = sessionId;
         }
     }
     

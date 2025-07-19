@@ -5,6 +5,8 @@ import io.methvin.watcher.DirectoryChangeListener;
 import io.methvin.watcher.DirectoryWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.core.JeamlitAgent;
+import tech.catheu.jeamlit.core.JeamlitServer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,9 +22,13 @@ public class FileWatcher {
     private DirectoryWatcher watcher;
     private CompletableFuture<Void> watcherFuture;
     
-    public FileWatcher(String filePath, Consumer<Path> onFileChange) {
+    public FileWatcher(final String filePath,
+                       final JeamlitServer server) {
         this.watchedFile = Paths.get(filePath).toAbsolutePath();
-        this.onFileChange = onFileChange;
+        this.onFileChange = changedFile -> {
+            logger.info("File changed: " + changedFile);
+            server.notifyReload();
+        };
     }
     
     public void start() throws IOException {
@@ -61,15 +67,12 @@ public class FileWatcher {
         if (watcher != null) {
             try {
                 watcher.close();
-                if (watcherFuture != null) {
-                    watcherFuture.cancel(true);
-                }
             } catch (IOException e) {
-                logger.error("Error stopping file watcher", e);
-            } finally {
-                watcher = null;
-                watcherFuture = null;
+                throw new RuntimeException(e);
             }
+        }
+        if (watcherFuture != null) {
+            watcherFuture.cancel(true);
         }
     }
 }
