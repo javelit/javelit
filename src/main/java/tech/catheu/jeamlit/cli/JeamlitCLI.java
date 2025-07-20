@@ -44,7 +44,7 @@ public class JeamlitCLI implements Callable<Integer> {
         private String classpath;
 
         @SuppressWarnings("unused")
-        @Option(names = {"--headers-file"}, description = "File containing additional HTML headers", defaultValue = "jt_headers.html")
+        @Option(names = {"--headers-file"}, description = "File containing additional HTML headers")
         private String headersFile;
 
         @Override

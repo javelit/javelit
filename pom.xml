@@ -84,6 +84,15 @@
             <version>4.1.0</version>
         </dependency>
 
+        <!-- template engine for the main index file and the components -->
+        <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>0.9.14</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>

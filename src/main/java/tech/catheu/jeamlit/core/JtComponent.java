@@ -9,6 +9,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @param <T> The type of value this component returns
  */
 public abstract class JtComponent<T> {
+
+    public static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
+    public static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+
+
     private String id;
     protected T currentValue;
     private static final ObjectMapper objectMapper = new ObjectMapper();
