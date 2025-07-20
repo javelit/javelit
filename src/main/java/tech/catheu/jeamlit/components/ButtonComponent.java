@@ -24,8 +24,8 @@ public class ButtonComponent extends JtComponent<Boolean> {
     private final String key;
     private final Consumer<ButtonComponent> onClick;
 
-    private static Mustache registerTemplate;
-    private static Mustache renderTemplate;
+    private static final Mustache registerTemplate;
+    private static final Mustache renderTemplate;
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
