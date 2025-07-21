@@ -164,8 +164,8 @@ public class JeamlitServer {
         }
     }
 
-    private void handleMessage(final String sessionId, final Map<String, Object> message) throws Exception {
-        String type = (String) message.get("type");
+    private void handleMessage(final String sessionId, final Map<String, Object> message) {
+        final String type = (String) message.get("type");
 
         if ("component_update".equals(type)) {
             final String componentKey = (String) message.get("componentKey");
@@ -182,7 +182,6 @@ public class JeamlitServer {
             // Re-run app
             runApp(sessionId);
         }
-
     }
 
     private void runApp(final String sessionId) {

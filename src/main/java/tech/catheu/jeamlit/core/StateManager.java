@@ -48,7 +48,8 @@ public class StateManager {
                     "No active execution context. Please reach out to support.");
         }
         final SessionState session = SESSIONS.get(context.getSessionId());
-        session.updateWidgetStates(context.getWidgetStates());
+        Map<String, Object> newStates = context.getWidgetStates();
+        session.getWidgetStates().putAll(newStates);
 
         final List<JtComponent<?>> result = context.getComponents();
 

@@ -31,7 +31,7 @@ public class ExecutionContext {
         if (session == null) {
             throw new IllegalStateException("Session not found: " + sessionId);
         }
-        final Object state = session.getWidgetState(key);
+        final Object state = session.getWidgetStates().get(key);
         if (state != null) {
             component.updateValue(state);
         }
