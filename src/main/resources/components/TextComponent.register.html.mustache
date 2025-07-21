@@ -8,9 +8,19 @@
                 margin: var(--jt-spacing-md) 0;
             }
 
+            :host([width="content"]) {
+                width: auto;
+            }
+
+            // note: stretch and content are not implemented properly - need to understand what it really means in streamlit first
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--text-width);
+                max-width: 100%;
+            }
+
             .text-wrapper {
                 position: relative;
-                display: inline-block;
+                display: block;
                 width: 100%;
             }
 
@@ -24,17 +34,6 @@
                 white-space: normal;
                 word-wrap: break-word;
                 display: block;
-                width: 100%;
-            }
-
-
-            .text-content.width-content {
-                width: auto;
-                display: inline-block;
-            }
-
-            .text-content.width-stretch {
-                width: 100%;
             }
 
             .tooltip {
@@ -51,31 +50,17 @@
             width: { type: String }
         };
 
-        getWidthClass() {
-            if (this.width === 'content') return 'width-content';
-            if (this.width === 'stretch') return 'width-stretch';
-            return '';
-        }
-
-        getWidthStyle() {
-            if (!this.width) return '';
-
-            // Handle numeric width as pixels
-            if (/^\d+$/.test(this.width)) {
-                return `width: ${this.width}px;`;
-            }
-
-            return '';
-        }
-
         render() {
-            const widthClass = this.getWidthClass();
-            const style = this.getWidthStyle();
+            // Set width CSS variable if width is specified and is a pixel value
+            if (this.width && /^\d+$/.test(this.width)) {
+                this.style.setProperty('--text-width', `${this.width}px`);
+            } else {
+                this.style.removeProperty('--text-width');
+            }
 
             return html`
                          <div class="text-wrapper">
-                             <div class="text-content ${widthClass}"
-                                  style="${style}">
+                             <div class="text-content">
                                  ${this.body || ''}
                              </div>
                              ${this.help ? html`
