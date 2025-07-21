@@ -138,7 +138,7 @@ public class JeamlitServer {
                 protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
                     sessions.remove(sessionId);
                     sessionRegisteredTypes.remove(sessionId);
-                    Jt.clearSession(sessionId);
+                    StateManager.clearSession(sessionId);
                 }
             });
 
@@ -172,7 +172,7 @@ public class JeamlitServer {
             // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
-            final SessionState session = Jt.SESSIONS.get(sessionId);
+            final SessionState session = StateManager.getSession(sessionId);
             if (session != null) {
                 session.getWidgetStates().put(componentKey, value);
             } else {
@@ -196,6 +196,7 @@ public class JeamlitServer {
         for (final JtComponent<?> component : resultJtComponents) {
             // FIXME CYRIL - would be better if we were able to identify if a Component was updated, and if so, add it to the list - useful for custom components written by the user
             //   (on the frontend side, if the component is implemented with lit, this will still mean the logic will have to support a removal / register of the component)
+            //   also use the fullName to avoid custom. component collisions
             final String componentType = component.getClass().getSimpleName();
             if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
                 registrations.add(component.register());

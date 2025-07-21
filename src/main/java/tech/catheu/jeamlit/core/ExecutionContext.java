@@ -5,15 +5,14 @@ import tech.catheu.jeamlit.spi.JtComponent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExecutionContext {
 
     private final String sessionId;
-    private final List<JtComponent<?>> jtComponents = new ArrayList<>();
-    private final Map<String, Object> widgetStates = new HashMap<>();
-    private final Map<String, JtComponent<?>> componentRegistry = new HashMap<>();
+    private final Map<String, JtComponent<?>> componentRegistry = new LinkedHashMap<>();
 
     public ExecutionContext(String sessionId) {
         this.sessionId = sessionId;
@@ -28,7 +27,7 @@ public class ExecutionContext {
         }
         componentRegistry.put(key, component);
         // Restore state from session if available
-        final SessionState session = Jt.getSessions().get(sessionId);
+        final SessionState session = StateManager.getSession(sessionId);
         if (session == null) {
             throw new IllegalStateException("Session not found: " + sessionId);
         }
@@ -36,18 +35,16 @@ public class ExecutionContext {
         if (state != null) {
             component.updateValue(state);
         }
-        jtComponents.add(component);
         return component;
     }
 
 
-    public List<JtComponent<?>> getJtComponents() {
-        return new ArrayList<>(jtComponents);
+    public List<JtComponent<?>> getComponents() {
+        return new ArrayList<>(componentRegistry.values());
     }
 
     public Map<String, Object> getWidgetStates() {
-        // Include states from JtComponents
-        final Map<String, Object> allStates = new HashMap<>(widgetStates);
+        final Map<String, Object> allStates = new HashMap<>();
         for (final Map.Entry<String, JtComponent<?>> entry : componentRegistry.entrySet()) {
             allStates.put(entry.getKey(), entry.getValue()._internalCurrentValue());
         }

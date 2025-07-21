@@ -10,62 +10,15 @@ import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.spi.JtComponent;
 import tech.catheu.jeamlit.spi.JtComponentBuilder;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-// main interface for developers - should only contain syntactic sugar, no core logic
+// main interface for developers - should only contain functions of the public API.
 public class Jt {
-    private static final ThreadLocal<ExecutionContext> CURRENT_CONTEXT = new ThreadLocal<>();
-    static final Map<String, SessionState> SESSIONS = new ConcurrentHashMap<>();
 
-    private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    protected static void beginExecution(final String sessionId) {
-        if (CURRENT_CONTEXT.get() != null) {
-            throw new RuntimeException(
-                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
-        }
-        final ExecutionContext context = new ExecutionContext(sessionId);
-        CURRENT_CONTEXT.set(context);
-
-        if (!SESSIONS.containsKey(sessionId)) {
-            SESSIONS.put(sessionId, new SessionState(sessionId));
-        }
-    }
-
-    static Map<String, SessionState> getSessions() {
-        return SESSIONS;
-    }
-
-    protected static @Nonnull List<JtComponent<?>> endExecution() {
-        final ExecutionContext context = CURRENT_CONTEXT.get();
-        if (context == null) {
-            throw new IllegalStateException(
-                    "No active execution context. Please reach out to support.");
-        }
-        final SessionState session = SESSIONS.get(context.getSessionId());
-        session.updateWidgetStates(context.getWidgetStates());
-
-        final List<JtComponent<?>> result = context.getJtComponents();
-
-        CURRENT_CONTEXT.remove();
-        return result;
-    }
-
-    private static ExecutionContext getContext() {
-        final ExecutionContext context = CURRENT_CONTEXT.get();
-        if (context == null) {
-            throw new IllegalStateException(
-                    "Jeamlit Jt. methods must be called within an execution context");
-        }
-        return context;
-    }
-
     public static TypedMap sessionState() {
-        final ExecutionContext context = getContext();
-        final SessionState session = SESSIONS.get(context.getSessionId());
+        final ExecutionContext context = StateManager.getContext();
+        final SessionState session = StateManager.getSession(context.getSessionId());
         return new TypedMap(session.getUserState());
     }
 
@@ -74,10 +27,8 @@ public class Jt {
      * See https://docs.streamlit.io/get-started/fundamentals/advanced-concepts#caching
      */
     public static TypedMap cache() {
-        return CACHE;
+        return StateManager.getCache();
     }
-
-    //
 
     /**
      * Slow deep copy utility: serialize then deserialize json.
@@ -95,10 +46,6 @@ public class Jt {
         }
     }
 
-    public static void clearSession(String sessionId) {
-        SESSIONS.remove(sessionId);
-    }
-
     /**
      * Add a component to the app and return its value.
      * Running directly on the builder is syntactic sugar to avoid tons of .build() in the user App
@@ -113,7 +60,7 @@ public class Jt {
      * Let available for users that want to create a JtComponent without creating a builder.
      */
     public static <T, C extends JtComponent<T>> T use(final C component) {
-        final ExecutionContext context = getContext();
+        final ExecutionContext context = StateManager.getContext();
         final JtComponent<T> componentOnceAdded = context.addComponent(component);
         return componentOnceAdded.returnValue();
     }

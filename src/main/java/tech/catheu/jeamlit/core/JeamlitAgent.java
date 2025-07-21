@@ -93,7 +93,7 @@ public class JeamlitAgent {
                         "Implementation Error ? Trying to run app before compiling it. Please reach out to support");
             }
             List<JtComponent<?>> result;
-            Jt.beginExecution(sessionId);
+            StateManager.beginExecution(sessionId);
             try {
                 mainMethod.get().invoke(null, new Object[]{new String[]{}});
             } catch (IllegalAccessException e) {
@@ -102,7 +102,7 @@ public class JeamlitAgent {
             } catch (InvocationTargetException e) {
                 throw new AppRunException(e);
             } finally {
-                result = Jt.endExecution();
+                result = StateManager.endExecution();
             }
             return result;
 
