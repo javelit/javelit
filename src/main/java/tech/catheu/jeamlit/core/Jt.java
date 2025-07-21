@@ -17,8 +17,7 @@ public class Jt {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static TypedMap sessionState() {
-        final ExecutionContext context = StateManager.getContext();
-        final SessionState session = StateManager.getSession(context.getSessionId());
+        final SessionState session = StateManager.getCurrentSession();
         return new TypedMap(session.getUserState());
     }
 
@@ -60,8 +59,7 @@ public class Jt {
      * Let available for users that want to create a JtComponent without creating a builder.
      */
     public static <T, C extends JtComponent<T>> T use(final C component) {
-        final ExecutionContext context = StateManager.getContext();
-        final JtComponent<T> componentOnceAdded = context.addComponent(component);
+        final JtComponent<T> componentOnceAdded = StateManager.addComponent(component);
         return componentOnceAdded.returnValue();
     }
 

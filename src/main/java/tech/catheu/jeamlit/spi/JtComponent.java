@@ -75,7 +75,7 @@ public abstract class JtComponent<T> {
      * Convert raw value to the component's type T.
      * Subclasses should override for custom validation.
      */
-    protected T castAndValidate(Object rawValue) {
+    protected T castAndValidate(final Object rawValue) {
         try {
             // Use Jackson to convert to the target type
             return objectMapper.convertValue(rawValue, getTypeReference());
