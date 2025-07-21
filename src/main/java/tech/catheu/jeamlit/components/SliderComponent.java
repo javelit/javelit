@@ -184,7 +184,7 @@ public class SliderComponent extends JtComponent<Double> {
     }
     
     @Override
-    protected void resetIfNeeded() {
+    public void resetIfNeeded() {
         // Slider keeps its value - no reset needed
     }
     

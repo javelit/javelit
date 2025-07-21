@@ -16,6 +16,10 @@ public class Jt {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    public static SessionState sessionStateDebug() {
+        return StateManager.getCurrentSession();
+    }
+
     public static TypedMap sessionState() {
         final SessionState session = StateManager.getCurrentSession();
         return new TypedMap(session.getUserState());

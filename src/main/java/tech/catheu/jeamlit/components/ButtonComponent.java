@@ -124,7 +124,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     @Override
-    protected void resetIfNeeded() {
+    public void resetIfNeeded() {
         // Button is momentary - reset to false after reading
         currentValue = false;
     }

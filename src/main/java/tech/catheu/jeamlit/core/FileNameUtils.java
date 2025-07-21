@@ -27,7 +27,7 @@ public class FileNameUtils {
         }
 
         // Extract the part after src/main/java/
-        final String pathFromSource = fileName.substring(srcIndex + sourceRootPath.length());
+        final String pathFromSource = fileName.substring(srcIndex + sourceRootPath.length() + 1);
 
         // Convert to class name
         return pathFromSource

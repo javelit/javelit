@@ -48,18 +48,6 @@ public abstract class JtComponent<T> {
      * Input components keep their value.
      */
     public final T returnValue() {
-        T value = currentValue;
-        resetIfNeeded();
-        return value;
-    }
-
-    /**
-     * For internal use only. returnValue() should be used instead in most cases
-     * Will be replaced by returnValue() once it's confirm the resetIfNeeded operation is always
-     * idempotent and low resource.
-     */
-    @Deprecated
-    public final T _internalCurrentValue() {
         return currentValue;
     }
 
@@ -95,7 +83,7 @@ public abstract class JtComponent<T> {
      * Default implementation does nothing.
      * See example in ButtonComponent
      */
-    protected void resetIfNeeded() {
+    public void resetIfNeeded() {
         // Override in subclasses that need reset behavior
     }
 
