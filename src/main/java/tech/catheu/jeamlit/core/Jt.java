@@ -1,15 +1,18 @@
 package tech.catheu.jeamlit.core;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
-import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.components.TextComponent;
+import tech.catheu.jeamlit.components.TitleComponent;
+import tech.catheu.jeamlit.spi.JtComponent;
+import tech.catheu.jeamlit.spi.JtComponentBuilder;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 // main interface for developers - should only contain syntactic sugar, no core logic
 public class Jt {

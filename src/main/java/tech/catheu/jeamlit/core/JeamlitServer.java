@@ -24,6 +24,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.exception.CompilationException;
+import tech.catheu.jeamlit.spi.JtComponent;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static tech.catheu.jeamlit.components.JsConstants.*;
+import static tech.catheu.jeamlit.spi.JsConstants.*;
 
 public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);

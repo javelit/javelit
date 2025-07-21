@@ -5,8 +5,8 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
-import tech.catheu.jeamlit.core.JtComponent;
-import tech.catheu.jeamlit.core.JtComponentBuilder;
+import tech.catheu.jeamlit.spi.JtComponent;
+import tech.catheu.jeamlit.spi.JtComponentBuilder;
 
 import java.io.StringWriter;
 import java.util.function.Consumer;

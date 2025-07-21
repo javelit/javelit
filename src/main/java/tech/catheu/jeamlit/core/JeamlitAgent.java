@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.exception.AppRunException;
 import tech.catheu.jeamlit.exception.CompilationException;
+import tech.catheu.jeamlit.spi.JtComponent;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;

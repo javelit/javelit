@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.components;
+package tech.catheu.jeamlit.spi;
 
 public interface JsConstants {
 

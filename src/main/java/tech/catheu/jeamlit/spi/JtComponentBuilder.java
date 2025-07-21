@@ -1,7 +1,6 @@
-package tech.catheu.jeamlit.core;
+package tech.catheu.jeamlit.spi;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.StringJoiner;
 
 public interface JtComponentBuilder<T extends JtComponent> {

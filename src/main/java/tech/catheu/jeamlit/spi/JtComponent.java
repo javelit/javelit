@@ -1,13 +1,12 @@
-package tech.catheu.jeamlit.core;
+package tech.catheu.jeamlit.spi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Nonnull;
-import tech.catheu.jeamlit.components.JsConstants;
 
 /**
  * Base class for all Jeamlit components.
- * 
+ *
  * @param <T> The type of value this component returns
  */
 public abstract class JtComponent<T> {
@@ -30,19 +29,19 @@ public abstract class JtComponent<T> {
     public String getKey() {
         return key;
     }
-    
+
     /**
      * Component definition - called once per component type.
      * This should return HTML/JS/CSS that defines the component.
      */
     public abstract String register();
-    
+
     /**
      * Component instance rendering - called for each render.
      * This should return the HTML for this specific instance.
      */
     public abstract String render();
-    
+
     /**
      * Get the current value and optionally reset state.
      * Button components reset to false after reading.
@@ -53,15 +52,23 @@ public abstract class JtComponent<T> {
         resetIfNeeded();
         return value;
     }
-    
+
+    /**
+     * For internal use only. returnValue() should be used instead in most cases
+     */
+    @Deprecated
+    public final T _internalCurrentValue() {
+        return currentValue;
+    }
+
     /**
      * Update the component's value from frontend.
      * Uses Jackson for type-safe deserialization.
      */
-    public void updateValue(Object rawValue) {
+    public void updateValue(final Object rawValue) {
         this.currentValue = castAndValidate(rawValue);
     }
-    
+
     /**
      * Convert raw value to the component's type T.
      * Subclasses should override for custom validation.
@@ -74,16 +81,19 @@ public abstract class JtComponent<T> {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Get the TypeReference for Jackson deserialization.
      * Subclasses must implement this to specify their type.
      */
     protected abstract TypeReference<T> getTypeReference();
-    
+
     /**
      * Reset component state if needed after returnValue().
      * Default implementation does nothing.
+     * <p>
+     * This operation should be idempotent and low resources. If it can't be the case, reach out
+     * to support for help.
      */
     protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior

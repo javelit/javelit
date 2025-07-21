@@ -6,12 +6,10 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import tech.catheu.jeamlit.core.JtComponent;
-import tech.catheu.jeamlit.core.JtComponentBuilder;
+import tech.catheu.jeamlit.spi.JtComponent;
+import tech.catheu.jeamlit.spi.JtComponentBuilder;
 
 import java.io.StringWriter;
-
-import static tech.catheu.jeamlit.components.JsConstants.*;
 
 public class TextComponent extends JtComponent<String> {
     // protected to be visible to the template engine
