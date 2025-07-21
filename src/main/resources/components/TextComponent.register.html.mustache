@@ -1,0 +1,92 @@
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtText extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            .text-wrapper {
+                position: relative;
+                display: inline-block;
+                width: 100%;
+            }
+
+            .text-content {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-normal);
+                color: var(--jt-text-primary);
+                margin: 0;
+                padding: 0;
+                white-space: normal;
+                word-wrap: break-word;
+                display: block;
+                width: 100%;
+            }
+
+
+            .text-content.width-content {
+                width: auto;
+                display: inline-block;
+            }
+
+            .text-content.width-stretch {
+                width: 100%;
+            }
+
+            .tooltip {
+                position: absolute;
+                top: 0;
+                right: -24px;
+                z-index: 10;
+            }
+        `;
+
+        static properties = {
+            body: { type: String },
+            help: { type: String },
+            width: { type: String }
+        };
+
+        getWidthClass() {
+            if (this.width === 'content') return 'width-content';
+            if (this.width === 'stretch') return 'width-stretch';
+            return '';
+        }
+
+        getWidthStyle() {
+            if (!this.width) return '';
+
+            // Handle numeric width as pixels
+            if (/^\d+$/.test(this.width)) {
+                return `width: ${this.width}px;`;
+            }
+
+            return '';
+        }
+
+        render() {
+            const widthClass = this.getWidthClass();
+            const style = this.getWidthStyle();
+
+            return html`
+                         <div class="text-wrapper">
+                             <div class="text-content ${widthClass}"
+                                  style="${style}">
+                                 ${this.body || ''}
+                             </div>
+                             ${this.help ? html`
+                                 <div class="tooltip">
+                                     <jt-tooltip text="${this.help}"></jt-tooltip>
+                                 </div>
+                             ` : ''}
+                         </div>
+                     `;
+        }
+    }
+
+    customElements.define('jt-text', JtText);
+</script>
