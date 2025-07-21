@@ -55,6 +55,7 @@ public class TextComponent extends JtComponent<String> {
     }
 
     private TextComponent(Builder builder) {
+        super(builder.generateKey());
         this.body = builder.body;
         this.help = builder.help;
         this.width = builder.width;

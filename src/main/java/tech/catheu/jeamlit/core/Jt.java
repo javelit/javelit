@@ -55,68 +55,9 @@ public class Jt {
         final ExecutionContext context = CURRENT_CONTEXT.get();
         if (context == null) {
             throw new IllegalStateException(
-                    "Jeamlit methods must be called within an execution context");
+                    "Jeamlit Jt. methods must be called within an execution context");
         }
         return context;
-    }
-
-    public static String text(final String text) {
-        final ExecutionContext context = getContext();
-        final TextComponent textComponent = new TextComponent.Builder(text).build();
-        context.addJtComponent(textComponent);
-        return textComponent.returnValue();
-    }
-
-    public static String title(final String text) {
-        final ExecutionContext context = getContext();
-        final TitleComponent titleComponent = new TitleComponent.Builder(text).build();
-        context.addJtComponent(titleComponent);
-        return titleComponent.returnValue();
-    }
-
-    public static boolean button(String label) {
-        final ExecutionContext context = getContext();
-        final String key = context.generateKey("button", label);
-        return button(label, key);
-    }
-
-    public static boolean button(String label, String key) {
-        final ExecutionContext context = getContext();
-
-        // Use new component system with explicit key collision detection
-        final ButtonComponent button = context.getComponent(key,
-                                                      () -> new ButtonComponent.Builder(label).build(),
-                                                      true);
-
-        context.addJtComponent(button);
-        return button.returnValue();
-    }
-
-    public static int slider(String label, int min, int max) {
-        return slider(label, min, max, min);
-    }
-
-    public static int slider(String label, int min, int max, int defaultValue) {
-        final ExecutionContext context = getContext();
-        final String key = context.generateKey("slider",
-                                         label,
-                                         String.valueOf(min),
-                                         String.valueOf(max),
-                                         String.valueOf(defaultValue));
-        return slider(label, min, max, defaultValue, key);
-    }
-
-    public static int slider(String label, int min, int max, int defaultValue, String key) {
-        final ExecutionContext context = getContext();
-
-        // Use new component system with explicit key collision detection
-        final SliderComponent slider = context.getComponent(key,
-                                                      () -> new SliderComponent.Builder(label).min(
-                                                              min).max(max).value(defaultValue).help(
-                                                              null).disabled(false).build(), true);
-
-        context.addJtComponent(slider);
-        return slider.returnValue().intValue();
     }
 
     public static TypedMap sessionState() {
@@ -153,6 +94,43 @@ public class Jt {
 
     public static void clearSession(String sessionId) {
         SESSIONS.remove(sessionId);
+    }
+
+    /**
+     * Add a component to the app and return its value.
+     * Running directly on the builder is syntactic sugar to avoid tons of .build() in the user App
+     */
+    public static <T> T use(final JtComponentBuilder<JtComponent<T>> componentBuilder) {
+        return use(componentBuilder.build());
+    }
+
+    /**
+     * Add a component to the app and return its value.
+     * Prefer the syntactic sugar use(final JtComponentBuilder<JtComponent<T>> componentBuilder)
+     * Let available for users that want to create a JtComponent without creating a builder.
+     */
+    public static <T> T use(final JtComponent<T> component) {
+        final ExecutionContext context = getContext();
+        final JtComponent<T> componentOnceAdded = context.addComponent(component);
+        return componentOnceAdded.returnValue();
+    }
+
+    // syntactic sugar for all components - 1 method per component
+    // Example: Jt.use(Jt.text("my text")); is equivalent to Jt.use(new TextComponent.Builder("my text"));
+    public static TextComponent.Builder text(final @Nonnull String body) {
+        return new TextComponent.Builder(body);
+    }
+
+    public static TitleComponent.Builder title(final @Nonnull String body) {
+        return new TitleComponent.Builder(body);
+    }
+
+    public static ButtonComponent.Builder button(final @Nonnull String label) {
+        return new ButtonComponent.Builder(label);
+    }
+
+    public static SliderComponent.Builder slider(@Nonnull String label) {
+        return new SliderComponent.Builder(label);
     }
 
 }

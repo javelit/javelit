@@ -2,6 +2,7 @@ package tech.catheu.jeamlit.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.annotation.Nonnull;
 import tech.catheu.jeamlit.components.JsConstants;
 
 /**
@@ -18,27 +19,16 @@ public abstract class JtComponent<T> {
     protected static final String MATERIAL_SYMBOLS_CDN = JsConstants.MATERIAL_SYMBOLS_CDN;
 
 
-    private String id;
+    private final String key;
     protected T currentValue;
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    
-    public JtComponent() {
-        // ID will be set by the component registry
-        this.id = null;
+
+    protected JtComponent(final @Nonnull String key) {
+        this.key = key;
     }
-    
-    public JtComponent(String id) {
-        this.id = id;
-    }
-    
-    public void setId(String id) {
-        if (this.id == null) {
-            this.id = id;
-        }
-    }
-    
-    public String getId() { 
-        return id; 
+
+    public String getKey() {
+        return key;
     }
     
     /**

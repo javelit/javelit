@@ -27,7 +27,8 @@ public class TitleComponent extends JtComponent<String> {
         renderTemplate = mf.compile("components/TitleComponent.render.html.mustache");
     }
     
-    private TitleComponent(Builder builder) {
+    private TitleComponent(final Builder builder) {
+        super(builder.generateKey());
         this.body = builder.body;
         this.anchor = builder.anchor;
         this.help = builder.help;

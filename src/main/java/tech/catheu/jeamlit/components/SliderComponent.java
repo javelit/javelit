@@ -35,6 +35,7 @@ public class SliderComponent extends JtComponent<Double> {
     }
     
     private SliderComponent(Builder builder) {
+        super(builder.generateKey());
         this.label = builder.label;
         this.min = builder.min;
         this.max = builder.max;

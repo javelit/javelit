@@ -34,6 +34,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     private ButtonComponent(final Builder builder) {
+        super(builder.generateKey());
         this.label = builder.label;
         this.type = builder.type;
         this.icon = builder.icon;
