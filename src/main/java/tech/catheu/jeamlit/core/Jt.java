@@ -51,14 +51,6 @@ public class Jt {
         return result;
     }
 
-    public static class ExecutionResult {
-        public final List<JtComponent<?>> jtComponents;
-
-        public ExecutionResult(List<JtComponent<?>> jtComponents) {
-            this.jtComponents = jtComponents;
-        }
-    }
-
     private static ExecutionContext getContext() {
         ExecutionContext context = CURRENT_CONTEXT.get();
         if (context == null) {
