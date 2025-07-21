@@ -9,9 +9,7 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
-import java.util.Map;
 import java.util.function.Consumer;
-import static tech.catheu.jeamlit.components.JsConstants.*;
 
 public class ButtonComponent extends JtComponent<Boolean> {
     // the following fields are protected to be visible to the template engine - see render function
@@ -21,7 +19,6 @@ public class ButtonComponent extends JtComponent<Boolean> {
     protected final String help;
     protected final boolean disabled;
     protected final boolean useContainerWidth;
-    private final String key;
     private final Consumer<ButtonComponent> onClick;
 
     private static final Mustache registerTemplate;
@@ -41,7 +38,6 @@ public class ButtonComponent extends JtComponent<Boolean> {
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.useContainerWidth = builder.useContainerWidth;
-        this.key = builder.key;
         this.onClick = builder.onClick;
         this.currentValue = false;
     }

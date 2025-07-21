@@ -9,7 +9,6 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 import java.util.function.Consumer;
-import static tech.catheu.jeamlit.components.JsConstants.*;
 
 public class SliderComponent extends JtComponent<Double> {
     protected final String label;
@@ -22,7 +21,6 @@ public class SliderComponent extends JtComponent<Double> {
     protected final boolean disabled;
     protected final String labelVisibility;
     protected final String width;
-    private final String key;
     private final Consumer<SliderComponent> onChange;
 
     private static final Mustache registerTemplate;
@@ -45,7 +43,6 @@ public class SliderComponent extends JtComponent<Double> {
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.labelVisibility = builder.labelVisibility;
-        this.key = builder.key;
         this.onChange = builder.onChange;
         this.width = builder.width;
         this.currentValue = builder.value;
