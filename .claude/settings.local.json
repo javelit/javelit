@@ -6,9 +6,9 @@
       "Bash(java:*)",
       "Bash(pkill:*)",
       "Bash(./mvnw:*)",
-      "Bash(rm:*)",
       "Bash(curl:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "WebFetch(domain:docs.streamlit.io)"
     ],
     "deny": []
   }
