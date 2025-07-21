@@ -6,10 +6,10 @@ import java.util.*;
  * A Map wrapper that provides typed access methods for session state.
  * Implements the full Map interface while adding type-safe getters and compute methods.
  */
-public class TypedSessionState implements Map<String, Object> {
+public class TypedMap implements Map<String, Object> {
     private final Map<String, Object> delegate;
     
-    public TypedSessionState(Map<String, Object> delegate) {
+    public TypedMap(final Map<String, Object> delegate) {
         this.delegate = delegate;
     }
     

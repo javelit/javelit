@@ -159,7 +159,7 @@ public class JeamlitServer {
             // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
-            final SessionState session = Jt.sessions.get(sessionId);
+            final SessionState session = Jt.SESSIONS.get(sessionId);
             if (session != null) {
                 session.getWidgetStates().put(componentId, value);
             } else {
