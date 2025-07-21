@@ -56,6 +56,7 @@ public class JeamlitServer {
     public void start() {
         final PathHandler pathHandler = Handlers.path()
                 .addPrefixPath("/ws", Handlers.websocket(new WebSocketHandler()))
+                // static file serving - see https://docs.streamlit.io/get-started/fundamentals/additional-features#static-file-serving
                 .addPrefixPath("/static", new ResourceHandler(
                         new ClassPathResourceManager(getClass().getClassLoader(), "static")
                 ))

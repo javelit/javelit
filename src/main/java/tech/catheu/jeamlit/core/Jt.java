@@ -133,6 +133,10 @@ public class Jt {
         return new TypedMap(session.getUserState());
     }
 
+    /**
+     * Returns the app cache.
+     * See https://docs.streamlit.io/get-started/fundamentals/advanced-concepts#caching
+     */
     public static TypedMap cache() {
         return CACHE;
     }
