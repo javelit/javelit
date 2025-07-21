@@ -55,6 +55,8 @@ public abstract class JtComponent<T> {
 
     /**
      * For internal use only. returnValue() should be used instead in most cases
+     * Will be replaced by returnValue() once it's confirm the resetIfNeeded operation is always
+     * idempotent and low resource.
      */
     @Deprecated
     public final T _internalCurrentValue() {
@@ -91,9 +93,7 @@ public abstract class JtComponent<T> {
     /**
      * Reset component state if needed after returnValue().
      * Default implementation does nothing.
-     * <p>
-     * This operation should be idempotent and low resources. If it can't be the case, reach out
-     * to support for help.
+     * See example in ButtonComponent
      */
     protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior
