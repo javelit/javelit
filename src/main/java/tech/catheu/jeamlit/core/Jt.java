@@ -52,7 +52,7 @@ public class Jt {
     }
 
     private static ExecutionContext getContext() {
-        ExecutionContext context = CURRENT_CONTEXT.get();
+        final ExecutionContext context = CURRENT_CONTEXT.get();
         if (context == null) {
             throw new IllegalStateException(
                     "Jeamlit methods must be called within an execution context");
@@ -61,30 +61,30 @@ public class Jt {
     }
 
     public static String text(final String text) {
-        ExecutionContext context = getContext();
-        TextComponent textComponent = new TextComponent.Builder(text).build();
+        final ExecutionContext context = getContext();
+        final TextComponent textComponent = new TextComponent.Builder(text).build();
         context.addJtComponent(textComponent);
         return textComponent.returnValue();
     }
 
     public static String title(final String text) {
-        ExecutionContext context = getContext();
-        TitleComponent titleComponent = new TitleComponent.Builder(text).build();
+        final ExecutionContext context = getContext();
+        final TitleComponent titleComponent = new TitleComponent.Builder(text).build();
         context.addJtComponent(titleComponent);
         return titleComponent.returnValue();
     }
 
     public static boolean button(String label) {
-        ExecutionContext context = getContext();
-        String key = context.generateKey("button", label);
+        final ExecutionContext context = getContext();
+        final String key = context.generateKey("button", label);
         return button(label, key);
     }
 
     public static boolean button(String label, String key) {
-        ExecutionContext context = getContext();
+        final ExecutionContext context = getContext();
 
         // Use new component system with explicit key collision detection
-        ButtonComponent button = context.getComponent(key,
+        final ButtonComponent button = context.getComponent(key,
                                                       () -> new ButtonComponent.Builder(label).build(),
                                                       true);
 
@@ -97,8 +97,8 @@ public class Jt {
     }
 
     public static int slider(String label, int min, int max, int defaultValue) {
-        ExecutionContext context = getContext();
-        String key = context.generateKey("slider",
+        final ExecutionContext context = getContext();
+        final String key = context.generateKey("slider",
                                          label,
                                          String.valueOf(min),
                                          String.valueOf(max),
@@ -107,10 +107,10 @@ public class Jt {
     }
 
     public static int slider(String label, int min, int max, int defaultValue, String key) {
-        ExecutionContext context = getContext();
+        final ExecutionContext context = getContext();
 
         // Use new component system with explicit key collision detection
-        SliderComponent slider = context.getComponent(key,
+        final SliderComponent slider = context.getComponent(key,
                                                       () -> new SliderComponent.Builder(label).min(
                                                               min).max(max).value(defaultValue).help(
                                                               null).disabled(false).build(), true);
@@ -121,7 +121,7 @@ public class Jt {
 
     public static TypedMap sessionState() {
         final ExecutionContext context = getContext();
-        SessionState session = SESSIONS.get(context.getSessionId());
+        final SessionState session = SESSIONS.get(context.getSessionId());
         return new TypedMap(session.getUserState());
     }
 

@@ -40,7 +40,7 @@ public class ExecutionContext {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends JtComponent<?>> T getComponent(String key, Supplier<T> factory, boolean isExplicitKey) {
+    public <T extends JtComponent<?>> T getComponent(final String key, final Supplier<T> factory, final boolean isExplicitKey) {
         JtComponent<?> component = componentRegistry.get(key);
         if (component == null) {
             component = factory.get();
