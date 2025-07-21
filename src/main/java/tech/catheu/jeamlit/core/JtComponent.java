@@ -2,6 +2,7 @@ package tech.catheu.jeamlit.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import tech.catheu.jeamlit.components.JsConstants;
 
 /**
  * Base class for all Jeamlit components.
@@ -10,8 +11,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public abstract class JtComponent<T> {
 
-    public static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
-    public static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+    // used by the components' mustache templates
+    @SuppressWarnings("unused")
+    protected static final String LIT_DEPENDENCY = JsConstants.LIT_DEPENDENCY;
+    @SuppressWarnings("unused")
+    protected static final String MATERIAL_SYMBOLS_CDN = JsConstants.MATERIAL_SYMBOLS_CDN;
 
 
     private String id;

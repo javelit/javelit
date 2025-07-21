@@ -1,6 +1,9 @@
 package tech.catheu.jeamlit.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -22,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.exception.CompilationException;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +50,13 @@ public class JeamlitServer {
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String customHeaders;
+
+    private static final Mustache indexTemplate;
+
+    static {
+        final MustacheFactory mf = new DefaultMustacheFactory();
+        indexTemplate = mf.compile("index.html.mustache");
+    }
 
     public JeamlitServer(int port, @Nullable String headersFile, @Nonnull JeamlitAgent.HotReloader hotReloader) {
         this.port = port;
@@ -232,206 +243,14 @@ public class JeamlitServer {
 
 
     private String getIndexHtml() {
-        return """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Jeamlit App</title>
-                    <link rel="stylesheet" href="%s">
-                    <style>
-                        %s
-                
-                        body {
-                            font-family: var(--jt-font-family);
-                            margin: 0;
-                            padding: var(--jt-spacing-xl);
-                            background-color: var(--jt-bg-secondary);
-                            color: var(--jt-text-primary);
-                            line-height: var(--jt-line-height-normal);
-                        }
-                        .container {
-                            max-width: 800px;
-                            margin: 0 auto;
-                            background: var(--jt-bg-primary);
-                            padding: var(--jt-spacing-xl);
-                            border-radius: var(--jt-border-radius-lg);
-                            box-shadow: var(--jt-shadow);
-                        }
-                        .error {
-                            background-color: #fee;
-                            border: 1px solid #fcc;
-                            color: var(--jt-danger-color);
-                            padding: var(--jt-spacing-md);
-                            border-radius: var(--jt-border-radius);
-                            margin: var(--jt-spacing-md) 0;
-                        }
-                    </style>
-                    %s
-                    <script type="module">
-                      import { LitElement, html, css } from '%s';
-                
-                      class JtTooltip extends LitElement {
-                          static styles = css`
-                              :host {
-                                  position: relative;
-                                  display: inline-block;
-                              }
-                
-                              .tooltip-trigger {
-                                  cursor: help;
-                                  color: var(--jt-text-secondary);
-                                  font-size: var(--jt-font-size-sm);
-                                  margin-left: var(--jt-spacing-xs);
-                              }
-                
-                              .tooltip-content {
-                                  position: absolute;
-                                  bottom: 100%%;
-                                  left: 50%%;
-                                  transform: translateX(-50%%);
-                                  background: var(--jt-text-primary);
-                                  color: var(--jt-text-white);
-                                  padding: var(--jt-spacing-sm) var(--jt-spacing-md);
-                                  border-radius: var(--jt-border-radius-sm);
-                                  font-size: var(--jt-font-size-sm);
-                                  white-space: nowrap;
-                                  z-index: 1000;
-                                  opacity: 0;
-                                  visibility: hidden;
-                                  transition: opacity var(--jt-transition-fast), visibility var(--jt-transition-fast);
-                                  margin-bottom: var(--jt-spacing-xs);
-                              }
-                
-                              .tooltip-content::after {
-                                  content: '';
-                                  position: absolute;
-                                  top: 100%%;
-                                  left: 50%%;
-                                  transform: translateX(-50%%);
-                                  border: 4px solid transparent;
-                                  border-top-color: var(--jt-text-primary);
-                              }
-                
-                              :host(:hover) .tooltip-content {
-                                  opacity: 1;
-                                  visibility: visible;
-                              }
-                          `;
-                
-                          static properties = {
-                              text: { type: String }
-                          };
-                
-                          render() {
-                              return html`
-                                  <span class="tooltip-trigger">?</span>
-                                  <div class="tooltip-content">${this.text}</div>
-                              `;
-                          }
-                      }
-                
-                      customElements.define('jt-tooltip', JtTooltip);
-                    </script>
-                </head>
-                <body>
-                    <div id="app" class="container">
-                        <p>Connecting to Jeamlit server...</p>
-                    </div>
-                    <script>
-                        const ws = new WebSocket('ws://localhost:%d/ws');
-                        const app = document.getElementById('app');
-                
-                        // Store websocket reference for components
-                        window.ws = ws;
-                
-                        // Create emit function for new component system
-                        window.jeamlit = {
-                            emit: function(componentId, value) {
-                                ws.send(JSON.stringify({
-                                    type: 'component_update',
-                                    componentId: componentId,
-                                    value: value
-                                }));
-                            }
-                        };
-                
-                        ws.onmessage = (event) => {
-                            const message = JSON.parse(event.data);
-                
-                            if (message.type === 'render') {
-                                // Handle new component system
-                                if (message.registrations) {
-                                    // Ensure a hidden container is present
-                                    let container = document.getElementById('jeamlit-registrations');
-                                    if (!container) {
-                                      container = document.createElement('div');
-                                      container.id = 'jeamlit-registrations';
-                                      container.style.display = 'none';
-                                      document.body.appendChild(container);
-                                    }
-                
-                                    message.registrations.forEach((registration) => {
-                                        // Parse the registration HTML safely
-                                        const template = document.createElement('template');
-                                        template.innerHTML = registration;
-                                        const fragment = template.content;
-                
-                                        // Execute all <script> tags inside the fragment
-                                        fragment.querySelectorAll('script').forEach((script) => {
-                                          const newScript = document.createElement('script');
-                                          if (script.type) newScript.type = script.type;
-                                          if (script.src) {
-                                            newScript.src = script.src;
-                                          } else {
-                                            newScript.textContent = script.textContent;
-                                          }
-                                          document.head.appendChild(newScript);
-                                        });
-                
-                                        // Inject the rest of the HTML (custom elements etc.)
-                                        container.appendChild(fragment);
-                                    });
-                                }
-                
-                                // Clear app content
-                                app.innerHTML = '';
-                
-                                // Render HTML components
-                                if (message.html && message.html.trim() !== '') {
-                                    const htmlDiv = document.createElement('div');
-                                    htmlDiv.innerHTML = message.html;
-                                    // Append each child element individually to maintain proper DOM structure
-                                    while (htmlDiv.firstChild) {
-                                        app.appendChild(htmlDiv.firstChild);
-                                    }
-                                }
-                            } else if (message.type === 'error') {
-                                showError(message.error);
-                            }
-                        };
-                
-                        ws.onerror = () => {
-                            showError('WebSocket connection error');
-                        };
-                
-                        ws.onclose = () => {
-                            showError('Connection to server lost');
-                        };
-                
-                        function showError(error) {
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'error';
-                            errorDiv.textContent = 'Error: ' + error;
-                            app.appendChild(errorDiv);
-                        }
-                    </script>
-                </body>
-                </html>
-                """.formatted(MATERIAL_SYMBOLS_CDN,
-                              DESIGN_SYSTEM_CSS,
-                              customHeaders,
-                              LIT_DEPENDENCY,
-                              port);
+        final StringWriter writer = new StringWriter();
+        indexTemplate.execute(writer, Map.of(
+                "MATERIAL_SYMBOLS_CDN", MATERIAL_SYMBOLS_CDN,
+                "LIT_DEPENDENCY", LIT_DEPENDENCY,
+                "customHeaders", customHeaders,
+                "port", port
+        ));
+        return writer.toString();
     }
 
     private static String loadCustomHeaders(final @Nullable String headersFile) {

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jeamlit App</title>
+    <link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
+    {{> design_system.html.mustache }}
+    <style>
+        body {
+            font-family: var(--jt-font-family);
+            margin: 0;
+            padding: var(--jt-spacing-xl);
+            background-color: var(--jt-bg-secondary);
+            color: var(--jt-text-primary);
+            line-height: var(--jt-line-height-normal);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--jt-bg-primary);
+            padding: var(--jt-spacing-xl);
+            border-radius: var(--jt-border-radius-lg);
+            box-shadow: var(--jt-shadow);
+        }
+        .error {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            color: var(--jt-danger-color);
+            padding: var(--jt-spacing-md);
+            border-radius: var(--jt-border-radius);
+            margin: var(--jt-spacing-md) 0;
+        }
+    </style>
+    {{ customHeaders }}
+    {{> tooltip.html.mustache }}
+</head>
+<body>
+<div id="app" class="container">
+    <p>Connecting to Jeamlit server...</p>
+</div>
+<script>
+    const ws = new WebSocket('ws://localhost:{{ port }}/ws');
+    const app = document.getElementById('app');
+
+    // Store websocket reference for components
+    window.ws = ws;
+
+    // Create emit function for new component system
+    window.jeamlit = {
+        emit: function(componentId, value) {
+            ws.send(JSON.stringify({
+                type: 'component_update',
+                componentId: componentId,
+                value: value
+            }));
+        }
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+
+        if (message.type === 'render') {
+            // Handle new component system
+            if (message.registrations) {
+                // Ensure a hidden container is present
+                let container = document.getElementById('jeamlit-registrations');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'jeamlit-registrations';
+                    container.style.display = 'none';
+                    document.body.appendChild(container);
+                }
+
+                message.registrations.forEach((registration) => {
+                    // Parse the registration HTML safely
+                    const template = document.createElement('template');
+                    template.innerHTML = registration;
+                    const fragment = template.content;
+
+                    // Execute all <script> tags inside the fragment
+                    fragment.querySelectorAll('script').forEach((script) => {
+                        const newScript = document.createElement('script');
+                        if (script.type) newScript.type = script.type;
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        document.head.appendChild(newScript);
+                    });
+
+                    // Inject the rest of the HTML (custom elements etc.)
+                    container.appendChild(fragment);
+                });
+            }
+
+            // Clear app content
+            app.innerHTML = '';
+
+            // Render HTML components
+            if (message.html && message.html.trim() !== '') {
+                const htmlDiv = document.createElement('div');
+                htmlDiv.innerHTML = message.html;
+                // Append each child element individually to maintain proper DOM structure
+                while (htmlDiv.firstChild) {
+                    app.appendChild(htmlDiv.firstChild);
+                }
+            }
+        } else if (message.type === 'error') {
+            showError(message.error);
+        }
+    };
+
+    ws.onerror = () => {
+        showError('WebSocket connection error');
+    };
+
+    ws.onclose = () => {
+        showError('Connection to server lost');
+    };
+
+    function showError(error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.textContent = 'Error: ' + error;
+        app.appendChild(errorDiv);
+    }
+</script>
+</body>
+</html>
