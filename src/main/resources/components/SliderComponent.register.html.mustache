@@ -5,12 +5,12 @@
         window.jeamlit = {};
     }
     if (!window.jeamlit.emit) {
-        window.jeamlit.emit = function(componentId, value) {
-            console.log('Slider changed:', componentId, value);
+        window.jeamlit.emit = function(componentKey, value) {
+            console.log('Slider changed:', componentKey, value);
             if (window.ws && window.ws.readyState === WebSocket.OPEN) {
                 window.ws.send(JSON.stringify({
                     type: 'component_update',
-                    componentId: componentId,
+                    componentKey: componentKey,
                     value: value
                 }));
             } else {
@@ -216,7 +216,7 @@
             value: { type: Number },
             step: { type: Number },
             format: { type: String },
-            componentId: { type: String, attribute: 'component-id' },
+            componentKey: { type: String, attribute: 'component-key' },
             help: { type: String },
             disabled: { type: Boolean },
             labelVisibility: { type: String, attribute: 'label-visibility' },
@@ -313,7 +313,7 @@
 
             // Emit value change only when drag ends
             if (window.jeamlit && window.jeamlit.emit) {
-                window.jeamlit.emit(this.componentId, newValue);
+                window.jeamlit.emit(this.componentKey, newValue);
             }
         }
 

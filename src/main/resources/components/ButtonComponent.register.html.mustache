@@ -5,12 +5,12 @@
         window.jeamlit = {};
     }
     if (!window.jeamlit.emit) {
-        window.jeamlit.emit = function (componentId, value) {
-            console.log('Button clicked:', componentId, value);
+        window.jeamlit.emit = function (componentKey, value) {
+            console.log('Button clicked:', componentKey, value);
             if (window.ws && window.ws.readyState === WebSocket.OPEN) {
                 window.ws.send(JSON.stringify({
                     type: 'component_update',
-                    componentId: componentId,
+                    componentKey: componentKey,
                     value: value
                 }));
             } else {
@@ -207,7 +207,7 @@
             help: {type: String},
             disabled: {type: Boolean},
             useContainerWidth: {type: Boolean, attribute: 'use-container-width'},
-            componentId: {type: String, attribute: 'component-id'}
+            componentKey: {type: String, attribute: 'component-key'}
         };
 
         constructor() {
@@ -270,7 +270,7 @@
 
             // Emit button click
             if (window.jeamlit && window.jeamlit.emit) {
-                window.jeamlit.emit(this.componentId, true);
+                window.jeamlit.emit(this.componentKey, true);
             }
         }
 

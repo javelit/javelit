@@ -1,6 +1,7 @@
 package tech.catheu.jeamlit.core;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.StringJoiner;
 
 public interface JtComponentBuilder<T extends JtComponent> {
@@ -31,9 +32,10 @@ public interface JtComponentBuilder<T extends JtComponent> {
             }
 
             // 2. Fallback: build a key from class name + fields
-            final String baseName = clazz.getSimpleName().toLowerCase().replace("builder", "");
+            final String baseName = clazz.getName().toLowerCase().replace("$builder", "");
             final Field[] fields = clazz.getDeclaredFields();
             final StringJoiner joiner = new StringJoiner("_", baseName + "_", "");
+            // fixme cyril think of a size limit - this could get crazy big and slow - or hash but keep things understandable for the user
             for (final Field field : fields) {
                 field.setAccessible(true);
                 final Object value = field.get(this);
@@ -42,6 +44,7 @@ public interface JtComponentBuilder<T extends JtComponent> {
                 }
             }
 
+            // fixme cyril think of a size limit - this could get crazy big - or hash but keep things understandable for the user
             return joiner.toString();
 
         } catch (IllegalAccessException e) {

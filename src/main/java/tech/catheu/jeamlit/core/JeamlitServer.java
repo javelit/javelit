@@ -167,13 +167,13 @@ public class JeamlitServer {
         String type = (String) message.get("type");
 
         if ("component_update".equals(type)) {
-            final String componentId = (String) message.get("componentId");
+            final String componentKey = (String) message.get("componentKey");
             // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
             final SessionState session = Jt.SESSIONS.get(sessionId);
             if (session != null) {
-                session.getWidgetStates().put(componentId, value);
+                session.getWidgetStates().put(componentKey, value);
             } else {
                 throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(sessionId));
             }

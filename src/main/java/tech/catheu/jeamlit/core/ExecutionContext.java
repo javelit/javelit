@@ -62,8 +62,8 @@ public class ExecutionContext {
 
     public Map<String, Object> getWidgetStates() {
         // Include states from JtComponents
-        Map<String, Object> allStates = new HashMap<>(widgetStates);
-        for (Map.Entry<String, JtComponent<?>> entry : componentRegistry.entrySet()) {
+        final Map<String, Object> allStates = new HashMap<>(widgetStates);
+        for (final Map.Entry<String, JtComponent<?>> entry : componentRegistry.entrySet()) {
             allStates.put(entry.getKey(), entry.getValue().currentValue);
         }
         return allStates;

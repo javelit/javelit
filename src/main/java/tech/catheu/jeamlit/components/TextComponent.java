@@ -15,7 +15,6 @@ import static tech.catheu.jeamlit.components.JsConstants.*;
 
 public class TextComponent extends JtComponent<String> {
     // protected to be visible to the template engine
-    protected final String body;
     protected final String help;
     protected final String width;
 
@@ -56,14 +55,9 @@ public class TextComponent extends JtComponent<String> {
 
     private TextComponent(Builder builder) {
         super(builder.generateKey());
-        this.body = builder.body;
+        this.currentValue = builder.body;
         this.help = builder.help;
         this.width = builder.width;
-    }
-
-    @Override
-    public String returnValue() {
-        return body;
     }
 
     @Override

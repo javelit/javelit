@@ -46,10 +46,10 @@
 
     // Create emit function for new component system
     window.jeamlit = {
-        emit: function(componentId, value) {
+        emit: function(componentKey, value) {
             ws.send(JSON.stringify({
                 type: 'component_update',
-                componentId: componentId,
+                componentKey: componentKey,
                 value: value
             }));
         }

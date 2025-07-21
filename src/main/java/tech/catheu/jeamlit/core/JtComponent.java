@@ -48,7 +48,7 @@ public abstract class JtComponent<T> {
      * Button components reset to false after reading.
      * Input components keep their value.
      */
-    public T returnValue() {
+    public final T returnValue() {
         T value = currentValue;
         resetIfNeeded();
         return value;

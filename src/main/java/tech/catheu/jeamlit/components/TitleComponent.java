@@ -13,7 +13,6 @@ import java.io.StringWriter;
 
 public class TitleComponent extends JtComponent<String> {
     // protected to be visible to the template engine
-    protected final String body;
     protected final String anchor;
     protected final String help;
     protected final String width;
@@ -29,7 +28,7 @@ public class TitleComponent extends JtComponent<String> {
     
     private TitleComponent(final Builder builder) {
         super(builder.generateKey());
-        this.body = builder.body;
+        this.currentValue = builder.body;
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;

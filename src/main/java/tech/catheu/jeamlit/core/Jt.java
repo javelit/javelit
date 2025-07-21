@@ -100,7 +100,7 @@ public class Jt {
      * Add a component to the app and return its value.
      * Running directly on the builder is syntactic sugar to avoid tons of .build() in the user App
      */
-    public static <T> T use(final JtComponentBuilder<JtComponent<T>> componentBuilder) {
+    public static <T, C extends JtComponent<T>, B extends JtComponentBuilder<C>> T use(final B componentBuilder) {
         return use(componentBuilder.build());
     }
 
@@ -109,7 +109,7 @@ public class Jt {
      * Prefer the syntactic sugar use(final JtComponentBuilder<JtComponent<T>> componentBuilder)
      * Let available for users that want to create a JtComponent without creating a builder.
      */
-    public static <T> T use(final JtComponent<T> component) {
+    public static <T, C extends JtComponent<T>> T use(final C component) {
         final ExecutionContext context = getContext();
         final JtComponent<T> componentOnceAdded = context.addComponent(component);
         return componentOnceAdded.returnValue();

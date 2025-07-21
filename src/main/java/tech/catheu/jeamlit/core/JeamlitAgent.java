@@ -54,7 +54,8 @@ public class JeamlitAgent {
             this.compilationOptions = List.of("-d",
                                               COMPILATION_TARGET_DIR.toString(),
                                               "-cp",
-                                              classpath);
+                                              classpath,
+                                              "-proc:none");
             this.classPathUrls = JeamlitAgent.createClassPathUrls(classpath);
             this.javaFile = javaFile;
         }
