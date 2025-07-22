@@ -10,19 +10,24 @@ import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.spi.JtComponent;
 import tech.catheu.jeamlit.spi.JtComponentBuilder;
 
+import java.util.Map;
+
 
 // main interface for developers - should only contain functions of the public API.
 public class Jt {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    public static SessionState sessionStateDebug() {
-        return StateManager.getCurrentSession();
+    public static TypedMap sessionState() {
+        final InternalSessionState session = StateManager.getCurrentSession();
+        return new TypedMap(session.getUserState());
     }
 
-    public static TypedMap sessionState() {
-        final SessionState session = StateManager.getCurrentSession();
-        return new TypedMap(session.getUserState());
+    public static TypedMap componentsState() {
+        final InternalSessionState session = StateManager.getCurrentSession();
+        // NOTE: best would be to have a deep-copy-on-read map
+        // here it's the responsibility of the user to not play around with the values inside this map
+        return new TypedMap(Map.copyOf(session.getComponentsState()));
     }
 
     /**
@@ -63,8 +68,8 @@ public class Jt {
      * Let available for users that want to create a JtComponent without creating a builder.
      */
     public static <T, C extends JtComponent<T>> T use(final C component) {
-        final JtComponent<T> componentOnceAdded = StateManager.addComponent(component);
-        return componentOnceAdded.returnValue();
+        StateManager.addComponent(component);
+        return component.returnValue();
     }
 
     // syntactic sugar for all components - 1 method per component

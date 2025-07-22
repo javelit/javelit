@@ -172,9 +172,9 @@ public class JeamlitServer {
             // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
-            final SessionState session = StateManager.getSession(sessionId);
+            final InternalSessionState session = StateManager.getSession(sessionId);
             if (session != null) {
-                session.getWidgetStates().put(componentKey, value);
+                session.getComponentsState().put(componentKey, value);
             } else {
                 throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(sessionId));
             }

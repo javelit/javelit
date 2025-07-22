@@ -17,18 +17,18 @@ public class StateManager {
     private record CurrentSession(String id,  LinkedHashMap<String, JtComponent<?>> components) {}
     private static final ThreadLocal<CurrentSession> CURRENT_SESSION_IN_THREAD = new ThreadLocal<>();
 
-    private static final Map<String, SessionState> SESSIONS = new ConcurrentHashMap<>();
+    private static final Map<String, InternalSessionState> SESSIONS = new ConcurrentHashMap<>();
     // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
 
     private StateManager() {
     }
 
-    protected static SessionState getSession(final String sessionId) {
+    protected static InternalSessionState getSession(final String sessionId) {
         return SESSIONS.get(sessionId);
     }
 
-    protected static SessionState getCurrentSession() {
+    protected static InternalSessionState getCurrentSession() {
         final String currentSessionId = CURRENT_SESSION_IN_THREAD.get().id();
         if (currentSessionId == null) {
             throw new IllegalStateException(
@@ -59,7 +59,7 @@ public class StateManager {
         CURRENT_SESSION_IN_THREAD.set(new CurrentSession(sessionId, new LinkedHashMap<>()));
 
         if (!SESSIONS.containsKey(sessionId)) {
-            SESSIONS.put(sessionId, new SessionState());
+            SESSIONS.put(sessionId, new InternalSessionState());
         }
     }
 
@@ -68,8 +68,9 @@ public class StateManager {
      * beginExecution
      * run the user app - it will call addComponent (done via Jt methods)
      * endExecution
+     * Return if the component was added successfully. Else throw.
      */
-    protected static <T> JtComponent<T> addComponent(final JtComponent<T> component) {
+    protected static void addComponent(final JtComponent<?> component) {
         final CurrentSession currentSession = CURRENT_SESSION_IN_THREAD.get();
         if (currentSession == null) {
             throw new IllegalStateException(
@@ -83,15 +84,14 @@ public class StateManager {
         }
         currentComponents.put(key, component);
         // Restore state from session if available
-        final SessionState session = getCurrentSession();
-        final Object state = session.getWidgetStates().get(key);
+        final InternalSessionState session = getCurrentSession();
+        final Object state = session.getComponentsState().get(key);
         if (state != null) {
             component.updateValue(state);
         } else {
             // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
-            session.getWidgetStates().put(key, component.returnValue());
+            session.getComponentsState().put(key, component.returnValue());
         }
-        return component;
     }
 
     /**
@@ -107,7 +107,7 @@ public class StateManager {
                     "No active execution context. Please reach out to support.");
         }
         final String sessionId = currentSession.id();
-        final SessionState session = SESSIONS.get(sessionId);
+        final InternalSessionState session = SESSIONS.get(sessionId);
         final Map<String, JtComponent<?>> currentComponents = currentSession.components();
         if (currentComponents == null) {
             throw new IllegalStateException(
@@ -115,7 +115,7 @@ public class StateManager {
         }
         for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
             entry.getValue().resetIfNeeded();
-            session.getWidgetStates().put(entry.getKey(), entry.getValue().returnValue());
+            session.getComponentsState().put(entry.getKey(), entry.getValue().returnValue());
         }
 
         final List<JtComponent<?>> result = new ArrayList<>(currentComponents.values());
