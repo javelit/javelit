@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * componentsState (widget states) are made available via the same map.
  * This can cause confusion because in most cases the components state should not be edited
  * via the map.
- * In Jeamlit, only the user state will be made available. It will have the name sessionState in
- * the public API ({@link Jt}) so that user are not confused.
+ * In Jeamlit, only the user state will be made available. It will have the same name sessionState
+ * in the public API ({@link Jt}) so that user are not confused.
  * The componentsState will be made available in another method.
  * */
 public class InternalSessionState {
