@@ -1,9 +1,9 @@
-package tech.catheu.jeamlit.spi;
+package tech.catheu.jeamlit.core;
 
 import java.lang.reflect.Field;
 import java.util.StringJoiner;
 
-public interface JtComponentBuilder<T extends JtComponent> {
+public interface JtComponentBuilder<B, T extends JtComponent<B>> {
     T build();
 
     /**
@@ -49,5 +49,13 @@ public interface JtComponentBuilder<T extends JtComponent> {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);
         }
+    }
+
+    /**
+     * Shorthand for build().use()
+     */
+    default B use() {
+        final T component = build();
+        return component.use();
     }
 }

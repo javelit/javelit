@@ -1,8 +1,11 @@
-package tech.catheu.jeamlit.spi;
+package tech.catheu.jeamlit.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import java.util.function.Consumer;
 
 /**
  * Base class for all Jeamlit components.
@@ -12,18 +15,18 @@ import jakarta.annotation.Nonnull;
 public abstract class JtComponent<T> {
 
     // used by the components' mustache templates
-    @SuppressWarnings("unused")
-    protected static final String LIT_DEPENDENCY = JsConstants.LIT_DEPENDENCY;
-    @SuppressWarnings("unused")
-    protected static final String MATERIAL_SYMBOLS_CDN = JsConstants.MATERIAL_SYMBOLS_CDN;
-
+    protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
+    protected static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
 
     private final String key;
     protected T currentValue;
+    protected @Nullable Consumer<T> callback;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    protected JtComponent(final @Nonnull String key) {
+    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
+        this.currentValue = currentValue;
+        this.callback = callback;
     }
 
     public String getKey() {
@@ -41,6 +44,12 @@ public abstract class JtComponent<T> {
      * This should return the HTML for this specific instance.
      */
     public abstract String render();
+
+    public void executeCallback() {
+        if (callback != null) {
+            callback.accept(currentValue);
+        }
+    }
 
     /**
      * Get the current value and optionally reset state.
@@ -85,6 +94,14 @@ public abstract class JtComponent<T> {
      */
     public void resetIfNeeded() {
         // Override in subclasses that need reset behavior
+    }
+
+    /**
+     * Add the component to the app and return its value.
+     */
+    public final T use() {
+        StateManager.addComponent(this);
+        return returnValue();
     }
 
 }

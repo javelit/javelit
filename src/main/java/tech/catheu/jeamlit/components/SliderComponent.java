@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import tech.catheu.jeamlit.spi.JtComponent;
-import tech.catheu.jeamlit.spi.JtComponentBuilder;
+import jakarta.annotation.Nullable;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 import java.util.function.Consumer;
@@ -21,7 +22,6 @@ public class SliderComponent extends JtComponent<Double> {
     protected final boolean disabled;
     protected final String labelVisibility;
     protected final String width;
-    private final Consumer<SliderComponent> onChange;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -33,7 +33,8 @@ public class SliderComponent extends JtComponent<Double> {
     }
     
     private SliderComponent(Builder builder) {
-        super(builder.generateKey());
+        super(builder.generateKey(), builder.value, builder.onChange);
+
         this.label = builder.label;
         this.min = builder.min;
         this.max = builder.max;
@@ -43,13 +44,11 @@ public class SliderComponent extends JtComponent<Double> {
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.labelVisibility = builder.labelVisibility;
-        this.onChange = builder.onChange;
         this.width = builder.width;
-        this.currentValue = builder.value;
     }
     
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<SliderComponent> {
+    public static class Builder implements JtComponentBuilder<Double, SliderComponent> {
         private final String label;
         private double min = 0.0;
         private double max = 100.0;
@@ -60,7 +59,7 @@ public class SliderComponent extends JtComponent<Double> {
         private boolean disabled = false;
         private String labelVisibility = "visible";
         private String key;
-        private Consumer<SliderComponent> onChange;
+        private Consumer<Double> onChange;
         private String width = "stretch";
         
         public Builder(String label) {
@@ -116,7 +115,7 @@ public class SliderComponent extends JtComponent<Double> {
             return this;
         }
         
-        public Builder onChange(Consumer<SliderComponent> onChange) {
+        public Builder onChange(@Nullable Consumer<Double> onChange) {
             this.onChange = onChange;
             return this;
         }
@@ -186,12 +185,6 @@ public class SliderComponent extends JtComponent<Double> {
     @Override
     public void resetIfNeeded() {
         // Slider keeps its value - no reset needed
-    }
-    
-    public void executeCallback() {
-        if (onChange != null) {
-            onChange.accept(this);
-        }
     }
     
     private String escapeHtml(String text) {

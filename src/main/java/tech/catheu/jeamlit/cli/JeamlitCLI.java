@@ -6,11 +6,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import tech.catheu.jeamlit.core.JeamlitAgent;
+import tech.catheu.jeamlit.core.HotReloader;
 import tech.catheu.jeamlit.core.JeamlitServer;
-import tech.catheu.jeamlit.core.FileWatcher;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,22 +62,18 @@ public class JeamlitCLI implements Callable<Integer> {
             // Set up hot reloader
             final String fullClasspath = ClasspathUtils.buildClasspath(classpath, javaFilePath);
             logger.info("Using classpath {}", fullClasspath);
-            final JeamlitAgent.HotReloader hotReloader = new JeamlitAgent.HotReloader(fullClasspath, javaFilePath);
+            final HotReloader hotReloader = new HotReloader(fullClasspath, javaFilePath);
 
             // CYRIL - NOTE - we could start a first compilation here to gain time but it's an optimization
             // could be done in another thread, the server may take some time to spin up
 
             // Create server
-            final JeamlitServer server = new JeamlitServer(port, headersFile, hotReloader);
-
-            // Set up file watcher
-            final FileWatcher fileWatcher = new FileWatcher(appPath, server);
+            final JeamlitServer server = new JeamlitServer(appPath, port, headersFile, hotReloader);
 
             // Start everything
             final String url = "http://localhost:" + port;
             try {
                 server.start();
-                fileWatcher.start();
                 logger.info("Server started at {} ", url);
                 logger.info("Press Ctrl+C to stop");
             } catch (Exception e) {
@@ -92,7 +87,6 @@ public class JeamlitCLI implements Callable<Integer> {
             // wait for interruption
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 logger.info("Shutting down...");
-                fileWatcher.stop();
                 server.stop();
             }));
             Thread.currentThread().join();

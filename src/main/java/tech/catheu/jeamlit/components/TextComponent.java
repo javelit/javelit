@@ -6,8 +6,8 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import tech.catheu.jeamlit.spi.JtComponent;
-import tech.catheu.jeamlit.spi.JtComponentBuilder;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
@@ -26,7 +26,7 @@ public class TextComponent extends JtComponent<String> {
     }
 
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<TextComponent> {
+    public static class Builder implements JtComponentBuilder<String, TextComponent> {
         private String body;
         private String help;
         private String width = "content";
@@ -52,8 +52,7 @@ public class TextComponent extends JtComponent<String> {
     }
 
     private TextComponent(Builder builder) {
-        super(builder.generateKey());
-        this.currentValue = builder.body;
+        super(builder.generateKey(), builder.body, null);
         this.help = builder.help;
         this.width = builder.width;
     }

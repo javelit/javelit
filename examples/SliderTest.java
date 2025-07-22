@@ -2,14 +2,14 @@ import tech.catheu.jeamlit.core.Jt;
 
 public class SliderTest {
     public static void main(String[] args) {
-        Jt.use(Jt.title("Slider Test"));
+        Jt.title("Slider Test").use();
         
-        int value = Jt.use(Jt.slider("Test Slider").min(0).max(100).value(50));
+        Double value = Jt.slider("Test Slider").min(0).max(100).value(50).step(1).use();
         
-        Jt.use(Jt.text("Current value: " + value));
+        Jt.text("Current value: " + value).use();
         
-        if (Jt.use(Jt.button("Show Value"))) {
-            Jt.use(Jt.text("Selected: " + value));
+        if (Jt.button("Show Value").use()) {
+            Jt.text("Selected: " + value).use();
         }
     }
 }

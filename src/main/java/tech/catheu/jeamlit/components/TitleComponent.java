@@ -6,8 +6,8 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import tech.catheu.jeamlit.spi.JtComponent;
-import tech.catheu.jeamlit.spi.JtComponentBuilder;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
@@ -27,15 +27,14 @@ public class TitleComponent extends JtComponent<String> {
     }
     
     private TitleComponent(final Builder builder) {
-        super(builder.generateKey());
-        this.currentValue = builder.body;
+        super(builder.generateKey(), builder.body, null);
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;
     }
     
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<TitleComponent> {
+    public static class Builder implements JtComponentBuilder<String, TitleComponent> {
         private String body;
         private String anchor;
         private String help;

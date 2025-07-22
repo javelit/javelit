@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import io.methvin.watcher.DirectoryChangeEvent;
+import io.methvin.watcher.DirectoryWatcher;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -23,10 +25,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.catheu.jeamlit.exception.CompilationException;
-import tech.catheu.jeamlit.spi.JtComponent;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,17 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static tech.catheu.jeamlit.spi.JsConstants.*;
 
 public class JeamlitServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
     private final int port;
-    private final JeamlitAgent.HotReloader hotReloader;
+    private final HotReloader hotReloader;
+    private final FileWatcher fileWatcher;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
@@ -59,37 +60,45 @@ public class JeamlitServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
-    public JeamlitServer(int port, @Nullable String headersFile, @Nonnull JeamlitAgent.HotReloader hotReloader) {
+    public JeamlitServer(String appPath, int port, @Nullable String headersFile, @Nonnull HotReloader hotReloader) {
         this.port = port;
         this.hotReloader = hotReloader;
         this.customHeaders = loadCustomHeaders(headersFile);
+
+        this.fileWatcher = new FileWatcher(appPath);
     }
 
     public void start() {
-        final PathHandler pathHandler = Handlers.path()
-                .addPrefixPath("/ws", Handlers.websocket(new WebSocketHandler()))
+        final PathHandler pathHandler = Handlers.path().addPrefixPath("/ws",
+                                                                      Handlers.websocket(new WebSocketHandler()))
                 // static file serving - see https://docs.streamlit.io/get-started/fundamentals/additional-features#static-file-serving
-                .addPrefixPath("/static", new ResourceHandler(
-                        new ClassPathResourceManager(getClass().getClassLoader(), "static")
-                ))
-                .addExactPath("/", new HttpHandler() {
-                    @Override
-                    public void handleRequest(HttpServerExchange exchange) throws Exception {
-                        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-                        exchange.getResponseSender().send(getIndexHtml());
-                    }
-                });
+                .addPrefixPath("/static",
+                               new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
+                                                                                "static"))).addExactPath(
+                        "/",
+                        new HttpHandler() {
+                            @Override
+                            public void handleRequest(HttpServerExchange exchange) throws Exception {
+                                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE,
+                                                                  "text/html");
+                                exchange.getResponseSender().send(getIndexHtml());
+                            }
+                        });
 
-        server = Undertow.builder()
-                .addHttpListener(port, "0.0.0.0")
-                .setHandler(pathHandler)
-                .build();
+        server = Undertow.builder().addHttpListener(port,
+                                                    "0.0.0.0").setHandler(pathHandler).build();
 
         server.start();
+        try {
+            fileWatcher.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         logger.info("Jeamlit server started on http://localhost:{}", port);
     }
 
     public void stop() {
+        fileWatcher.stop();
         if (server != null) {
             server.stop();
         }
@@ -109,7 +118,7 @@ public class JeamlitServer {
 
         for (final String sessionId : sessions.keySet()) {
             try {
-                runApp(sessionId);
+                runAndRespond(sessionId);
             } catch (Exception e) {
                 logger.error("Error reloading session " + sessionId, e);
             }
@@ -156,7 +165,7 @@ public class JeamlitServer {
 
             // Send initial render
             try {
-                runApp(sessionId);
+                runAndRespond(sessionId);
             } catch (Exception e) {
                 logger.error("Error in initial render", e);
                 sendError(sessionId, e.getMessage());
@@ -175,16 +184,18 @@ public class JeamlitServer {
             final InternalSessionState session = StateManager.getSession(sessionId);
             if (session != null) {
                 session.getComponentsState().put(componentKey, value);
+                StateManager.registerCallback(sessionId, componentKey);
             } else {
-                throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(sessionId));
+                throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(
+                        sessionId));
             }
 
             // Re-run app
-            runApp(sessionId);
+            runAndRespond(sessionId);
         }
     }
 
-    private void runApp(final String sessionId) {
+    private void runAndRespond(final String sessionId) {
         final List<JtComponent<?>> resultJtComponents = hotReloader.runApp(sessionId);
         // Collect component registrations to send to the frontend
         final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(
@@ -245,12 +256,15 @@ public class JeamlitServer {
 
     private String getIndexHtml() {
         final StringWriter writer = new StringWriter();
-        indexTemplate.execute(writer, Map.of(
-                "MATERIAL_SYMBOLS_CDN", MATERIAL_SYMBOLS_CDN,
-                "LIT_DEPENDENCY", LIT_DEPENDENCY,
-                "customHeaders", customHeaders,
-                "port", port
-        ));
+        indexTemplate.execute(writer,
+                              Map.of("MATERIAL_SYMBOLS_CDN",
+                                     JtComponent.MATERIAL_SYMBOLS_CDN,
+                                     "LIT_DEPENDENCY",
+                                     JtComponent.LIT_DEPENDENCY,
+                                     "customHeaders",
+                                     customHeaders,
+                                     "port",
+                                     port));
         return writer.toString();
     }
 
@@ -268,11 +282,68 @@ public class JeamlitServer {
             // poor's man logic to check if the header looks valid and help the user debug in case of mistake
             // best would be to check full validity
             if (!content.replaceAll("\\s", "").startsWith("<")) {
-                logger.warn("The custom headers do not start with an html tag. You may want to double check the custom headers if the frontend is not able to load. Here is the custom headers: \n{}", content);
+                logger.warn(
+                        "The custom headers do not start with an html tag. You may want to double check the custom headers if the frontend is not able to load. Here is the custom headers: \n{}",
+                        content);
             }
             return content;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile), e);
+            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile),
+                                       e);
+        }
+    }
+
+    private class FileWatcher {
+        private static final Logger logger = LoggerFactory.getLogger(FileWatcher.class);
+
+        private final Path watchedFile;
+        private DirectoryWatcher watcher;
+        private CompletableFuture<Void> watcherFuture;
+
+        public FileWatcher(final String filePath) {
+            this.watchedFile = Paths.get(filePath).toAbsolutePath();
+        }
+
+        public void start() throws IOException {
+            if (watcher != null) {
+                throw new IllegalStateException("FileWatcher is already running");
+            }
+            final Path directory = watchedFile.getParent();
+
+            logger.info("Starting file watcher for: {}", watchedFile);
+            logger.info("Watching directory: {}", directory);
+
+            watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
+                Path changedFile = event.path();
+
+                // Only respond to changes to our specific file
+                if (changedFile.equals(watchedFile)) {
+                    if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
+                        logger.debug("File changed: {}", changedFile);
+                        logger.info("File changed: " + changedFile);
+                        notifyReload();
+                    } else {
+                        // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES
+                        logger.warn("File changed: {} but even type is not managed: {}.", changedFile, event.eventType());
+                    }
+                }
+            }).build();
+
+            watcherFuture = watcher.watchAsync();
+            logger.info("File watcher started successfully");
+        }
+
+        public void stop() {
+            if (watcher != null) {
+                try {
+                    watcher.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (watcherFuture != null) {
+                watcherFuture.cancel(true);
+            }
         }
     }
 }

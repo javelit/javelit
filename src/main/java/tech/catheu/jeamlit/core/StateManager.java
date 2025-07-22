@@ -1,8 +1,9 @@
 package tech.catheu.jeamlit.core;
 
 import jakarta.annotation.Nonnull;
-import tech.catheu.jeamlit.exception.DuplicateWidgetIDException;
-import tech.catheu.jeamlit.spi.JtComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,14 +11,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StateManager {
+class StateManager {
+
+    private static Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
     // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
     // component key to component object
-    private record CurrentExecution(String sessionId, LinkedHashMap<String, JtComponent<?>> components) {}
-    private static final ThreadLocal<CurrentExecution> CURRENT_EXECUTION_IN_THREAD = new ThreadLocal<>();
+    private record AppExecution(String sessionId,
+                                LinkedHashMap<String, JtComponent<?>> components) {
+    }
+
+    private static final ThreadLocal<AppExecution> CURRENT_EXECUTION_IN_THREAD = new ThreadLocal<>();
 
     private static final Map<String, InternalSessionState> SESSIONS = new ConcurrentHashMap<>();
+    // session id to last AppExecution
+    private static final Map<String, AppExecution> LAST_EXECUTIONS = new ConcurrentHashMap<>();
     // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
 
@@ -45,6 +53,10 @@ public class StateManager {
         return CACHE;
     }
 
+    protected static void registerCallback(final String sessionId, final String componentKey) {
+        SESSIONS.get(sessionId).setCallbackComponentKey(componentKey);
+    }
+
     /**
      * Usage:
      * beginExecution
@@ -56,10 +68,26 @@ public class StateManager {
             throw new RuntimeException(
                     "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         }
-        CURRENT_EXECUTION_IN_THREAD.set(new CurrentExecution(sessionId, new LinkedHashMap<>()));
+        CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId, new LinkedHashMap<>()));
 
         if (!SESSIONS.containsKey(sessionId)) {
             SESSIONS.put(sessionId, new InternalSessionState());
+        }
+
+        // run callback before everything else
+        final InternalSessionState internalSessionState = SESSIONS.get(sessionId);
+        final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
+        if (callbackComponentKey != null) {
+            JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId).components().get(
+                    callbackComponentKey);
+            if (jtComponent == null) {
+                LOG.warn("Failed to run callback method. Component with key {} not found. " +
+                                 "To ensure the key of a component is not changed when the component is edited, pass a key parameter. " +
+                                 "This issue is caused by the hot reload and will not happen when the app is deployed, so you may ignore this warning.",
+                         callbackComponentKey);
+            } else {
+                jtComponent.executeCallback();
+            }
         }
     }
 
@@ -71,7 +99,7 @@ public class StateManager {
      * Return if the component was added successfully. Else throw.
      */
     protected static void addComponent(final JtComponent<?> component) {
-        final CurrentExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
@@ -101,7 +129,7 @@ public class StateManager {
      * endExecution
      */
     protected static @Nonnull List<JtComponent<?>> endExecution() {
-        final CurrentExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
@@ -120,6 +148,7 @@ public class StateManager {
 
         final List<JtComponent<?>> result = new ArrayList<>(currentComponents.values());
 
+        LAST_EXECUTIONS.put(sessionId, currentExecution);
         CURRENT_EXECUTION_IN_THREAD.remove();
         return result;
     }

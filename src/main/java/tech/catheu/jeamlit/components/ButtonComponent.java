@@ -5,8 +5,8 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
-import tech.catheu.jeamlit.spi.JtComponent;
-import tech.catheu.jeamlit.spi.JtComponentBuilder;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 import java.util.function.Consumer;
@@ -19,7 +19,6 @@ public class ButtonComponent extends JtComponent<Boolean> {
     protected final String help;
     protected final boolean disabled;
     protected final boolean useContainerWidth;
-    private final Consumer<ButtonComponent> onClick;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -31,18 +30,17 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     private ButtonComponent(final Builder builder) {
-        super(builder.generateKey());
+        super(builder.generateKey(), false, builder.onClick);
+
         this.label = builder.label;
         this.type = builder.type;
         this.icon = builder.icon;
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.useContainerWidth = builder.useContainerWidth;
-        this.onClick = builder.onClick;
-        this.currentValue = false;
     }
     
-    public static class Builder implements JtComponentBuilder<ButtonComponent> {
+    public static class Builder implements JtComponentBuilder<Boolean, ButtonComponent> {
         private String label;
         private String type = "secondary";
         private String icon;
@@ -50,7 +48,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
         private boolean disabled = false;
         private boolean useContainerWidth = false;
         private String key;
-        private Consumer<ButtonComponent> onClick;
+        private Consumer<Boolean> onClick;
         
         public Builder(final @Nonnull String label) {
             this.label = label;
@@ -88,8 +86,8 @@ public class ButtonComponent extends JtComponent<Boolean> {
             this.key = key;
             return this;
         }
-        
-        public Builder onClick(final Consumer<ButtonComponent> onClick) {
+
+        public Builder onClick(final Consumer<Boolean> onClick) {
             this.onClick = onClick;
             return this;
         }
@@ -127,11 +125,5 @@ public class ButtonComponent extends JtComponent<Boolean> {
     public void resetIfNeeded() {
         // Button is momentary - reset to false after reading
         currentValue = false;
-    }
-    
-    public void executeCallback() {
-        if (onClick != null) {
-            onClick.accept(this);
-        }
     }
 }

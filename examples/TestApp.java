@@ -6,14 +6,14 @@ public class TestApp {
         //var data = Jt.sessionState().computeIfAbsent("data_lourde", k -> load_data_lourde("mon_fichier_lourd"));
         //Jt.text(data);
 
-        Jt.use(Jt.title("My title"));
-        if (Jt.use(Jt.button("Test Button")) || (boolean) Jt.sessionState().getOrDefault("clique", false)) {
-            Jt.use(Jt.text("Button was clicked!"));
+        Jt.title("My title").use();
+        if (Jt.button("Test Button").use() || (boolean) Jt.sessionState().getOrDefault("clique", false)) {
+            Jt.text("Button was clicked!").use();
             Jt.sessionState().put("clique", true);
         }
         
-        var currentValue = Jt.use(Jt.slider("Test Slider").min(0).max(100).value(50));
-        Jt.use(Jt.text(currentValue > 50 ? "Vous êtes vieux" : "Vous êtes fringuant"));
+        var currentValue = Jt.slider("Test Slider").min(0).max(100).value(50).use();
+        Jt.text(currentValue > 50 ? "Vous êtes vieux" : "Vous êtes fringuant").use();
         //System.out.println("Slider value: " + value);
     }
 }

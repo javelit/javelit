@@ -7,26 +7,26 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MyAppWithDeps {
     public static void main(String[] args) {
-        Jt.use(Jt.title("Jeamlit with JBang Dependencies!"));
-        Jt.use(Jt.text("This app uses external dependencies resolved via JBang directives."));
+        Jt.title("Jeamlit with JBang Dependencies!").use();
+        Jt.text("This app uses external dependencies resolved via JBang directives.").use();
         
         // Use Guava
         var fruits = Lists.newArrayList("Apple", "Banana", "Cherry", "Date");
-        Jt.use(Jt.text("Fruits (using Guava): " + fruits));
+        Jt.text("Fruits (using Guava): " + fruits).use();
         
         // Use Apache Commons Lang
         String text = "  hello world  ";
         String capitalized = StringUtils.capitalize(StringUtils.trim(text));
-        Jt.use(Jt.text("Capitalized text (using Commons Lang): " + capitalized));
+        Jt.text("Capitalized text (using Commons Lang): " + capitalized).use();
         
         // Interactive element
-        if (Jt.use(Jt.button("Show more details"))) {
-            Jt.use(Jt.text("🎯 Guava version: " + Lists.class.getPackage().getImplementationVersion()));
-            Jt.use(Jt.text("📦 Commons Lang available: " + (StringUtils.class != null)));
-            Jt.use(Jt.text("⚡ Hot reload with dependencies works!"));
+        if (Jt.button("Show more details").use()) {
+            Jt.text("🎯 Guava version: " + Lists.class.getPackage().getImplementationVersion()).use();
+            Jt.text("📦 Commons Lang available: " + (StringUtils.class != null)).use();
+            Jt.text("⚡ Hot reload with dependencies works!").use();
         }
         
-        Jt.use(Jt.text("---"));
-        Jt.use(Jt.text("💡 Edit this file to test hot reloading with dependencies!"));
+        Jt.text("---").use();
+        Jt.text("💡 Edit this file to test hot reloading with dependencies!").use();
     }
 }

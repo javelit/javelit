@@ -7,8 +7,7 @@ import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
-import tech.catheu.jeamlit.spi.JtComponent;
-import tech.catheu.jeamlit.spi.JtComponentBuilder;
+import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.Map;
 
@@ -52,24 +51,6 @@ public class Jt {
         } catch (Exception e) {
             throw new RuntimeException("Deep copy failed", e);
         }
-    }
-
-    /**
-     * Add a component to the app and return its value.
-     * Running directly on the builder is syntactic sugar to avoid tons of .build() in the user App
-     */
-    public static <T, C extends JtComponent<T>, B extends JtComponentBuilder<C>> T use(final B componentBuilder) {
-        return use(componentBuilder.build());
-    }
-
-    /**
-     * Add a component to the app and return its value.
-     * Prefer the syntactic sugar use(final JtComponentBuilder<JtComponent<T>> componentBuilder)
-     * Let available for users that want to create a JtComponent without creating a builder.
-     */
-    public static <T, C extends JtComponent<T>> T use(final C component) {
-        StateManager.addComponent(component);
-        return component.returnValue();
     }
 
     // syntactic sugar for all components - 1 method per component
