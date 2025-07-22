@@ -59,14 +59,8 @@
             <version>2.0.9</version>
         </dependency>
 
-        <!-- CLI -->
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-            <version>4.7.5</version>
-        </dependency>
-
-        <!-- JBang for dependency resolution -->
+        <!-- JBang for dependency resolution. -->
+        <!-- TODO brings tons of dependency. Some could be excluded. -->
         <dependency>
             <groupId>dev.jbang</groupId>
             <artifactId>jbang-cli</artifactId>
@@ -78,6 +72,7 @@
             <artifactId>standalone-static</artifactId>
             <version>2.4.20</version>
         </dependency>
+        <!-- need to add this one too -->
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-xml</artifactId>
@@ -91,7 +86,12 @@
             <version>0.9.14</version>
         </dependency>
 
-
+        <!-- CLI - could be in another submodule -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.5</version>
+        </dependency>
 
     </dependencies>
 
