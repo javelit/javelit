@@ -18,6 +18,7 @@ public class StateManager {
     private static final ThreadLocal<CurrentSession> CURRENT_SESSION_IN_THREAD = new ThreadLocal<>();
 
     private static final Map<String, SessionState> SESSIONS = new ConcurrentHashMap<>();
+    // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
 
     private StateManager() {
