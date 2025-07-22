@@ -21,7 +21,6 @@ import io.undertow.websockets.core.CloseMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,18 +59,28 @@ public class JeamlitServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
-    public JeamlitServer(String appPath, int port, @Nullable String headersFile, @Nonnull HotReloader hotReloader) {
+    public JeamlitServer(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
         this.port = port;
-        this.hotReloader = hotReloader;
+        this.hotReloader = new HotReloader(classpath, appPath);
         this.customHeaders = loadCustomHeaders(headersFile);
-
         this.fileWatcher = new FileWatcher(appPath);
     }
 
+    protected JeamlitServer(final int port,
+                            final @Nullable String headersFile,
+                            final HotReloader hotReloader,
+                            final FileWatcher fileWatcher) {
+        this.port = port;
+        this.hotReloader = hotReloader;
+        this.customHeaders = loadCustomHeaders(headersFile);
+        this.fileWatcher = fileWatcher;
+    }
+
     public void start() {
-        final PathHandler pathHandler = Handlers.path().addPrefixPath("/ws",
-                                                                      Handlers.websocket(new WebSocketHandler()))
+        final PathHandler pathHandler = Handlers.path()
+                .addPrefixPath("/ws", Handlers.websocket(new WebSocketHandler()))
                 // static file serving - see https://docs.streamlit.io/get-started/fundamentals/additional-features#static-file-serving
+                // FIXME CYRIL CLEAN THIS
                 .addPrefixPath("/static",
                                new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
                                                                                 "static"))).addExactPath(
@@ -104,7 +113,7 @@ public class JeamlitServer {
         }
     }
 
-    public void notifyReload() {
+    protected void notifyReload() {
         // reload the app and re-run the app for all sessions
         try {
             hotReloader.reloadFile();
@@ -293,18 +302,18 @@ public class JeamlitServer {
         }
     }
 
-    private class FileWatcher {
+    protected class FileWatcher {
         private static final Logger logger = LoggerFactory.getLogger(FileWatcher.class);
 
         private final Path watchedFile;
         private DirectoryWatcher watcher;
         private CompletableFuture<Void> watcherFuture;
 
-        public FileWatcher(final String filePath) {
-            this.watchedFile = Paths.get(filePath).toAbsolutePath();
+        protected FileWatcher(final Path filePath) {
+            this.watchedFile = filePath.toAbsolutePath();
         }
 
-        public void start() throws IOException {
+        protected void start() throws IOException {
             if (watcher != null) {
                 throw new IllegalStateException("FileWatcher is already running");
             }
@@ -333,7 +342,7 @@ public class JeamlitServer {
             logger.info("File watcher started successfully");
         }
 
-        public void stop() {
+        protected void stop() {
             if (watcher != null) {
                 try {
                     watcher.close();

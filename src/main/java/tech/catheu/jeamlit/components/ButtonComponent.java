@@ -103,14 +103,14 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     @Override
-    public String register() {
+    protected String register() {
         final StringWriter writer = new StringWriter();
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
     
     @Override
-    public String render() {
+    protected String render() {
         final StringWriter writer = new StringWriter();
         renderTemplate.execute(writer, this);
         return writer.toString();
@@ -122,7 +122,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     @Override
-    public void resetIfNeeded() {
+    protected void resetIfNeeded() {
         // Button is momentary - reset to false after reading
         currentValue = false;
     }

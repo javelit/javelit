@@ -37,15 +37,15 @@ public abstract class JtComponent<T> {
      * Component definition - called once per component type.
      * This should return HTML/JS/CSS that defines the component.
      */
-    public abstract String register();
+    protected abstract String register();
 
     /**
      * Component instance rendering - called for each render.
      * This should return the HTML for this specific instance.
      */
-    public abstract String render();
+    protected abstract String render();
 
-    public void executeCallback() {
+    protected void executeCallback() {
         if (callback != null) {
             callback.accept(currentValue);
         }
@@ -56,7 +56,7 @@ public abstract class JtComponent<T> {
      * Button components reset to false after reading.
      * Input components keep their value.
      */
-    public final T returnValue() {
+    protected final T returnValue() {
         return currentValue;
     }
 
@@ -64,7 +64,7 @@ public abstract class JtComponent<T> {
      * Update the component's value from frontend.
      * Uses Jackson for type-safe deserialization.
      */
-    public void updateValue(final Object rawValue) {
+    protected void updateValue(final Object rawValue) {
         this.currentValue = castAndValidate(rawValue);
     }
 
@@ -92,7 +92,7 @@ public abstract class JtComponent<T> {
      * Default implementation does nothing.
      * See example in ButtonComponent
      */
-    public void resetIfNeeded() {
+    protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior
     }
 

@@ -58,14 +58,14 @@ public class TextComponent extends JtComponent<String> {
     }
 
     @Override
-    public String register() {
+    protected String register() {
         final StringWriter writer = new StringWriter();
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
 
     @Override
-    public String render() {
+    protected String render() {
         final StringWriter writer = new StringWriter();
         renderTemplate.execute(writer, this);
         return writer.toString();

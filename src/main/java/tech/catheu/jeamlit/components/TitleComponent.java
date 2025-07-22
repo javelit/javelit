@@ -66,14 +66,14 @@ public class TitleComponent extends JtComponent<String> {
     }
 
     @Override
-    public String register() {
+    protected String register() {
         final StringWriter writer = new StringWriter();
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
 
     @Override
-    public String render() {
+    protected String render() {
         final StringWriter writer = new StringWriter();
         renderTemplate.execute(writer, this);
         return writer.toString();
@@ -83,14 +83,5 @@ public class TitleComponent extends JtComponent<String> {
     protected TypeReference<String> getTypeReference() {
         return new TypeReference<>() {
         };
-    }
-    
-    private String escapeHtml(String text) {
-        if (text == null) return "";
-        return text.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&#x27;");
     }
 }

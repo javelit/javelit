@@ -13,6 +13,14 @@ import java.util.Map;
 
 
 // main interface for developers - should only contain functions of the public API.
+
+/**
+ * The main entrypoint for app creators.
+ * Add elements with Jt.title(...).use(), Jt.button(...).use(), etc...
+ * Get the session state with Jt.sessionState().
+ * Get the app cache Jt.cache().
+ * Perform a deep copy with Jt.deepCopy(someObject).
+ */
 public class Jt {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

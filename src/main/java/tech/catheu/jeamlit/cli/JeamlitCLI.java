@@ -6,7 +6,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import tech.catheu.jeamlit.core.HotReloader;
 import tech.catheu.jeamlit.core.JeamlitServer;
 
 import java.awt.*;
@@ -58,17 +57,8 @@ public class JeamlitCLI implements Callable<Integer> {
                 logger.error("File not found: {}", javaFilePath.toAbsolutePath());
                 return 1;
             }
-
-            // Set up hot reloader
-            final String fullClasspath = ClasspathUtils.buildClasspath(classpath, javaFilePath);
-            logger.info("Using classpath {}", fullClasspath);
-            final HotReloader hotReloader = new HotReloader(fullClasspath, javaFilePath);
-
-            // CYRIL - NOTE - we could start a first compilation here to gain time but it's an optimization
-            // could be done in another thread, the server may take some time to spin up
-
             // Create server
-            final JeamlitServer server = new JeamlitServer(appPath, port, headersFile, hotReloader);
+            final JeamlitServer server = new JeamlitServer(javaFilePath, classpath, port, headersFile);
 
             // Start everything
             final String url = "http://localhost:" + port;

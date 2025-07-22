@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.cli;
+package tech.catheu.jeamlit.core;
 
 import dev.jbang.dependencies.DependencyResolver;
 import dev.jbang.dependencies.ModularClassPath;
@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
 
-public class ClasspathUtils {
+class ClasspathUtils {
 
     private static final Method DEPENDENCY_COLLECT_REFLECTION;
 
@@ -30,7 +30,7 @@ public class ClasspathUtils {
      * Detect and combine all required classpaths.
      * Note: maven and gradle support not implemented yet.
      */
-    public static String buildClasspath(final @Nullable String providedClasspath, final @Nonnull Path javaFilePath) {
+    protected static String buildClasspath(final @Nullable String providedClasspath, final @Nonnull Path javaFilePath) {
         final StringBuilder cp = new StringBuilder();
         // Add current directory for standalone Java files
         cp.append(".");

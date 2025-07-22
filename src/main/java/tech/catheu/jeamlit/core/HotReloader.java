@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-public class HotReloader {
+class HotReloader {
     private static final Logger LOG = LoggerFactory.getLogger(HotReloader.class);
     private static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes");
 
@@ -45,7 +46,15 @@ public class HotReloader {
     private final Path javaFile;
     private AtomicReference<Method> mainMethod = new AtomicReference<>();
 
-    public HotReloader(final String classpath, final Path javaFile) {
+    /**
+     * @param providedClasspath java classpath to use. If found, classpath resolved by jbang/maven/gradle will be appended to this classpath.
+     * @param javaFile          the Jeamlit app file. If found, file dependencies resolved by jbang will be managed.
+     *                          Note: maven, gradle and multi-file is not implemented yet.
+     */
+     protected HotReloader(final @Nullable String providedClasspath, final Path javaFile) {
+        final String classpath = ClasspathUtils.buildClasspath(providedClasspath, javaFile);
+        LOG.info("Using classpath {}", classpath);
+
         this.compiler = ToolProvider.getSystemJavaCompiler();
         if (this.compiler == null) {
             throw new RuntimeException(
@@ -66,7 +75,7 @@ public class HotReloader {
      * @throws CompilationException for any compilation that should be reported to the user in the app
      *                              Note: not implemented yet: re-compile multiple classes, the dependencies of the app class
      */
-    public void reloadFile() {
+    protected void reloadFile() {
         final String className = compileJavaFile(this.javaFile);
         final byte[] classBytes = loadClassBytes(className);
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
@@ -83,7 +92,7 @@ public class HotReloader {
      * @throws CompilationException: if the main method was not defined as expected
      * @throws AppRunException       :      if the main method call raised an exception
      */
-    public List<JtComponent<?>> runApp(final String sessionId) {
+    protected List<JtComponent<?>> runApp(final String sessionId) {
         if (mainMethod.get() == null) {
             // if there are edge cases where this could happen, simply call reloadFile instead of throwing
             // for the moment throwing to catch implementation bugs
@@ -130,13 +139,14 @@ public class HotReloader {
             final String className = getFullyQualifiedClassName(compilationUnitTree);
             task.analyze();    // semantic analysis, type checking
             task.generate();
-            final boolean success = diagnosticsCollector.getDiagnostics().stream().noneMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
+            final boolean success = diagnosticsCollector.getDiagnostics().stream()
+                    .noneMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
             if (success) {
                 LOG.info("Successfully compiled {}", javaFile);
                 return className;
             } else {
-                final String errorMessage = diagnosticsCollector.getDiagnostics().stream().map(d -> d.getMessage(
-                        null)).collect(Collectors.joining("\n\n"));
+                final String errorMessage = diagnosticsCollector.getDiagnostics().stream()
+                        .map(d -> d.getMessage(null)).collect(Collectors.joining("\n\n"));
                 LOG.error("Compilation failed for {}: \n{}", javaFile, errorMessage);
                 throw new CompilationException(errorMessage);
             }
@@ -169,7 +179,7 @@ public class HotReloader {
         }
     }
 
-    public static URL[] createClassPathUrls(final String classpath) {
+    private static URL[] createClassPathUrls(final String classpath) {
         final String[] paths = classpath.split(File.pathSeparator);
         final URL[] urls = new URL[paths.length];
         for (int i = 0; i < paths.length; i++) {
