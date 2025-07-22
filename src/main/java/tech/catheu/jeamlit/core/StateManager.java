@@ -14,8 +14,8 @@ public class StateManager {
 
     // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
     // component key to component object
-    private record CurrentSession(String id,  LinkedHashMap<String, JtComponent<?>> components) {}
-    private static final ThreadLocal<CurrentSession> CURRENT_SESSION_IN_THREAD = new ThreadLocal<>();
+    private record CurrentExecution(String sessionId, LinkedHashMap<String, JtComponent<?>> components) {}
+    private static final ThreadLocal<CurrentExecution> CURRENT_EXECUTION_IN_THREAD = new ThreadLocal<>();
 
     private static final Map<String, InternalSessionState> SESSIONS = new ConcurrentHashMap<>();
     // the cache is shared by all sessions
@@ -29,7 +29,7 @@ public class StateManager {
     }
 
     protected static InternalSessionState getCurrentSession() {
-        final String currentSessionId = CURRENT_SESSION_IN_THREAD.get().id();
+        final String currentSessionId = CURRENT_EXECUTION_IN_THREAD.get().sessionId();
         if (currentSessionId == null) {
             throw new IllegalStateException(
                     "Jeamlit Jt. methods must be called within an execution context");
@@ -52,11 +52,11 @@ public class StateManager {
      * endExecution
      */
     protected static void beginExecution(final String sessionId) {
-        if (CURRENT_SESSION_IN_THREAD.get() != null) {
+        if (CURRENT_EXECUTION_IN_THREAD.get() != null) {
             throw new RuntimeException(
                     "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         }
-        CURRENT_SESSION_IN_THREAD.set(new CurrentSession(sessionId, new LinkedHashMap<>()));
+        CURRENT_EXECUTION_IN_THREAD.set(new CurrentExecution(sessionId, new LinkedHashMap<>()));
 
         if (!SESSIONS.containsKey(sessionId)) {
             SESSIONS.put(sessionId, new InternalSessionState());
@@ -71,12 +71,12 @@ public class StateManager {
      * Return if the component was added successfully. Else throw.
      */
     protected static void addComponent(final JtComponent<?> component) {
-        final CurrentSession currentSession = CURRENT_SESSION_IN_THREAD.get();
-        if (currentSession == null) {
+        final CurrentExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        if (currentExecution == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
         }
-        final Map<String, JtComponent<?>> currentComponents = currentSession.components();
+        final Map<String, JtComponent<?>> currentComponents = currentExecution.components();
         final String key = component.getKey();
         if (currentComponents.containsKey(key)) {
             // a component with the same id was already registered while running the app top to bottom
@@ -101,14 +101,14 @@ public class StateManager {
      * endExecution
      */
     protected static @Nonnull List<JtComponent<?>> endExecution() {
-        final CurrentSession currentSession = CURRENT_SESSION_IN_THREAD.get();
-        if (currentSession == null) {
+        final CurrentExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        if (currentExecution == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
         }
-        final String sessionId = currentSession.id();
+        final String sessionId = currentExecution.sessionId();
         final InternalSessionState session = SESSIONS.get(sessionId);
-        final Map<String, JtComponent<?>> currentComponents = currentSession.components();
+        final Map<String, JtComponent<?>> currentComponents = currentExecution.components();
         if (currentComponents == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
@@ -120,7 +120,7 @@ public class StateManager {
 
         final List<JtComponent<?>> result = new ArrayList<>(currentComponents.values());
 
-        CURRENT_SESSION_IN_THREAD.remove();
+        CURRENT_EXECUTION_IN_THREAD.remove();
         return result;
     }
 }
