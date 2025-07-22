@@ -78,12 +78,10 @@ class StateManager {
         final InternalSessionState internalSessionState = SESSIONS.get(sessionId);
         final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
         if (callbackComponentKey != null) {
-            JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId).components().get(
-                    callbackComponentKey);
+            final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId).components()
+                    .get(callbackComponentKey);
             if (jtComponent == null) {
-                LOG.warn("Failed to run callback method. Component with key {} not found. " +
-                                 "To ensure the key of a component is not changed when the component is edited, pass a key parameter. " +
-                                 "This issue is caused by the hot reload and will not happen when the app is deployed, so you may ignore this warning.",
+                LOG.warn("Failed to run callback method. Component with key {} not found. " + "To ensure the key of a component is not changed when the component is edited or mutated, pass a key parameter. " + "This issue is caused by the hot reload and will not happen when the app is deployed, so you may ignore this warning.",
                          callbackComponentKey);
             } else {
                 jtComponent.executeCallback();
@@ -147,6 +145,14 @@ class StateManager {
         }
 
         final List<JtComponent<?>> result = new ArrayList<>(currentComponents.values());
+
+        // remove component states of component that are not in the app anymore
+        final AppExecution previousExecution = LAST_EXECUTIONS.get(sessionId);
+        if (previousExecution != null) {
+            final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.components();
+            previousComponents.keySet().stream().filter(k -> !currentComponents.containsKey(k))
+                    .forEach(key -> session.getComponentsState().remove(key));
+        }
 
         LAST_EXECUTIONS.put(sessionId, currentExecution);
         CURRENT_EXECUTION_IN_THREAD.remove();
