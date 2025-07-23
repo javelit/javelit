@@ -27,14 +27,14 @@ public class TitleComponent extends JtComponent<String> {
     }
     
     private TitleComponent(final Builder builder) {
-        super(builder.generateKey(), builder.body, null);
+        super(builder.generateKeyForNonInteractive(), builder.body, null);
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;
     }
     
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<String, TitleComponent> {
+    public static class Builder extends JtComponentBuilder<String, TitleComponent, Builder> {
         private String body;
         private String anchor;
         private String help;

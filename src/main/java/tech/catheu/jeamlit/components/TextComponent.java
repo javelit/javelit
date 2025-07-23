@@ -26,7 +26,7 @@ public class TextComponent extends JtComponent<String> {
     }
 
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<String, TextComponent> {
+    public static class Builder extends JtComponentBuilder<String, TextComponent, Builder> {
         private String body;
         private String help;
         private String width = "content";
@@ -52,7 +52,8 @@ public class TextComponent extends JtComponent<String> {
     }
 
     private TextComponent(Builder builder) {
-        super(builder.generateKey(), builder.body, null);
+        // FIXME CYRIL - not sure if a randomUUID is a good design choice here - but we don't want to depend on the text
+        super(builder.generateKeyForNonInteractive(), builder.body, null);
         this.help = builder.help;
         this.width = builder.width;
     }

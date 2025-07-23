@@ -1,35 +1,38 @@
 package tech.catheu.jeamlit.core;
 
+import jakarta.annotation.Nullable;
+
 import java.lang.reflect.Field;
 import java.util.StringJoiner;
+import java.util.UUID;
 
-public interface JtComponentBuilder<B, T extends JtComponent<B>> {
-    T build();
+
+// SELF is the self-referential generic to be able to return the correct implementing class in some methods of this abstract class
+public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF extends JtComponentBuilder<B, T, SELF>> {
+
+    protected @Nullable String key;
+
+    @SuppressWarnings("unchecked")
+    public SELF key(final String key) {
+        this.key = key;
+        return (SELF) this;
+    }
+
+    public abstract T build();
 
     /**
      * Implementation helper.
      * Uses reflection to construct a key value.
-     * If there is a key field, considers it is the key override field and returns it.
+     * If set, the key field is used instead.
      * <p>
      * Note: pretty slow and hacky.
      **/
-    default String generateKey() {
+    public String generateKeyForInteractive() {
+        if (key != null && !key.isBlank()) {
+            return key;
+        }
         try {
             final Class<?> clazz = this.getClass();
-            // 1. Try to get a field named "key"
-            try {
-                final Field keyField = clazz.getDeclaredField("key");
-                if (keyField.getType().equals(String.class)) {
-                    keyField.setAccessible(true);
-                    final String key = (String) keyField.get(this);
-                    if (key != null && !key.isBlank()) {
-                        return key;
-                    }
-                }
-            } catch (NoSuchFieldException ignored) {
-                // fall back to default behavior
-            }
-
             // 2. Fallback: build a key from class name + fields
             final String baseName = clazz.getName().toLowerCase().replace("$builder", "");
             final Field[] fields = clazz.getDeclaredFields();
@@ -52,9 +55,21 @@ public interface JtComponentBuilder<B, T extends JtComponent<B>> {
     }
 
     /**
+     * Implementation helper.
+     * Returns a random key. It shouldn't be an issue for non-interactive field.
+     * If set, the key field is used instead.
+     **/
+    public String generateKeyForNonInteractive() {
+        if (key != null && !key.isBlank()) {
+            return key;
+        }
+        return UUID.randomUUID().toString();
+    }
+
+    /**
      * Shorthand for build().use()
      */
-    default B use() {
+    public B use() {
         final T component = build();
         return component.use();
     }

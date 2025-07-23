@@ -33,7 +33,7 @@ public class SliderComponent extends JtComponent<Double> {
     }
     
     private SliderComponent(Builder builder) {
-        super(builder.generateKey(), builder.value, builder.onChange);
+        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
         this.label = builder.label;
         this.min = builder.min;
@@ -48,7 +48,7 @@ public class SliderComponent extends JtComponent<Double> {
     }
     
     @SuppressWarnings("unused")
-    public static class Builder implements JtComponentBuilder<Double, SliderComponent> {
+    public static class Builder extends JtComponentBuilder<Double, SliderComponent, Builder> {
         private final String label;
         private double min = 0.0;
         private double max = 100.0;
@@ -58,7 +58,6 @@ public class SliderComponent extends JtComponent<Double> {
         private String help = null;
         private boolean disabled = false;
         private String labelVisibility = "visible";
-        private String key;
         private Consumer<Double> onChange;
         private String width = "stretch";
         
@@ -107,11 +106,6 @@ public class SliderComponent extends JtComponent<Double> {
                 throw new IllegalArgumentException("label_visibility must be 'visible', 'hidden', or 'collapsed'. Got: " + labelVisibility);
             }
             this.labelVisibility = labelVisibility;
-            return this;
-        }
-        
-        public Builder key(String key) {
-            this.key = key;
             return this;
         }
         

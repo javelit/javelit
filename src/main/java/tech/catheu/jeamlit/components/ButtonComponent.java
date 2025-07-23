@@ -30,7 +30,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     private ButtonComponent(final Builder builder) {
-        super(builder.generateKey(), false, builder.onClick);
+        super(builder.generateKeyForInteractive(), false, builder.onClick);
 
         this.label = builder.label;
         this.type = builder.type;
@@ -40,14 +40,13 @@ public class ButtonComponent extends JtComponent<Boolean> {
         this.useContainerWidth = builder.useContainerWidth;
     }
     
-    public static class Builder implements JtComponentBuilder<Boolean, ButtonComponent> {
+    public static class Builder extends JtComponentBuilder<Boolean, ButtonComponent, Builder> {
         private String label;
         private String type = "secondary";
         private String icon;
         private String help;
         private boolean disabled = false;
         private boolean useContainerWidth = false;
-        private String key;
         private Consumer<Boolean> onClick;
         
         public Builder(final @Nonnull String label) {
@@ -79,11 +78,6 @@ public class ButtonComponent extends JtComponent<Boolean> {
         
         public Builder useContainerWidth(final boolean useContainerWidth) {
             this.useContainerWidth = useContainerWidth;
-            return this;
-        }
-        
-        public Builder key(final String key) {
-            this.key = key;
             return this;
         }
 
