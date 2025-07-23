@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 class StateManager {
 
-    private static Logger LOG = LoggerFactory.getLogger(StateManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
     // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
     // component key to component object
@@ -28,6 +28,18 @@ class StateManager {
     private static final Map<String, AppExecution> LAST_EXECUTIONS = new ConcurrentHashMap<>();
     // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
+
+    /// A NoOpRenderServer to catch issues without breaking.
+    /// This value is supposed to be changed to a proper rendering server with [#setRenderServer(RenderServer)]
+    private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
+
+    public interface RenderServer {
+        void send(final String sessionId, final JtComponent<?> component, final String operation);
+    }
+
+    protected static void setRenderServer(final @Nonnull RenderServer sender) {
+        renderServer = sender;
+    }
 
     private StateManager() {
     }
@@ -57,12 +69,10 @@ class StateManager {
         SESSIONS.get(sessionId).setCallbackComponentKey(componentKey);
     }
 
-    /**
-     * Usage:
-     * beginExecution
-     * run the user app - it will call addComponent (done via Jt methods)
-     * endExecution
-     */
+    /// Usage:
+    /// - beginExecution
+    /// - run the user app - it will call addComponent (done via Jt methods)
+    /// - endExecution
     protected static void beginExecution(final String sessionId) {
         if (CURRENT_EXECUTION_IN_THREAD.get() != null) {
             throw new RuntimeException(
@@ -89,13 +99,11 @@ class StateManager {
         }
     }
 
-    /**
-     * Usage:
-     * beginExecution
-     * run the user app - it will call addComponent (done via Jt methods)
-     * endExecution
-     * Return if the component was added successfully. Else throw.
-     */
+    /// Usage:
+    /// - beginExecution
+    /// - run the user app - it will call addComponent (done via Jt methods)
+    /// - endExecution
+    /// Return if the component was added successfully. Else throw.
     protected static void addComponent(final JtComponent<?> component) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
@@ -109,6 +117,7 @@ class StateManager {
             throw DuplicateWidgetIDException.of(component);
         }
         currentComponents.put(key, component);
+
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
         final Object state = session.getComponentsState().get(key);
@@ -118,14 +127,15 @@ class StateManager {
             // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
             session.getComponentsState().put(key, component.returnValue());
         }
+
+        // immediately send the component for rendering
+        renderServer.send(currentExecution.sessionId(), component, "append");
     }
 
-    /**
-     * Usage:
-     * beginExecution
-     * run the user app - it will call addComponent (done via Jt methods)
-     * endExecution
-     */
+    /// Usage:
+    /// - beginExecution
+    /// - run the user app - it will call addComponent (done via Jt methods)
+    /// - endExecution
     protected static @Nonnull List<JtComponent<?>> endExecution() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
@@ -157,5 +167,16 @@ class StateManager {
         LAST_EXECUTIONS.put(sessionId, currentExecution);
         CURRENT_EXECUTION_IN_THREAD.remove();
         return result;
+    }
+
+    private static class NoOpRenderServer implements RenderServer {
+        @Override
+        public void send(String sessionId, JtComponent<?> component, String operation) {
+            LOG.error(
+                    "Cannot send component {} to session {} for operation {}. No render server is registered.",
+                    component,
+                    sessionId,
+                    operation);
+        }
     }
 }

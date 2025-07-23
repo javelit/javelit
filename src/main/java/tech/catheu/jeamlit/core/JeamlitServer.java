@@ -40,7 +40,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JeamlitServer {
+public class JeamlitServer implements StateManager.RenderServer {
     private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
     private final int port;
     private final HotReloader hotReloader;
@@ -64,6 +64,9 @@ public class JeamlitServer {
         this.hotReloader = new HotReloader(classpath, appPath);
         this.customHeaders = loadCustomHeaders(headersFile);
         this.fileWatcher = new FileWatcher(appPath);
+
+        // register in the state manager
+        StateManager.setRenderServer(this);
     }
 
     protected JeamlitServer(final int port,
@@ -74,6 +77,9 @@ public class JeamlitServer {
         this.hotReloader = hotReloader;
         this.customHeaders = loadCustomHeaders(headersFile);
         this.fileWatcher = fileWatcher;
+        
+        // register in the state manager
+        StateManager.setRenderServer(this);
     }
 
     public void start() {
@@ -205,42 +211,51 @@ public class JeamlitServer {
     }
 
     private void runAndRespond(final String sessionId) {
-        final List<JtComponent<?>> resultJtComponents = hotReloader.runApp(sessionId);
-        // Collect component registrations to send to the frontend
+        // Clear frontend before streaming new components
+        sendClearMessage(sessionId);
+        
+        // Run app - components will stream individually via StateManager.addComponent()
+        hotReloader.runApp(sessionId);
+    }
+    
+    private void sendClearMessage(final String sessionId) {
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "clear");
+        sendMessage(sessionId, message);
+    }
+
+    @Override
+    public void send(final String sessionId, final JtComponent<?> component, final String operation) {
+        // Handle component registration
         final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,
                 k -> new HashSet<>());
+        // note: there can only be one registration. keeping a list if micro-batching becomes a thing later
         final List<String> registrations = new ArrayList<>();
-
-        for (final JtComponent<?> component : resultJtComponents) {
-            // FIXME CYRIL - would be better if we were able to identify if a Component was updated, and if so, add it to the list - useful for custom components written by the user
-            //   (on the frontend side, if the component is implemented with lit, this will still mean the logic will have to support a removal / register of the component)
-            //   also use the fullName to avoid custom. component collisions
-            final String componentType = component.getClass().getSimpleName();
-            if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
-                registrations.add(component.register());
-                sessionRegisteredTypesForThisSession.add(componentType);
-            }
+        
+        final String componentType = component.getClass().getSimpleName();
+        if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
+            registrations.add(component.register());
+            sessionRegisteredTypesForThisSession.add(componentType);
         }
 
-        // Collect component HTML
-        final List<String> componentsHtml = resultJtComponents.stream().map(JtComponent::render).toList();
-
         // Send to frontend
-        final Map<String, Object> response = new HashMap<>();
-        response.put("type", "render");
-        response.put("html", String.join("\n", componentsHtml));
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "stream");
+        message.put("operation", operation);
+        message.put("html", component.render());
+        message.put("key", component.getKey());
         if (!registrations.isEmpty()) {
-            response.put("registrations", registrations);
+            message.put("registrations", registrations);
         }
 
         // Debug output
-        logger.debug("Sending response:");
-        logger.debug("  Components HTML: " + componentsHtml.size());
-        logger.debug("  Registrations: " + registrations.size());
-        logger.debug("  HTML content: " + String.join("\n", componentsHtml));
+        logger.debug("Sending component update: {}", component.getKey());
+        logger.debug("  Operation: {}", operation);
+        logger.debug("  HTML: {}", component.render());
+        logger.debug("  Registrations: {}", registrations.size());
 
-        sendMessage(sessionId, response);
+        sendMessage(sessionId, message);
     }
 
     private void sendMessage(final String sessionId, final Map<String, Object> message) {
@@ -303,7 +318,7 @@ public class JeamlitServer {
     }
 
     protected class FileWatcher {
-        private static final Logger logger = LoggerFactory.getLogger(FileWatcher.class);
+        private static final Logger LOG = LoggerFactory.getLogger(FileWatcher.class);
 
         private final Path watchedFile;
         private DirectoryWatcher watcher;
@@ -319,8 +334,8 @@ public class JeamlitServer {
             }
             final Path directory = watchedFile.getParent();
 
-            logger.info("Starting file watcher for: {}", watchedFile);
-            logger.info("Watching directory: {}", directory);
+            LOG.info("Starting file watcher for: {}", watchedFile);
+            LOG.info("Watching directory: {}", directory);
 
             watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
                 Path changedFile = event.path();
@@ -328,18 +343,18 @@ public class JeamlitServer {
                 // Only respond to changes to our specific file
                 if (changedFile.equals(watchedFile)) {
                     if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
-                        logger.debug("File changed: {}", changedFile);
-                        logger.info("File changed: " + changedFile);
+                        LOG.debug("File changed: {}", changedFile);
+                        LOG.info("File changed: " + changedFile);
                         notifyReload();
                     } else {
                         // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES
-                        logger.warn("File changed: {} but even type is not managed: {}.", changedFile, event.eventType());
+                        LOG.warn("File changed: {} but even type is not managed: {}.", changedFile, event.eventType());
                     }
                 }
             }).build();
 
             watcherFuture = watcher.watchAsync();
-            logger.info("File watcher started successfully");
+            LOG.info("File watcher started successfully");
         }
 
         protected void stop() {

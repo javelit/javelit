@@ -8,7 +8,8 @@
       "Bash(./mvnw:*)",
       "Bash(curl:*)",
       "Bash(true)",
-      "WebFetch(domain:docs.streamlit.io)"
+      "WebFetch(domain:docs.streamlit.io)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

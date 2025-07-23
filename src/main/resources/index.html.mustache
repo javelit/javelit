@@ -58,8 +58,11 @@
     ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
 
-        if (message.type === 'render') {
-            // Handle new component system
+        if (message.type === 'clear') {
+            // Clear app content for new streaming session
+            app.innerHTML = '';
+        } else if (message.type === 'stream') {
+            // Handle component registrations
             if (message.registrations) {
                 // Ensure a hidden container is present
                 let container = document.getElementById('jeamlit-registrations');
@@ -93,11 +96,8 @@
                 });
             }
 
-            // Clear app content
-            app.innerHTML = '';
-
-            // Render HTML components
-            if (message.html && message.html.trim() !== '') {
+            // Handle streaming component based on operation
+            if (message.operation === 'append' && message.html && message.html.trim() !== '') {
                 const htmlDiv = document.createElement('div');
                 htmlDiv.innerHTML = message.html;
                 // Append each child element individually to maintain proper DOM structure
