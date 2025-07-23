@@ -104,4 +104,8 @@ public abstract class JtComponent<T> {
         return returnValue();
     }
 
+    // use this type to signify a component is not interactive and does not return anything
+    public enum NONE {
+        NONE
+    }
 }
