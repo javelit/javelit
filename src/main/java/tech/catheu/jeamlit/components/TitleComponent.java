@@ -11,8 +11,9 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class TitleComponent extends JtComponent<String> {
+public class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
+    protected final String body;
     protected final String anchor;
     protected final String help;
     protected final String width;
@@ -27,14 +28,15 @@ public class TitleComponent extends JtComponent<String> {
     }
     
     private TitleComponent(final Builder builder) {
-        super(builder.generateKeyForNonInteractive(), builder.body, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        this.body = builder.body;
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;
     }
     
     @SuppressWarnings("unused")
-    public static class Builder extends JtComponentBuilder<String, TitleComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
         private String body;
         private String anchor;
         private String help;
@@ -80,7 +82,7 @@ public class TitleComponent extends JtComponent<String> {
     }
     
     @Override
-    protected TypeReference<String> getTypeReference() {
+    protected TypeReference<NONE> getTypeReference() {
         return new TypeReference<>() {
         };
     }

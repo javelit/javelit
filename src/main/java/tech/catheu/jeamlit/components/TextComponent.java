@@ -11,8 +11,9 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class TextComponent extends JtComponent<String> {
+public class TextComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
+    protected final String body;
     protected final String help;
     protected final String width;
 
@@ -26,12 +27,12 @@ public class TextComponent extends JtComponent<String> {
     }
 
     @SuppressWarnings("unused")
-    public static class Builder extends JtComponentBuilder<String, TextComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<NONE, TextComponent, Builder> {
         private String body;
         private String help;
         private String width = "content";
 
-        public Builder(final String body) {
+        public Builder(final @Nonnull String body) {
             this.body = body;
         }
 
@@ -52,8 +53,8 @@ public class TextComponent extends JtComponent<String> {
     }
 
     private TextComponent(Builder builder) {
-        // FIXME CYRIL - not sure if a randomUUID is a good design choice here - but we don't want to depend on the text
-        super(builder.generateKeyForNonInteractive(), builder.body, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        this.body = builder.body;
         this.help = builder.help;
         this.width = builder.width;
     }
@@ -73,7 +74,7 @@ public class TextComponent extends JtComponent<String> {
     }
 
     @Override
-    protected TypeReference<String> getTypeReference() {
+    protected TypeReference<NONE> getTypeReference() {
         return new TypeReference<>() {};
     }
 }
