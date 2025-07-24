@@ -1,0 +1,47 @@
+I originally implemented a refresh algorithm with the smallest possible diff (at component level, ignoring component key optimizations).
+This design resulted in a small number of ws messages sent and as such a small number of DOM operations, low bandwidth usage.
+
+The problem with this approach is it was resulting in this flicker:
+Let's say a slider change results in a text below to be changed.
+With the algorithm above, it was resulting in 2 ws messages:
+ADD new text
+REMOVE old text
+
+2 cases when rendering:
+Case 1:
+- ADD new text
+- REMOVE old text
+- browser repaint
+--> happens ~99% of the time (depends on frame/refresh rate (which is in sync in most browser btw - note that refresh rate on new macbook is dynamic between 60 and 120 and it can change while using the browser))
+
+Case 2:
+- ADD new text
+- browser repaint
+- REMOVE old text
+- browser repaint
+--> happens ~1% of the time
+--> this is a pretty confusing flicker for the user because the text is seen in double, with the new and the old value.
+--> also it moves everything below the ADD verticaly down - meaning all components below in the page go down for the time of the flicker
+
+
+With streamlit design: everything at the change and below are removed then replaced
+- REMOVE from text and below
+- ADD new text
+- ADD everything
+- ADD else
+- ADD below
+- ADD back
+
+--> the browser paint will always happen between ADD commands, after the REMOVE has been performed, so worst
+case the user sees a white flicker starting from the changed value.
+
+My understanding is that this kind of flicker is way more acceptable for users.
+The length of the flicker will be felt as shorter:
+https://www.researchgate.net/publication/225761257_Cognitive_processing_and_time_perception
+Also logically it's simpler to understand in most cases:
+- flicker of a value that changed is ok
+- flicker of values below looks like a top to bottom refresh that corresponds to the streamlit model
+Also, pragmatically: even if a change at a point in the doc does not result in a change in all components below IN THEORY,
+there is a lot of case for which it is the case in streamlit apps. So the first algo would have resulted in many delete messages.
+So the difference in number of messages wouldn't have been that big for a lot of apps. (I know they could have been batched but this is another optimization on top and has its own set of problems)
+
