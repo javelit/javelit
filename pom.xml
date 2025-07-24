@@ -86,6 +86,14 @@
             <version>0.9.14</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>26.0.2</version>
+            <!-- TODO CYRIL - I think this needs to be compile scope if we want users to benefit from this in their IDE -->
+            <scope>provided</scope>
+        </dependency>
+
         <!-- CLI - could be in another submodule -->
         <dependency>
             <groupId>info.picocli</groupId>

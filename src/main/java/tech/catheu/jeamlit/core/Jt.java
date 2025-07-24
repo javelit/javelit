@@ -3,6 +3,7 @@ package tech.catheu.jeamlit.core;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
+import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
@@ -63,7 +64,7 @@ public class Jt {
 
     // syntactic sugar for all components - 1 method per component
     // Example: Jt.use(Jt.text("my text")); is equivalent to Jt.use(new TextComponent.Builder("my text"));
-    public static TextComponent.Builder text(final @Nonnull String body) {
+    public static TextComponent.Builder text(final @Nonnull @Language("Markdown") String body) {
         return new TextComponent.Builder(body);
     }
 

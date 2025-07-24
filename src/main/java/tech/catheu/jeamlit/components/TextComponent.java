@@ -6,6 +6,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -28,12 +29,17 @@ public class TextComponent extends JtComponent<JtComponent.NONE> {
 
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, TextComponent, Builder> {
-        private String body;
+        private @Language("Markdown") String body;
         private String help;
         private String width = "content";
 
-        public Builder(final @Nonnull String body) {
+        public Builder(final @Nonnull @Language("Markdown") String body) {
             this.body = body;
+        }
+
+        public Builder body(final @Nullable @Language("Markdown") String body) {
+            this.body = body;
+            return this;
         }
 
         public Builder help(final @Nullable String help) {
