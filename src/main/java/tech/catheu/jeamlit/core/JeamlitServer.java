@@ -21,6 +21,7 @@ import io.undertow.websockets.core.CloseMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +134,7 @@ public class JeamlitServer implements StateManager.RenderServer {
 
         for (final String sessionId : sessions.keySet()) {
             try {
-                runAndRespond(sessionId);
+                hotReloader.runApp(sessionId);
             } catch (Exception e) {
                 logger.error("Error reloading session " + sessionId, e);
             }
@@ -180,7 +181,7 @@ public class JeamlitServer implements StateManager.RenderServer {
 
             // Send initial render
             try {
-                runAndRespond(sessionId);
+                hotReloader.runApp(sessionId);
             } catch (Exception e) {
                 logger.error("Error in initial render", e);
                 sendError(sessionId, e.getMessage());
@@ -205,56 +206,40 @@ public class JeamlitServer implements StateManager.RenderServer {
                         sessionId));
             }
 
-            // Re-run app
-            runAndRespond(sessionId);
+            hotReloader.runApp(sessionId);
         }
-    }
-
-    private void runAndRespond(final String sessionId) {
-        // Clear frontend before streaming new components
-        sendClearMessage(sessionId);
-        
-        // Run app - components will stream individually via StateManager.addComponent()
-        hotReloader.runApp(sessionId);
-    }
-    
-    private void sendClearMessage(final String sessionId) {
-        final Map<String, Object> message = new HashMap<>();
-        message.put("type", "clear");
-        sendMessage(sessionId, message);
     }
 
     @Override
-    public void send(final String sessionId, final JtComponent<?> component, final String operation) {
+    public void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, final @Nullable Integer index, final boolean clearBefore) {
         // Handle component registration
-        final Set<String> sessionRegisteredTypesForThisSession = sessionRegisteredTypes.computeIfAbsent(
+        final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,
                 k -> new HashSet<>());
-        // note: there can only be one registration. keeping a list if micro-batching becomes a thing later
         final List<String> registrations = new ArrayList<>();
-        
-        final String componentType = component.getClass().getSimpleName();
-        if (!sessionRegisteredTypesForThisSession.contains(componentType)) {
+        // note: hot reload does not work for changes in the register() method
+        final String componentType = component.getClass().getName();
+        if (!componentsAlreadyRegistered.contains(componentType)) {
             registrations.add(component.register());
-            sessionRegisteredTypesForThisSession.add(componentType);
+            componentsAlreadyRegistered.add(componentType);
         }
 
-        // Send to frontend
+        // Send message to frontend
         final Map<String, Object> message = new HashMap<>();
-        message.put("type", "stream");
-        message.put("operation", operation);
+        message.put("type", "delta");
         message.put("html", component.render());
-        message.put("key", component.getKey());
+        if (index != null) {
+            message.put("index", index);
+        }
+        if (clearBefore) {
+            message.put("clearBefore", true);
+        }
         if (!registrations.isEmpty()) {
             message.put("registrations", registrations);
         }
-
-        // Debug output
-        logger.debug("Sending component update: {}", component.getKey());
-        logger.debug("  Operation: {}", operation);
+        logger.debug("Sending delta: index={}, clearBefore={}, component={}", index, clearBefore, component.getKey());
         logger.debug("  HTML: {}", component.render());
         logger.debug("  Registrations: {}", registrations.size());
-
         sendMessage(sessionId, message);
     }
 

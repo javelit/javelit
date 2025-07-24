@@ -1,6 +1,7 @@
 package tech.catheu.jeamlit.core;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.datastructure.TypedMap;
@@ -15,10 +16,19 @@ class StateManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
-    // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
-    // component key to component object
-    private record AppExecution(String sessionId,
-                                LinkedHashMap<String, JtComponent<?>> components) {
+    private static class AppExecution {
+        private final String sessionId;
+        // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
+        // component key to component object
+        private final LinkedHashMap<String, JtComponent<?>> components = new LinkedHashMap<>();
+        // current position in the list of components
+        private int currentIndex = 0;
+        // whether a difference in components is found between the current app and the one being generated
+        private boolean foundDifference = false;
+
+        public AppExecution(final String sessionId) {
+            this.sessionId = sessionId;
+        }
     }
 
     private static final ThreadLocal<AppExecution> CURRENT_EXECUTION_IN_THREAD = new ThreadLocal<>();
@@ -34,7 +44,7 @@ class StateManager {
     private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
     public interface RenderServer {
-        void send(final String sessionId, final JtComponent<?> component, final String operation);
+        void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, final @Nullable Integer index, final boolean clearBefore);
     }
 
     protected static void setRenderServer(final @Nonnull RenderServer sender) {
@@ -49,7 +59,7 @@ class StateManager {
     }
 
     protected static InternalSessionState getCurrentSession() {
-        final String currentSessionId = CURRENT_EXECUTION_IN_THREAD.get().sessionId();
+        final String currentSessionId = CURRENT_EXECUTION_IN_THREAD.get().sessionId;
         if (currentSessionId == null) {
             throw new IllegalStateException(
                     "Jeamlit Jt. methods must be called within an execution context");
@@ -78,7 +88,7 @@ class StateManager {
             throw new RuntimeException(
                     "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         }
-        CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId, new LinkedHashMap<>()));
+        CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
 
         if (!SESSIONS.containsKey(sessionId)) {
             SESSIONS.put(sessionId, new InternalSessionState());
@@ -88,8 +98,8 @@ class StateManager {
         final InternalSessionState internalSessionState = SESSIONS.get(sessionId);
         final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
         if (callbackComponentKey != null) {
-            final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId).components()
-                    .get(callbackComponentKey);
+            final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId).components.get(
+                    callbackComponentKey);
             if (jtComponent == null) {
                 LOG.warn("Failed to run callback method. Component with key {} not found. " + "To ensure the key of a component is not changed when the component is edited or mutated, pass a key parameter. " + "This issue is caused by the hot reload and will not happen when the app is deployed, so you may ignore this warning.",
                          callbackComponentKey);
@@ -104,32 +114,70 @@ class StateManager {
     /// - run the user app - it will call addComponent (done via Jt methods)
     /// - endExecution
     /// Return if the component was added successfully. Else throw.
-    protected static void addComponent(final JtComponent<?> component) {
+    protected static void addComponent(final @Nonnull JtComponent<?> component) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
         }
-        final Map<String, JtComponent<?>> currentComponents = currentExecution.components();
-        final String key = component.getKey();
-        if (currentComponents.containsKey(key)) {
+
+        if (currentExecution.components.containsKey(component.getKey())) {
             // a component with the same id was already registered while running the app top to bottom
             throw DuplicateWidgetIDException.of(component);
         }
-        currentComponents.put(key, component);
+        currentExecution.components.put(component.getKey(), component);
 
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
-        final Object state = session.getComponentsState().get(key);
+        final Object state = session.getComponentsState().get(component.getKey());
         if (state != null) {
             component.updateValue(state);
-        } else {
+        } else if (component.returnValueNotNone()) {
             // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
-            session.getComponentsState().put(key, component.returnValue());
+            // skip component that return a NONE value
+            session.getComponentsState().put(component.getKey(), component.returnValue());
         }
 
-        // immediately send the component for rendering
-        renderServer.send(currentExecution.sessionId(), component, "append");
+        // Point-of-difference streaming logic
+        final AppExecution lastExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
+        boolean clearBefore = false;
+
+        boolean lookForDifference = !currentExecution.foundDifference && lastExecution != null && currentExecution.currentIndex < lastExecution.components.size();
+        if (lookForDifference) {
+            // Get previous component at the same position
+            final JtComponent<?>[] previousComponents = lastExecution.components.values()
+                    .toArray(new JtComponent<?>[0]);
+            final JtComponent<?> previousAtIndex = previousComponents[currentExecution.currentIndex];
+            if (componentsEqual(previousAtIndex, component)) {
+                // skip sending
+                currentExecution.currentIndex += 1;
+                return;
+            } else {
+                // Found difference! tell the frontend to clear from this point before adding the component
+                clearBefore = true;
+                // no need to look for a difference anymore - all other components in this run should be appended
+                currentExecution.foundDifference = true;
+            }
+        }
+
+        // send the component with clear instruction if needed
+        renderServer.send(currentExecution.sessionId,
+                          component,
+                          // not necessary to pass the index if a difference has been found and the clear message has been sent already
+                          currentExecution.foundDifference && !clearBefore ? null : currentExecution.currentIndex,
+                          clearBefore);
+        currentExecution.currentIndex += 1;
+    }
+
+    // Helper method to compare components for changes
+    private static boolean componentsEqual(JtComponent<?> prev, JtComponent<?> curr) {
+        // Compare component type
+        if (!prev.getClass().equals(curr.getClass())) {
+            return false;
+        }
+
+        // Compare rendered HTML (simple approach - could be optimized)
+        return prev.render().equals(curr.render());
     }
 
     /// Usage:
@@ -142,41 +190,41 @@ class StateManager {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
         }
-        final String sessionId = currentExecution.sessionId();
-        final InternalSessionState session = SESSIONS.get(sessionId);
-        final Map<String, JtComponent<?>> currentComponents = currentExecution.components();
-        if (currentComponents == null) {
-            throw new IllegalStateException(
-                    "No active execution context. Please reach out to support.");
-        }
+        final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
+        final Map<String, JtComponent<?>> currentComponents = currentExecution.components;
+
+        // reset and save components state
         for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
-            entry.getValue().resetIfNeeded();
-            session.getComponentsState().put(entry.getKey(), entry.getValue().returnValue());
+            final JtComponent<?> component = entry.getValue();
+            component.resetIfNeeded();
+            if (component.returnValueNotNone()) {
+                session.getComponentsState().put(entry.getKey(), component.returnValue());
+            }
         }
 
         final List<JtComponent<?>> result = new ArrayList<>(currentComponents.values());
 
         // remove component states of component that are not in the app anymore
-        final AppExecution previousExecution = LAST_EXECUTIONS.get(sessionId);
+        final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
         if (previousExecution != null) {
-            final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.components();
+            final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.components;
             previousComponents.keySet().stream().filter(k -> !currentComponents.containsKey(k))
                     .forEach(key -> session.getComponentsState().remove(key));
         }
 
-        LAST_EXECUTIONS.put(sessionId, currentExecution);
+        LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
         CURRENT_EXECUTION_IN_THREAD.remove();
         return result;
     }
 
     private static class NoOpRenderServer implements RenderServer {
         @Override
-        public void send(String sessionId, JtComponent<?> component, String operation) {
+        public void send(String sessionId, @Nonnull JtComponent<?> component, @Nullable Integer index, boolean clearBefore) {
             LOG.error(
-                    "Cannot send component {} to session {} for operation {}. No render server is registered.",
-                    component,
-                    sessionId,
-                    operation);
+                    "Cannot send indexed delta for component {} at index {} to session {}. No render server is registered.",
+                    component.getKey(),
+                    index,
+                    sessionId);
         }
     }
 }

@@ -55,58 +55,159 @@
         }
     };
 
-    ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
+    // Track if this is the first message to clear connecting text - TODO - put this in the overlay
+    let isFirstMessage = true;
+    
+    // DOM mutation batching
+    let pendingMutations = [];
+    let mutationTimeout = null;
+    let firstMutationTime = null;
+    // mutations received at less than 4ms (~1 frame at 240fps) of space are batched together to avoid flickering
+    // every time a mutation is received the 4ms time is reset ...
+    const MUTATION_BATCH_WINDOW = 4;
+    // ... so we set a hard limit to flush the batch of 16ms ~ 1 frame at 60fps
+    // FIXME this means animation will only run at max 60fps (assuming 0 latency network) so we may want to make this value configurable
+    //   in any case streamlit does not ensure constant frame rate because of the delivery via ws
+    const MAX_BATCH_WAIT_TIME = 16;
 
-        if (message.type === 'clear') {
-            // Clear app content for new streaming session
-            app.innerHTML = '';
-        } else if (message.type === 'stream') {
-            // Handle component registrations
-            if (message.registrations) {
-                // Ensure a hidden container is present
-                let container = document.getElementById('jeamlit-registrations');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'jeamlit-registrations';
-                    container.style.display = 'none';
-                    document.body.appendChild(container);
+    function createElementFromHTML(htmlString) {
+        const template = document.createElement('template');
+        template.innerHTML = htmlString.trim();
+        return template.content.firstChild;
+    }
+
+    function handleComponentRegistrations(registrations) {
+        if (!registrations || registrations.length === 0) return;
+        
+        // Ensure a hidden container is present
+        let container = document.getElementById('jeamlit-registrations');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'jeamlit-registrations';
+            container.style.display = 'none';
+            document.body.appendChild(container);
+        }
+
+        registrations.forEach((registration) => {
+            // Parse the registration HTML safely
+            const template = document.createElement('template');
+            template.innerHTML = registration;
+            const fragment = template.content;
+
+            // Execute all <script> tags inside the fragment
+            fragment.querySelectorAll('script').forEach((script) => {
+                const newScript = document.createElement('script');
+                if (script.type) newScript.type = script.type;
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
                 }
+                document.head.appendChild(newScript);
+            });
 
-                message.registrations.forEach((registration) => {
-                    // Parse the registration HTML safely
-                    const template = document.createElement('template');
-                    template.innerHTML = registration;
-                    const fragment = template.content;
+            // Inject the rest of the HTML (custom elements etc.)
+            container.appendChild(fragment);
+        });
+    }
 
-                    // Execute all <script> tags inside the fragment
-                    fragment.querySelectorAll('script').forEach((script) => {
-                        const newScript = document.createElement('script');
-                        if (script.type) newScript.type = script.type;
-                        if (script.src) {
-                            newScript.src = script.src;
-                        } else {
-                            newScript.textContent = script.textContent;
-                        }
-                        document.head.appendChild(newScript);
-                    });
-
-                    // Inject the rest of the HTML (custom elements etc.)
-                    container.appendChild(fragment);
+    function applyDelta(message) {
+        const { 
+            index = null,                 // null means append
+            html, 
+            clearBefore = false           // Default to no clearing
+        } = message;
+        
+        // Clear initial "Connecting..." message on first delta
+        if (isFirstMessage) {
+            app.innerHTML = '';
+            isFirstMessage = false;
+        }
+        
+        // Handle component registrations immediately
+        handleComponentRegistrations(message.registrations);
+        
+        // Create element immediately (outside batch)
+        const newElement = createElementFromHTML(html);
+        
+        // Queue DOM mutations
+        pendingMutations.push({
+            type: 'delta',
+            index,
+            element: newElement,
+            clearBefore
+        });
+        
+        // Track first mutation time
+        if (!firstMutationTime) {
+            firstMutationTime = Date.now();
+        }
+        
+        // Check if we've waited too long
+        const elapsed = Date.now() - firstMutationTime;
+        if (elapsed >= MAX_BATCH_WAIT_TIME) {
+            // Force immediate processing to prevent starvation
+            if (mutationTimeout) {
+                clearTimeout(mutationTimeout);
+                mutationTimeout = null;
+            }
+            processMutations();
+            firstMutationTime = null;
+        } else {
+            // Normal batch processing
+            if (mutationTimeout) {
+                clearTimeout(mutationTimeout);
+            }
+            
+            mutationTimeout = setTimeout(() => {
+                processMutations();
+                mutationTimeout = null;
+                firstMutationTime = null;
+            }, MUTATION_BATCH_WINDOW);
+        }
+    }
+    
+    function processMutations() {
+        if (pendingMutations.length === 0) return;
+        
+        requestAnimationFrame(() => {
+            // Find first mutation that requires clearing
+            const firstClearMutation = pendingMutations.find(m => m.clearBefore && m.index !== null);
+            
+            if (firstClearMutation) {
+                // CLEARING PATH: Clear from index and append all
+                const clearFromIndex = firstClearMutation.index;
+                while (app.children.length > clearFromIndex) {
+                    app.removeChild(app.lastChild);
+                }
+                
+                // All mutations just append after clearing
+                pendingMutations.forEach(mutation => {
+                    app.appendChild(mutation.element);
+                });
+            } else {
+                // NO CLEARING PATH: Use index-based logic
+                pendingMutations.forEach(mutation => {
+                    if (mutation.index !== null && mutation.index < app.children.length) {
+                        app.children[mutation.index].replaceWith(mutation.element);
+                    } else {
+                        app.appendChild(mutation.element);
+                    }
                 });
             }
+            
+            pendingMutations = [];
+        });
+    }
 
-            // Handle streaming component based on operation
-            if (message.operation === 'append' && message.html && message.html.trim() !== '') {
-                const htmlDiv = document.createElement('div');
-                htmlDiv.innerHTML = message.html;
-                // Append each child element individually to maintain proper DOM structure
-                while (htmlDiv.firstChild) {
-                    app.appendChild(htmlDiv.firstChild);
-                }
-            }
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === 'delta') {
+            applyDelta(message);
         } else if (message.type === 'error') {
             showError(message.error);
+        } else {
+            alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
     };
 
