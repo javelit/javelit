@@ -9,6 +9,7 @@
       "Bash(curl:*)",
       "Bash(true)",
       "WebFetch(domain:docs.streamlit.io)",
+      "WebFetch(domain:github.com)",
       "Bash(ls:*)"
     ],
     "deny": []
