@@ -45,3 +45,5 @@ Also, pragmatically: even if a change at a point in the doc does not result in a
 there is a lot of case for which it is the case in streamlit apps. So the first algo would have resulted in many delete messages.
 So the difference in number of messages wouldn't have been that big for a lot of apps. (I know they could have been batched but this is another optimization on top and has its own set of problems)
 
+NOTE: most of the flickering has eventually been removed anyway in local.
+This will require more tests with a proper network simulation.
