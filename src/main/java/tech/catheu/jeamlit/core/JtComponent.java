@@ -22,11 +22,13 @@ public abstract class JtComponent<T> {
     protected T currentValue;
     protected @Nullable Consumer<T> callback;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final boolean returnValueNotNone;
 
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
         this.currentValue = currentValue;
         this.callback = callback;
+        this.returnValueNotNone = !(currentValue instanceof JtComponent.NONE);
     }
 
     public String getKey() {
@@ -58,6 +60,10 @@ public abstract class JtComponent<T> {
      */
     protected final T returnValue() {
         return currentValue;
+    }
+
+    protected final boolean returnValueNotNone() {
+        return returnValueNotNone;
     }
 
     /**
