@@ -88,11 +88,10 @@ class HotReloader {
     }
 
     /**
-     * @return the JtComponents after the end of the execution of the app
      * @throws CompilationException: if the main method was not defined as expected
      * @throws AppRunException       :      if the main method call raised an exception
      */
-    protected List<JtComponent<?>> runApp(final String sessionId) {
+    protected void runApp(final String sessionId) {
         if (mainMethod.get() == null) {
             // if there are edge cases where this could happen, simply call reloadFile instead of throwing
             // for the moment throwing to catch implementation bugs
@@ -108,10 +107,8 @@ class HotReloader {
         } catch (InvocationTargetException e) {
             throw new AppRunException(e);
         } finally {
-            result = StateManager.endExecution();
+            StateManager.endExecution();
         }
-        return result;
-
     }
 
     // return the fully qualified classname of the compiled file
