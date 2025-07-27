@@ -22,13 +22,13 @@ public abstract class JtComponent<T> {
     protected T currentValue;
     protected @Nullable Consumer<T> callback;
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final boolean returnValueNotNone;
+    private final boolean returnValueIsAState;
 
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
         this.currentValue = currentValue;
         this.callback = callback;
-        this.returnValueNotNone = !(currentValue instanceof JtComponent.NONE);
+        this.returnValueIsAState = !(currentValue instanceof JtComponent.NotAState);
     }
 
     public String getKey() {
@@ -62,8 +62,8 @@ public abstract class JtComponent<T> {
         return currentValue;
     }
 
-    protected final boolean returnValueNotNone() {
-        return returnValueNotNone;
+    protected final boolean returnValueIsAState() {
+        return returnValueIsAState;
     }
 
     /**
@@ -110,8 +110,14 @@ public abstract class JtComponent<T> {
         return returnValue();
     }
 
+    /// identifies a T type of a JtComponent as not to be stored in the session state
+    /// anything that is not a state should implement this method
+    public interface NotAState {
+
+    }
+
     // use this type to signify a component is not interactive and does not return anything
-    public enum NONE {
+    public enum NONE implements NotAState {
         NONE
     }
 }

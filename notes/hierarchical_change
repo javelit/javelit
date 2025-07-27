@@ -1,0 +1,113 @@
+in the state manager, we need a generic implementation that does not
+rely too much on specifics like the kind of container.                                                                           │
+we need a single primitive addComponent(), we will just add an id or a
+parent (parent=null means running in the main container?)                                                                      │
+a recursive structure seems necessary to resolve update/deletes.                                                                                                                                      │
+basically a structure like below will replace the current components field of AppExecution                                                                                                            │
+                                                                                                                                                                                                      │
+Container {                                                                                                                                                                                           │
+childrens: LinkedHashMap<String, Container> (with the String key being the JtComponent.key())                                                                                                         │
+component: JtComponent                                                                                                                                                                                │
+}                                                                                                                                                                                                     │
+                                                                                                                                                                                                      │
+with any container having either childrens set if it's a layout component,
+either only component is set.                                                                                              │
+We may need to add a isLayout info to the JtComponent if this helps.                                                                                                                                  │
+the linkedhashmap conserves the order                                                                                                                                                                 │
+we can now resolve the refresh logic with the following                                                                                                                                               │
+- add components are run as usual - they target a path of key,
+such that it's easy to find them again for change resolution                                                                           │
+eg: addCompponent(<same params as before>, List<String> keyPath) (empty list or special string means at the root)                                                                                     │
+in use(), layout component will call themselves with their path (each component must be instantiated with their parent path - it should be easy)                                                      │
+- when the app runs, we find if there is a change by quickly going through the path - the logic is very similar to the actual                                                                         │
+- if a container is changed: all components after in the container are refreshed - share this with the frontend
+
+
+
+can't I just give the path in the app ?
+addComponent(component)
+
+Jt.(....).use(component)
+component.isLayout ? proceed
+--> register with addComponent with the components path.
+
+and when a layout is created:
+- if component is null --> in empty-list path.
+- else: path = parent.path + id as a list
+
+then at resolution:
+- hard order is known
+- all component paths are known - and we still assume in order
+- a change only results in a reprint in a path ? it can still be by hard index though ?
+
+currentIndex and foundDifference can be by path.
+
+#########################
+Think about the API first. It's the API that defines the design.
+
+https://docs.streamlit.io/develop/api-reference/layout/st.columns
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.header("A cat")
+    st.image("https://static.streamlit.io/examples/cat.jpg")
+
+other option is:
+col1.header("A cat")
+col1.image(...)
+
+--> with col1: sets the RenderingContext as col1.
+
+CONTAINER
+
+import streamlit as st
+
+with st.container():
+    st.write("This is inside the container")
+
+    # You can call any Streamlit command, including custom components:
+    st.bar_chart(np.random.randn(50, 3))
+
+st.write("This is outside the container")
+
+
+import streamlit as st
+
+container = st.container(border=True)
+container.write("This is inside the container")
+st.write("This is outside the container")
+# Now insert some more in the container
+container.write("This is inside too")
+
+Dialog: OK nothing in design of interest - only one dialog per app opened
+Expander: pretty much the same as container
+Popover: no probs
+SIDEBAR design: the sidebar was always there! if the sidebar is empty, don't show it.
+Jt.Main and Jt.sidebar should be constants, layout types.
+
+IDEAS IN JAVA:
+container().put(SomeComponent).
+
+try (Jt.within("container_ref")) {
+
+}
+
+OR:
+Jt.within("container_ref")
+
+closeWithin() // can take an int to only close some level ?
+
+OR - LayoutJtComponent
+--> delegates everything to the component, just wrap use()
+
+Jt.withinDo("container_ref", {})
+Jt.withinDo(JtComponentLayout<T>, {})
+
+closeWithin() // can take an int to only close some level ?
+
+.use(Layout)
+.use("container_ref")
+
+layouts register interceptor in the StateManager ? then state manager calls them ?
+
+NotAState

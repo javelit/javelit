@@ -132,9 +132,8 @@ class StateManager {
         final Object state = session.getComponentsState().get(component.getKey());
         if (state != null) {
             component.updateValue(state);
-        } else if (component.returnValueNotNone()) {
+        } else if (component.returnValueIsAState()) {
             // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
-            // skip component that return a NONE value
             session.getComponentsState().put(component.getKey(), component.returnValue());
         }
 
@@ -197,7 +196,7 @@ class StateManager {
         for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
             final JtComponent<?> component = entry.getValue();
             component.resetIfNeeded();
-            if (component.returnValueNotNone()) {
+            if (component.returnValueIsAState()) {
                 session.getComponentsState().put(entry.getKey(), component.returnValue());
             }
         }
