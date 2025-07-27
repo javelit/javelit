@@ -111,7 +111,8 @@ public abstract class JtComponent<T> {
     }
 
     /// identifies a T type of a JtComponent as not to be stored in the session state
-    /// anything that is not a state should implement this method
+    /// anything that is not a state should implement this interface
+    /// see also [NONE]
     public interface NotAState {
 
     }
