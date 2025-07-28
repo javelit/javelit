@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class Layout {
+public class Layout implements JtComponent.NotAState {
 
     private static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
@@ -15,11 +15,12 @@ public class Layout {
 
     static final Layout SIDEBAR =  new Layout(List.of("sidebar"));
 
-    public @Nonnull List<@NotNull String> path() {
+    protected @Nonnull List<@NotNull String> path() {
         return path;
     }
 
-    public @Nonnull String frontendDataField() {
+    @SuppressWarnings("unused")
+    public @Nonnull String frontendDataLayoutField() {
         return String.join(",", path);
     }
 
@@ -38,7 +39,7 @@ public class Layout {
     }
 
 
-    protected final Layout with(final @NotNull String key) {
+    public final Layout with(final @NotNull String key) {
         final ArrayList<String> res = new ArrayList<>(path.size());
         res.addAll(path);
         res.add(key);

@@ -17,8 +17,9 @@ public class MyApp {
         //Jt.title("WAIT").use(Jt.sidebar());
         Double age = Jt.slider("Select your age").min(0).max(100).value(30).use();
         Jt.text("You selected age: " + age).use();
+        var containerLayout = Jt.container("container-1").use();
+        Jt.text("test in layout").use(containerLayout);
         Jt.text("Age category: " + getAgeCategory(age)).use();
-
         if (Jt.button("Click me!").use()) {
             Jt.text("Button was clicked!").use();
             int clickCount = (Integer) Jt.sessionState().computeInt("clicks", (k, v) -> v + 1);
@@ -39,6 +40,7 @@ public class MyApp {
         
         // Footer
         Jt.text("---").use();
+        Jt.text("another text in layout - but put way later").use(containerLayout);
         Jt.text("💡 Try changing values and see the app update in real-time!").use();
     }
     

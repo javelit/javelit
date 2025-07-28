@@ -22,13 +22,11 @@ public abstract class JtComponent<T> {
     protected T currentValue;
     protected @Nullable Consumer<T> callback;
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final boolean returnValueIsAState;
 
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
         this.currentValue = currentValue;
         this.callback = callback;
-        this.returnValueIsAState = !(currentValue instanceof JtComponent.NotAState);
     }
 
     public String getKey() {
@@ -63,7 +61,9 @@ public abstract class JtComponent<T> {
     }
 
     protected final boolean returnValueIsAState() {
-        return returnValueIsAState;
+        // do not compute and store at instantiation - some components (eg layout components) start
+        // with a null value and have their actual value binded later
+        return !(currentValue instanceof JtComponent.NotAState);
     }
 
     /**
@@ -106,16 +106,21 @@ public abstract class JtComponent<T> {
      * Add the component to the app in the main container layout and return its value.
      */
     public final T use() {
-        StateManager.addComponent(this, Layout.MAIN);
-        return returnValue();
+        return use(Layout.MAIN);
     }
 
     /**
      * Add the component to the app in the provided layout and return its value.
      */
     public final T use(final Layout layout) {
+        beforeUse(layout);
         StateManager.addComponent(this, layout);
         return returnValue();
+    }
+
+    public void beforeUse(final Layout layout) {
+        // Override in subclasses that need to do things before use() runs.
+        // subclasses are not allowed to use StateManager hence using this template pattern
     }
 
     /// identifies a T type of a JtComponent as not to be stored in the session state

@@ -92,30 +92,6 @@
         ['sidebar', sidebarContainer]
     ]);
     
-    // Get layout container for a given layout path
-    function getLayoutContainer(layoutPath) {
-        if (!layoutPath || layoutPath.length === 0) {
-            throw new Error('Layout path cannot be empty or null. Implementation error. Please reach out to support.');
-        }
-        const rootLayout = layoutPath[0];
-        let container = layoutContainers.get(rootLayout);
-        if (!container) {
-            throw new Error(`Invalid root layout: ${rootLayout}. Implementation error. Please reach out to support.`);
-        }
-        // Handle nested layouts - find existing containers by data-layout attribute
-        if (layoutPath.length > 1) {
-            const fullLayoutPath = layoutPath.join(',');
-            const nestedContainer = document.querySelector(`[data-layout="${fullLayoutPath}"]`);
-            if (nestedContainer) {
-                container = nestedContainer;
-            } else {
-                throw new Error(`Nested layout container not found for path: ${fullLayoutPath}, using root layout: ${rootLayout}. Implementation error. Please reach out to support.`);
-            }
-        }
-        
-        return container;
-    }
-    
     // DOM mutation batching
     let pendingMutations = [];
     let mutationTimeout = null;
@@ -189,9 +165,6 @@
         // Handle component registrations immediately
         handleComponentRegistrations(message.registrations);
         
-        // Get target container for this layout
-        const targetContainer = getLayoutContainer(layout);
-        
         // Create element immediately (outside batch)
         const newElement = createElementFromHTML(html);
 
@@ -200,7 +173,7 @@
             type: 'delta',
             index,
             element: newElement,
-            targetContainer: targetContainer,
+            layout: layout,
             clearBefore
         });
         
@@ -238,18 +211,23 @@
         
         requestAnimationFrame(() => {
             // Group mutations by layout/container
-            const mutationsByContainer = new Map();
+            const mutationsByLayout = new Map();
             
             pendingMutations.forEach(mutation => {
-                const container = mutation.targetContainer;
-                if (!mutationsByContainer.has(container)) {
-                    mutationsByContainer.set(container, []);
+                // Get target container for this layout
+                if (!mutationsByLayout.has(mutation.layout)) {
+                    mutationsByLayout.set(mutation.layout, []);
                 }
-                mutationsByContainer.get(container).push(mutation);
+                mutationsByLayout.get(mutation.layout).push(mutation);
             });
             
             // Process mutations for each container separately
-            mutationsByContainer.forEach((mutations, container) => {
+            mutationsByLayout.forEach((mutations, layout) => {
+                console.log(layout);
+                const container = document.querySelector(`[data-layout="${layout}"]`);
+                if (!container) {
+                    throw new Error(`Nested layout container not found for path: ${layout}. Implementation error. Please reach out to support.`);
+                }
                 // Find first mutation that requires clearing for this container
                 const firstClearMutation = mutations.find(m => m.clearBefore && m.index !== null);
                 

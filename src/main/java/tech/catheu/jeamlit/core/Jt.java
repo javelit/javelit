@@ -8,6 +8,7 @@ import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
+import tech.catheu.jeamlit.components.layout.ContainerComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.Map;
@@ -82,6 +83,10 @@ public class Jt {
 
     public static SliderComponent.Builder slider(@Nonnull String label) {
         return new SliderComponent.Builder(label);
+    }
+
+    public static ContainerComponent.Builder container(@Nonnull String key) {
+        return new ContainerComponent.Builder(key);
     }
 
 }

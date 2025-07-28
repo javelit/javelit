@@ -114,7 +114,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     protected TypeReference<Boolean> getTypeReference() {
         return new TypeReference<Boolean>() {};
     }
-    
+
     @Override
     protected void resetIfNeeded() {
         // Button is momentary - reset to false after reading

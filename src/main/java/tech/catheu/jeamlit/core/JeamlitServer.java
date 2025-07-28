@@ -232,7 +232,7 @@ public class JeamlitServer implements StateManager.RenderServer {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "delta");
         message.put("html", component != null ? component.render() : null);
-        message.put("layout", layout.path());
+        message.put("layout", layout.frontendDataLayoutField());
         if (index != null) {
             message.put("index", index);
         }

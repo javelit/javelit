@@ -153,10 +153,11 @@ class StateManager {
         final AppExecution lastExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
         boolean clearBefore = false;
 
+        currentExecution.layoutToCurrentIndex.putIfAbsent(layout, 0);
         boolean lookForDifference = !currentExecution.layoutToFoundDifference.computeIfAbsent(layout, k -> false)
                                     && lastExecution != null
                                     && lastExecution.layoutToComponents.containsKey(layout)
-                                    && currentExecution.layoutToCurrentIndex.computeIfAbsent(layout, k -> 0) < lastExecution.layoutToComponents.get(layout).size();
+                                    && currentExecution.layoutToCurrentIndex.get(layout) < lastExecution.layoutToComponents.get(layout).size();
         if (lookForDifference) {
             // Get previous component at the same position
             final JtComponent<?>[] previousComponents = lastExecution.layoutToComponents.get(layout).values()
@@ -238,7 +239,7 @@ class StateManager {
         }
 
         LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
-        CURRENT_EXECUTION_IN_THREAD.remove();
+         CURRENT_EXECUTION_IN_THREAD.remove();
     }
 
     private static class NoOpRenderServer implements RenderServer {

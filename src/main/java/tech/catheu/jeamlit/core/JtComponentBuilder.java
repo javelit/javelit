@@ -5,7 +5,6 @@ import jakarta.annotation.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.StringJoiner;
-import java.util.UUID;
 
 
 // SELF is the self-referential generic to be able to return the correct implementing class in some methods of this abstract class
@@ -53,18 +52,6 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);
         }
-    }
-
-    /**
-     * Implementation helper.
-     * Returns a random key. It shouldn't be an issue for non-interactive field.
-     * If set, the key field is used instead.
-     **/
-    public String generateKeyForNonInteractive() {
-        if (key != null && !key.isBlank()) {
-            return key;
-        }
-        return UUID.randomUUID().toString();
     }
 
     /**
