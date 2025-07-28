@@ -1,5 +1,6 @@
 package tech.catheu.jeamlit.core;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import java.lang.reflect.Field;
@@ -72,5 +73,13 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     public B use() {
         final T component = build();
         return component.use();
+    }
+
+    /**
+     * Shorthand for build().use(Layout)
+     */
+    public B use(final @Nonnull Layout layout) {
+        final T component = build();
+        return component.use(layout);
     }
 }

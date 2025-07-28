@@ -11,6 +11,10 @@ public class MyApp {
         Jt.text("This demo shows basic components and state management.").use();
         
         // Interactive widgets
+        //Jt.title("ANOTHER ONE").use(Jt.sidebar());
+        //Jt.title("PLEASE WAIT").use(Jt.sidebar());
+        //Jt.title("ANOTHER ONE").use(Jt.sidebar());
+        //Jt.title("WAIT").use(Jt.sidebar());
         Double age = Jt.slider("Select your age").min(0).max(100).value(30).use();
         Jt.text("You selected age: " + age).use();
         Jt.text("Age category: " + getAgeCategory(age)).use();

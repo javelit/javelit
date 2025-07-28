@@ -13,13 +13,35 @@
             color: var(--jt-text-primary);
             line-height: var(--jt-line-height-normal);
         }
-        .container {
-            max-width: 800px;
+        .app-wrapper {
+            display: flex;
+            max-width: 1200px;
             margin: 0 auto;
+            gap: var(--jt-spacing-lg);
+        }
+        .layout-container {
             background: var(--jt-bg-primary);
             padding: var(--jt-spacing-xl);
             border-radius: var(--jt-border-radius-lg);
             box-shadow: var(--jt-shadow);
+        }
+        .main-layout {
+            flex: 1;
+            min-width: 0; /* Allow shrinking */
+        }
+        .sidebar-layout {
+            display: block;
+            width: 300px;
+            flex-shrink: 0;
+        }
+        .sidebar-layout:empty {
+            display: none; /* Hidden by default */
+        }
+        .nested-layout {
+            margin: var(--jt-spacing-md) 0;
+            padding: var(--jt-spacing-md);
+            border: 1px solid var(--jt-border-color, #e0e0e0);
+            border-radius: var(--jt-border-radius);
         }
         .error {
             background-color: #fee;
@@ -34,12 +56,18 @@
     {{> tooltip.html.mustache }}
 </head>
 <body>
-<div id="app" class="container">
-    <p>Connecting to Jeamlit server...</p>
+<div id="app" class="app-wrapper">
+    <!-- make sure this stays empty with no spaces - it uses the :empty selector to hide if there is nothing inside -->
+    <div id="sidebar-container" class="layout-container sidebar-layout" data-layout="sidebar"></div>
+    <div id="main-container" class="layout-container main-layout" data-layout="main">
+        <p>Connecting to Jeamlit server...</p>
+    </div>
 </div>
 <script>
     const ws = new WebSocket('ws://localhost:{{ port }}/ws');
     const app = document.getElementById('app');
+    const mainContainer = document.getElementById('main-container');
+    const sidebarContainer = document.getElementById('sidebar-container');
 
     // Store websocket reference for components
     window.ws = ws;
@@ -57,6 +85,36 @@
 
     // Track if this is the first message to clear connecting text - TODO - put this in the overlay
     let isFirstMessage = true;
+    
+    // Layout management
+    const layoutContainers = new Map([
+        ['main', mainContainer],
+        ['sidebar', sidebarContainer]
+    ]);
+    
+    // Get layout container for a given layout path
+    function getLayoutContainer(layoutPath) {
+        if (!layoutPath || layoutPath.length === 0) {
+            throw new Error('Layout path cannot be empty or null. Implementation error. Please reach out to support.');
+        }
+        const rootLayout = layoutPath[0];
+        let container = layoutContainers.get(rootLayout);
+        if (!container) {
+            throw new Error(`Invalid root layout: ${rootLayout}. Implementation error. Please reach out to support.`);
+        }
+        // Handle nested layouts - find existing containers by data-layout attribute
+        if (layoutPath.length > 1) {
+            const fullLayoutPath = layoutPath.join(',');
+            const nestedContainer = document.querySelector(`[data-layout="${fullLayoutPath}"]`);
+            if (nestedContainer) {
+                container = nestedContainer;
+            } else {
+                throw new Error(`Nested layout container not found for path: ${fullLayoutPath}, using root layout: ${rootLayout}. Implementation error. Please reach out to support.`);
+            }
+        }
+        
+        return container;
+    }
     
     // DOM mutation batching
     let pendingMutations = [];
@@ -115,26 +173,31 @@
         const { 
             index = null,                 // null means append
             html, 
+            layout,                       // should always be set
             clearBefore = false           // Default to no clearing
         } = message;
         
         // Clear initial "Connecting..." message on first delta
         if (isFirstMessage) {
-            app.innerHTML = '';
+            mainContainer.innerHTML = '';
             isFirstMessage = false;
         }
         
         // Handle component registrations immediately
         handleComponentRegistrations(message.registrations);
         
+        // Get target container for this layout
+        const targetContainer = getLayoutContainer(layout);
+        
         // Create element immediately (outside batch)
         const newElement = createElementFromHTML(html);
-        
+
         // Queue DOM mutations
         pendingMutations.push({
             type: 'delta',
             index,
             element: newElement,
+            targetContainer: targetContainer,
             clearBefore
         });
         
@@ -171,30 +234,44 @@
         if (pendingMutations.length === 0) return;
         
         requestAnimationFrame(() => {
-            // Find first mutation that requires clearing
-            const firstClearMutation = pendingMutations.find(m => m.clearBefore && m.index !== null);
+            // Group mutations by layout/container
+            const mutationsByContainer = new Map();
             
-            if (firstClearMutation) {
-                // CLEARING PATH: Clear from index and append all
-                const clearFromIndex = firstClearMutation.index;
-                while (app.children.length > clearFromIndex) {
-                    app.removeChild(app.lastChild);
+            pendingMutations.forEach(mutation => {
+                const container = mutation.targetContainer;
+                if (!mutationsByContainer.has(container)) {
+                    mutationsByContainer.set(container, []);
                 }
+                mutationsByContainer.get(container).push(mutation);
+            });
+            
+            // Process mutations for each container separately
+            mutationsByContainer.forEach((mutations, container) => {
+                // Find first mutation that requires clearing for this container
+                const firstClearMutation = mutations.find(m => m.clearBefore && m.index !== null);
                 
-                // All mutations just append after clearing
-                pendingMutations.forEach(mutation => {
-                    app.appendChild(mutation.element);
-                });
-            } else {
-                // NO CLEARING PATH: Use index-based logic
-                pendingMutations.forEach(mutation => {
-                    if (mutation.index !== null && mutation.index < app.children.length) {
-                        app.children[mutation.index].replaceWith(mutation.element);
-                    } else {
-                        app.appendChild(mutation.element);
+                if (firstClearMutation) {
+                    // CLEARING PATH: Clear from index and append all
+                    const clearFromIndex = firstClearMutation.index;
+                    while (container.children.length > clearFromIndex) {
+                        container.removeChild(container.lastChild);
                     }
-                });
-            }
+                    
+                    // All mutations just append after clearing
+                    mutations.forEach(mutation => {
+                        container.appendChild(mutation.element);
+                    });
+                } else {
+                    // NO CLEARING PATH: Use index-based logic
+                    mutations.forEach(mutation => {
+                        if (mutation.index !== null && mutation.index < container.children.length) {
+                            container.children[mutation.index].replaceWith(mutation.element);
+                        } else {
+                            container.appendChild(mutation.element);
+                        }
+                    });
+                }
+            });
             
             pendingMutations = [];
         });
@@ -223,7 +300,7 @@
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error';
         errorDiv.textContent = 'Error: ' + error;
-        app.appendChild(errorDiv);
+        mainContainer.appendChild(errorDiv);
     }
 </script>
 </body>

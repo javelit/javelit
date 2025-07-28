@@ -62,6 +62,10 @@ public class Jt {
         }
     }
 
+    public static Layout sidebar() {
+        return Layout.SIDEBAR;
+    }
+
     // syntactic sugar for all components - 1 method per component
     // Example: Jt.use(Jt.text("my text")); is equivalent to Jt.use(new TextComponent.Builder("my text"));
     public static TextComponent.Builder text(final @Nonnull @Language("Markdown") String body) {
