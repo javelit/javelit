@@ -103,10 +103,18 @@ public abstract class JtComponent<T> {
     }
 
     /**
-     * Add the component to the app and return its value.
+     * Add the component to the app in the main container layout and return its value.
      */
     public final T use() {
-        StateManager.addComponent(this);
+        StateManager.addComponent(this, Layout.MAIN);
+        return returnValue();
+    }
+
+    /**
+     * Add the component to the app in the provided layout and return its value.
+     */
+    public final T use(final Layout layout) {
+        StateManager.addComponent(this, layout);
         return returnValue();
     }
 

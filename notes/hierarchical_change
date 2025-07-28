@@ -109,5 +109,40 @@ closeWithin() // can take an int to only close some level ?
 .use("container_ref")
 
 layouts register interceptor in the StateManager ? then state manager calls them ?
-
 NotAState
+
+--> use is called on a Layout
+layout do whatever they wanna do in the StateManager if need be
+there is a finite type of Layout so it should be fine
+A Layout has a path. The path will be managed by the StateManager.
+A layout can change the logic of the StateManager add component - not clear how yet but 2 options:
+addComponent(args...):
+ layout.addComponents(editedArgs...)
+
+what about recursive layouts ?
+JtComponent layout use()
+type of layout --> addComponent has a custom logic based on the type of layout ?
+eg for the empty container ?
+
+emptyLayout = Jt.empty().use();
+containerLayout = Jt.container().use(emptyLayout);
+Jt.text("my first text").use(containerLayout);
+Jt.text("my second text").use(containerLayout);
+Jt.text("full replacing text").use(emptyLayout)
+
+--> if layout instance of empty --> in-place replace ie index = 0 in any case --> InPlaceReplace can be an interface if this helps other people
+--> else: current logic
+
+c1 = Jt.container().use();
+c2 = Jt.container().use(c1);
+
+or maybe:
+c1 = Jt.container().use();
+c2 = Jt.container().in(c1).use();
+
+layouts:
+root
+
+2 things:
+components of type layouts -> they return layouts
+layouts --> they are passed as args of use

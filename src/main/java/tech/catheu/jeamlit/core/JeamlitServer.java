@@ -23,6 +23,7 @@ import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,7 +212,7 @@ public class JeamlitServer implements StateManager.RenderServer {
     }
 
     @Override
-    public void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, final @Nullable Integer index, final boolean clearBefore) {
+    public void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, @NotNull Layout layout, final @Nullable Integer index, final boolean clearBefore) {
         // Handle component registration
         final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,
