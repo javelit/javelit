@@ -15,6 +15,11 @@ class Layout {
 
     static final Layout SIDEBAR =  new Layout(List.of("sidebar"));
 
+    @Nonnull
+    public List<@NotNull String> path() {
+        return path;
+    }
+
     private final @Nonnull List<@NotNull String> path;
 
     protected Layout(@Nonnull List<@NotNull String> path) {

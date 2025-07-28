@@ -229,6 +229,7 @@ public class JeamlitServer implements StateManager.RenderServer {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "delta");
         message.put("html", component.render());
+        message.put("layout", layout.path());
         if (index != null) {
             message.put("index", index);
         }
