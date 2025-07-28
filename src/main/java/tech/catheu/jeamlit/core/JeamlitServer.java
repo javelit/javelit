@@ -212,23 +212,26 @@ public class JeamlitServer implements StateManager.RenderServer {
     }
 
     @Override
-    public void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, @NotNull Layout layout, final @Nullable Integer index, final boolean clearBefore) {
+    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull Layout layout, final @Nullable Integer index, final boolean clearBefore) {
         // Handle component registration
         final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,
                 k -> new HashSet<>());
         final List<String> registrations = new ArrayList<>();
-        // note: hot reload does not work for changes in the register() method
-        final String componentType = component.getClass().getName();
-        if (!componentsAlreadyRegistered.contains(componentType)) {
-            registrations.add(component.register());
-            componentsAlreadyRegistered.add(componentType);
+
+        if (component != null) {
+            // note: hot reload does not work for changes in the register() method
+            final String componentType = component.getClass().getName();
+            if (!componentsAlreadyRegistered.contains(componentType)) {
+                registrations.add(component.register());
+                componentsAlreadyRegistered.add(componentType);
+            }
         }
 
         // Send message to frontend
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "delta");
-        message.put("html", component.render());
+        message.put("html", component != null ? component.render() : null);
         message.put("layout", layout.path());
         if (index != null) {
             message.put("index", index);
@@ -239,8 +242,8 @@ public class JeamlitServer implements StateManager.RenderServer {
         if (!registrations.isEmpty()) {
             message.put("registrations", registrations);
         }
-        logger.debug("Sending delta: index={}, clearBefore={}, component={}", index, clearBefore, component.getKey());
-        logger.debug("  HTML: {}", component.render());
+        logger.debug("Sending delta: index={}, clearBefore={}, component={}", index, clearBefore, component != null ? component.getKey() : null);
+        logger.debug("  HTML: {}", component != null ? component.render() : null);
         logger.debug("  Registrations: {}", registrations.size());
         sendMessage(sessionId, message);
     }

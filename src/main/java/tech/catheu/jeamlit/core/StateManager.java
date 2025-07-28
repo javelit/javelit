@@ -8,8 +8,10 @@ import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 class StateManager {
@@ -45,7 +47,8 @@ class StateManager {
     private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
     protected interface RenderServer {
-        void send(final @Nonnull String sessionId, final @Nonnull JtComponent<?> component, @Nonnull Layout layout, final @Nullable Integer index, final boolean clearBefore);
+        // component can be null to trigger a full cleanup
+        void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @Nonnull Layout layout, final @Nullable Integer index, final boolean clearBefore);
     }
 
     protected static void setRenderServer(final @Nonnull RenderServer sender) {
@@ -202,8 +205,16 @@ class StateManager {
             throw new IllegalStateException(
                     "No active execution context. Please reach out to support.");
         }
-        final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
+        final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
+        // cleanup components that should not appear anymore
+        if (previousExecution != null) {
+            for (final var layout:  previousExecution.layoutToFoundDifference.keySet()) {
+                renderServer.send(currentExecution.sessionId, null, layout, currentExecution.layoutToCurrentIndex.getOrDefault(layout, 0), true);
+            }
+        }
 
+
+        final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
         for (final LinkedHashMap<String, JtComponent<?>> currentComponents : currentExecution.layoutToComponents.values()) {
             // reset and save components state
             for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
@@ -213,14 +224,16 @@ class StateManager {
                     session.getComponentsState().put(entry.getKey(), component.returnValue());
                 }
             }
+        }
 
+        if (previousExecution != null) {
             // remove component states of component that are not in the app anymore
-            final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
-            if (previousExecution != null) {
-                for (final LinkedHashMap<String, JtComponent<?>> previousComponents : previousExecution.layoutToComponents.values()) {
-                    previousComponents.keySet().stream().filter(k -> !currentComponents.containsKey(k))
-                            .forEach(key -> session.getComponentsState().remove(key));
-                }
+            final Set<String> componentsInUseKeys = new HashSet<>();
+            for (final Map<String, JtComponent<?>> m: currentExecution.layoutToComponents.values()) {
+                componentsInUseKeys.addAll(m.keySet());
+            }
+            for (final Map<String, JtComponent<?>> m: previousExecution.layoutToComponents.values()) {
+                m.keySet().stream().filter(k -> !componentsInUseKeys.contains(k)).forEach(k -> session.getComponentsState().remove(k));
             }
         }
 
@@ -230,10 +243,10 @@ class StateManager {
 
     private static class NoOpRenderServer implements RenderServer {
         @Override
-        public void send(String sessionId, @Nonnull JtComponent<?> component, @NotNull Layout layout, @Nullable Integer index, boolean clearBefore) {
+        public void send(String sessionId, @Nullable JtComponent<?> component, @NotNull Layout layout, @Nullable Integer index, boolean clearBefore) {
             LOG.error(
                     "Cannot send indexed delta for component {} in layout {} at index {} to session {}. No render server is registered.",
-                    component.getKey(),
+                    component != null ? component.getKey() : null,
                     layout,
                     index,
                     sessionId);

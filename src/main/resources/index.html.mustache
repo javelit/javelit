@@ -129,6 +129,9 @@
     const MAX_BATCH_WAIT_TIME = 16;
 
     function createElementFromHTML(htmlString) {
+        if (!htmlString) {
+            return null;
+        }
         const template = document.createElement('template');
         template.innerHTML = htmlString.trim();
         return template.content.firstChild;
@@ -256,10 +259,12 @@
                     while (container.children.length > clearFromIndex) {
                         container.removeChild(container.lastChild);
                     }
-                    
                     // All mutations just append after clearing
                     mutations.forEach(mutation => {
-                        container.appendChild(mutation.element);
+                        // in the clearing case, it can happen that the element is null to trigger a full cleanup - so checking here but not below
+                        if (mutation.element) {
+                            container.appendChild(mutation.element);
+                        }
                     });
                 } else {
                     // NO CLEARING PATH: Use index-based logic
