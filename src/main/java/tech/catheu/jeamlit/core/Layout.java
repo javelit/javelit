@@ -11,9 +11,9 @@ public class Layout implements JtComponent.NotAState {
 
     private static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    static final Layout MAIN =  new Layout(List.of("main"));
+    static final Layout MAIN = new Layout(List.of("main"));
 
-    static final Layout SIDEBAR =  new Layout(List.of("sidebar"));
+    static final Layout SIDEBAR = new Layout(List.of("sidebar"));
 
     protected @Nonnull List<@NotNull String> path() {
         return path;
@@ -29,11 +29,13 @@ public class Layout implements JtComponent.NotAState {
     protected Layout(@Nonnull List<@NotNull String> path) {
         final boolean containsComma = path.stream().anyMatch(e -> e.contains(","));
         if (containsComma) {
-            throw new IllegalArgumentException("Layout path cannot contain a comma. Please remove the comma from your key or layout path.");
+            throw new IllegalArgumentException(
+                    "Layout path cannot contain a comma. Please remove the comma from your key or layout path.");
         }
         final boolean containsEmpty = path.stream().anyMatch(String::isEmpty);
         if (containsEmpty) {
-            throw new IllegalArgumentException("Layout path cannot contain an empty string. Please remove the empty string from your key or layout path.");
+            throw new IllegalArgumentException(
+                    "Layout path cannot contain an empty string. Please remove the empty string from your key or layout path.");
         }
         this.path = List.copyOf(path);
     }
@@ -53,7 +55,13 @@ public class Layout implements JtComponent.NotAState {
 
     @Override
     public boolean equals(Object obj) {
-        return path.equals(obj);
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Layout)) {
+            return false;
+        }
+        return path.equals(((Layout) obj).path);
     }
 
     @Override

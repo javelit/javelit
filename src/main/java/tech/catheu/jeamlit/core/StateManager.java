@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,9 +24,11 @@ class StateManager {
         // component key to component object
         private final Map<Layout, LinkedHashMap<String, JtComponent<?>>> layoutToComponents = new LinkedHashMap<>();
         // current position in the list of components per layout
-        private Map<Layout, Integer> layoutToCurrentIndex = new HashMap<>();
+        private final Map<Layout, Integer> layoutToCurrentIndex = new LinkedHashMap<>();
         // whether a difference in components is found between the current app and the one being generated per layout
-        private Map<Layout, Boolean> layoutToFoundDifference = new HashMap<>();
+        private final Map<Layout, Boolean> layoutToFoundDifference = new LinkedHashMap<>();
+        // does not record main and sidebar layouts - only children of these 2 roots layouts
+        private final Set<Layout> clearedLayouts = new HashSet<>();
 
         public AppExecution(final String sessionId) {
             this.sessionId = sessionId;
@@ -154,7 +155,9 @@ class StateManager {
         boolean clearBefore = false;
 
         currentExecution.layoutToCurrentIndex.putIfAbsent(layout, 0);
-        boolean lookForDifference = !currentExecution.layoutToFoundDifference.computeIfAbsent(layout, k -> false)
+        currentExecution.layoutToFoundDifference.putIfAbsent(layout, false);
+        boolean lookForDifference = !currentExecution.clearedLayouts.contains(layout)
+                                    && !currentExecution.layoutToFoundDifference.get(layout)
                                     && lastExecution != null
                                     && lastExecution.layoutToComponents.containsKey(layout)
                                     && currentExecution.layoutToCurrentIndex.get(layout) < lastExecution.layoutToComponents.get(layout).size();
@@ -183,6 +186,9 @@ class StateManager {
                           currentExecution.layoutToFoundDifference.get(layout) && !clearBefore ? null : currentExecution.layoutToCurrentIndex.get(layout),
                           clearBefore);
         currentExecution.layoutToCurrentIndex.merge(layout, 1, Integer::sum);
+        if (component.returnValue() instanceof Layout) {
+            currentExecution.clearedLayouts.add((Layout) component.returnValue());
+        }
     }
 
     // Helper method to compare components for changes
@@ -207,13 +213,28 @@ class StateManager {
                     "No active execution context. Please reach out to support.");
         }
         final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
-        // cleanup components that should not appear anymore
+        // empty layouts that did not appear in the current execution
+        // clean up the end of layouts that had their number of components decrease - can happen if no clear is triggered, eg if only a statement is removed
         if (previousExecution != null) {
-            for (final var layout:  previousExecution.layoutToFoundDifference.keySet()) {
-                renderServer.send(currentExecution.sessionId, null, layout, currentExecution.layoutToCurrentIndex.getOrDefault(layout, 0), true);
+            for (final Layout layoutInPrevious : previousExecution.layoutToComponents.keySet()) {
+                if (currentExecution.layoutToComponents.containsKey(layoutInPrevious)) {
+                    final LinkedHashMap<String, JtComponent<?>> currentComponents = currentExecution.layoutToComponents.get(
+                            layoutInPrevious);
+                    final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.layoutToComponents.get(
+                            layoutInPrevious);
+                    if (previousComponents.size() > currentComponents.size()) {
+                        renderServer.send(currentExecution.sessionId,
+                                          null,
+                                          layoutInPrevious,
+                                          currentComponents.size(),
+                                          true);
+                    }
+                } else {
+                    // some layout is not used anymore - empty it - it's the responsibility of the layout to not appear when empty
+                    renderServer.send(currentExecution.sessionId, null, layoutInPrevious, 0, true);
+                }
             }
         }
-
 
         final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
         for (final LinkedHashMap<String, JtComponent<?>> currentComponents : currentExecution.layoutToComponents.values()) {

@@ -223,7 +223,6 @@
             
             // Process mutations for each container separately
             mutationsByLayout.forEach((mutations, layout) => {
-                console.log(layout);
                 const container = document.querySelector(`[data-layout="${layout}"]`);
                 if (!container) {
                     throw new Error(`Nested layout container not found for path: ${layout}. Implementation error. Please reach out to support.`);
