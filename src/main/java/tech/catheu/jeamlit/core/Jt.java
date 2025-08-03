@@ -63,8 +63,8 @@ public class Jt {
         }
     }
 
-    public static Layout sidebar() {
-        return Layout.SIDEBAR;
+    public static Container sidebar() {
+        return Container.SIDEBAR;
     }
 
     // syntactic sugar for all components - 1 method per component

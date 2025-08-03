@@ -439,7 +439,7 @@ Claude Opus 4 limit reached, now using Sonnet 4
 │ │     Jt.setPageConfig()                                                                                                                                                                              │ │
 │ │         .title("Data Analysis Dashboard")                                                                                                                                                           │ │
 │ │         .favicon("📊")                                                                                                                                                                              │ │
-│ │         .layout("wide");                                                                                                                                                                            │ │
+│ │         .container("wide");                                                                                                                                                                            │ │
 │ │ }                                                                                                                                                                                                   │ │
 │ │                                                                                                                                                                                                     │ │
 │ │ 9. Migration and Compatibility                                                                                                                                                                      │ │

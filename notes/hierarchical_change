@@ -146,3 +146,13 @@ root
 2 things:
 components of type layouts -> they return layouts
 layouts --> they are passed as args of use
+
+
+columns:
+ --> the return value is not a layout - it's a Columns1, Columns2, Columns3, etc... up to 12 columns
+ --> return records to allow future unpacking / pattern matching
+ --> the return value is not a state
+ --> the component itself has a key
+ --> same ColumnsX names will be prevented by the key
+ --> the column component is not reachable itself, only col1, col2, etc... it's totally feasible with the layouts design
+ --> under the hood, in streamlit, containers layout are inserted - it'd be nice to re-use the containers layout but I'm not sure it will work well - let's just use the layout abstraction, it's just an address

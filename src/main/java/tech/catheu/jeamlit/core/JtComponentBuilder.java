@@ -63,10 +63,10 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     }
 
     /**
-     * Shorthand for build().use(Layout)
+     * Shorthand for build().use(Container)
      */
-    public B use(final @Nonnull Layout layout) {
+    public B use(final @Nonnull Container container) {
         final T component = build();
-        return component.use(layout);
+        return component.use(container);
     }
 }

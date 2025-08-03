@@ -37,12 +37,6 @@
         .sidebar-layout:empty {
             display: none; /* Hidden by default */
         }
-        .nested-layout {
-            margin: var(--jt-spacing-md) 0;
-            padding: var(--jt-spacing-md);
-            border: 1px solid var(--jt-border-color, #e0e0e0);
-            border-radius: var(--jt-border-radius);
-        }
         .error {
             background-color: #fee;
             border: 1px solid #fcc;
@@ -58,8 +52,8 @@
 <body>
 <div id="app" class="app-wrapper">
     <!-- make sure this stays empty with no spaces - it uses the :empty selector to hide if there is nothing inside -->
-    <div id="sidebar-container" class="layout-container sidebar-layout" data-layout="sidebar"></div>
-    <div id="main-container" class="layout-container main-layout" data-layout="main">
+    <div id="sidebar-container" class="layout-container sidebar-layout" data-container="sidebar"></div>
+    <div id="main-container" class="layout-container main-layout" data-container="main">
         <p>Connecting to Jeamlit server...</p>
     </div>
 </div>
@@ -152,7 +146,7 @@
         const { 
             index = null,                 // null means append
             html, 
-            layout,                       // should always be set
+            container,                       // should always be set
             clearBefore = false           // Default to no clearing
         } = message;
         
@@ -173,7 +167,7 @@
             type: 'delta',
             index,
             element: newElement,
-            layout: layout,
+            container: container,
             clearBefore
         });
         
@@ -210,22 +204,22 @@
         if (pendingMutations.length === 0) return;
         
         requestAnimationFrame(() => {
-            // Group mutations by layout/container
-            const mutationsByLayout = new Map();
+            // Group mutations by container
+            const mutationsByContainer = new Map();
             
             pendingMutations.forEach(mutation => {
-                // Get target container for this layout
-                if (!mutationsByLayout.has(mutation.layout)) {
-                    mutationsByLayout.set(mutation.layout, []);
+                // Get target container for this container
+                if (!mutationsByContainer.has(mutation.container)) {
+                    mutationsByContainer.set(mutation.container, []);
                 }
-                mutationsByLayout.get(mutation.layout).push(mutation);
+                mutationsByContainer.get(mutation.container).push(mutation);
             });
             
             // Process mutations for each container separately
-            mutationsByLayout.forEach((mutations, layout) => {
-                const container = document.querySelector(`[data-layout="${layout}"]`);
-                if (!container) {
-                    throw new Error(`Nested layout container not found for path: ${layout}. Implementation error. Please reach out to support.`);
+            mutationsByContainer.forEach((mutations, container) => {
+                const containerEl = document.querySelector(`[data-container="${container}"]`);
+                if (!containerEl) {
+                    throw new Error(`Nested container not found for path: ${container}. Implementation error. Please reach out to support.`);
                 }
                 // Find first mutation that requires clearing for this container
                 const firstClearMutation = mutations.find(m => m.clearBefore && m.index !== null);
@@ -233,23 +227,23 @@
                 if (firstClearMutation) {
                     // CLEARING PATH: Clear from index and append all
                     const clearFromIndex = firstClearMutation.index;
-                    while (container.children.length > clearFromIndex) {
-                        container.removeChild(container.lastChild);
+                    while (containerEl.children.length > clearFromIndex) {
+                        containerEl.removeChild(containerEl.lastChild);
                     }
                     // All mutations just append after clearing
                     mutations.forEach(mutation => {
                         // in the clearing case, it can happen that the element is null to trigger a full cleanup - so checking here but not below
                         if (mutation.element) {
-                            container.appendChild(mutation.element);
+                            containerEl.appendChild(mutation.element);
                         }
                     });
                 } else {
                     // NO CLEARING PATH: Use index-based logic
                     mutations.forEach(mutation => {
-                        if (mutation.index !== null && mutation.index < container.children.length) {
-                            container.children[mutation.index].replaceWith(mutation.element);
+                        if (mutation.index !== null && mutation.index < containerEl.children.length) {
+                            containerEl.children[mutation.index].replaceWith(mutation.element);
                         } else {
-                            container.appendChild(mutation.element);
+                            containerEl.appendChild(mutation.element);
                         }
                     });
                 }

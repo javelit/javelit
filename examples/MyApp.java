@@ -12,16 +12,16 @@ public class MyApp {
         
         // Interactive widgets
         //Jt.title("ANOTHER ONE").use(Jt.sidebar());
-        //Jt.title("PLEASE WAIT").use(Jt.sidebar());
+        Jt.title("PLEASE WAIT").use(Jt.sidebar());
         //Jt.title("ANOTHER ONE").use(Jt.sidebar());
         Jt.title("WAIT").use(Jt.sidebar());
         Double age = Jt.slider("Select your age").min(0).max(100).value(30).use();
         Jt.text("You selected age: " + age).use();
-        var containerLayout = Jt.container("container-1").use();
-        Jt.text("test in layout").use(containerLayout);
-        var containerLayout2 =  Jt.container("container-2").use(containerLayout);
-        if (Jt.button("hihi this is in containerLayout 2").use(containerLayout2)) {
-            Jt.text("clicked and inside container 1 and container 2 ").use(containerLayout);
+        var container = Jt.container("container-1").use();
+        Jt.text("test in container").use(container);
+        var container2 =  Jt.container("container-2").use(container);
+        if (Jt.button("hihi this is in container 2").use(container2)) {
+            Jt.text("clicked and inside container 1 and container 2 ").use(container);
         }
         Jt.text("Age category: " + getAgeCategory(age)).use();
         if (Jt.button("Click me!").use()) {
@@ -44,7 +44,7 @@ public class MyApp {
         
         // Footer
         Jt.text("---").use();
-        Jt.text("another text in layout - but put way later").use(containerLayout);
+        Jt.text("another text in container - but put way later").use(container);
         Jt.text("💡 Try changing values and see the app update in real-time!").use();
     }
     

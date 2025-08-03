@@ -6,13 +6,13 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import tech.catheu.jeamlit.core.Container;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-import tech.catheu.jeamlit.core.Layout;
 
 import java.io.StringWriter;
 
-public class ContainerComponent extends JtComponent<Layout> {
+public class ContainerComponent extends JtComponent<Container> {
 
     protected final Integer height;
     protected final Boolean border;
@@ -33,7 +33,7 @@ public class ContainerComponent extends JtComponent<Layout> {
         this.border = builder.border;
     }
 
-    public static class Builder extends JtComponentBuilder<Layout, ContainerComponent,  Builder> {
+    public static class Builder extends JtComponentBuilder<Container, ContainerComponent,  Builder> {
         private @Nullable Integer height;
         private @Nullable Boolean border;
 
@@ -51,7 +51,7 @@ public class ContainerComponent extends JtComponent<Layout> {
 
         @Override
         public ContainerComponent build() {
-            if (Layout.RESERVED_PATHS.contains(this.key)) {
+            if (Container.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             if (border == null) {
@@ -81,14 +81,14 @@ public class ContainerComponent extends JtComponent<Layout> {
         return writer.toString();
     }
 
-    protected TypeReference<Layout> getTypeReference() {
+    protected TypeReference<Container> getTypeReference() {
         return new TypeReference<>() {};
     }
 
-    /// Add the component to the app in the provided layout and return the container layout.
-    /// for instance, if the layout is "main", returns a layout \["main", $key\]
+    /// Add the component to the app in the provided [Container] and return this component's [Container].
+    /// for instance, if the container is "main", returns a container \["main", $key\]
     @Override
-    public void beforeUse(final Layout layout) {
-        this.currentValue = layout.with(getKey());
+    public void beforeUse(final Container container) {
+        this.currentValue = container.with(getKey());
     }
 }

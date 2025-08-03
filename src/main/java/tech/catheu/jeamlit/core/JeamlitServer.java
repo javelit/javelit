@@ -212,7 +212,7 @@ public class JeamlitServer implements StateManager.RenderServer {
     }
 
     @Override
-    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull Layout layout, final @Nullable Integer index, final boolean clearBefore) {
+    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull Container container, final @Nullable Integer index, final boolean clearBefore) {
         // Handle component registration
         final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,
@@ -232,7 +232,7 @@ public class JeamlitServer implements StateManager.RenderServer {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "delta");
         message.put("html", component != null ? component.render() : null);
-        message.put("layout", layout.frontendDataLayoutField());
+        message.put("container", container.frontendDataContainerField());
         if (index != null) {
             message.put("index", index);
         }

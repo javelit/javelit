@@ -61,7 +61,7 @@ public abstract class JtComponent<T> {
     }
 
     protected final boolean returnValueIsAState() {
-        // do not compute and store at instantiation - some components (eg layout components) start
+        // do not compute and store at instantiation - some components (eg layout/container components) start
         // with a null value and have their actual value binded later
         return !(currentValue instanceof JtComponent.NotAState);
     }
@@ -103,22 +103,22 @@ public abstract class JtComponent<T> {
     }
 
     /**
-     * Add the component to the app in the main container layout and return its value.
+     * Add the component to the app in the main container and return its value.
      */
     public final T use() {
-        return use(Layout.MAIN);
+        return use(Container.MAIN);
     }
 
     /**
-     * Add the component to the app in the provided layout and return its value.
+     * Add the component to the app in the provided container and return its value.
      */
-    public final T use(final Layout layout) {
-        beforeUse(layout);
-        StateManager.addComponent(this, layout);
+    public final T use(final Container container) {
+        beforeUse(container);
+        StateManager.addComponent(this, container);
         return returnValue();
     }
 
-    public void beforeUse(final Layout layout) {
+    public void beforeUse(final Container container) {
         // Override in subclasses that need to do things before use() runs.
         // subclasses are not allowed to use StateManager hence using this template pattern
     }
