@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class Layout implements JtComponent.NotAState {
 
-    private static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
+    public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
     static final Layout MAIN = new Layout(List.of("main"));
 

@@ -51,6 +51,9 @@ public class ContainerComponent extends JtComponent<Layout> {
 
         @Override
         public ContainerComponent build() {
+            if (Layout.RESERVED_PATHS.contains(this.key)) {
+                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
+            }
             if (border == null) {
                 border = height != null;
             }
