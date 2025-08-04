@@ -1,4 +1,7 @@
 import tech.catheu.jeamlit.core.Jt;
+import tech.catheu.jeamlit.components.layout.ColumnsComponent;
+
+import java.util.List;
 
 public class MyApp {
 
@@ -9,6 +12,23 @@ public class MyApp {
         Jt.title("Jeamlit Demo App").use();
         Jt.text("Welcome to Jeamlit - Streamlit for Java!").use();
         Jt.text("This demo shows basic components and state management.").use();
+
+        var containerDebug = Jt.container("debug-container")
+                .border(false)
+                .use();
+        Jt.text("My debug container").use(containerDebug);
+
+        final var columns = Jt.columns("the-column", 3)
+                .verticalAlignment(ColumnsComponent.VerticalAlignment.TOP)
+                .border(true)
+                .gap(ColumnsComponent.Gap.SMALL)
+                .widths(List.of(0.2, 0.3, 0.5))
+                .use();
+        Jt.text("In column 1 BUT CHANGED! ").use(columns.col(1));
+        Jt.text("In column 0 ! ").use(columns.col(0));
+        Jt.text("In column 0 Again BUT CHANGED! ").use(columns.col(0));
+        //Jt.text("In column 0 and Again! ").use(columns.col(0));
+        //Jt.text("In column 2 ! ").use(columns.col(2));
         
         // Interactive widgets
         //Jt.title("ANOTHER ONE").use(Jt.sidebar());

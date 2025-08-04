@@ -29,6 +29,7 @@ class StateManager {
         private final Map<Container, Boolean> containerToFoundDifference = new LinkedHashMap<>();
         // does not record main and sidebar containers - only children of these 2 root containers
         private final Set<Container> clearedContainers = new HashSet<>();
+        private final Set<Container> clearedLayoutContainers = new HashSet<>();
 
         public AppExecution(final String sessionId) {
             this.sessionId = sessionId;
@@ -156,8 +157,14 @@ class StateManager {
 
         currentExecution.containerToCurrentIndex.putIfAbsent(container, 0);
         currentExecution.containerToFoundDifference.putIfAbsent(container, false);
-        boolean lookForDifference = !currentExecution.clearedContainers.contains(container)
-                                    && !currentExecution.containerToFoundDifference.get(container)
+        if (currentExecution.clearedLayoutContainers.contains(container.parent())) {
+            currentExecution.containerToFoundDifference.put(container, true);
+        }
+        if (currentExecution.clearedContainers.contains(container)) {
+            currentExecution.containerToFoundDifference.put(container, true);
+        }
+
+        boolean lookForDifference = !currentExecution.containerToFoundDifference.get(container)
                                     && lastExecution != null
                                     && lastExecution.containerToComponents.containsKey(container)
                                     && currentExecution.containerToCurrentIndex.get(container) < lastExecution.containerToComponents.get(
@@ -192,6 +199,10 @@ class StateManager {
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
         if (component.returnValue() instanceof Container) {
             currentExecution.clearedContainers.add((Container) component.returnValue());
+        }
+        // if a layout is cleared, all first level containers inside the layout should be cleaned up too - they are managed by this layout
+        if (component.returnValue() instanceof Layout) {
+            currentExecution.clearedLayoutContainers.add(((Layout) component.returnValue()).layoutContainer());
         }
     }
 
