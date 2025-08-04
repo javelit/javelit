@@ -1,6 +1,7 @@
 package tech.catheu.jeamlit.core;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -45,6 +46,18 @@ public class Container implements JtComponent.NotAState {
         final ArrayList<String> res = new ArrayList<>(path.size());
         res.addAll(path);
         res.add(key);
+        return new Container(res);
+    }
+
+    // returns null if the Container has not parent (if main or sidebar)
+    protected final @Nullable Container parent() {
+        if (path.size() == 1) {
+            return null;
+        }
+        final ArrayList<String> res = new ArrayList<>(path.size() - 1);
+        for (int i = 0; i < path.size() - 1; i++) {
+            res.add(path.get(i));
+        }
         return new Container(res);
     }
 
