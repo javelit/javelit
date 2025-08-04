@@ -41,12 +41,14 @@ public class ContainerComponent extends JtComponent<Container> {
             this.key = key;
         }
 
-        public void height(final Integer height) {
+        public Builder height(final Integer height) {
             this.height = height;
+            return this;
         }
 
-        public void border(final @Nullable Boolean border) {
+        public Builder border(final @Nullable Boolean border) {
             this.border = border;
+            return this;
         }
 
         @Override
