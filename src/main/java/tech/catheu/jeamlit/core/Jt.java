@@ -11,6 +11,7 @@ import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
+import tech.catheu.jeamlit.components.layout.ExpanderComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
@@ -103,6 +104,10 @@ public class Jt {
 
     public static TabsComponent.Builder tabs(final @Nonnull String key, @Nonnull List<@NotNull String> tabs) {
         return new TabsComponent.Builder(key, tabs);
+    }
+
+    public static ExpanderComponent.Builder expander(final @Nonnull String key, @Nonnull String label) {
+        return new ExpanderComponent.Builder(key, label);
     }
 
 }

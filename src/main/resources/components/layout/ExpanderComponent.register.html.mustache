@@ -1,0 +1,172 @@
+<script type="module">
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    
+    class JtExpander extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+            
+            :host([width]:not([width="stretch"])) {
+                width: var(--expander-width);
+                max-width: 100%;
+            }
+            
+            
+            .chevron {
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-lg);
+                color: var(--jt-text-primary);
+                transition: transform var(--jt-transition-fast), color var(--jt-transition-fast);
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            }
+            
+            details[open] .chevron {
+                transform: rotate(180deg);
+            }
+            
+            .label {
+                flex: 1;
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-normal);
+                color: var(--jt-text-primary);
+                margin: 0;
+                transition: color var(--jt-transition-fast);
+            }
+            
+            /* Markdown formatting in label */
+            .label em {
+                font-style: italic;
+            }
+            
+            .label strong {
+                font-weight: var(--jt-font-weight-bold);
+            }
+            
+            .label code {
+                background-color: var(--jt-bg-tertiary);
+                padding: 0.1em 0.3em;
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family-mono);
+                font-size: 0.9em;
+            }
+            
+            .label a {
+                color: var(--jt-theme-color);
+                text-decoration: none;
+            }
+            
+            .label a:hover {
+                text-decoration: underline;
+            }
+            
+            details {
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius);
+            }
+            
+            summary {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+                padding: var(--jt-spacing-md) var(--jt-spacing-lg);
+                cursor: pointer;
+                user-select: none;
+                list-style: none;
+            }
+            
+            summary::-webkit-details-marker {
+                display: none;
+            }
+            
+            summary::marker {
+                display: none;
+            }
+            
+            summary:hover .label {
+                color: var(--jt-theme-color);
+            }
+            
+            summary:hover .chevron {
+                color: var(--jt-theme-color);
+            }
+            
+            .content-wrapper {
+                padding: var(--jt-spacing-lg);
+            }
+            
+            ::slotted(*) {
+                display: block;
+            }
+        `;
+        
+        static properties = {
+            label: {type: String},
+            expanded: {type: Boolean, reflect: true},
+            width: {type: String}
+        };
+        
+        constructor() {
+            super();
+            this.label = '';
+            this.expanded = false;
+            this.width = 'stretch';
+        }
+        
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // Update width CSS variable if needed
+            if (changedProperties.has('width')) {
+                if (this.width && this.width !== 'stretch') {
+                    this.style.setProperty('--expander-width', `${this.width}px`);
+                } else {
+                    this.style.removeProperty('--expander-width');
+                }
+            }
+            
+            // Update details open state
+            if (changedProperties.has('expanded')) {
+                const details = this.shadowRoot.querySelector('details');
+                if (details) {
+                    details.open = this.expanded;
+                }
+            }
+        }
+        
+        formatText(label) {
+            if (!label) return '';
+            
+            // Markdown formatting
+            return label
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+        }
+        
+        handleToggle(e) {
+            this.expanded = e.target.open;
+        }
+        
+        render() {
+            return html`
+                <details ?open="${this.expanded}" @toggle="${this.handleToggle}">
+                    <summary>
+                        <div class="label" .innerHTML="${this.formatText(this.label)}"></div>
+                        <span class="chevron">expand_more</span>
+                    </summary>
+                    <div class="content-wrapper">
+                        <slot></slot>
+                    </div>
+                </details>
+            `;
+        }
+    }
+    
+    customElements.define('jt-expander', JtExpander);
+</script>
