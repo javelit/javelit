@@ -65,6 +65,7 @@
             details {
                 border: 1px solid var(--jt-border-color);
                 border-radius: var(--jt-border-radius);
+                overflow: hidden;
             }
             
             summary {
@@ -113,6 +114,19 @@
             this.label = '';
             this.expanded = false;
             this.width = 'stretch';
+            this.animation = null;
+            this.isClosing = false;
+            this.isExpanding = false;
+        }
+        
+        firstUpdated() {
+            super.firstUpdated();
+            
+            // Set initial state without animation
+            const details = this.shadowRoot.querySelector('details'); 
+            if (details) {
+                details.open = this.expanded;
+            }
         }
         
         updated(changedProperties) {
@@ -127,11 +141,15 @@
                 }
             }
             
-            // Update details open state
-            if (changedProperties.has('expanded')) {
+            // Handle programmatic changes to expanded property
+            if (changedProperties.has('expanded') && !this.isExpanding && !this.isClosing) {
                 const details = this.shadowRoot.querySelector('details');
-                if (details) {
-                    details.open = this.expanded;
+                if (details && details.open !== this.expanded) {
+                    if (this.expanded) {
+                        this.open(details);
+                    } else {
+                        this.shrink(details);
+                    }
                 }
             }
         }
@@ -149,14 +167,83 @@
                 .replace(/~~(.*?)~~/g, '<del>$1</del>');
         }
         
-        handleToggle(e) {
-            this.expanded = e.target.open;
+        handleClick(e) {
+            e.preventDefault();
+            const details = this.shadowRoot.querySelector('details');
+            
+            if (this.isClosing || !details.open) {
+                this.open(details);
+            } else if (this.isExpanding || details.open) {
+                this.shrink(details);
+            }
+        }
+        
+        shrink(details) {
+            this.isClosing = true;
+            
+            const startHeight = `${details.offsetHeight}px`;
+            const summary = details.querySelector('summary');
+            const endHeight = `${summary.offsetHeight}px`;
+            
+            if (this.animation) {
+                this.animation.cancel();
+            }
+            
+            this.animation = details.animate({
+                height: [startHeight, endHeight]
+            }, {
+                duration: 400,
+                easing: 'ease-out'
+            });
+            
+            this.animation.onfinish = () => this.onAnimationFinish(details, false);
+            this.animation.oncancel = () => this.isClosing = false;
+        }
+        
+        open(details) {
+            this.isExpanding = true;
+            
+            const summary = details.querySelector('summary');
+            const startHeight = `${details.offsetHeight}px`;
+            
+            // Temporarily open to measure full height
+            details.open = true;
+            const endHeight = `${details.offsetHeight}px`;
+            details.open = false;
+            
+            // Set starting height and open
+            details.style.height = startHeight;
+            details.open = true;
+            
+            if (this.animation) {
+                this.animation.cancel();
+            }
+            
+            this.animation = details.animate({
+                height: [startHeight, endHeight]
+            }, {
+                duration: 400,
+                easing: 'ease-out'
+            });
+            
+            this.animation.onfinish = () => this.onAnimationFinish(details, true);
+            this.animation.oncancel = () => this.isExpanding = false;
+        }
+        
+        onAnimationFinish(details, open) {
+            details.open = open;
+            this.animation = null;
+            this.isClosing = false;
+            this.isExpanding = false;
+            details.style.height = '';
+            details.style.overflow = '';
+            this.expanded = open;
         }
         
         render() {
             return html`
-                <details ?open="${this.expanded}" @toggle="${this.handleToggle}">
-                    <summary>
+                <details ?open="${this.expanded}">
+                    <summary @click="${this.handleClick}">
                         <div class="label" .innerHTML="${this.formatText(this.label)}"></div>
                         <span class="chevron">expand_more</span>
                     </summary>
