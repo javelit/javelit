@@ -87,7 +87,11 @@ public class Jt {
     }
 
     public static ContainerComponent.Builder container(final @Nonnull String key) {
-        return new ContainerComponent.Builder(key);
+        return new ContainerComponent.Builder(key, false);
+    }
+
+    public static ContainerComponent.Builder empty(final @Nonnull String key) {
+        return new ContainerComponent.Builder(key, true);
     }
 
     public static ColumnsComponent.Builder columns(final @Nonnull String key, final int numColumns) {
