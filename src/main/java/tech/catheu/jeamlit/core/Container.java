@@ -12,47 +12,45 @@ public class Container implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    protected static final Container MAIN = new Container(List.of("main"));
-    protected static final Container SIDEBAR = new Container(List.of("sidebar"));
+    protected static final Container MAIN = new Container("main", null);
+    protected static final Container SIDEBAR = new Container("sidebar", null);
 
     private final @Nonnull List<@NotNull String> path;
+    private final @Nullable Container parent;
 
     protected @Nonnull List<@NotNull String> path() {
         return path;
     }
 
-    protected Container(@Nonnull List<@NotNull String> path) {
-        final boolean containsComma = path.stream().anyMatch(e -> e.contains(","));
-        if (containsComma) {
+    private Container(final @NotNull String key, @Nullable Container parent) {
+        if (key.contains(",")) {
             throw new IllegalArgumentException(
                     "Container path cannot contain a comma. Please remove the comma from your key or container path.");
         }
-        final boolean containsEmpty = path.stream().anyMatch(String::isEmpty);
-        if (containsEmpty) {
+        if (key.isEmpty()) {
             throw new IllegalArgumentException(
                     "Container path cannot contain an empty string. Please remove the empty string from your key or container path.");
         }
-        this.path = List.copyOf(path);
+
+        this.parent = parent;
+        if (this.parent == null) {
+            this.path = List.of(key);
+        } else {
+            final ArrayList<String> tempPath = new ArrayList<>(parent.path.size() + 1);
+            tempPath.addAll(parent.path);
+            tempPath.add(key);
+            this.path = List.copyOf(tempPath);
+        }
     }
 
 
     public final Container with(final @NotNull String key) {
-        final ArrayList<String> res = new ArrayList<>(path.size());
-        res.addAll(path);
-        res.add(key);
-        return new Container(res);
+        return new Container(key, this);
     }
 
     // returns null if the Container has no parent (if main or sidebar)
     protected final @Nullable Container parent() {
-        if (path.size() == 1) {
-            return null;
-        }
-        final ArrayList<String> res = new ArrayList<>(path.size() - 1);
-        for (int i = 0; i < path.size() - 1; i++) {
-            res.add(path.get(i));
-        }
-        return new Container(res);
+        return parent;
     }
 
     @SuppressWarnings("unused")
