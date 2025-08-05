@@ -136,10 +136,14 @@ class StateManager {
             // a component with the same id was already registered while running the app top to bottom
             throw DuplicateWidgetIDException.of(component);
         }
-        currentExecution
+
+        final LinkedHashMap<String, JtComponent<?>> componentsMap = currentExecution
                 .containerToComponents
-                .computeIfAbsent(container, k -> new LinkedHashMap<>())
-                .put(component.getKey(), component);
+                .computeIfAbsent(container, k -> new LinkedHashMap<>());
+        if (container.isInPlace()) {
+            componentsMap.clear();
+        }
+        componentsMap.put(component.getKey(), component);
 
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
@@ -157,6 +161,12 @@ class StateManager {
 
         currentExecution.containerToCurrentIndex.putIfAbsent(container, 0);
         currentExecution.containerToFoundDifference.putIfAbsent(container, false);
+        if (container.isInPlace()) {
+            // always reset inPlace containers and clear before
+            currentExecution.containerToCurrentIndex.put(container, 0);
+            currentExecution.containerToFoundDifference.put(container, true);
+            clearBefore = true;
+        }
         if (currentExecution.clearedLayoutContainers.contains(container.parent())) {
             currentExecution.containerToFoundDifference.put(container, true);
         }
@@ -164,7 +174,7 @@ class StateManager {
             currentExecution.containerToFoundDifference.put(container, true);
         }
 
-        boolean lookForDifference = !currentExecution.containerToFoundDifference.get(container)
+        final boolean lookForDifference = !currentExecution.containerToFoundDifference.get(container)
                                     && lastExecution != null
                                     && lastExecution.containerToComponents.containsKey(container)
                                     && currentExecution.containerToCurrentIndex.get(container) < lastExecution.containerToComponents.get(

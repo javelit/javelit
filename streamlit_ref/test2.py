@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-st.text("something")
+empty = st.empty()
 for i in range(10):
+    empty.button("click me")
     time.sleep(1)
-    st.text("coucou Louise")

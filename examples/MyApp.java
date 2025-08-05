@@ -5,7 +5,7 @@ import java.util.List;
 
 public class MyApp {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // Button with session state
         Jt.sessionState().putIfAbsent("clicks", 0);
 
@@ -27,7 +27,7 @@ public class MyApp {
         Jt.text("In column 1 BUT CHANGED! ").use(columns.col(1));
         Jt.text("In column 0 ! ").use(columns.col(0));
         Jt.text("In column 0 Again BUT CHANGED! ").use(columns.col(0));
-        //Jt.text("In column 0 and Again! ").use(columns.col(0));
+        Jt.text("In column 0 and Again! ").use(columns.col(0));
         //Jt.text("In column 2 ! ").use(columns.col(2));
         
         // Interactive widgets
@@ -66,6 +66,15 @@ public class MyApp {
         Jt.text("---").use();
         Jt.text("another text in container - but put way later").use(container);
         Jt.text("💡 Try changing values and see the app update in real-time!").use();
+
+        var empty = Jt.empty("debug-empty").border(true).use(columns.col(2));
+        Jt.text("debug empty - 1 ").use(empty);
+        Thread.sleep(5000);
+        Jt.text("debug empty - 2 ").use(empty);
+        System.out.println("GOING TO SLEEP FOR LAST ONE");
+        Thread.sleep(5000);
+        Jt.text("debug empty - 3 ").use(empty);
+        System.out.println("FNISHED SLEEPING FOR LAST ONE");
     }
     
     private static String getAgeCategory(Double age) {
