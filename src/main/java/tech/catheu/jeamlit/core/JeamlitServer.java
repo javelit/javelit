@@ -199,14 +199,12 @@ public class JeamlitServer implements StateManager.RenderServer {
             final Object value = message.get("value");
 
             final InternalSessionState session = StateManager.getSession(sessionId);
-            if (session != null) {
-                session.getComponentsState().put(componentKey, value);
-                StateManager.registerCallback(sessionId, componentKey);
-            } else {
+            if (session == null) {
                 throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(
                         sessionId));
             }
-
+            session.getComponentsState().put(componentKey, value);
+            StateManager.registerCallback(sessionId, componentKey);
             hotReloader.runApp(sessionId);
         }
     }
