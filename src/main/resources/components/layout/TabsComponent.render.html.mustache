@@ -1,0 +1,8 @@
+<jt-tabs
+{{#tabsJson}}tabs="{{tabsJson}}"{{/tabsJson}}
+{{#width}}width="{{width}}"{{/width}}
+>
+{{#currentValue.indexedTabs.entrySet}}
+<div slot="tab_{{key}}" data-container="{{value.frontendDataContainerField}}"></div>
+{{/currentValue.indexedTabs.entrySet}}
+</jt-tabs>

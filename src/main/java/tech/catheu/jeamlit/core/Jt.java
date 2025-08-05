@@ -4,14 +4,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.components.ButtonComponent;
 import tech.catheu.jeamlit.components.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
+import tech.catheu.jeamlit.components.layout.TabsComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -96,6 +99,10 @@ public class Jt {
 
     public static ColumnsComponent.Builder columns(final @Nonnull String key, final int numColumns) {
         return new ColumnsComponent.Builder(key, numColumns);
+    }
+
+    public static TabsComponent.Builder tabs(final @Nonnull String key, @Nonnull List<@NotNull String> tabs) {
+        return new TabsComponent.Builder(key, tabs);
     }
 
 }

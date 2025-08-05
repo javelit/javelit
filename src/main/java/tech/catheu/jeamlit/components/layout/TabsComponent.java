@@ -1,0 +1,169 @@
+package tech.catheu.jeamlit.components.layout;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.reflect.ReflectionObjectHandler;
+import jakarta.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
+import tech.catheu.jeamlit.core.Layout;
+
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
+
+    protected final @Nonnull List<@NotNull String> tabs;
+    protected final String width;
+
+    private static final Mustache registerTemplate;
+    private static final Mustache renderTemplate;
+
+    static {
+        final DefaultMustacheFactory mf = new DefaultMustacheFactory();
+        mf.setObjectHandler(new ReflectionObjectHandler() {
+            @Override
+            protected boolean areMethodsAccessible(Map<?, ?> map) {
+                return true;
+            }
+        });
+        registerTemplate = mf.compile("components/layout/TabsComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/layout/TabsComponent.render.html.mustache");
+    }
+
+    private TabsComponent(final Builder builder) {
+        // the currentValue is set when use() is called - see beforeUse
+        super(builder.generateKeyForInteractive(), null, null);
+        this.tabs = builder.tabs;
+        this.width = builder.width;
+    }
+
+    public static class Builder extends JtComponentBuilder<Tabs, TabsComponent, Builder> {
+        private final List<@NotNull String> tabs;
+        private String width = "stretch";
+
+        public Builder(final @Nonnull String key, @Nonnull List<@NotNull String> tabs) {
+            this.key = key;
+            if (tabs.isEmpty()) {
+                throw new IllegalArgumentException("tabs cannot be null or empty");
+            }
+            for (int i = 0; i < tabs.size(); i++) {
+                if (tabs.get(i).trim().isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Tab name at index %s is null or empty. Please use a non-empty string.".formatted(
+                                    i));
+                }
+            }
+            this.tabs = List.copyOf(tabs);
+        }
+
+        public Builder width(final String width) {
+            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+                throw new IllegalArgumentException(
+                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+            }
+            this.width = width;
+            return this;
+        }
+
+        @Override
+        public TabsComponent build() {
+            if (Container.RESERVED_PATHS.contains(this.key)) {
+                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
+            }
+
+            return new TabsComponent(this);
+        }
+    }
+
+
+    @Override
+    protected String register() {
+        if (currentValue == null) {
+            throw new IllegalStateException(
+                    "Component has not been fully initialized yet. use() should be called before register().");
+        }
+        final StringWriter writer = new StringWriter();
+        registerTemplate.execute(writer, this);
+        return writer.toString();
+    }
+
+    @Override
+    protected String render() {
+        if (currentValue == null) {
+            throw new IllegalStateException(
+                    "Component has not been fully initialized yet. use() should be called before register().");
+        }
+        final StringWriter writer = new StringWriter();
+        renderTemplate.execute(writer, this);
+        return writer.toString();
+    }
+
+    protected TypeReference<Tabs> getTypeReference() {
+        return new TypeReference<>() {
+        };
+    }
+
+    @Override
+    public void beforeUse(final Container container) {
+        final Container baseContainer = container.child(getKey());
+        this.currentValue = new Tabs(baseContainer, this.tabs);
+    }
+
+    // Helper method for Mustache template to render widths as JSON array
+    protected String getTabsJson() {
+        return toJson(tabs);
+    }
+
+
+    public static class Tabs implements NotAState, Layout {
+        private final List<@NotNull String> tabNames;
+        private final List<Container> backing;
+        private final Container layoutContainer;
+        // helper data structure for mustache templates
+        private final LinkedHashMap<Integer, Container> indexedTabs;
+
+        private Tabs(final Container baseContainer, final List<@NotNull String> tabs) {
+            this.tabNames = List.copyOf(tabs);
+            this.layoutContainer = baseContainer;
+            final List<Container> tabsList = new ArrayList<>();
+            for (int i = 0; i < tabs.size(); i++) {
+                // CAUTION - the tab_{{ i }} logic is duplicated in this class and both templates
+                tabsList.add(baseContainer.child("tab_" + i));
+            }
+            this.backing = tabsList;
+            indexedTabs = new LinkedHashMap<>();
+            for (int i = 0; i < backing.size(); i++) {
+                indexedTabs.put(i, backing.get(i));
+            }
+        }
+
+        public Container tab(final int index) {
+            return backing.get(index);
+        }
+
+        public Container tab(final String tabName) {
+            final int idx = tabNames.indexOf(tabName);
+            if (idx == -1) {
+                throw new IllegalArgumentException("Unknown tab name %s. Valid tab names: %s".formatted(tabName, backing.toString()));
+            }
+            return backing.get(idx);
+        }
+
+        // helper for mustache templates
+        public LinkedHashMap<Integer, Container> indexedTabs() {
+            return indexedTabs;
+        }
+
+        @Override
+        public Container layoutContainer() {
+            return layoutContainer;
+        }
+    }
+}
