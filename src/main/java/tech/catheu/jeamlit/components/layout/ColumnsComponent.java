@@ -150,7 +150,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
     @Override
     public void beforeUse(final Container container) {
-        final Container baseContainer = container.with(getKey());
+        final Container baseContainer = container.child(getKey());
         this.currentValue = new Columns(baseContainer, numColumns);
     }
     
@@ -174,7 +174,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
             final List<Container> columnsList = new ArrayList<>();
             for (int i = 0; i < numColumns; i++) {
                 // CAUTION - the col_{{ i }} logic is duplicated in this class and both templates
-                columnsList.add(baseContainer.with("col_" + i));
+                columnsList.add(baseContainer.child("col_" + i));
             }
             this.backing = columnsList;
             indexedColumns = new LinkedHashMap<>();

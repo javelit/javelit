@@ -12,17 +12,14 @@ public class Container implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    protected static final Container MAIN = new Container("main", null);
-    protected static final Container SIDEBAR = new Container("sidebar", null);
+    protected static final Container MAIN = new Container("main", null, false);
+    protected static final Container SIDEBAR = new Container("sidebar", null, false);
 
     private final @Nonnull List<@NotNull String> path;
     private final @Nullable Container parent;
+    private final boolean inPlace;
 
-    protected @Nonnull List<@NotNull String> path() {
-        return path;
-    }
-
-    private Container(final @NotNull String key, @Nullable Container parent) {
+    private Container(final @NotNull String key, @Nullable Container parent, final boolean inPlace) {
         if (key.contains(",")) {
             throw new IllegalArgumentException(
                     "Container path cannot contain a comma. Please remove the comma from your key or container path.");
@@ -31,7 +28,7 @@ public class Container implements JtComponent.NotAState {
             throw new IllegalArgumentException(
                     "Container path cannot contain an empty string. Please remove the empty string from your key or container path.");
         }
-
+        this.inPlace = inPlace;
         this.parent = parent;
         if (this.parent == null) {
             this.path = List.of(key);
@@ -43,9 +40,21 @@ public class Container implements JtComponent.NotAState {
         }
     }
 
+    public final Container child(final @NotNull String key) {
+        return new Container(key, this, false);
+    }
 
-    public final Container with(final @NotNull String key) {
-        return new Container(key, this);
+    public final Container inPlaceChild(final @NotNull String key) {
+        return new Container(key, this, true);
+    }
+
+    protected @Nonnull List<@NotNull String> path() {
+        return path;
+    }
+
+
+    protected boolean isInPlace() {
+        return inPlace;
     }
 
     // returns null if the Container has no parent (if main or sidebar)

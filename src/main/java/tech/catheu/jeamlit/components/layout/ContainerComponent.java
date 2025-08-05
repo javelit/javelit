@@ -91,6 +91,6 @@ public class ContainerComponent extends JtComponent<Container> {
     /// for instance, if the container is "main", returns a container \["main", $key\]
     @Override
     public void beforeUse(final Container container) {
-        this.currentValue = container.with(getKey());
+        this.currentValue = container.child(getKey());
     }
 }
