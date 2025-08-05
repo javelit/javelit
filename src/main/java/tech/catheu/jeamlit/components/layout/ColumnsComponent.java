@@ -7,6 +7,7 @@ import com.github.mustachejava.reflect.ReflectionObjectHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
+import tech.catheu.jeamlit.components.JsonUtils;
 import tech.catheu.jeamlit.core.Container;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
@@ -43,11 +43,11 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
     static {
         final DefaultMustacheFactory mf = new DefaultMustacheFactory();
         mf.setObjectHandler(new ReflectionObjectHandler() {
-                    @Override
-                    protected boolean areMethodsAccessible(Map<?, ?> map) {
-                        return true;
-                    }
-                });
+            @Override
+            protected boolean areMethodsAccessible(Map<?, ?> map) {
+                return true;
+            }
+        });
         registerTemplate = mf.compile("components/layout/ColumnsComponent.register.html.mustache");
         renderTemplate = mf.compile("components/layout/ColumnsComponent.render.html.mustache");
     }
@@ -153,13 +153,13 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
         final Container baseContainer = container.child(getKey());
         this.currentValue = new Columns(baseContainer, numColumns);
     }
-    
+
     // Helper method for Mustache template to render widths as JSON array
     protected String getWidthsJson() {
-        if (widths == null) return null;
-        return widths.stream()
-            .map(String::valueOf)
-            .collect(Collectors.joining(",", "[", "]"));
+        if (widths == null) {
+            return null;
+        }
+        return JsonUtils.toJson(widths);
     }
 
 
@@ -186,7 +186,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
         public Container col(final int index) {
             return backing.get(index);
         }
-        
+
         // helper for mustache templates
         public LinkedHashMap<Integer, Container> indexedColumns() {
             return indexedColumns;
