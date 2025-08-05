@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Container implements JtComponent.NotAState {
@@ -69,7 +70,7 @@ public class Container implements JtComponent.NotAState {
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return Objects.hash(path, parent, inPlace);
     }
 
     @Override
@@ -77,14 +78,17 @@ public class Container implements JtComponent.NotAState {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Container)) {
+        if (!(obj instanceof Container other)) {
             return false;
         }
-        return path.equals(((Container) obj).path);
+        return this.path.equals(other.path)
+               && Objects.equals(this.parent, other.parent)
+               && this.inPlace == other.inPlace;
     }
 
     @Override
     public String toString() {
+        // no parent and inPlace in the string representation, it will be confusing to users
         return String.join("->", path);
     }
 }
