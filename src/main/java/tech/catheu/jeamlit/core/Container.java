@@ -12,20 +12,14 @@ public class Container implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    static final Container MAIN = new Container(List.of("main"));
+    protected static final Container MAIN = new Container(List.of("main"));
+    protected static final Container SIDEBAR = new Container(List.of("sidebar"));
 
-    static final Container SIDEBAR = new Container(List.of("sidebar"));
+    private final @Nonnull List<@NotNull String> path;
 
     protected @Nonnull List<@NotNull String> path() {
         return path;
     }
-
-    @SuppressWarnings("unused")
-    public @Nonnull String frontendDataContainerField() {
-        return String.join(",", path);
-    }
-
-    private final @Nonnull List<@NotNull String> path;
 
     protected Container(@Nonnull List<@NotNull String> path) {
         final boolean containsComma = path.stream().anyMatch(e -> e.contains(","));
@@ -49,7 +43,7 @@ public class Container implements JtComponent.NotAState {
         return new Container(res);
     }
 
-    // returns null if the Container has not parent (if main or sidebar)
+    // returns null if the Container has no parent (if main or sidebar)
     protected final @Nullable Container parent() {
         if (path.size() == 1) {
             return null;
@@ -59,6 +53,11 @@ public class Container implements JtComponent.NotAState {
             res.add(path.get(i));
         }
         return new Container(res);
+    }
+
+    @SuppressWarnings("unused")
+    public @Nonnull String frontendDataContainerField() {
+        return String.join(",", path);
     }
 
     @Override
