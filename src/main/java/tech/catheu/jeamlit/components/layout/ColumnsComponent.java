@@ -7,7 +7,6 @@ import com.github.mustachejava.reflect.ReflectionObjectHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.components.JsonUtils;
 import tech.catheu.jeamlit.core.Container;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
@@ -159,7 +158,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
         if (widths == null) {
             return null;
         }
-        return JsonUtils.toJson(widths);
+        return toJson(widths);
     }
 
 

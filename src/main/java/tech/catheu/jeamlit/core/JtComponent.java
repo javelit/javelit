@@ -1,10 +1,12 @@
 package tech.catheu.jeamlit.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -21,7 +23,7 @@ public abstract class JtComponent<T> {
     private final String key;
     protected T currentValue;
     protected @Nullable Consumer<T> callback;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
@@ -81,7 +83,7 @@ public abstract class JtComponent<T> {
     protected T castAndValidate(final Object rawValue) {
         try {
             // Use Jackson to convert to the target type
-            return objectMapper.convertValue(rawValue, getTypeReference());
+            return OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -133,5 +135,13 @@ public abstract class JtComponent<T> {
     // use this type to signify a component is not interactive and does not return anything
     public enum NONE implements NotAState {
         NONE
+    }
+
+    protected static String toJson(final List<?> objs) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(objs);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

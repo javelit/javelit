@@ -17,8 +17,8 @@ public class SliderComponent extends JtComponent<Double> {
     protected final double max;
     protected final double value;
     protected final double step;
-    protected final String format;
-    protected final String help;
+    protected final @Nullable String format;
+    protected final @Nullable String help;
     protected final boolean disabled;
     protected final String labelVisibility;
     protected final String width;
@@ -54,53 +54,53 @@ public class SliderComponent extends JtComponent<Double> {
         private double max = 100.0;
         private double value = 0.0; // Will be set to min if not specified
         private double step = 1.0;
-        private String format = null;
-        private String help = null;
+        private @Nullable String format = null;
+        private @Nullable String help = null;
         private boolean disabled = false;
         private String labelVisibility = "visible";
-        private Consumer<Double> onChange;
+        private @Nullable Consumer<Double> onChange;
         private String width = "stretch";
         
         public Builder(String label) {
             this.label = label;
         }
         
-        public Builder min(double min) {
+        public Builder min(final double min) {
             this.min = min;
             return this;
         }
         
-        public Builder max(double max) {
+        public Builder max(final double max) {
             this.max = max;
             return this;
         }
         
-        public Builder value(double value) {
+        public Builder value(final double value) {
             this.value = value;
             return this;
         }
         
-        public Builder step(double step) {
+        public Builder step(final double step) {
             this.step = step;
             return this;
         }
         
-        public Builder format(String format) {
+        public Builder format(final @Nullable String format) {
             this.format = format;
             return this;
         }
         
-        public Builder help(String help) {
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
         
-        public Builder disabled(boolean disabled) {
+        public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
         
-        public Builder labelVisibility(String labelVisibility) {
+        public Builder labelVisibility(final String labelVisibility) {
             if (labelVisibility != null && !labelVisibility.equals("visible") && 
                 !labelVisibility.equals("hidden") && !labelVisibility.equals("collapsed")) {
                 throw new IllegalArgumentException("label_visibility must be 'visible', 'hidden', or 'collapsed'. Got: " + labelVisibility);
@@ -109,12 +109,12 @@ public class SliderComponent extends JtComponent<Double> {
             return this;
         }
         
-        public Builder onChange(@Nullable Consumer<Double> onChange) {
+        public Builder onChange(final @Nullable Consumer<Double> onChange) {
             this.onChange = onChange;
             return this;
         }
         
-        public Builder width(String width) {
+        public Builder width(final String width) {
             if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
