@@ -230,23 +230,17 @@
                     while (containerEl.children.length > clearFromIndex) {
                         containerEl.removeChild(containerEl.lastChild);
                     }
-                    // All mutations just append after clearing
-                    mutations.forEach(mutation => {
-                        // in the clearing case, it can happen that the element is null to trigger a full cleanup - so checking here but not below
-                        if (mutation.element) {
-                            containerEl.appendChild(mutation.element);
-                        }
-                    });
-                } else {
-                    // NO CLEARING PATH: Use index-based logic
-                    mutations.forEach(mutation => {
+                }
+                mutations.forEach(mutation => {
+                    // in the clearing case, it can happen that the element is null to trigger a full cleanup - so checking here but not below
+                    if (mutation.element) {
                         if (mutation.index !== null && mutation.index < containerEl.children.length) {
                             containerEl.children[mutation.index].replaceWith(mutation.element);
                         } else {
                             containerEl.appendChild(mutation.element);
                         }
-                    });
-                }
+                    }
+                });
             });
             
             pendingMutations = [];
