@@ -5,11 +5,15 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import tech.catheu.jeamlit.core.Container;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 import java.util.function.Consumer;
+
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class ButtonComponent extends JtComponent<Boolean> {
     // the following fields are protected to be visible to the template engine - see render function
@@ -112,12 +116,21 @@ public class ButtonComponent extends JtComponent<Boolean> {
     
     @Override
     protected TypeReference<Boolean> getTypeReference() {
-        return new TypeReference<Boolean>() {};
+        return new TypeReference<>() {};
     }
 
     @Override
     protected void resetIfNeeded() {
         // Button truthy value is momentary - reset to false after reading
         currentValue = false;
+    }
+
+    @Override
+    public void beforeUse(@NotNull Container container) {
+        final String parentFormComponentKey = container.getParentFormComponentKey();
+        checkArgument(parentFormComponentKey == null,
+                      "Attempting to create a button inside a form. %s. A button cannot be added to a form. Please use a form submit button instead with Jt.formSubmitButton.",
+                      parentFormComponentKey,
+                      parentFormComponentKey);
     }
 }
