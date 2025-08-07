@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
@@ -110,6 +111,18 @@ public class StateManager {
             final Map<String, Object> pendingInFormComponentStates = session.pendingInFormComponentsState().get(parentFormComponentKey);
             if (pendingInFormComponentStates != null) {
                 session.getComponentsState().putAll(pendingInFormComponentStates);
+
+                // check if the form has clearOnSubmit enabled and act accordingly - Note: data struct manipulation is a bit heavy but won't optimize for the moment
+                final FormComponent formComponent = lastExecution.containerToComponents.values().stream()
+                        .filter(m -> m.containsKey(parentFormComponentKey))
+                        .map(m -> m.get(parentFormComponentKey))
+                        .map(c -> (FormComponent) c)
+                        .findFirst().orElse(null);
+                checkState(formComponent != null, "Form component not found for key %s", parentFormComponentKey);
+                if (formComponent.isClearOnSubmit()) {
+                    session.formComponentsToReset().addAll(pendingInFormComponentStates.keySet());
+                }
+
                 pendingInFormComponentStates.clear();
             }
             session.getComponentsState().put(componentKey, updatedValue);
@@ -118,9 +131,11 @@ public class StateManager {
         }
         // handle special case of component inside a form
         if (parentFormComponentKey != null) {
-            session.pendingInFormComponentsState()
-                    .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
-                    .put(componentKey, updatedValue);
+            if (component.returnValueIsAState()) {
+                session.pendingInFormComponentsState()
+                        .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
+                        .put(componentKey, updatedValue);
+            }
             return false;
         }
         // handle normal case
@@ -314,7 +329,9 @@ public class StateManager {
         }
 
         final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
-        for (final LinkedHashMap<String, JtComponent<?>> currentComponents : currentExecution.containerToComponents.values()) {
+        for (final Map.Entry<Container, LinkedHashMap<String, JtComponent<?>>> e : currentExecution.containerToComponents.entrySet()) {
+            final Container container = e.getKey();
+            final LinkedHashMap<String, JtComponent<?>> currentComponents = e.getValue();
             // reset and save components state
             for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
                 final JtComponent<?> component = entry.getValue();
@@ -322,6 +339,22 @@ public class StateManager {
                 if (component.returnValueIsAState()) {
                     session.getComponentsState().put(entry.getKey(), component.returnValue());
                 }
+            }
+
+            // clear form to default values
+            if (!session.formComponentsToReset().isEmpty() && container.getParentFormComponentKey() != null) {
+                // exploit the ordering of the linked hashmap to know the correct index to override
+                int i = 0;
+                for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
+                    if (session.formComponentsToReset().contains(entry.getKey())) {
+                        final JtComponent<?> component = entry.getValue();
+                        component.resetToInitialValue();
+                        session.getComponentsState().put(entry.getKey(), component.returnValue());
+                        renderServer.send(currentExecution.sessionId, component, container, i , false);
+                    }
+                    i++;
+                }
+                session.formComponentsToReset().clear();
             }
         }
 
@@ -337,7 +370,7 @@ public class StateManager {
         }
 
         LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
-         CURRENT_EXECUTION_IN_THREAD.remove();
+        CURRENT_EXECUTION_IN_THREAD.remove();
     }
 
     private static class NoOpRenderServer implements RenderServer {

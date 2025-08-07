@@ -9,7 +9,7 @@ public class FormsExample {
         Jt.text("This example demonstrates form functionality with batching.").use();
         
         var form = Jt.form("user_form")
-            .clearOnSubmit(true)
+            .clearOnSubmit(false)
             .border(true)
             .use();
         

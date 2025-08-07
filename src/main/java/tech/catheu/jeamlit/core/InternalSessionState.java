@@ -1,6 +1,8 @@
 package tech.catheu.jeamlit.core;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,6 +22,9 @@ class InternalSessionState {
     // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
     // values that are not applied yet - they are pending because controlled by a form
     private final Map<String, Map<String, Object>> pendingInFormComponentsState = new ConcurrentHashMap<>();
+
+    // set of component keys to reset after the run of the script - the update has to be sent to the frontend.
+    private final Set<String> formComponentsToReset = new HashSet<>();
 
     private String callbackComponentKey = null;
 
@@ -44,5 +49,9 @@ class InternalSessionState {
 
     protected Map<String, Map<String, Object>> pendingInFormComponentsState() {
         return pendingInFormComponentsState;
+    }
+
+    public Set<String> formComponentsToReset() {
+        return formComponentsToReset;
     }
 }

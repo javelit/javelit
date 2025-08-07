@@ -22,12 +22,22 @@ public abstract class JtComponent<T> {
 
     private final String key;
     protected T currentValue;
+    private T initialValue;
     protected @Nullable Consumer<T> callback;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
         this.currentValue = currentValue;
+        if (returnValueIsAState() && currentValue != null) {
+            // deep copy - not sure if it's really necessary
+            try {
+                this.initialValue = OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsString(
+                        currentValue), getTypeReference());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         this.callback = callback;
     }
 
@@ -66,6 +76,10 @@ public abstract class JtComponent<T> {
         // do not compute and store at instantiation - some components (eg layout/container components) start
         // with a null value and have their actual value binded later
         return !(currentValue instanceof JtComponent.NotAState);
+    }
+
+    protected final void resetToInitialValue() {
+        currentValue = initialValue;
     }
 
     /**

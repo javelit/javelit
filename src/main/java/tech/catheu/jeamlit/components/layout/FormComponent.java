@@ -124,4 +124,8 @@ public class FormComponent extends JtComponent<Container> {
     public void beforeUse(final @NotNull Container container) {
         this.currentValue = container.formChild(getKey());
     }
+
+    public boolean isClearOnSubmit() {
+        return clearOnSubmit;
+    }
 }
