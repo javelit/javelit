@@ -1,0 +1,51 @@
+<script type="module">
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    
+    class JtForm extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: 0 0;
+            }
+            
+            .container {
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                box-sizing: border-box;
+            }
+            
+            :host([border]) .container {
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius);
+                padding: var(--jt-spacing-md);
+            }
+        `;
+        
+        static properties = {
+            height: {type: Number},
+            border: {type: Boolean, reflect: true},
+            formKey: {type: String, attribute: 'form-key'}
+        };
+        
+        updated(changedProperties) {
+            if (changedProperties.has('height')) {
+                if (this.height) {
+                    this.style.height = `${this.height}px`;
+                } else {
+                    this.style.height = '';
+                }
+            }
+        }
+        
+        render() {
+            return html`
+                <div class="container">
+                    <slot></slot>
+                </div>
+            `;
+        }
+    }
+    
+    customElements.define('jt-form', JtForm);
+</script>

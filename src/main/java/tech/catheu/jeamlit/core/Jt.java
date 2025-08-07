@@ -12,6 +12,8 @@ import tech.catheu.jeamlit.components.TitleComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
 import tech.catheu.jeamlit.components.layout.ExpanderComponent;
+import tech.catheu.jeamlit.components.layout.FormComponent;
+import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
@@ -113,6 +115,14 @@ public class Jt {
 
     public static PopoverComponent.Builder popover(final @Nonnull String key, @Nonnull String label) {
         return new PopoverComponent.Builder(key, label);
+    }
+
+    public static FormComponent.Builder form(final @Nonnull String key) {
+        return new FormComponent.Builder(key);
+    }
+
+    public static FormSubmitButtonComponent.Builder formSubmitButton(final @Nonnull String label) {
+        return new FormSubmitButtonComponent.Builder(label);
     }
 
 }

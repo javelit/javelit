@@ -198,14 +198,10 @@ public class JeamlitServer implements StateManager.RenderServer {
             // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
-            final InternalSessionState session = StateManager.getSession(sessionId);
-            if (session == null) {
-                throw new IllegalStateException("No session with id %s. Implementation error ?".formatted(
-                        sessionId));
+            final boolean doRerun = StateManager.handleComponentUpdate(sessionId, componentKey, value);
+            if (doRerun) {
+                hotReloader.runApp(sessionId);
             }
-            session.getComponentsState().put(componentKey, value);
-            StateManager.registerCallback(sessionId, componentKey);
-            hotReloader.runApp(sessionId);
         }
     }
 

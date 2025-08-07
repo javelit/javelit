@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.HashSet;
@@ -13,7 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-class StateManager {
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
+
+public class StateManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
@@ -60,7 +63,7 @@ class StateManager {
     private StateManager() {
     }
 
-    protected static InternalSessionState getSession(final String sessionId) {
+    private static InternalSessionState getSession(final String sessionId) {
         return SESSIONS.get(sessionId);
     }
 
@@ -75,6 +78,55 @@ class StateManager {
 
     protected static void clearSession(String sessionId) {
         SESSIONS.remove(sessionId);
+    }
+    
+    /**
+     * Handles component updates and returns true if app should be re-run
+     */
+    protected static boolean handleComponentUpdate(final String sessionId, final String componentKey, final Object updatedValue) {
+        // find the component and its container
+        final InternalSessionState session = getSession(sessionId);
+        checkState(session != null,"No session with id %s. Implementation error ?" , sessionId);
+        final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
+        checkState(lastExecution != null,"Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
+        JtComponent<?> component = null;
+        Container componentContainer = null;
+        for (final Map.Entry<Container, LinkedHashMap<String, JtComponent<?>>> entry : lastExecution.containerToComponents.entrySet()) {
+            if (entry.getValue().containsKey(componentKey)) {
+                component = entry.getValue().get(componentKey);
+                componentContainer = entry.getKey();
+                break;
+            }
+        }
+        checkState(component != null, "Received update for unknown component %s. Try to refresh the page.", componentKey);
+        checkState(componentContainer != null, "Implementation error. Please reach out to support.");
+        final String parentFormComponentKey = componentContainer.getParentFormComponentKey();
+
+
+        // handle special case of form button component
+        boolean rerun = true;
+        if (component instanceof FormSubmitButtonComponent && Boolean.TRUE.equals(updatedValue)) {
+            checkState(parentFormComponentKey != null, "FormSubmitButton must be inside a form container");
+            final Map<String, Object> pendingInFormComponentStates = session.pendingInFormComponentsState().get(parentFormComponentKey);
+            if (pendingInFormComponentStates != null) {
+                session.getComponentsState().putAll(pendingInFormComponentStates);
+                pendingInFormComponentStates.clear();
+            }
+            session.getComponentsState().put(componentKey, updatedValue);
+            registerCallback(sessionId, componentKey);
+            return true;
+        }
+        // handle special case of component inside a form
+        if (parentFormComponentKey != null) {
+            session.pendingInFormComponentsState()
+                    .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
+                    .put(componentKey, updatedValue);
+            return false;
+        }
+        // handle normal case
+        session.getComponentsState().put(componentKey, updatedValue);
+        registerCallback(sessionId, componentKey);
+        return rerun;
     }
 
     protected static TypedMap getCache() {

@@ -1,3 +1,4 @@
+Option 1:
 inputs are sent in batch when the form is submitted
 --> if a parent of a component is a form, put the new value in a dedicated map.
 --> when the form button is clicked, find the dedicated map, apply values all at once
