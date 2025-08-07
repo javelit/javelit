@@ -14,8 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 class InternalSessionState {
     // readable/writable by users
     private final Map<String, Object> userState = new ConcurrentHashMap<>();
-    // not writable by users
+    // componentKey  -> value (not writable by users)
     private final Map<String, Object> componentsState = new ConcurrentHashMap<>();
+
+    // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
+    // values that are not applied yet - they are pending because controlled by a form
+    private final Map<String, Map<String, Object>> pendingInFormComponentsState = new ConcurrentHashMap<>();
 
     private String callbackComponentKey = null;
 
@@ -36,5 +40,9 @@ class InternalSessionState {
 
     void setCallbackComponentKey(String callbackComponentKey) {
         this.callbackComponentKey = callbackComponentKey;
+    }
+
+    protected Map<String, Map<String, Object>> pendingInFormComponentsState() {
+        return pendingInFormComponentsState;
     }
 }
