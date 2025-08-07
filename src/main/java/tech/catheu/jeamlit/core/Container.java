@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
+
 public class Container implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
@@ -52,6 +54,11 @@ public class Container implements JtComponent.NotAState {
     }
 
     public final Container formChild(final @NotNull String key) {
+        final String parentFormComponentKey = this.getParentFormComponentKey();
+        checkArgument(parentFormComponentKey == null,
+                      "Attempting to create a form with key %s in a form %s. A form cannot be embedded inside another form.",
+                      key,
+                      parentFormComponentKey);
         return new Container(key, this, false, true);
     }
 
@@ -68,7 +75,7 @@ public class Container implements JtComponent.NotAState {
     protected final @Nullable Container parent() {
         return parent;
     }
-    
+
     /// Find the parent form component key by traversing up the container hierarchy
     /// If the Container is a form, returns its own key.
     /// Return null if there is no form in the parents.
