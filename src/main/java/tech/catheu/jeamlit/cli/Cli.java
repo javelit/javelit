@@ -6,7 +6,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import tech.catheu.jeamlit.core.JeamlitServer;
+import tech.catheu.jeamlit.core.Server;
 
 import java.awt.*;
 import java.net.URI;
@@ -18,9 +18,9 @@ import java.util.concurrent.Callable;
 
 @Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",
         description = "Streamlit-like framework for Java")
-public class JeamlitCLI implements Callable<Integer> {
+public class Cli implements Callable<Integer> {
 
-    private static final Logger logger = LoggerFactory.getLogger(JeamlitCLI.class);
+    private static final Logger logger = LoggerFactory.getLogger(Cli.class);
 
     @Command(name = "run", description = "Run a Jeamlit application")
     static class RunCommand implements Callable<Integer> {
@@ -58,7 +58,7 @@ public class JeamlitCLI implements Callable<Integer> {
                 return 1;
             }
             // Create server
-            final JeamlitServer server = new JeamlitServer(javaFilePath, classpath, port, headersFile);
+            final Server server = new Server(javaFilePath, classpath, port, headersFile);
 
             // Start everything
             final String url = "http://localhost:" + port;
@@ -117,7 +117,7 @@ public class JeamlitCLI implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new JeamlitCLI())
+        int exitCode = new CommandLine(new Cli())
                 .addSubcommand("run", new RunCommand())
                 .execute(args);
         System.exit(exitCode);

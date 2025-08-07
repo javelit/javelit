@@ -7,13 +7,13 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class PopoverComponent extends JtComponent<Container> {
+public class PopoverComponent extends JtComponent<JtContainer> {
 
     protected final @Nonnull String label;
     protected final @Nullable String help;
@@ -38,7 +38,7 @@ public class PopoverComponent extends JtComponent<Container> {
         this.useContainerWidth = builder.useContainerWidth;
     }
 
-    public static class Builder extends JtComponentBuilder<Container, PopoverComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<JtContainer, PopoverComponent, Builder> {
         private final @Nonnull String label;
         private @Nullable String help;
         private boolean disabled = false;
@@ -66,7 +66,7 @@ public class PopoverComponent extends JtComponent<Container> {
 
         @Override
         public PopoverComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             if (label.trim().isEmpty()) {
@@ -98,13 +98,13 @@ public class PopoverComponent extends JtComponent<Container> {
         return writer.toString();
     }
 
-    protected TypeReference<Container> getTypeReference() {
+    protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };
     }
 
     @Override
-    public void beforeUse(final @NotNull Container container) {
+    public void beforeUse(final @NotNull JtContainer container) {
         this.currentValue = container.child(getKey());
     }
 }

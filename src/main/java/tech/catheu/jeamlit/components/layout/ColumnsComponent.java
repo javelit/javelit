@@ -7,10 +7,10 @@ import com.github.mustachejava.reflect.ReflectionObjectHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-import tech.catheu.jeamlit.core.Layout;
+import tech.catheu.jeamlit.core.JtLayout;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
         @Override
         public ColumnsComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             if (widths != null) {
@@ -148,8 +148,8 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
     }
 
     @Override
-    public void beforeUse(final Container container) {
-        final Container baseContainer = container.child(getKey());
+    public void beforeUse(final JtContainer container) {
+        final JtContainer baseContainer = container.child(getKey());
         this.currentValue = new Columns(baseContainer, numColumns);
     }
 
@@ -162,15 +162,15 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
     }
 
 
-    public static class Columns implements NotAState, Layout {
-        private final List<Container> backing;
-        private final Container layoutContainer;
+    public static class Columns implements NotAState, JtLayout {
+        private final List<JtContainer> backing;
+        private final JtContainer layoutContainer;
         // helper data structure for mustache templates
-        private final LinkedHashMap<Integer, Container> indexedColumns;
+        private final LinkedHashMap<Integer, JtContainer> indexedColumns;
 
-        private Columns(final Container baseContainer, final int numColumns) {
+        private Columns(final JtContainer baseContainer, final int numColumns) {
             this.layoutContainer = baseContainer;
-            final List<Container> columnsList = new ArrayList<>();
+            final List<JtContainer> columnsList = new ArrayList<>();
             for (int i = 0; i < numColumns; i++) {
                 // CAUTION - the col_{{ i }} logic is duplicated in this class and both templates
                 columnsList.add(baseContainer.child("col_" + i));
@@ -182,17 +182,17 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
             }
         }
 
-        public Container col(final int index) {
+        public JtContainer col(final int index) {
             return backing.get(index);
         }
 
         // helper for mustache templates
-        public LinkedHashMap<Integer, Container> indexedColumns() {
+        public LinkedHashMap<Integer, JtContainer> indexedColumns() {
             return indexedColumns;
         }
 
         @Override
-        public Container layoutContainer() {
+        public JtContainer layoutContainer() {
             return layoutContainer;
         }
     }

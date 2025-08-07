@@ -7,13 +7,13 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class FormComponent extends JtComponent<Container> {
+public class FormComponent extends JtComponent<JtContainer> {
 
     protected final boolean clearOnSubmit;
     protected final boolean enterToSubmit;
@@ -40,7 +40,7 @@ public class FormComponent extends JtComponent<Container> {
         this.height = builder.height;
     }
 
-    public static class Builder extends JtComponentBuilder<Container, FormComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<JtContainer, FormComponent, Builder> {
         private boolean clearOnSubmit = false;
         private boolean enterToSubmit = true;
         private boolean border = true;
@@ -86,7 +86,7 @@ public class FormComponent extends JtComponent<Container> {
 
         @Override
         public FormComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             return new FormComponent(this);
@@ -115,13 +115,13 @@ public class FormComponent extends JtComponent<Container> {
         return writer.toString();
     }
 
-    protected TypeReference<Container> getTypeReference() {
+    protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };
     }
 
     @Override
-    public void beforeUse(final @NotNull Container container) {
+    public void beforeUse(final @NotNull JtContainer container) {
         this.currentValue = container.formChild(getKey());
     }
 

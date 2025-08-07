@@ -7,13 +7,13 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class ExpanderComponent extends JtComponent<Container> {
+public class ExpanderComponent extends JtComponent<JtContainer> {
 
     protected final @Nonnull String label;
     protected final boolean expanded;
@@ -36,7 +36,7 @@ public class ExpanderComponent extends JtComponent<Container> {
         this.width = builder.width;
     }
 
-    public static class Builder extends JtComponentBuilder<Container, ExpanderComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<JtContainer, ExpanderComponent, Builder> {
         private final @Nonnull String label;
         private boolean expanded = false;
         private @Nullable String width = "stretch";
@@ -62,7 +62,7 @@ public class ExpanderComponent extends JtComponent<Container> {
 
         @Override
         public ExpanderComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             return new ExpanderComponent(this);
@@ -91,13 +91,13 @@ public class ExpanderComponent extends JtComponent<Container> {
         return writer.toString();
     }
 
-    protected TypeReference<Container> getTypeReference() {
+    protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };
     }
 
     @Override
-    public void beforeUse(final @NotNull Container container) {
+    public void beforeUse(final @NotNull JtContainer container) {
         this.currentValue = container.child(getKey());
     }
 }

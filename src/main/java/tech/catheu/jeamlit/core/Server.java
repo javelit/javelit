@@ -42,8 +42,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JeamlitServer implements StateManager.RenderServer {
-    private static final Logger logger = LoggerFactory.getLogger(JeamlitServer.class);
+public class Server implements StateManager.RenderServer {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
     private final int port;
     private final HotReloader hotReloader;
     private final FileWatcher fileWatcher;
@@ -61,7 +61,7 @@ public class JeamlitServer implements StateManager.RenderServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
-    public JeamlitServer(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
+    public Server(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
         this.port = port;
         this.hotReloader = new HotReloader(classpath, appPath);
         this.customHeaders = loadCustomHeaders(headersFile);
@@ -71,10 +71,10 @@ public class JeamlitServer implements StateManager.RenderServer {
         StateManager.setRenderServer(this);
     }
 
-    protected JeamlitServer(final int port,
-                            final @Nullable String headersFile,
-                            final HotReloader hotReloader,
-                            final FileWatcher fileWatcher) {
+    protected Server(final int port,
+                     final @Nullable String headersFile,
+                     final HotReloader hotReloader,
+                     final FileWatcher fileWatcher) {
         this.port = port;
         this.hotReloader = hotReloader;
         this.customHeaders = loadCustomHeaders(headersFile);
@@ -206,7 +206,7 @@ public class JeamlitServer implements StateManager.RenderServer {
     }
 
     @Override
-    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull Container container, final @Nullable Integer index, final boolean clearBefore) {
+    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
         // Handle component registration
         final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
                 sessionId,

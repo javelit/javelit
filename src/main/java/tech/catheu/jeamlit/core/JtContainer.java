@@ -11,19 +11,19 @@ import java.util.Set;
 
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
-public class Container implements JtComponent.NotAState {
+public class JtContainer implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    protected static final Container MAIN = new Container("main", null, false, false);
-    protected static final Container SIDEBAR = new Container("sidebar", null, false, false);
+    protected static final JtContainer MAIN = new JtContainer("main", null, false, false);
+    protected static final JtContainer SIDEBAR = new JtContainer("sidebar", null, false, false);
 
     private final @Nonnull List<@NotNull String> path;
-    private final @Nullable Container parent;
+    private final @Nullable JtContainer parent;
     private final boolean inPlace;
     private boolean formContainer = false;
 
-    private Container(final @NotNull String key, @Nullable Container parent, final boolean inPlace, final boolean formContainer) {
+    private JtContainer(final @NotNull String key, @Nullable JtContainer parent, final boolean inPlace, final boolean formContainer) {
         if (key.contains(",")) {
             throw new IllegalArgumentException(
                     "Container path cannot contain a comma. Please remove the comma from your key or container path.");
@@ -45,21 +45,21 @@ public class Container implements JtComponent.NotAState {
         }
     }
 
-    public final Container child(final @NotNull String key) {
-        return new Container(key, this, false, false);
+    public final JtContainer child(final @NotNull String key) {
+        return new JtContainer(key, this, false, false);
     }
 
-    public final Container inPlaceChild(final @NotNull String key) {
-        return new Container(key, this, true, false);
+    public final JtContainer inPlaceChild(final @NotNull String key) {
+        return new JtContainer(key, this, true, false);
     }
 
-    public final Container formChild(final @NotNull String key) {
+    public final JtContainer formChild(final @NotNull String key) {
         final String parentFormComponentKey = this.getParentFormComponentKey();
         checkArgument(parentFormComponentKey == null,
                       "Attempting to create a form with key %s in a form %s. A form cannot be embedded inside another form.",
                       key,
                       parentFormComponentKey);
-        return new Container(key, this, false, true);
+        return new JtContainer(key, this, false, true);
     }
 
     protected @Nonnull List<@NotNull String> path() {
@@ -72,7 +72,7 @@ public class Container implements JtComponent.NotAState {
     }
 
     // returns null if the Container has no parent (if main or sidebar)
-    protected final @Nullable Container parent() {
+    protected final @Nullable JtContainer parent() {
         return parent;
     }
 
@@ -81,7 +81,7 @@ public class Container implements JtComponent.NotAState {
     /// Return null if there is no form in the parents.
     @Nullable
     public String getParentFormComponentKey() {
-        Container current = this;
+        JtContainer current = this;
         while (current != null) {
             if (current.formContainer) {
                 // Return the last element of the path (the form container's key)
@@ -107,7 +107,7 @@ public class Container implements JtComponent.NotAState {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Container other)) {
+        if (!(obj instanceof JtContainer other)) {
             return false;
         }
         return this.path.equals(other.path)

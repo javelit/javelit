@@ -6,7 +6,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -126,7 +126,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
 
     @Override
-    public void beforeUse(@NotNull Container container) {
+    public void beforeUse(@NotNull JtContainer container) {
         final String parentFormComponentKey = container.getParentFormComponentKey();
         checkArgument(parentFormComponentKey == null,
                       "Attempting to create a button inside a form. %s. A button cannot be added to a form. Please use a form submit button instead with Jt.formSubmitButton.",

@@ -6,10 +6,10 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.reflect.ReflectionObjectHandler;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-import tech.catheu.jeamlit.core.Layout;
+import tech.catheu.jeamlit.core.JtLayout;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
         @Override
         public TabsComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
 
@@ -111,8 +111,8 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     }
 
     @Override
-    public void beforeUse(final Container container) {
-        final Container baseContainer = container.child(getKey());
+    public void beforeUse(final JtContainer container) {
+        final JtContainer baseContainer = container.child(getKey());
         this.currentValue = new Tabs(baseContainer, this.tabs);
     }
 
@@ -122,17 +122,17 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     }
 
 
-    public static class Tabs implements NotAState, Layout {
+    public static class Tabs implements NotAState, JtLayout {
         private final List<@NotNull String> tabNames;
-        private final List<Container> backing;
-        private final Container layoutContainer;
+        private final List<JtContainer> backing;
+        private final JtContainer layoutContainer;
         // helper data structure for mustache templates
-        private final LinkedHashMap<Integer, Container> indexedTabs;
+        private final LinkedHashMap<Integer, JtContainer> indexedTabs;
 
-        private Tabs(final Container baseContainer, final List<@NotNull String> tabs) {
+        private Tabs(final JtContainer baseContainer, final List<@NotNull String> tabs) {
             this.tabNames = List.copyOf(tabs);
             this.layoutContainer = baseContainer;
-            final List<Container> tabsList = new ArrayList<>();
+            final List<JtContainer> tabsList = new ArrayList<>();
             for (int i = 0; i < tabs.size(); i++) {
                 // CAUTION - the tab_{{ i }} logic is duplicated in this class and both templates
                 tabsList.add(baseContainer.child("tab_" + i));
@@ -144,11 +144,11 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
             }
         }
 
-        public Container tab(final int index) {
+        public JtContainer tab(final int index) {
             return backing.get(index);
         }
 
-        public Container tab(final String tabName) {
+        public JtContainer tab(final String tabName) {
             final int idx = tabNames.indexOf(tabName);
             if (idx == -1) {
                 throw new IllegalArgumentException("Unknown tab name %s. Valid tab names: %s".formatted(tabName, backing.toString()));
@@ -157,12 +157,12 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         }
 
         // helper for mustache templates
-        public LinkedHashMap<Integer, Container> indexedTabs() {
+        public LinkedHashMap<Integer, JtContainer> indexedTabs() {
             return indexedTabs;
         }
 
         @Override
-        public Container layoutContainer() {
+        public JtContainer layoutContainer() {
             return layoutContainer;
         }
     }

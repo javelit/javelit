@@ -7,7 +7,7 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -126,7 +126,7 @@ public class FormSubmitButtonComponent extends JtComponent<Boolean> {
     }
 
     @Override
-    public void beforeUse(@NotNull Container container) {
+    public void beforeUse(@NotNull JtContainer container) {
         final @Nullable String formParentKey = container.getParentFormComponentKey();
         checkState(formParentKey != null, "FormSubmitButton must be inside a form container. Please pass a valid container that is a form or in a form.");
     }

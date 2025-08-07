@@ -7,14 +7,14 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.Container;
+import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
 /// implements both the Container component and the Empty component via the inPlace flag.
-public class ContainerComponent extends JtComponent<Container> {
+public class ContainerComponent extends JtComponent<JtContainer> {
 
     protected final Integer height;
     protected final Boolean border;
@@ -37,7 +37,7 @@ public class ContainerComponent extends JtComponent<Container> {
         this.inPlace = builder.inPlace;
     }
 
-    public static class Builder extends JtComponentBuilder<Container, ContainerComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<JtContainer, ContainerComponent, Builder> {
         private @Nullable Integer height;
         private @Nullable Boolean border;
         private final boolean inPlace;
@@ -59,7 +59,7 @@ public class ContainerComponent extends JtComponent<Container> {
 
         @Override
         public ContainerComponent build() {
-            if (Container.RESERVED_PATHS.contains(this.key)) {
+            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
                 throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
             }
             if (border == null) {
@@ -91,15 +91,15 @@ public class ContainerComponent extends JtComponent<Container> {
         return writer.toString();
     }
 
-    protected TypeReference<Container> getTypeReference() {
+    protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };
     }
 
-    /// Add the component to the app in the provided [Container] and return this component's [Container].
+    /// Add the component to the app in the provided [JtContainer] and return this component's [JtContainer].
     /// for instance, if the container is "main", returns a container \["main", $key\]
     @Override
-    public void beforeUse(final @NotNull Container container) {
+    public void beforeUse(final @NotNull JtContainer container) {
         if (inPlace) {
             this.currentValue = container.inPlaceChild(getKey());
         } else {

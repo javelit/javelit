@@ -26,14 +26,14 @@ public class StateManager {
         // container path
         // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
         // component key to component object
-        private final Map<Container, LinkedHashMap<String, JtComponent<?>>> containerToComponents = new LinkedHashMap<>();
+        private final Map<JtContainer, LinkedHashMap<String, JtComponent<?>>> containerToComponents = new LinkedHashMap<>();
         // current position in the list of components per container
-        private final Map<Container, Integer> containerToCurrentIndex = new LinkedHashMap<>();
+        private final Map<JtContainer, Integer> containerToCurrentIndex = new LinkedHashMap<>();
         // whether a difference in components is found between the current app and the one being generated per container
-        private final Map<Container, Boolean> containerToFoundDifference = new LinkedHashMap<>();
+        private final Map<JtContainer, Boolean> containerToFoundDifference = new LinkedHashMap<>();
         // does not record main and sidebar containers - only children of these 2 root containers
-        private final Set<Container> clearedContainers = new HashSet<>();
-        private final Set<Container> clearedLayoutContainers = new HashSet<>();
+        private final Set<JtContainer> clearedContainers = new HashSet<>();
+        private final Set<JtContainer> clearedLayoutContainers = new HashSet<>();
 
         public AppExecution(final String sessionId) {
             this.sessionId = sessionId;
@@ -54,7 +54,7 @@ public class StateManager {
 
     protected interface RenderServer {
         // component can be null to trigger a full cleanup
-        void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @Nonnull Container container, final @Nullable Integer index, final boolean clearBefore);
+        void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @Nonnull JtContainer container, final @Nullable Integer index, final boolean clearBefore);
     }
 
     protected static void setRenderServer(final @Nonnull RenderServer sender) {
@@ -91,8 +91,8 @@ public class StateManager {
         final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
         checkState(lastExecution != null,"Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
         JtComponent<?> component = null;
-        Container componentContainer = null;
-        for (final Map.Entry<Container, LinkedHashMap<String, JtComponent<?>>> entry : lastExecution.containerToComponents.entrySet()) {
+        JtContainer componentContainer = null;
+        for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> entry : lastExecution.containerToComponents.entrySet()) {
             if (entry.getValue().containsKey(componentKey)) {
                 component = entry.getValue().get(componentKey);
                 componentContainer = entry.getKey();
@@ -192,7 +192,7 @@ public class StateManager {
     /// - run the user app - it will call addComponent (done via Jt methods)
     /// - endExecution
     /// Return if the component was added successfully. Else throw.
-    protected static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull Container container) {
+    protected static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer container) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         if (currentExecution == null) {
             throw new IllegalStateException(
@@ -274,12 +274,12 @@ public class StateManager {
                                   container),
                           clearBefore);
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
-        if (component.returnValue() instanceof Container) {
-            currentExecution.clearedContainers.add((Container) component.returnValue());
+        if (component.returnValue() instanceof JtContainer) {
+            currentExecution.clearedContainers.add((JtContainer) component.returnValue());
         }
         // if a layout is cleared, all first level containers inside the layout should be cleaned up too - they are managed by this layout
-        if (component.returnValue() instanceof Layout) {
-            currentExecution.clearedLayoutContainers.add(((Layout) component.returnValue()).layoutContainer());
+        if (component.returnValue() instanceof JtLayout) {
+            currentExecution.clearedLayoutContainers.add(((JtLayout) component.returnValue()).layoutContainer());
         }
     }
 
@@ -308,7 +308,7 @@ public class StateManager {
         // empty containers that did not appear in the current execution
         // clean up the end of containers that had their number of components decrease - can happen if no clear is triggered, eg if only a statement is removed
         if (previousExecution != null) {
-            for (final Container containerInPrevious : previousExecution.containerToComponents.keySet()) {
+            for (final JtContainer containerInPrevious : previousExecution.containerToComponents.keySet()) {
                 if (currentExecution.containerToComponents.containsKey(containerInPrevious)) {
                     final LinkedHashMap<String, JtComponent<?>> currentComponents = currentExecution.containerToComponents.get(
                             containerInPrevious);
@@ -329,8 +329,8 @@ public class StateManager {
         }
 
         final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
-        for (final Map.Entry<Container, LinkedHashMap<String, JtComponent<?>>> e : currentExecution.containerToComponents.entrySet()) {
-            final Container container = e.getKey();
+        for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> e : currentExecution.containerToComponents.entrySet()) {
+            final JtContainer container = e.getKey();
             final LinkedHashMap<String, JtComponent<?>> currentComponents = e.getValue();
             // reset and save components state
             for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
@@ -375,7 +375,7 @@ public class StateManager {
 
     private static class NoOpRenderServer implements RenderServer {
         @Override
-        public void send(String sessionId, @Nullable JtComponent<?> component, @NotNull Container container, @Nullable Integer index, boolean clearBefore) {
+        public void send(String sessionId, @Nullable JtComponent<?> component, @NotNull JtContainer container, @Nullable Integer index, boolean clearBefore) {
             LOG.error(
                     "Cannot send indexed delta for component {} in container {} at index {} to session {}. No render server is registered.",
                     component != null ? component.getKey() : null,
