@@ -41,7 +41,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     public static class Builder extends JtComponentBuilder<Boolean, ButtonComponent, Builder> {
-        private String label;
+        private final String label;
         private String type = "secondary";
         private String icon;
         private String help;
@@ -50,6 +50,10 @@ public class ButtonComponent extends JtComponent<Boolean> {
         private Consumer<Boolean> onClick;
         
         public Builder(final @Nonnull String label) {
+            // Validate required parameters
+            if (label.trim().isEmpty()) {
+                throw new IllegalArgumentException("Button label cannot be null or empty");
+            }
             this.label = label;
         }
         
@@ -88,10 +92,6 @@ public class ButtonComponent extends JtComponent<Boolean> {
         
         @Override
         public ButtonComponent build() {
-            // Validate required parameters
-            if (label == null || label.trim().isEmpty()) {
-                throw new IllegalArgumentException("Button label cannot be null or empty");
-            }
             return new ButtonComponent(this);
         }
     }
@@ -117,7 +117,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
 
     @Override
     protected void resetIfNeeded() {
-        // Button is momentary - reset to false after reading
+        // Button truthy value is momentary - reset to false after reading
         currentValue = false;
     }
 }
