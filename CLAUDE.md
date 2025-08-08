@@ -54,8 +54,7 @@ src/main/resources/         # Application resources
 - ignore TODO.md
 - all examples and test apps should be put in the examples folder
 
-### Implementation of Components
-- Do not create or update methods in Jt,  like Jt.button(), Jt.theNewComponent(). I will do this later. 
+### Implementation of Components 
 - Focus on the quality of the component themselves.
 - Make sure to look at streamlit doc. I will share the links. Make sure to also look at it during implementation.
 - Make sure to build a proper plans for each component, especially if they are complex. It's ok if the task becomes very big.
