@@ -1,0 +1,53 @@
+ Let's prepare for the implementation of the number input component.
+ See streamlit doc here: https://docs.streamlit.io/develop/api-reference/widgets/st.number_input
+
+ Function signature (useful to get the default values):
+ st.number_input(label, min_value=None, max_value=None, value="min", step=None, format=None, key=None, help=None, on_change=None, args=None, kwargs=None, *, placeholder=None, disabled=False, label_visibility="visible", icon=None, width="stretch")
+
+ doc: Display a numeric input widget.
+  fields:
+  label: A short label explaining to the user what this input is for. Not Null
+  min_value: The minimum permitted value. If this is null (default), there will be no minimum for float values and a minimum of Long.MIN_VALUE for integer values.
+  max_value: The maximum permitted value. If this is null (default), there will be no maximum for float values and a maximum of Long.MAX_VALUE for integer values.
+  value (Number): The value of this widget when it first renders.
+         If value is null, the widget will initialize with no value and return null until the user provides input.
+  step (Number): The stepping interval. Defaults to 1 if the value is an int, 0.01 otherwise. If the value is not specified, use the min value, else the max value, else default to double.
+  format:        A printf-style format string controlling how the interface should display numbers. The output must be purely numeric. This does not impact the return value of the widget. For more information about the formatting specification, see sprintf.js.
+                 For example, format="%0.1f" adjusts the displayed decimal precision to only show one digit after the decimal.
+                 Implement this using the sprintf.js library. See https://github.com/alexei/sprintf.js?tab=readme-ov-file#format-specification
+  key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. No two widgets may have the same key.
+  help: A tooltip that gets displayed next to the widget label. Streamlit only displays the tooltip when label_visibility="visible". If this is None (default), no tooltip is displayed.
+  on_change: An optional callback invoked when this text input's value changes.
+  placeholder: An optional string displayed when the number input is empty. If null, no text is displayed.
+  disabled: An optional boolean that disables the text input if set to True. The default is False.
+  label_visibility: The visibility of the label. The default is "visible". If this is "hidden", Streamlit displays an empty spacer instead of the label, which can help keep the widget aligned with other widgets. If this is "collapsed", Streamlit displays no label or spacer.
+  icon:
+
+  An optional emoji or icon to display within the input field to the left of the value. If icon is None (default), no icon is displayed. If icon is a string, the following options are valid:
+
+      A single-character emoji. For example, you can set icon="🚨" or icon="🔥". Emoji short codes are not supported.
+
+      An icon from the Material Symbols library (rounded style) in the format ":material/icon_name:" where "icon_name" is the name of the icon in snake case.
+
+      For example, icon=":material/thumb_up:" will display the Thumb Up icon. Find additional icons in the Material Symbols font library.
+
+  width:
+
+  The width of the text input widget. This can be one of the following:
+
+      "stretch" (default): The width of the widget matches the width of the parent container.
+      An integer specifying the width in pixels: The widget has a fixed width. If the specified width is greater than the width of the parent container, the width of the widget matches the width of
+  the parent container.
+
+
+  prepare for the backend implementation.
+  The implementation will be similar to other input components in particular to the TextInputComponent.
+  Make the NumberInputComponent a JtComponent<Number>
+  To determine whether the component is hosting doubles or longs, use the following logic:
+  if value is set and an Integer or a Long, and min and max are not set or Integer/long --> long
+  If value is set and a double/float --> Double
+  if value is not set and min or max are set to Integer/Long --> long
+  if value is not set and min or max are set to double/float --> Double
+  if value is not set and min and max are not set --> double
+
+  Only prepare for the backend for the moment. Keep the mustache frontend files empty

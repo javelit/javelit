@@ -19,6 +19,7 @@ public abstract class JtComponent<T> {
     // used by the components' mustache templates
     protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
     protected static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+    protected static final String SPRINTF_DEPENDENCY = "https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js";
 
     private final String key;
     protected T currentValue;
@@ -29,9 +30,11 @@ public abstract class JtComponent<T> {
     protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
         this.key = key;
         this.currentValue = currentValue;
-        if (returnValueIsAState() && currentValue != null) {
+        if (returnValueIsAState() && currentValue != null && !(currentValue instanceof Number) && !(currentValue instanceof String)) {
             // deep copy - not sure if it's really necessary
             try {
+                // NOTE: some getTypeReference can only be resolved properly after the instantiation - so this call would throw an error
+                // see NumberInputComponent - we avoid the issue by excluding deep copies for values of type Number - it works because they are immutable
                 this.initialValue = OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsString(
                         currentValue), getTypeReference());
             } catch (JsonProcessingException e) {

@@ -1,5 +1,11 @@
 import streamlit as st
 
+
+import streamlit as st
+
+st.info('This is a purely informational message', icon="ℹ️")
+number = st.number_input("Insert a number", icon="ℹ️")
+
 col1,col2, col3 = st.columns([1,2, 3])
 col1.title('Sum:')
 

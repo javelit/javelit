@@ -6,6 +6,7 @@ import jakarta.annotation.Nonnull;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
+import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
@@ -128,6 +129,14 @@ public class Jt {
 
     public static TextInputComponent.Builder textInput(final @Nonnull String label) {
         return new TextInputComponent.Builder(label);
+    }
+
+    public static NumberInputComponent.Builder<Number> numberInput(final @Nonnull String label) {
+        return new NumberInputComponent.Builder<>(label);
+    }
+
+    public static <T extends Number> NumberInputComponent.Builder<T> numberInput(final @Nonnull String label, final Class<T> valueClass) {
+        return new NumberInputComponent.Builder<>(label);
     }
 
 }
