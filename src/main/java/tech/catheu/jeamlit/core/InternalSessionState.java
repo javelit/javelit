@@ -1,5 +1,7 @@
 package tech.catheu.jeamlit.core;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +19,9 @@ class InternalSessionState {
     // readable/writable by users
     private final Map<String, Object> userState = new ConcurrentHashMap<>();
     // componentKey  -> value (not writable by users)
-    private final Map<String, Object> componentsState = new ConcurrentHashMap<>();
+    // not using a ConcurrentHashMap because need to support null values
+    // concurrency on this map is an edge case, not the normal case so should be fine
+    private final Map<String, Object> componentsState = Collections.synchronizedMap(new HashMap<>());
 
     // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
     // values that are not applied yet - they are pending because controlled by a form
