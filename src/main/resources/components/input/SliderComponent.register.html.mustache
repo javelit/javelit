@@ -1,23 +1,5 @@
 <script type="module">
     import { LitElement, html, css } from {{ LIT_DEPENDENCY }};
-    // WebSocket communication setup
-    if (!window.jeamlit) {
-        window.jeamlit = {};
-    }
-    if (!window.jeamlit.emit) {
-        window.jeamlit.emit = function(componentKey, value) {
-            console.log('Slider changed:', componentKey, value);
-            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
-                window.ws.send(JSON.stringify({
-                    type: 'component_update',
-                    componentKey: componentKey,
-                    value: value
-                }));
-            } else {
-                console.error('WebSocket not available');
-            }
-        };
-    }
 
     class JtSlider extends LitElement {
         static styles = css`
@@ -312,9 +294,7 @@
             this.value = newValue;
 
             // Emit value change only when drag ends
-            if (window.jeamlit && window.jeamlit.emit) {
-                window.jeamlit.emit(this.componentKey, newValue);
-            }
+            window.jeamlit.emit(this.componentKey, newValue);
         }
 
         render() {

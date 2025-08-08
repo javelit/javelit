@@ -1,23 +1,5 @@
 <script type="module">
     import {LitElement, html, css} from {{ LIT_DEPENDENCY }};
-    // WebSocket communication setup
-    if (!window.jeamlit) {
-        window.jeamlit = {};
-    }
-    if (!window.jeamlit.emit) {
-        window.jeamlit.emit = function (componentKey, value) {
-            console.log('Button clicked:', componentKey, value);
-            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
-                window.ws.send(JSON.stringify({
-                    type: 'component_update',
-                    componentKey: componentKey,
-                    value: value
-                }));
-            } else {
-                console.error('WebSocket not available or not open');
-            }
-        };
-    }
 
     class JtButton extends LitElement {
         static styles = css`
@@ -269,9 +251,7 @@
             setTimeout(() => ripple.remove(), 600);
 
             // Emit button click
-            if (window.jeamlit && window.jeamlit.emit) {
-                window.jeamlit.emit(this.componentKey, true);
-            }
+            window.jeamlit.emit(this.componentKey, true);
         }
 
         render() {
