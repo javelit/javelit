@@ -70,6 +70,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
         }
         
         public Builder icon(final String icon) {
+            ensureIsValidIcon(icon);
             this.icon = icon;
             return this;
         }
@@ -84,6 +85,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
             return this;
         }
         
+        // FIXME CYRIL - DEPRECATED - implement width instead
         public Builder useContainerWidth(final boolean useContainerWidth) {
             this.useContainerWidth = useContainerWidth;
             return this;

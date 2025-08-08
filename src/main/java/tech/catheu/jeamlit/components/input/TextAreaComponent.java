@@ -130,6 +130,20 @@ public class TextAreaComponent extends JtComponent<String> {
             this.width = width;
             return this;
         }
+
+        /**
+         * Convenience method for setting width as integer pixels.
+         *
+         * @param widthPixels Width in pixels (must be non-negative)
+         * @return this builder
+         */
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
         
         public Builder onChange(@Nullable Consumer<String> onChange) {
             this.onChange = onChange;
@@ -181,19 +195,17 @@ public class TextAreaComponent extends JtComponent<String> {
     protected TypeReference<String> getTypeReference() {
         return new TypeReference<>() {};
     }
-    
+
     @Override
-    protected String castAndValidate(Object rawValue) {
-        String value = super.castAndValidate(rawValue);
-        
+    protected String validate(String value) {
         // Apply max_chars limit if specified
         if (maxChars != null && value != null && value.length() > maxChars) {
             value = value.substring(0, maxChars);
         }
-        
+
         return value != null ? value : "";
     }
-    
+
     @Override
     protected void resetIfNeeded() {
         // Text area keeps its value - no reset needed

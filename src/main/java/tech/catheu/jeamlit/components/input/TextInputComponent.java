@@ -119,17 +119,7 @@ public class TextInputComponent extends JtComponent<String> {
         }
 
         public Builder icon(@Nullable String icon) {
-            if (icon != null && !icon.isEmpty()) {
-                // Validate icon format: single emoji or :material/icon_name:
-                boolean isEmoji = icon.length() == 1 || (icon.length() <= 4 && Character.isHighSurrogate(
-                        icon.charAt(0)));
-                boolean isMaterialIcon = icon.startsWith(":material/") && icon.endsWith(":");
-
-                if (!isEmoji && !isMaterialIcon) {
-                    throw new IllegalArgumentException(
-                            "icon must be a single emoji or Material Symbols in format ':material/icon_name:'. Got: " + icon);
-                }
-            }
+            ensureIsValidIcon(icon);
             this.icon = icon;
             return this;
         }
@@ -140,6 +130,20 @@ public class TextInputComponent extends JtComponent<String> {
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
+            return this;
+        }
+
+        /**
+         * Convenience method for setting width as integer pixels.
+         *
+         * @param widthPixels Width in pixels (must be non-negative)
+         * @return this builder
+         */
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
             return this;
         }
 
@@ -192,9 +196,7 @@ public class TextInputComponent extends JtComponent<String> {
     }
 
     @Override
-    protected String castAndValidate(Object rawValue) {
-        String value = super.castAndValidate(rawValue);
-
+    protected String validate(String value) {
         // Apply max_chars limit if specified
         if (maxChars != null && value != null && value.length() > maxChars) {
             value = value.substring(0, maxChars);

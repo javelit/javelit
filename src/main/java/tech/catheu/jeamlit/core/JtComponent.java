@@ -87,20 +87,21 @@ public abstract class JtComponent<T> {
      * Uses Jackson for type-safe deserialization.
      */
     protected void updateValue(final Object rawValue) {
-        this.currentValue = castAndValidate(rawValue);
-    }
-
-    /**
-     * Convert raw value to the component's type T.
-     * Subclasses should override for custom validation.
-     */
-    protected T castAndValidate(final Object rawValue) {
+        T value;
         try {
             // Use Jackson to convert to the target type
-            return OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
+            value = OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to parse input widget value coming from the app. Please reach out to support.", e);
         }
+        value = validate(value);
+        this.currentValue = value;
+    }
+
+    protected T validate(final T value) {
+        // template pattern - allows implementing class to perform further validation and cleanup
+        // after the input value received from the frontend is parsed successfully
+        return value;
     }
 
     /**

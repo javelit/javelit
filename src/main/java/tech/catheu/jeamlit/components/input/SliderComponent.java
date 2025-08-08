@@ -118,6 +118,20 @@ public class SliderComponent extends JtComponent<Double> {
             this.width = width;
             return this;
         }
+
+        /**
+         * Convenience method for setting width as integer pixels.
+         *
+         * @param widthPixels Width in pixels (must be non-negative)
+         * @return this builder
+         */
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
         
         @Override
         public SliderComponent build() {
@@ -165,14 +179,12 @@ public class SliderComponent extends JtComponent<Double> {
     protected TypeReference<Double> getTypeReference() {
         return new TypeReference<>() {};
     }
-    
+
     @Override
-    protected Double castAndValidate(Object rawValue) {
-        Double value = super.castAndValidate(rawValue);
-        // Clamp to valid range
+    protected Double validate(Double value) {
         return Math.max(min, Math.min(max, value));
     }
-    
+
     @Override
     protected void resetIfNeeded() {
         // Slider keeps its value - no reset needed
