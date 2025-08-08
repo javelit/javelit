@@ -1,0 +1,38 @@
+ doc: Display a single-line text input widget.
+  fields:
+  label: A short label explaining to the user what this input is for. Not Null
+  value: The text value of this widget when it first renders. This will be cast to str internally. If null, will initialize empty and return null until the user provides input. Defaults to empty
+  string.
+  max_chars: Max number of characters allowed in text input.
+  key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. No two widgets may have the same key.
+  type: The type of the text input. This can be either "default" (for a regular text input), or "password" (for a text input that masks the user's typed value). Defaults to "default".
+  help: A tooltip that gets displayed next to the widget label. Streamlit only displays the tooltip when label_visibility="visible". If this is None (default), no tooltip is displayed.
+  autocomplete: An optional value that will be passed to the <input> element's autocomplete property. If unspecified, this value will be set to "new-password" for "password" inputs, and the empty
+  string for "default" inputs. For more details, see https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete
+  on_change: An optional callback invoked when this text input's value changes.
+  placeholder: An optional string displayed when the text input is empty. If None, no text is displayed.
+  disabled: An optional boolean that disables the text input if set to True. The default is False.
+  label_visibility: The visibility of the label. The default is "visible". If this is "hidden", Streamlit displays an empty spacer instead of the label, which can help keep the widget aligned with
+  other widgets. If "collapsed", the label field is not visible and does not take space.
+  icon:
+
+  An optional emoji or icon to display within the input field to the left of the value. If icon is None (default), no icon is displayed. If icon is a string, the following options are valid:
+
+      A single-character emoji. For example, you can set icon="🚨" or icon="🔥". Emoji short codes are not supported.
+
+      An icon from the Material Symbols library (rounded style) in the format ":material/icon_name:" where "icon_name" is the name of the icon in snake case.
+
+      For example, icon=":material/thumb_up:" will display the Thumb Up icon. Find additional icons in the Material Symbols font library.
+
+  width:
+
+  The width of the text input widget. This can be one of the following:
+
+      "stretch" (default): The width of the widget matches the width of the parent container.
+      An integer specifying the width in pixels: The widget has a fixed width. If the specified width is greater than the width of the parent container, the width of the widget matches the width of
+  the parent container.
+
+
+  prepare for the backend implementation.
+  The implementation will be similar to other input components like Button and slider.
+  Only prepare for the backend for the moment? Keep the mustache frontend files empty

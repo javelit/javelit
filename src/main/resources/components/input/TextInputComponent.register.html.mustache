@@ -1,0 +1,432 @@
+<link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    
+    // WebSocket communication setup
+    if (!window.jeamlit) {
+        window.jeamlit = {};
+    }
+    if (!window.jeamlit.emit) {
+        window.jeamlit.emit = function(componentKey, value) {
+            console.log('Text input changed:', componentKey, value);
+            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+                window.ws.send(JSON.stringify({
+                    type: 'component_update',
+                    componentKey: componentKey,
+                    value: value
+                }));
+            } else {
+                console.error('WebSocket not available');
+            }
+        };
+    }
+
+    class JtTextInput extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--input-width);
+                max-width: 100%;
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .label-row {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .label {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-primary);
+                margin: 0;
+            }
+
+            .label.spacer {
+                visibility: hidden;
+            }
+
+            /* Markdown formatting in label */
+            .label em {
+                font-style: italic;
+            }
+
+            .label strong {
+                font-weight: var(--jt-font-weight-bold);
+            }
+
+            .label code {
+                background-color: var(--jt-bg-tertiary);
+                padding: 0.1em 0.3em;
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family-mono);
+                font-size: 0.9em;
+            }
+
+            .label a {
+                color: var(--jt-theme-color);
+                text-decoration: none;
+            }
+
+            .label a:hover {
+                text-decoration: underline;
+            }
+
+            .label del {
+                text-decoration: line-through;
+            }
+
+            .input-wrapper {
+                position: relative;
+            }
+
+            .input-field {
+                width: 100%;
+                box-sizing: border-box;
+                padding-top: var(--jt-spacing-sm);
+                padding-left: var(--jt-spacing-lg);
+                padding-bottom: 1em;
+                background-color: var(--jt-bg-input);
+                border: 1px solid var(--jt-bg-input);
+                border-radius: var(--jt-border-radius);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                color: var(--jt-text-primary);
+                transition: all var(--jt-transition-fast);
+                outline: none;
+            }
+
+            .input-field::placeholder {
+                color: var(--jt-text-muted);
+                opacity: 0.7;
+            }
+
+            .input-field:focus {
+                border-color: var(--jt-theme-color);
+                box-shadow: 0 0 0 1px var(--jt-theme-color);
+            }
+
+            .input-field:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background-color: var(--jt-bg-secondary);
+            }
+
+            .input-icon {
+                position: absolute;
+                left: var(--jt-spacing-md);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
+                color: var(--jt-text-muted);
+            }
+
+            .input-icon.material {
+                font-family: 'Material Symbols Rounded';
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+                font-size: var(--jt-font-size-lg);
+            }
+
+            .input-icon.emoji {
+                font-size: var(--jt-font-size-base);
+            }
+
+            :host([has-icon]) .input-field {
+                padding-left: calc(var(--jt-spacing-md) * 3);
+            }
+
+            .helper-text {
+                position: absolute;
+                bottom: 4px;
+                right: 8px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-family: var(--jt-font-family);
+                font-size: 0.7rem;
+                color: var(--jt-text-muted);
+                pointer-events: none;
+            }
+
+            .enter-hint {
+                opacity: 0;
+                transition: opacity var(--jt-transition-fast);
+            }
+
+            .enter-hint.visible {
+                opacity: 1;
+            }
+
+            .char-counter {
+                transition: color var(--jt-transition-fast);
+            }
+
+            .char-counter.limit-reached {
+                color: var(--jt-theme-color);
+                animation: flash 0.5s ease-in-out 6;
+            }
+
+            @keyframes flash {
+                0%, 100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .bullet {
+                margin: 0 var(--jt-spacing-xs);
+            }
+        `;
+
+        static properties = {
+            label: { type: String },
+            value: { type: String },
+            maxChars: { type: Number, attribute: 'max-chars' },
+            type: { type: String },
+            help: { type: String },
+            autocomplete: { type: String },
+            placeholder: { type: String },
+            disabled: { type: Boolean },
+            labelVisibility: { type: String, attribute: 'label-visibility' },
+            icon: { type: String },
+            width: { type: String },
+            componentKey: { type: String, attribute: 'component-key' },
+            hasIcon: { type: Boolean, attribute: 'has-icon', reflect: true },
+            hasChanged: { type: Boolean, state: true },
+            isFocused: { type: Boolean, state: true }
+        };
+
+        constructor() {
+            super();
+            this.value = '';
+            this.type = 'default';
+            this.disabled = false;
+            this.labelVisibility = 'visible';
+            this.width = 'stretch';
+            this.autocomplete = '';
+            
+            // Internal state
+            this.initialValue = '';
+            this.hasChanged = false;
+            this.isFocused = false;
+            this.charLimitReached = false;
+            this.charLimitTimeout = null;
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+            this.initialValue = this.value || '';
+        }
+
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // Update width CSS variable
+            if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
+                this.style.setProperty('--input-width', `${this.width}px`);
+            } else if (this.width === 'stretch') {
+                this.style.removeProperty('--input-width');
+            }
+
+            // Update icon state
+            if (changedProperties.has('icon')) {
+                this.hasIcon = !!this.icon;
+            }
+
+            // Reset initial value when value changes from backend
+            if (changedProperties.has('value') && !this.hasChanged) {
+                this.initialValue = this.value || '';
+            }
+        }
+
+        formatText(label) {
+            if (!label) return '';
+
+            return label
+                // Bold
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // Italic
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                // Code
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                // Links
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                // Basic color support :color[text]
+                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                // Strikethrough
+                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+        }
+
+        isEmoji(str) {
+            return str && str.length <= 2 && /\p{Emoji}/u.test(str);
+        }
+
+        isMaterialIcon(str) {
+            return str && str.startsWith(':material/') && str.endsWith(':');
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(10, -1).replace(/_/g, '_');
+        }
+
+        handleInput(e) {
+            if (this.disabled) return;
+
+            const newValue = e.target.value;
+            
+            // Enforce max chars limit
+            if (this.maxChars && newValue.length > this.maxChars) {
+                e.target.value = newValue.substring(0, this.maxChars);
+                this.flashCharLimit();
+                return;
+            }
+
+            // Track if value has changed from initial
+            this.hasChanged = newValue !== this.initialValue;
+            
+            // Check if at limit
+            if (this.maxChars && newValue.length === this.maxChars) {
+                this.flashCharLimit();
+            }
+
+            this.requestUpdate();
+        }
+
+        handleKeydown(e) {
+            if (this.disabled) return;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.submitValue();
+            }
+        }
+
+        handleFocus() {
+            this.isFocused = true;
+            this.requestUpdate();
+        }
+
+        handleBlur() {
+            this.isFocused = false;
+            
+            // Submit value if it has changed
+            if (this.hasChanged) {
+                this.submitValue();
+            }
+            
+            this.requestUpdate();
+        }
+
+        submitValue() {
+            const input = this.shadowRoot.querySelector('.input-field');
+            const currentValue = input.value;
+            
+            // Update internal state
+            this.value = currentValue;
+            this.initialValue = currentValue;
+            this.hasChanged = false;
+            
+            // Emit to backend
+            if (window.jeamlit && window.jeamlit.emit) {
+                window.jeamlit.emit(this.componentKey, currentValue);
+            }
+            
+            this.requestUpdate();
+        }
+
+        flashCharLimit() {
+            this.charLimitReached = true;
+            this.requestUpdate();
+            
+            if (this.charLimitTimeout) {
+                clearTimeout(this.charLimitTimeout);
+            }
+            
+            this.charLimitTimeout = setTimeout(() => {
+                this.charLimitReached = false;
+                this.requestUpdate();
+            }, 3000);
+        }
+
+        render() {
+            const formattedLabel = this.formatText(this.label || '');
+            const currentLength = this.shadowRoot?.querySelector('.input-field')?.value?.length || this.value?.length || 0;
+            const showEnterHint = this.hasChanged && this.isFocused;
+            const showCharCounter = (this.maxChars !== null && this.maxChars !== undefined) && this.isFocused;
+
+            let iconElement = null;
+            if (this.icon) {
+                if (this.isEmoji(this.icon)) {
+                    iconElement = html`<span class="input-icon emoji">${this.icon}</span>`;
+                } else if (this.isMaterialIcon(this.icon)) {
+                    iconElement = html`<span class="input-icon material">${this.getMaterialIconName(this.icon)}</span>`;
+                }
+            }
+
+            return html`
+                <div class="input-container">
+                    <div class="label-row">
+                        ${this.labelVisibility !== 'collapsed' ? html`
+                            <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}"
+                                 .innerHTML="${this.labelVisibility === 'hidden' ? '' : formattedLabel}">
+                            </div>
+                        ` : ''}
+                        ${this.help && this.labelVisibility === 'visible' ? html`
+                            <jt-tooltip text="${this.help}"></jt-tooltip>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="input-wrapper">
+                        ${iconElement}
+                        <input
+                            class="input-field"
+                            type="${this.type === 'password' ? 'password' : 'text'}"
+                            .value="${this.value || ''}"
+                            placeholder="${this.placeholder || ''}"
+                            ?disabled="${this.disabled}"
+                            autocomplete="${this.autocomplete}"
+                            @input="${this.handleInput}"
+                            @keydown="${this.handleKeydown}"
+                            @focus="${this.handleFocus}"
+                            @blur="${this.handleBlur}"
+                        />
+                        <div class="helper-text">
+                            ${showEnterHint || showCharCounter ? html`
+                                ${showEnterHint ? html`
+                                    <span class="enter-hint ${showEnterHint ? 'visible' : ''}">
+                                        Press enter to apply
+                                    </span>
+                                ` : ''}
+                                ${showEnterHint && showCharCounter ? html`
+                                    <span class="bullet">•</span>
+                                ` : ''}
+                                ${showCharCounter ? html`
+                                    <span class="char-counter ${this.charLimitReached ? 'limit-reached' : ''}">
+                                        ${currentLength}/${this.maxChars}
+                                    </span>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-text-input', JtTextInput);
+</script>

@@ -9,6 +9,7 @@ import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
 import tech.catheu.jeamlit.components.TextComponent;
 import tech.catheu.jeamlit.components.TitleComponent;
+import tech.catheu.jeamlit.components.input.TextInputComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
 import tech.catheu.jeamlit.components.layout.ExpanderComponent;
@@ -123,6 +124,10 @@ public class Jt {
 
     public static FormSubmitButtonComponent.Builder formSubmitButton(final @Nonnull String label) {
         return new FormSubmitButtonComponent.Builder(label);
+    }
+
+    public static TextInputComponent.Builder textInput(final @Nonnull String label) {
+        return new TextInputComponent.Builder(label);
     }
 
 }

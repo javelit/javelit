@@ -29,8 +29,8 @@ public class ButtonComponent extends JtComponent<Boolean> {
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/ButtonComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/ButtonComponent.render.html.mustache");
+        registerTemplate = mf.compile("components/input/ButtonComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/input/ButtonComponent.render.html.mustache");
     }
     
     private ButtonComponent(final Builder builder) {

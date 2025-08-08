@@ -28,8 +28,8 @@ public class SliderComponent extends JtComponent<Double> {
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/SliderComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/SliderComponent.render.html.mustache");
+        registerTemplate = mf.compile("components/input/SliderComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/input/SliderComponent.render.html.mustache");
     }
     
     private SliderComponent(Builder builder) {
