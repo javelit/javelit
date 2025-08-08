@@ -30,5 +30,16 @@ public class TextInputExample {
         if (text5 != null && !text5.isEmpty()) {
             Jt.text("Today, you are %s!".formatted(text5)).key("t5").use();
         }
+
+        String text7 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility("hidden").use();
+        if (text7 != null && !text7.isEmpty()) {
+            Jt.text("The label was hidden for this one. But the corresponding space was still here ! Today you are %s!".formatted(text7)).key("t7").use();
+        }
+
+
+        String text6 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility("collapsed").use();
+        if (text6 != null && !text6.isEmpty()) {
+            Jt.text("The label was hidden for this one, and no corresponding space for this one ! Today you are %s!".formatted(text6)).key("t6").use();
+        }
     }
 }

@@ -383,7 +383,7 @@
                     <div class="label-row">
                         ${this.labelVisibility !== 'collapsed' ? html`
                             <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}"
-                                 .innerHTML="${this.labelVisibility === 'hidden' ? '' : formattedLabel}">
+                                 .innerHTML="${this.labelVisibility === 'hidden' ? '&nbsp;' : formattedLabel}">
                             </div>
                         ` : ''}
                         ${this.help && this.labelVisibility === 'visible' ? html`
