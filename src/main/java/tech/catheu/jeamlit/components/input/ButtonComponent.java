@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.components;
+package tech.catheu.jeamlit.components.input;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
