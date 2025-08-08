@@ -85,7 +85,7 @@ public class JtContainer implements JtComponent.NotAState {
         while (current != null) {
             if (current.formContainer) {
                 // Return the last element of the path (the form container's key)
-                return current.path.get(current.path.size() - 1);
+                return current.path.getLast();
             }
             current = current.parent;
         }
