@@ -146,6 +146,20 @@ public abstract class JtComponent<T> {
 
     }
 
+    /**
+     * Label visibility options for components
+     */
+    public enum LabelVisibility {
+        VISIBLE,
+        HIDDEN,
+        COLLAPSED;
+        
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
+    }
+
     // use this type to signify a component is not interactive and does not return anything
     public enum NONE implements NotAState {
         NONE

@@ -21,7 +21,7 @@ public class TextInputComponent extends JtComponent<String> {
     protected final @Nullable String autocomplete;
     protected final @Nullable String placeholder;
     protected final boolean disabled;
-    protected final String labelVisibility;
+    protected final LabelVisibility labelVisibility;
     protected final @Nullable String icon;
     protected final String width;
 
@@ -60,7 +60,7 @@ public class TextInputComponent extends JtComponent<String> {
         private @Nullable String autocomplete = null;
         private @Nullable String placeholder = null;
         private boolean disabled = false;
-        private String labelVisibility = "visible";
+        private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private @Nullable String icon = null;
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
@@ -113,12 +113,7 @@ public class TextInputComponent extends JtComponent<String> {
             return this;
         }
 
-        public Builder labelVisibility(@Nonnull String labelVisibility) {
-            if (!labelVisibility.equals("visible") && !labelVisibility.equals("hidden") && !labelVisibility.equals(
-                    "collapsed")) {
-                throw new IllegalArgumentException(
-                        "label_visibility must be 'visible', 'hidden', or 'collapsed'. Got: " + labelVisibility);
-            }
+        public Builder labelVisibility(@Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }

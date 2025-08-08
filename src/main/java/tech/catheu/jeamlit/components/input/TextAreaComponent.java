@@ -20,7 +20,7 @@ public class TextAreaComponent extends JtComponent<String> {
     protected final @Nullable String help;
     protected final @Nullable String placeholder;
     protected final boolean disabled;
-    protected final String labelVisibility;
+    protected final LabelVisibility labelVisibility;
     protected final String width;
 
     private static final Mustache registerTemplate;
@@ -55,7 +55,7 @@ public class TextAreaComponent extends JtComponent<String> {
         private @Nullable String help = null;
         private @Nullable String placeholder = null;
         private boolean disabled = false;
-        private String labelVisibility = "visible";
+        private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
         
@@ -117,12 +117,7 @@ public class TextAreaComponent extends JtComponent<String> {
             return this;
         }
         
-        public Builder labelVisibility(@Nonnull String labelVisibility) {
-            if (!labelVisibility.equals("visible") && !labelVisibility.equals("hidden") && 
-                !labelVisibility.equals("collapsed")) {
-                throw new IllegalArgumentException(
-                        "label_visibility must be 'visible', 'hidden', or 'collapsed'. Got: " + labelVisibility);
-            }
+        public Builder labelVisibility(@Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
@@ -148,7 +143,7 @@ public class TextAreaComponent extends JtComponent<String> {
             // Validate minimum height based on labelVisibility
             if (height != null && height.matches("\\d+")) {
                 int pixels = Integer.parseInt(height);
-                int minHeight = labelVisibility.equals("collapsed") ? 68 : 98;
+                int minHeight = labelVisibility == LabelVisibility.COLLAPSED ? 68 : 98;
                 if (pixels < minHeight) {
                     throw new IllegalArgumentException(
                             "height must be at least " + minHeight + " pixels when label_visibility='" + 
@@ -203,4 +198,5 @@ public class TextAreaComponent extends JtComponent<String> {
     protected void resetIfNeeded() {
         // Text area keeps its value - no reset needed
     }
+
 }

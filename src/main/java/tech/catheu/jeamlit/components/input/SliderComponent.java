@@ -20,7 +20,7 @@ public class SliderComponent extends JtComponent<Double> {
     protected final @Nullable String format;
     protected final @Nullable String help;
     protected final boolean disabled;
-    protected final String labelVisibility;
+    protected final LabelVisibility labelVisibility;
     protected final String width;
 
     private static final Mustache registerTemplate;
@@ -38,6 +38,7 @@ public class SliderComponent extends JtComponent<Double> {
         this.label = builder.label;
         this.min = builder.min;
         this.max = builder.max;
+        // builder.value cannot be null - see builder build()
         this.value = builder.value;
         this.step = builder.step;
         this.format = builder.format;
@@ -52,12 +53,12 @@ public class SliderComponent extends JtComponent<Double> {
         private final String label;
         private double min = 0.0;
         private double max = 100.0;
-        private double value = 0.0; // Will be set to min if not specified
+        private @Nullable Double value = null; // Will be set to min if not specified
         private double step = 1.0;
         private @Nullable String format = null;
         private @Nullable String help = null;
         private boolean disabled = false;
-        private String labelVisibility = "visible";
+        private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private @Nullable Consumer<Double> onChange;
         private String width = "stretch";
         
@@ -100,11 +101,7 @@ public class SliderComponent extends JtComponent<Double> {
             return this;
         }
         
-        public Builder labelVisibility(final String labelVisibility) {
-            if (labelVisibility != null && !labelVisibility.equals("visible") && 
-                !labelVisibility.equals("hidden") && !labelVisibility.equals("collapsed")) {
-                throw new IllegalArgumentException("label_visibility must be 'visible', 'hidden', or 'collapsed'. Got: " + labelVisibility);
-            }
+        public Builder labelVisibility(final LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
@@ -128,7 +125,7 @@ public class SliderComponent extends JtComponent<Double> {
             // Note: args/kwargs equivalent (varargs and Map parameters) not implemented
             
             // Set value to min if not explicitly set (matching Streamlit behavior)
-            if (this.value == 0.0 && this.min != 0.0) {
+            if (this.value == null) {
                 this.value = this.min;
             }
             
