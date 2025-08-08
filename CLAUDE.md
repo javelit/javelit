@@ -63,6 +63,7 @@ src/main/resources/         # Application resources
 - use the same color effects and animations as streamlit components
 - Ensure things compile regularly
 - always use lit. To defined components
+- when implementing frontend components: do not re-create window.jeamlit and a function to send messages via websocket. Just assume window.jeamlit.emit is available (thanks to index.html) 
 - again make sure to follow the same spec as streamlit
 - There is 1 exception to this: do not add args/kwargs equivalent (varargs and Map parameters). Just put a comment instead, saying it's not implemented.
 - For a component that will have to support use_container_width:

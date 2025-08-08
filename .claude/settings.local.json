@@ -13,7 +13,8 @@
       "Bash(ls:*)",
       "WebFetch(domain:css-sandbox.streamlit.app)",
       "WebFetch(domain:docs.anthropic.com)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }
