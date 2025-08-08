@@ -1,0 +1,523 @@
+<link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    
+    // WebSocket communication setup
+    if (!window.jeamlit) {
+        window.jeamlit = {};
+    }
+    if (!window.jeamlit.emit) {
+        window.jeamlit.emit = function(componentKey, value) {
+            console.log('Text area changed:', componentKey, value);
+            if (window.ws && window.ws.readyState === WebSocket.OPEN) {
+                window.ws.send(JSON.stringify({
+                    type: 'component_update',
+                    componentKey: componentKey,
+                    value: value
+                }));
+            } else {
+                console.error('WebSocket not available');
+            }
+        };
+    }
+
+    class JtTextArea extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--input-width);
+                max-width: 100%;
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .label-row {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .label {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-primary);
+                margin: 0;
+            }
+
+            .label.spacer {
+                visibility: hidden;
+            }
+
+            /* Markdown formatting in label */
+            .label em {
+                font-style: italic;
+            }
+
+            .label strong {
+                font-weight: var(--jt-font-weight-bold);
+            }
+
+            .label code {
+                background-color: var(--jt-bg-tertiary);
+                padding: 0.1em 0.3em;
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family-mono);
+                font-size: 0.9em;
+            }
+
+            .label a {
+                color: var(--jt-theme-color);
+                text-decoration: none;
+            }
+
+            .label a:hover {
+                text-decoration: underline;
+            }
+
+            .label del {
+                text-decoration: line-through;
+            }
+
+            .input-wrapper {
+                position: relative;
+            }
+
+            .input-field {
+                width: 100%;
+                box-sizing: border-box;
+                padding-top: var(--jt-spacing-sm);
+                padding-left: var(--jt-spacing-lg);
+                padding-bottom: 1.5em;
+                padding-right: var(--jt-spacing-lg);
+                background-color: var(--jt-bg-input);
+                border: 1px solid var(--jt-bg-input);
+                border-radius: var(--jt-border-radius);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                color: var(--jt-text-primary);
+                transition: border-color var(--jt-transition-fast), 
+                           box-shadow var(--jt-transition-fast),
+                           background-color var(--jt-transition-fast);
+                outline: none;
+                resize: vertical;
+                min-height: var(--textarea-min-height, 68px);
+                contain: layout;
+            }
+
+            /* Height modes */
+            :host([height="content"]) .input-field {
+                resize: none;
+                overflow: hidden;
+            }
+
+            :host([height="stretch"]) .input-field {
+                resize: none;
+                height: 100%;
+                min-height: var(--textarea-min-height, 68px);
+            }
+
+            /* Fixed pixel height */
+            .input-field.fixed-height {
+                height: var(--textarea-height);
+                resize: none;
+                overflow-y: auto;
+            }
+
+            /* Default height (3 lines) */
+            .input-field.default-height {
+                height: calc(var(--jt-font-size-base) * 1.5 * 3 + var(--jt-spacing-sm) + 1.5em);
+                resize: vertical;
+            }
+
+            .input-field::placeholder {
+                color: var(--jt-text-muted);
+                opacity: 0.7;
+            }
+
+            .input-field:focus {
+                border-color: var(--jt-theme-color);
+                box-shadow: 0 0 0 1px var(--jt-theme-color);
+                will-change: box-shadow;
+            }
+
+            .input-field:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background-color: var(--jt-bg-secondary);
+                resize: none;
+                will-change: auto;
+            }
+
+            .input-icon {
+                position: absolute;
+                left: var(--jt-spacing-md);
+                top: var(--jt-spacing-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
+                color: var(--jt-text-muted);
+            }
+
+            .input-icon.material {
+                font-family: 'Material Symbols Rounded';
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+                font-size: var(--jt-font-size-lg);
+            }
+
+            .input-icon.emoji {
+                font-size: var(--jt-font-size-base);
+            }
+
+            :host([has-icon]) .input-field {
+                padding-left: calc(var(--jt-spacing-md) * 3);
+            }
+
+            .helper-text {
+                position: absolute;
+                bottom: 6px;
+                right: 20px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-family: var(--jt-font-family);
+                font-size: 0.7rem;
+                color: var(--jt-text-muted);
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            .enter-hint {
+                opacity: 0;
+                transition: opacity var(--jt-transition-fast);
+            }
+
+            .enter-hint.visible {
+                opacity: 1;
+            }
+
+            .char-counter {
+                transition: color var(--jt-transition-fast);
+            }
+
+            .char-counter.limit-reached {
+                color: var(--jt-theme-color);
+                animation: flash 0.5s ease-in-out 6;
+            }
+
+            @keyframes flash {
+                0%, 100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .bullet {
+                margin: 0 var(--jt-spacing-xs);
+            }
+        `;
+
+        static properties = {
+            label: { type: String },
+            value: { type: String },
+            height: { type: String },
+            maxChars: { type: Number, attribute: 'max-chars' },
+            help: { type: String },
+            placeholder: { type: String },
+            disabled: { type: Boolean },
+            labelVisibility: { type: String, attribute: 'label-visibility' },
+            icon: { type: String },
+            width: { type: String },
+            componentKey: { type: String, attribute: 'component-key' },
+            hasIcon: { type: Boolean, attribute: 'has-icon', reflect: true },
+            hasChanged: { type: Boolean, state: true },
+            isFocused: { type: Boolean, state: true }
+        };
+
+        constructor() {
+            super();
+            this.value = '';
+            this.disabled = false;
+            this.labelVisibility = 'visible';
+            this.width = 'stretch';
+            this.height = null; // Default: 3 lines
+            
+            // Internal state
+            this.initialValue = '';
+            this.hasChanged = false;
+            this.isFocused = false;
+            this.charLimitReached = false;
+            this.charLimitTimeout = null;
+            this.isMac = this.detectMac();
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+            this.initialValue = this.value || '';
+        }
+
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // Update width CSS variable
+            if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
+                this.style.setProperty('--input-width', `${this.width}px`);
+            } else if (this.width === 'stretch') {
+                this.style.removeProperty('--input-width');
+            }
+
+            // Update height CSS variables and minimum constraints
+            if (changedProperties.has('height') || changedProperties.has('labelVisibility')) {
+                this.updateHeightStyles();
+            }
+
+            // Update icon state
+            if (changedProperties.has('icon')) {
+                this.hasIcon = !!this.icon;
+            }
+
+            // Reset initial value when value changes from backend
+            if (changedProperties.has('value') && !this.hasChanged) {
+                this.initialValue = this.value || '';
+                this.adjustTextareaHeight();
+            }
+        }
+
+        detectMac() {
+            return /Mac|iPod|iPhone|iPad/.test(navigator.platform) || 
+                   /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+        }
+
+        updateHeightStyles() {
+            const minHeight = this.labelVisibility === 'collapsed' ? 68 : 98;
+            this.style.setProperty('--textarea-min-height', `${minHeight}px`);
+
+            if (this.height && this.height.match(/^\d+$/)) {
+                const pixelHeight = parseInt(this.height);
+                if (pixelHeight < minHeight) {
+                    console.warn(`TextArea height ${pixelHeight}px is less than minimum ${minHeight}px`);
+                }
+                this.style.setProperty('--textarea-height', `${Math.max(pixelHeight, minHeight)}px`);
+            } else {
+                this.style.removeProperty('--textarea-height');
+            }
+        }
+
+        adjustTextareaHeight() {
+            if (this.height === 'content') {
+                const textarea = this.shadowRoot.querySelector('.input-field');
+                if (textarea) {
+                    // Reset height to measure content
+                    textarea.style.height = 'auto';
+                    // Set to scroll height (content height)
+                    const minHeight = this.labelVisibility === 'collapsed' ? 68 : 98;
+                    textarea.style.height = Math.max(textarea.scrollHeight, minHeight) + 'px';
+                }
+            }
+        }
+
+        formatText(label) {
+            if (!label) return '';
+
+            return label
+                // Bold
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // Italic
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                // Code
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                // Links
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                // Basic color support :color[text]
+                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                // Strikethrough
+                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+        }
+
+        isEmoji(str) {
+            return str && str.length <= 2 && /\p{Emoji}/u.test(str);
+        }
+
+        isMaterialIcon(str) {
+            return str && str.startsWith(':material/') && str.endsWith(':');
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(10, -1).replace(/_/g, '_');
+        }
+
+        handleInput(e) {
+            if (this.disabled) return;
+
+            const newValue = e.target.value;
+            
+            // Enforce max chars limit
+            if (this.maxChars && newValue.length > this.maxChars) {
+                e.target.value = newValue.substring(0, this.maxChars);
+                this.flashCharLimit();
+                return;
+            }
+
+            // Track if value has changed from initial
+            this.hasChanged = newValue !== this.initialValue;
+            
+            // Check if at limit
+            if (this.maxChars && newValue.length === this.maxChars) {
+                this.flashCharLimit();
+            }
+
+            // Auto-adjust height for content mode
+            if (this.height === 'content') {
+                this.adjustTextareaHeight();
+            }
+
+            this.requestUpdate();
+        }
+
+        handleKeydown(e) {
+            if (this.disabled) return;
+
+            // Ctrl/Cmd + Enter submits
+            const isSubmitKey = (this.isMac && e.metaKey && e.key === 'Enter') ||
+                               (!this.isMac && e.ctrlKey && e.key === 'Enter');
+
+            if (isSubmitKey) {
+                e.preventDefault();
+                this.submitValue();
+            }
+        }
+
+        handleFocus() {
+            this.isFocused = true;
+            this.requestUpdate();
+        }
+
+        handleBlur() {
+            this.isFocused = false;
+            
+            // Submit value if it has changed
+            if (this.hasChanged) {
+                this.submitValue();
+            }
+            
+            this.requestUpdate();
+        }
+
+        submitValue() {
+            const textarea = this.shadowRoot.querySelector('.input-field');
+            const currentValue = textarea.value;
+            
+            // Update internal state
+            this.value = currentValue;
+            this.initialValue = currentValue;
+            this.hasChanged = false;
+            
+            // Emit to backend
+            if (window.jeamlit && window.jeamlit.emit) {
+                window.jeamlit.emit(this.componentKey, currentValue);
+            }
+            
+            this.requestUpdate();
+        }
+
+        flashCharLimit() {
+            this.charLimitReached = true;
+            this.requestUpdate();
+            
+            if (this.charLimitTimeout) {
+                clearTimeout(this.charLimitTimeout);
+            }
+            
+            this.charLimitTimeout = setTimeout(() => {
+                this.charLimitReached = false;
+                this.requestUpdate();
+            }, 3000);
+        }
+
+        getHeightClass() {
+            if (!this.height) {
+                return 'default-height';
+            } else if (this.height.match(/^\d+$/)) {
+                return 'fixed-height';
+            }
+            return '';
+        }
+
+        render() {
+            const formattedLabel = this.formatText(this.label || '');
+            const currentLength = this.shadowRoot?.querySelector('.input-field')?.value?.length || this.value?.length || 0;
+            const showEnterHint = this.hasChanged && this.isFocused;
+            const showCharCounter = (this.maxChars !== null && this.maxChars !== undefined) && this.isFocused;
+            const enterHintText = this.isMac ? 'Press ⌘ + Enter to apply' : 'Press Ctrl + Enter to apply';
+
+            let iconElement = null;
+            if (this.icon) {
+                if (this.isEmoji(this.icon)) {
+                    iconElement = html`<span class="input-icon emoji">${this.icon}</span>`;
+                } else if (this.isMaterialIcon(this.icon)) {
+                    iconElement = html`<span class="input-icon material">${this.getMaterialIconName(this.icon)}</span>`;
+                }
+            }
+
+            return html`
+                <div class="input-container">
+                    <div class="label-row">
+                        ${this.labelVisibility !== 'collapsed' ? html`
+                            <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}"
+                                 .innerHTML="${this.labelVisibility === 'hidden' ? '&nbsp;' : formattedLabel}">
+                            </div>
+                        ` : ''}
+                        ${this.help && this.labelVisibility === 'visible' ? html`
+                            <jt-tooltip text="${this.help}"></jt-tooltip>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="input-wrapper">
+                        ${iconElement}
+                        <textarea
+                            class="input-field ${this.getHeightClass()}"
+                            .value="${this.value || ''}"
+                            placeholder="${this.placeholder || ''}"
+                            ?disabled="${this.disabled}"
+                            @input="${this.handleInput}"
+                            @keydown="${this.handleKeydown}"
+                            @focus="${this.handleFocus}"
+                            @blur="${this.handleBlur}"
+                        ></textarea>
+                        <div class="helper-text">
+                            ${showEnterHint || showCharCounter ? html`
+                                ${showEnterHint ? html`
+                                    <span class="enter-hint ${showEnterHint ? 'visible' : ''}">
+                                        ${enterHintText}
+                                    </span>
+                                ` : ''}
+                                ${showEnterHint && showCharCounter ? html`
+                                    <span class="bullet">•</span>
+                                ` : ''}
+                                ${showCharCounter ? html`
+                                    <span class="char-counter ${this.charLimitReached ? 'limit-reached' : ''}">
+                                        ${currentLength}/${this.maxChars}
+                                    </span>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-text-area', JtTextArea);
+</script>
