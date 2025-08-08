@@ -69,4 +69,18 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
         final T component = build();
         return component.use(container);
     }
+
+    protected static void ensureIsValidIcon(@org.jetbrains.annotations.Nullable String icon) {
+        if (icon != null && !icon.isEmpty()) {
+            // Validate icon format: single emoji or :material/icon_name:
+            boolean isEmoji = icon.length() == 1 || (icon.length() <= 4 && Character.isHighSurrogate(
+                    icon.charAt(0)));
+            boolean isMaterialIcon = icon.startsWith(":material/") && icon.endsWith(":");
+
+            if (!isEmoji && !isMaterialIcon) {
+                throw new IllegalArgumentException(
+                        "icon must be a single emoji or Material Symbols in format ':material/icon_name:'. Got: " + icon);
+            }
+        }
+    }
 }
