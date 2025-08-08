@@ -12,7 +12,8 @@
       "WebFetch(domain:github.com)",
       "Bash(ls:*)",
       "WebFetch(domain:css-sandbox.streamlit.app)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(gh:*)"
     ],
     "deny": []
   }
