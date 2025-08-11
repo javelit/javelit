@@ -24,6 +24,7 @@ import io.undertow.websockets.spi.WebSocketHttpExchange;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server implements StateManager.RenderServer {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private final int port;
+    @VisibleForTesting
+    public final int port;
     private final HotReloader hotReloader;
     private final FileWatcher fileWatcher;
 

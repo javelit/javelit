@@ -1,6 +1,6 @@
 import tech.catheu.jeamlit.core.Jt;
 
-public class TestApp {
+public class TestApp99 {
     public static void main(String[] args) {
         // loader un mega gros fichier de data
         //var data = Jt.sessionState().computeIfAbsent("data_lourde", k -> load_data_lourde("mon_fichier_lourd"));

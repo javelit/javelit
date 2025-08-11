@@ -101,6 +101,27 @@
             <version>4.7.5</version>
         </dependency>
 
+
+        <!-- testing dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.54.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.27.4</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -114,7 +135,19 @@
                     <target>21</target>
                 </configuration>
             </plugin>
-            
+
+            <!-- Configure test execution -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+                <configuration>
+                    <parallel>classes</parallel>
+                    <threadCount>8</threadCount>
+                    <perCoreThreadCount>false</perCoreThreadCount>
+                </configuration>
+            </plugin>
+
             <!-- Build agent JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -140,7 +173,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Main executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
