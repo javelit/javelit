@@ -136,7 +136,7 @@ public class Jt {
     }
 
     public static <T extends Number> NumberInputComponent.Builder<T> numberInput(final @Nonnull String label, final Class<T> valueClass) {
-        return new NumberInputComponent.Builder<>(label);
+        return new NumberInputComponent.Builder<>(label, valueClass);
     }
 
 }
