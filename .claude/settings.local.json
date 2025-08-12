@@ -15,7 +15,8 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(gh:*)",
       "Bash(sed:*)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
