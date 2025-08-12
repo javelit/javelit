@@ -82,15 +82,21 @@ public class TextAreaComponent extends JtComponent<String> {
                 // Validate minimum heights for pixel values
                 if (height.matches("\\d+")) {
                     int pixels = Integer.parseInt(height);
-                    // Note: We check labelVisibility at build time, not here, since it might change
-                    // Minimum validation will be done in build()
-                    if (pixels < 68) {
-                        throw new IllegalArgumentException(
-                                "height must be at least 68 pixels (minimum allowed). Got: " + pixels);
-                    }
+                    return height(pixels);
                 }
             }
             this.height = height;
+            return this;
+        }
+
+        public Builder height(final int heightInPixels) {
+            // Note: We check labelVisibility at build time, not here, since it might change
+            // Minimum validation will be done in build()
+            if (heightInPixels < 68) {
+                throw new IllegalArgumentException(
+                        "height must be at least 68 pixels (minimum allowed). Got: " + heightInPixels);
+            }
+            this.height = String.valueOf(heightInPixels);
             return this;
         }
         
