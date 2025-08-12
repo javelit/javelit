@@ -14,7 +14,8 @@
       "WebFetch(domain:css-sandbox.streamlit.app)",
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(gh:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": []
   }
