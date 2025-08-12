@@ -71,10 +71,8 @@ public class MyApp {
         Jt.text("debug empty - 1 ").use(empty);
         Thread.sleep(5000);
         Jt.text("debug empty - 2 ").use(empty);
-        System.out.println("GOING TO SLEEP FOR LAST ONE");
         Thread.sleep(5000);
         Jt.text("debug empty - 3 ").use(empty);
-        System.out.println("FNISHED SLEEPING FOR LAST ONE");
     }
     
     private static String getAgeCategory(Double age) {
