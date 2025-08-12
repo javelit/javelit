@@ -8,7 +8,7 @@ This file provides guidance to Claude Code when working with this repository.
 
 - **Type**: Java application
 - **Build System**: Maven
-- **Java Version**: 23 (configured in pom.xml, runs on Java 21+)
+- **Java Version**: 21 (configured in pom.xml, runs on Java 21+)
 - **Package Structure**: `tech.catheu`
 - **Design Decisions**: See DESIGN_DECISIONS.md
 
@@ -51,7 +51,6 @@ src/main/resources/         # Application resources
 - Maven wrapper (mvnw) included - no global Maven installation needed
 - Standard Maven directory structure
 - See DESIGN_DECISIONS.md for architectural details
-- ignore TODO.md
 - all examples and test apps should be put in the examples folder
 
 ### Implementation of Components 
@@ -68,4 +67,42 @@ src/main/resources/         # Application resources
 - For a component that will have to support use_container_width:
     - Main containers (:host in lit css) should always be in display block
     - Then :host([use-container-width]) .[REPLACE_BY_SOME_INTERNAL_CLASS] { width: 100%; }
-- Main containers (:host in lit css) should always be in display block 
+- Main containers (:host in lit css) should always be in display block
+
+### Writing tests
+#### E2E tests
+1. Rule 1:
+A test method using playwright should look like the following:
+```
+        final @Language("java") String app = """
+            import tech.catheu.jeamlit.core.Jt;
+            
+            public class TestApp {
+                public static void main(String[] args) {
+                    <THE APP TO TEST>
+                }
+            }
+            """;
+        
+        final Path appFile = JeamlitTestHelper.writeTestApp(app);
+        Server server = null;
+
+        try (final Playwright playwright = Playwright.create();
+             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Page page = browser.newPage()) {
+             server = JeamlitTestHelper.startServer(appFile);
+             page.navigate("http://localhost:" + server.port);
+             
+             <PERFORM ASSERTIONS HERE>
+             
+        } finally {
+            JeamlitTestHelper.stopServer(server);
+            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
+        }
+```
+
+2. Rule 2:
+Use PlaywrightAssertions:
+```
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+```
