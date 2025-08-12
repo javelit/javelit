@@ -8,6 +8,15 @@
                 margin: 0 0;
             }
             
+            :host([width="content"]) {
+                width: auto;
+            }
+
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--form-width);
+                max-width: 100%;
+            }
+            
             .container {
                 width: 100%;
                 height: 100%;
@@ -23,6 +32,7 @@
         `;
         
         static properties = {
+            width: {type: String},
             height: {type: Number},
             border: {type: Boolean, reflect: true},
             formKey: {type: String, attribute: 'form-key'}
@@ -39,6 +49,13 @@
         }
         
         render() {
+            // Set width CSS variable if width is specified and is a pixel value
+            if (this.width && /^\d+$/.test(this.width)) {
+                this.style.setProperty('--form-width', `${this.width}px`);
+            } else {
+                this.style.removeProperty('--form-width');
+            }
+
             return html`
                 <div class="container">
                     <slot></slot>
