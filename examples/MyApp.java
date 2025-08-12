@@ -67,12 +67,7 @@ public class MyApp {
         Jt.text("another text in container - but put way later").use(container);
         Jt.text("💡 Try changing values and see the app update in real-time!").use();
 
-        var empty = Jt.empty("debug-empty").border(true).use(columns.col(2));
-        Jt.text("debug empty - 1 ").use(empty);
-        Thread.sleep(5000);
-        Jt.text("debug empty - 2 ").use(empty);
-        Thread.sleep(5000);
-        Jt.text("debug empty - 3 ").use(empty);
+        var empty = Jt.text("col 2").use(columns.col(2));
     }
     
     private static String getAgeCategory(Double age) {
