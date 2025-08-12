@@ -13,6 +13,7 @@ import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -50,7 +51,7 @@ public class ExpanderComponentE2ETest {
             // Check expander header is visible
             assertThat(page.locator("jt-expander summary", new Page.LocatorOptions().setHasText("Click to expand"))).isVisible(WAIT_1_SEC_MAX);
             // Initially, content should be hidden (collapsed)
-            assertThat(page.getByText("Hidden content inside expander")).not().isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Hidden content inside expander")).not().isVisible(WAIT_100_MS_MAX);
             // Click to expand
             expanderLocator.click();
             // Check that content is now visible

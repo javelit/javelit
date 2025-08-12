@@ -10,6 +10,7 @@ import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -49,13 +50,13 @@ public class ContainerComponentE2ETest {
             assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
             // Check content before container
             assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("Before container"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Before container"))).not().isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Before container"))).not().isVisible(WAIT_100_MS_MAX);
             // Check content inside container
             assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Inside container"))).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Container Button"))).isVisible(WAIT_1_SEC_MAX);
             // Check content after container
             assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("After container"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container"))).not().isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container"))).not().isVisible(WAIT_100_MS_MAX);
             
         } finally {
             JeamlitTestHelper.stopServer(server);
