@@ -12,7 +12,7 @@ import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
 import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.NOT_HEADLESS;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -39,7 +39,7 @@ public class ExpanderComponentE2ETest {
         Server server = null;
         
         try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(NOT_HEADLESS);
+             final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
             server = JeamlitTestHelper.startServer(appFile);
             page.navigate("http://localhost:" + server.port);
