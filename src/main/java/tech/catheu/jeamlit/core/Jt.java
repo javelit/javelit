@@ -8,8 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
-import tech.catheu.jeamlit.components.text.TextComponent;
-import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.components.input.TextInputComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
@@ -18,6 +16,8 @@ import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
+import tech.catheu.jeamlit.components.text.TextComponent;
+import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
 import java.util.List;
