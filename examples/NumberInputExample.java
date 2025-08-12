@@ -46,15 +46,15 @@ public class NumberInputExample {
         Jt.text("Count: " + count + " (type: " + (count != null ? count.getClass().getSimpleName() : "null") + ")").use();
 
         // Percentage (0.0 to 1.0)
-        Double percentage = Jt.numberInput("Completion %", Double.class)
-                .minValue(0.0)
-                .maxValue(1.0)
-                .step(10.)
-                .value(0.5)
-                .format("%0.1f")
+        Integer percentage = Jt.numberInput("Completion %", Integer.class)
+                .minValue(0)
+                .maxValue(100)
+                .step(1)
+                .value(3)
+                .format("%0.0f")
                 .use();
 
-        Jt.text("Completion: " + (percentage != null ? (percentage * 100) + "%" : "null")).use();
+        Jt.text("Completion: " + (percentage != null ? percentage + "%" : "null")).use();
 
         // Formatted number with custom step
         Double measurement = Jt.numberInput("Scientific Measurement", Double.class)
