@@ -13,8 +13,8 @@ import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
 /**
  * End-to-end tests for ButtonComponent.
@@ -49,7 +49,7 @@ public class ButtonComponentE2ETest {
             // button text is correct
             assertThat(page.getByText("Click Me")).isVisible(WAIT_1_SEC_MAX);
             // "Button was clicked" text is not visible
-            assertThat(page.getByText("Button was clicked!")).not().isVisible(WAIT_100_MS_MAX);
+            assertThat(page.getByText("Button was clicked!")).not().isVisible(WAIT_50_MS_MAX);
             // Click the button
             page.locator("jt-button button").click(new Locator.ClickOptions().setTimeout(100));
             // "Button was clicked" new text is now visible

@@ -1,6 +1,9 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.*;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.core.Server;
@@ -10,7 +13,7 @@ import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -63,14 +66,13 @@ public class TabsComponentE2ETest {
             assertThat(tab2Header).isVisible(WAIT_1_SEC_MAX);
             // Initially, Tab 1 content should be visible
             assertThat(page.getByText("Content of Tab 0")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_100_MS_MAX);
-            assertThat(page.getByText("Content of Tab 2")).not().isVisible(WAIT_100_MS_MAX);
+            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
+            assertThat(page.getByText("Content of Tab 2")).not().isVisible(WAIT_10_MS_MAX);
             // Click on Tab 2
             tab2Header.click();
-            page.waitForTimeout(300);
-            assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_100_MS_MAX);
-            assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_100_MS_MAX);
-            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_100_MS_MAX);
+            assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
+            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
             
         } finally {
             JeamlitTestHelper.stopServer(server);

@@ -1,6 +1,9 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.*;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.core.Server;
@@ -10,8 +13,8 @@ import java.nio.file.Path;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
 /**
  * End-to-end tests for PopoverComponent.
@@ -59,7 +62,7 @@ public class PopoverComponentE2ETest {
             // click outside
             outsideText.click();
             // Check that popover content is not visible anymore
-            assertThat(page.getByText("Content inside popover")).not().isVisible(WAIT_100_MS_MAX);
+            assertThat(page.getByText("Content inside popover")).not().isVisible(WAIT_50_MS_MAX);
 
         } finally {
             JeamlitTestHelper.stopServer(server);
