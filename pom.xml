@@ -115,12 +115,6 @@
             <version>1.54.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.27.4</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 
