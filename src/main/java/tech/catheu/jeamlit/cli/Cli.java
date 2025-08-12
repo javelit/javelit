@@ -64,7 +64,6 @@ public class Cli implements Callable<Integer> {
             final String url = "http://localhost:" + port;
             try {
                 server.start();
-                logger.info("Server started at {} ", url);
                 logger.info("Press Ctrl+C to stop");
             } catch (Exception e) {
                 logger.error("Error starting server", e);

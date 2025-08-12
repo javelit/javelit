@@ -42,6 +42,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server implements StateManager.RenderServer {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
@@ -145,6 +147,10 @@ public class Server implements StateManager.RenderServer {
     }
 
     private class WebSocketHandler implements WebSocketConnectionCallback {
+
+        private final AtomicBoolean neverLoaded = new AtomicBoolean(true);
+        private final Semaphore reloadAvailable = new Semaphore(1, true);
+
         @Override
         public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
             final String sessionId = UUID.randomUUID().toString();
@@ -173,13 +179,22 @@ public class Server implements StateManager.RenderServer {
             channel.resumeReceives();
 
             try {
-                hotReloader.reloadFile();
+                if (neverLoaded.get()) {
+                    reloadAvailable.acquire();
+                    if (neverLoaded.get()) {
+                        logger.warn("Compiling the app for the first time.");
+                        hotReloader.reloadFile();
+                        neverLoaded.set(false);
+                    }
+                }
             } catch (CompilationException e) {
                 // FIXME CYRIL - here on CompilationException failure, report the error properly
                 // use sendError or something like that
                 throw new RuntimeException(e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                reloadAvailable.release();
             }
 
             // Send initial render
@@ -204,6 +219,8 @@ public class Server implements StateManager.RenderServer {
             if (doRerun) {
                 hotReloader.runApp(sessionId);
             }
+        } else if ("reload".equals(type)) {
+            hotReloader.runApp(sessionId);
         }
     }
 
@@ -324,13 +341,14 @@ public class Server implements StateManager.RenderServer {
             LOG.info("Watching directory: {}", directory);
 
             watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
-                Path changedFile = event.path();
+                final Path changedFile = event.path();
 
                 // Only respond to changes to our specific file
                 if (changedFile.equals(watchedFile)) {
                     if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
                         LOG.debug("File changed: {}", changedFile);
                         LOG.info("File changed: " + changedFile);
+                        LOG.debug("Re-compiling because of file event");
                         notifyReload();
                     } else {
                         // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES

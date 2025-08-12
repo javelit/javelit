@@ -1,0 +1,270 @@
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtConnectionErrorModal extends LitElement {
+        static styles = css`
+            :host {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 9999;
+                display: none;
+            }
+
+            :host([show]) {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+            }
+
+            .modal-container {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--jt-bg-primary);
+                border-radius: var(--jt-border-radius-lg);
+                box-shadow: var(--jt-shadow-lg);
+                min-width: 400px;
+                max-width: 500px;
+                margin: var(--jt-spacing-xl);
+                z-index: 1;
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--jt-spacing-lg);
+                border-bottom: 1px solid var(--jt-border-color);
+            }
+
+            :host([prevent-close]) .modal-header {
+                justify-content: center;
+            }
+
+            .modal-title {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-lg);
+                font-weight: var(--jt-font-weight-bold);
+                color: var(--jt-text-primary);
+                margin: 0;
+            }
+
+            .close-button {
+                background: none;
+                border: none;
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-xl);
+                color: var(--jt-text-secondary);
+                cursor: pointer;
+                padding: var(--jt-spacing-xs);
+                border-radius: var(--jt-border-radius);
+                transition: background-color var(--jt-transition-fast), color var(--jt-transition-fast);
+            }
+
+            .close-button:hover {
+                background-color: var(--jt-bg-tertiary);
+                color: var(--jt-text-primary);
+            }
+
+            .modal-body {
+                padding: var(--jt-spacing-lg);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-relaxed);
+                color: var(--jt-text-primary);
+                position: relative;
+            }
+
+            .code-snippet {
+                background: var(--jt-bg-secondary);
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius);
+                padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+                margin: var(--jt-spacing-md) 0;
+                font-family: var(--jt-font-family-mono);
+                font-size: var(--jt-font-size-sm);
+                color: var(--jt-text-primary);
+                cursor: pointer;
+                user-select: all;
+                position: relative;
+                transition: background-color var(--jt-transition-fast);
+            }
+
+            .code-snippet:hover {
+                background: var(--jt-bg-tertiary);
+            }
+
+            .toast {
+                position: absolute;
+                bottom: var(--jt-spacing-lg);
+                left: 50%;
+                transform: translateX(-50%) translateY(10px);
+                background: var(--jt-success-color);
+                color: var(--jt-text-white);
+                padding: var(--jt-spacing-sm) var(--jt-spacing-lg);
+                border-radius: var(--jt-border-radius);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                box-shadow: var(--jt-shadow-lg);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity var(--jt-transition-fast), transform var(--jt-transition-fast);
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .toast-icon {
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-base);
+            }
+
+            ::slotted(h1), ::slotted(h2), ::slotted(h3) {
+                margin: 0;
+                font-family: var(--jt-font-family);
+                font-weight: var(--jt-font-weight-bold);
+                color: var(--jt-text-primary);
+            }
+
+            ::slotted(p) {
+                margin: 0 0 var(--jt-spacing-md) 0;
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-relaxed);
+                color: var(--jt-text-primary);
+            }
+
+            ::slotted(p:last-child) {
+                margin-bottom: 0;
+            }
+        `;
+
+        static properties = {
+            show: { type: Boolean, reflect: true },
+            preventClose: { type: Boolean, reflect: true, attribute: 'prevent-close' }
+        };
+
+        constructor() {
+            super();
+            this.show = false;
+            this.preventClose = false;
+        }
+
+        firstUpdated() {
+            super.firstUpdated();
+            this.setupCopyHandlers();
+        }
+
+        setupCopyHandlers() {
+            // Find the copy icon in slotted content
+            const copyIcon = this.querySelector('#copy-icon');
+            const copyCommand = this.querySelector('#copy-command');
+            
+            if (copyIcon && copyCommand) {
+                // Add click handler for copy functionality
+                copyIcon.addEventListener('click', () => this.handleCopyCommand(copyCommand));
+                
+                // Add hover effects
+                copyIcon.addEventListener('mouseenter', () => {
+                    copyIcon.style.backgroundColor = 'var(--jt-bg-tertiary)';
+                    copyIcon.style.color = 'var(--jt-text-primary)';
+                });
+                
+                copyIcon.addEventListener('mouseleave', () => {
+                    copyIcon.style.backgroundColor = 'transparent';
+                    copyIcon.style.color = 'var(--jt-text-secondary)';
+                });
+            }
+        }
+
+        handleCopyCommand(copyCommandElement) {
+            const commandSpan = copyCommandElement.querySelector('span:first-child');
+            const text = commandSpan ? commandSpan.textContent.trim() : copyCommandElement.textContent.trim();
+            
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Copied!');
+            }).catch((error) => {
+                console.error('Failed to copy to clipboard:', error);
+                this.showToast('Copy failed');
+            });
+        }
+
+        showToast(message = 'Copied!') {
+            const toast = this.shadowRoot.querySelector('.toast');
+            if (toast) {
+                const textSpan = toast.querySelector('span:last-child');
+                if (textSpan) {
+                    textSpan.textContent = message;
+                }
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1100);
+            }
+        }
+
+        handleCloseClick() {
+            this.show = false;
+            this.dispatchEvent(new CustomEvent('modal-close', {
+                bubbles: true,
+                composed: true
+            }));
+        }
+
+        handleOverlayClick(e) {
+            // Only close if clicking the overlay itself, not the modal content
+            // And only if closing is not prevented
+            if (e.target === e.currentTarget && !this.preventClose) {
+                this.handleCloseClick();
+            }
+        }
+
+        render() {
+            return html`
+                <div class="modal-overlay" @click="${this.handleOverlayClick}">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <div class="modal-title">
+                                <slot name="title">Modal</slot>
+                            </div>
+                            ${!this.preventClose ? html`
+                                <button class="close-button" @click="${this.handleCloseClick}">
+                                    close
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="modal-body">
+                            <slot></slot>
+                            <div class="toast">
+                                <span class="toast-icon">check</span>
+                                <span>Copied!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-connection-error-modal', JtConnectionErrorModal);
+</script>

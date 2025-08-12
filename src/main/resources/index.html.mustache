@@ -48,6 +48,7 @@
     </style>
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
+    {{> connection-error-modal.html.mustache }}
 </head>
 <body>
 <div id="app" class="app-wrapper">
@@ -57,28 +58,103 @@
         <p>Connecting to Jeamlit server...</p>
     </div>
 </div>
+
+<!-- Connection Error Modal -->
+<jt-connection-error-modal id="connection-modal" prevent-close>
+    <span slot="title">Connection Error</span>
+    <p>Is Jeamlit still running? If you accidentally stopped Jeamlit, just restart it in your terminal:</p>
+    <div id="copy-command" style="background: var(--jt-bg-secondary); border: 1px solid var(--jt-border-color); border-radius: var(--jt-border-radius); padding: var(--jt-spacing-sm) var(--jt-spacing-md); margin: var(--jt-spacing-md) 0; font-family: var(--jt-font-family-mono); font-size: var(--jt-font-size-sm); user-select: all; display: flex; align-items: center; justify-content: space-between;">
+        <span>jeamlit run YourApp.java</span>
+        <span id="copy-icon" style="font-family: 'Material Symbols Rounded'; font-size: var(--jt-font-size-base); color: var(--jt-text-secondary); margin-left: var(--jt-spacing-sm); cursor: pointer; user-select: none; padding: var(--jt-spacing-xs); border-radius: var(--jt-border-radius-sm); transition: background-color var(--jt-transition-fast), color var(--jt-transition-fast);">content_copy</span>
+    </div>
+</jt-connection-error-modal>
+
 <script>
-    const ws = new WebSocket('ws://localhost:{{ port }}/ws');
     const app = document.getElementById('app');
     const mainContainer = document.getElementById('main-container');
     const sidebarContainer = document.getElementById('sidebar-container');
+    const connectionModal = document.getElementById('connection-modal');
 
-    // Store websocket reference for components
-    window.ws = ws;
+    // Track if this is the first message to clear connecting text
+    let isFirstMessage = true;
+
+    // Connection management
+    let ws = null;
+    let connectionState = 'disconnected'; // 'connected', 'disconnected', 'reconnecting'
 
     // Create emit function for new component system
     window.jeamlit = {
         emit: function(componentKey, value) {
-            ws.send(JSON.stringify({
-                type: 'component_update',
-                componentKey: componentKey,
-                value: value
-            }));
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'component_update',
+                    componentKey: componentKey,
+                    value: value
+                }));
+            } else {
+                console.log("Failed to send update to backend. Connection to backend is not available.");
+            }
         }
     };
 
-    // Track if this is the first message to clear connecting text - TODO - put this in the overlay
-    let isFirstMessage = true;
+    // Connection management functions
+    function createWebSocketConnection() {
+        try {
+            ws = new WebSocket('ws://localhost:{{ port }}/ws');
+
+            ws.onclose = () => {
+                console.log('WebSocket closed');
+                handleConnectionLoss();
+            };
+
+            ws.onmessage = handleWebSocketMessage;
+            
+            ws.onopen = () => {
+                if (connectionState === 'reconnecting') {
+                    ws.send(JSON.stringify({
+                        type: 'reload'
+                    }));
+                }
+                connectionState = 'connected';
+                console.log('WebSocket connected');
+                connectionModal.show = false;
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+        } catch (error) {
+            console.error('Failed to create WebSocket:', error);
+            handleConnectionLoss();
+        }
+    }
+
+    function handleConnectionLoss() {
+        if (connectionState === 'connected') {
+            // First time losing connection - show the connection lost modal
+            connectionModal.show = true;
+        }
+        connectionState = 'reconnecting';
+        setTimeout(() => {
+            console.log('Attempting to reconnect...');
+            createWebSocketConnection();
+        }, 5000);
+        
+        // Clear websocket references
+        ws = null;
+    }
+
+    function handleWebSocketMessage(event) {
+        const message = JSON.parse(event.data);
+        if (message.type === 'delta') {
+            applyDelta(message);
+        } else if (message.type === 'error') {
+            showError(message.error);
+        } else {
+            alert(`Unknown message type ${message.type}. Please reach out to support.`);
+        }
+    }
     
     // Layout management
     const layoutContainers = new Map([
@@ -247,31 +323,15 @@
         });
     }
 
-    ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.type === 'delta') {
-            applyDelta(message);
-        } else if (message.type === 'error') {
-            showError(message.error);
-        } else {
-            alert(`Unknown message type ${message.type}. Please reach out to support.`);
-        }
-    };
-
-    ws.onerror = () => {
-        showError('WebSocket connection error');
-    };
-
-    ws.onclose = () => {
-        showError('Connection to server lost');
-    };
-
     function showError(error) {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error';
         errorDiv.textContent = 'Error: ' + error;
         mainContainer.appendChild(errorDiv);
     }
+
+    // Initialize connection
+    createWebSocketConnection();
 </script>
 </body>
 </html>
