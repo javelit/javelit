@@ -16,6 +16,7 @@ import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
+import tech.catheu.jeamlit.components.status.ErrorComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
@@ -85,6 +86,10 @@ public class Jt {
 
     public static TitleComponent.Builder title(final @Nonnull String body) {
         return new TitleComponent.Builder(body);
+    }
+
+    public static ErrorComponent.Builder error(final @Nonnull String body) {
+        return new ErrorComponent.Builder(body);
     }
 
     public static ButtonComponent.Builder button(final @Nonnull String label) {

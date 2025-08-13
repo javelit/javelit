@@ -1,19 +1,12 @@
 package tech.catheu.jeamlit.e2e.components.input;
 
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
-import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
 import tech.catheu.jeamlit.e2e.helpers.OsUtils;
-
-import java.nio.file.Path;
+import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -38,16 +31,8 @@ public class TextAreaComponentE2ETest {
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
 
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
-            
+        PlaywrightUtils.runInBrowser(app, page -> {
             // text area input is visible
             assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
             // current message is empty
@@ -62,10 +47,6 @@ public class TextAreaComponentE2ETest {
             page.keyboard().press("Enter");
             page.keyboard().up(os.modifier);
             assertThat(page.getByText("Message: Line 1\nLine 2\nLine 3")).isVisible(WAIT_1_SEC_MAX);
-            
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        });
     }
 }

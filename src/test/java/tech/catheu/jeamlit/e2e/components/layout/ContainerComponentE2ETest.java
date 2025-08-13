@@ -1,17 +1,11 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
-import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
-
-import java.nio.file.Path;
+import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
@@ -38,16 +32,8 @@ public class ContainerComponentE2ETest {
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
-        
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
-            
+
+        PlaywrightUtils.runInBrowser(app, page -> {
             // Wait for container to be visible
             assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
             // Check content before container
@@ -60,9 +46,6 @@ public class ContainerComponentE2ETest {
             assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("After container"))).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container"))).not().isVisible(WAIT_50_MS_MAX);
             
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        });
     }
 }

@@ -1,0 +1,112 @@
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtError extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            :host([width="stretch"]) {
+                width: 100%;
+            }
+
+            :host([width="content"]) {
+                width: auto;
+            }
+
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--error-width);
+                max-width: 100%;
+            }
+
+            .error-container {
+                background-color: var(--jt-bg-error);
+                border-radius: var(--jt-border-radius-lg);
+                padding: var(--jt-spacing-md);
+                display: flex;
+                align-items: flex-start;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .error-icon {
+                flex-shrink: 0;
+                font-size: var(--jt-font-size-lg);
+                color: var(--jt-danger-color);
+                line-height: 1.2;
+            }
+
+            .error-icon.material-icon {
+                font-family: 'Material Symbols Rounded';
+                font-weight: normal;
+                font-style: normal;
+                font-size: 24px;
+                display: inline-block;
+                line-height: 1;
+                text-transform: none;
+                letter-spacing: normal;
+                word-wrap: normal;
+                white-space: nowrap;
+                direction: ltr;
+            }
+
+            .error-body {
+                flex: 1;
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-normal);
+                color: var(--jt-danger-color);
+                margin: 0;
+                padding: 0;
+                white-space: normal;
+                word-wrap: break-word;
+            }
+        `;
+
+        static properties = {
+            body: { type: String },
+            icon: { type: String },
+            width: { type: String }
+        };
+
+        constructor() {
+            super();
+            this.body = '';
+            this.icon = null;
+            this.width = 'stretch';
+        }
+
+        render() {
+            // Set width CSS variable if width is specified and is a pixel value
+            if (this.width && /^\d+$/.test(this.width)) {
+                this.style.setProperty('--error-width', `${this.width}px`);
+            } else {
+                this.style.removeProperty('--error-width');
+            }
+
+            let iconElement = '';
+            if (this.icon) {
+                if (this.icon.startsWith(':material/') && this.icon.endsWith(':')) {
+                    // Material icon format :material/icon_name:
+                    const iconName = this.icon.slice(10, -1).replace(/_/g, '_');
+                    iconElement = html`<span class="error-icon material-icon">${iconName}</span>`;
+                } else if (this.icon.length <= 2) {
+                    // Single emoji character
+                    iconElement = html`<span class="error-icon">${this.icon}</span>`;
+                }
+            }
+
+            return html`
+                <div class="error-container">
+                    ${iconElement}
+                    <div class="error-body">
+                        ${this.body || ''}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-error', JtError);
+</script>

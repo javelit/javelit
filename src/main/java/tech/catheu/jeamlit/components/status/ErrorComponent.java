@@ -1,0 +1,103 @@
+package tech.catheu.jeamlit.components.status;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import tech.catheu.jeamlit.core.JtComponent;
+import tech.catheu.jeamlit.core.JtComponentBuilder;
+
+import java.io.StringWriter;
+
+public class ErrorComponent extends JtComponent<JtComponent.NONE> {
+    // protected to be visible to the template engine
+    protected final String body;
+    protected final String icon;
+    protected final String width;
+
+    private static final Mustache registerTemplate;
+    private static final Mustache renderTemplate;
+
+    static {
+        final MustacheFactory mf = new DefaultMustacheFactory();
+        registerTemplate = mf.compile("components/status/ErrorComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/status/ErrorComponent.render.html.mustache");
+    }
+
+    @SuppressWarnings("unused")
+    public static class Builder extends JtComponentBuilder<NONE, ErrorComponent, Builder> {
+        private @Nonnull String body;
+        private @Nullable String icon = null;
+        private String width = "stretch";
+
+        public Builder(final @Nonnull String body) {
+            this.body = body;
+        }
+
+        public Builder body(final @Nonnull String body) {
+            this.body = body;
+            return this;
+        }
+
+        public Builder icon(final @Nullable String icon) {
+            this.icon = icon;
+            return this;
+        }
+
+        public Builder width(final String width) {
+            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
+            }
+            this.width = width;
+            return this;
+        }
+
+        /**
+         * Convenience method for setting width as integer pixels.
+         *
+         * @param widthPixels Width in pixels (must be non-negative)
+         * @return this builder
+         */
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
+
+        @Override
+        public ErrorComponent build() {
+            return new ErrorComponent(this);
+        }
+    }
+
+    private ErrorComponent(Builder builder) {
+        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        this.body = builder.body;
+        this.icon = builder.icon;
+        this.width = builder.width;
+    }
+
+    @Override
+    protected String register() {
+        final StringWriter writer = new StringWriter();
+        registerTemplate.execute(writer, this);
+        return writer.toString();
+    }
+
+    @Override
+    protected String render() {
+        final StringWriter writer = new StringWriter();
+        renderTemplate.execute(writer, this);
+        return writer.toString();
+    }
+
+    @Override
+    protected TypeReference<NONE> getTypeReference() {
+        return new TypeReference<>() {
+        };
+    }
+}

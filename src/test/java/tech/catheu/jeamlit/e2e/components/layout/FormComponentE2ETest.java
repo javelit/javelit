@@ -1,15 +1,12 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.*;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
-import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
-
-import java.nio.file.Path;
+import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -40,16 +37,8 @@ public class FormComponentE2ETest {
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
-        
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
 
+        PlaywrightUtils.runInBrowser(app, page -> {
             // used to get out of inputs easily
             final Locator textUtilLocator = page.locator("jt-text",  new Page.LocatorOptions().setHasText("used to get out of form"));
             assertThat(textUtilLocator).isVisible(WAIT_1_SEC_MAX);
@@ -70,9 +59,6 @@ public class FormComponentE2ETest {
             // Click submit button
             page.locator("jt-form-submit-button button").click();
             assertThat(page.getByText("Name: " + "John" + ", Email: " + "john@example.com")).isVisible(WAIT_1_SEC_MAX);
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        });
     }
 }

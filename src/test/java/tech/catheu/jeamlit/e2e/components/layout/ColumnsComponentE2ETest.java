@@ -1,18 +1,12 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
-import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
-
-import java.nio.file.Path;
+import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -40,16 +34,8 @@ public class ColumnsComponentE2ETest {
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
-        
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
-            
+
+        PlaywrightUtils.runInBrowser(app, page -> {
             // Wait for columns component to be visible
             assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
             // there are 2 columns
@@ -63,9 +49,6 @@ public class ColumnsComponentE2ETest {
             assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Column 1 Content"))).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Button 1"))).isVisible(WAIT_1_SEC_MAX);
             
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        });
     }
 }

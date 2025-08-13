@@ -37,14 +37,6 @@
         .sidebar-layout:empty {
             display: none; /* Hidden by default */
         }
-        .error {
-            background-color: #fee;
-            border: 1px solid #fcc;
-            color: var(--jt-danger-color);
-            padding: var(--jt-spacing-md);
-            border-radius: var(--jt-border-radius);
-            margin: var(--jt-spacing-md) 0;
-        }
     </style>
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
@@ -156,8 +148,6 @@
         const message = JSON.parse(event.data);
         if (message.type === 'delta') {
             applyDelta(message);
-        } else if (message.type === 'error') {
-            showError(message.error);
         } else if (message.type === 'compilation_error') {
             showCompilationError(message.error);
         } else {
@@ -330,13 +320,6 @@
             
             pendingMutations = [];
         });
-    }
-
-    function showError(error) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error';
-        errorDiv.textContent = 'Error: ' + error;
-        mainContainer.appendChild(errorDiv);
     }
 
     function showCompilationError(error) {

@@ -1,18 +1,12 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
-import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
-import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
-
-import java.nio.file.Path;
+import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
@@ -46,15 +40,8 @@ public class TabsComponentE2ETest {
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
-        
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
+
+        PlaywrightUtils.runInBrowser(app, page -> {
             
             // Wait for tabs to be visible
             assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
@@ -74,9 +61,6 @@ public class TabsComponentE2ETest {
             assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
             assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
             
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        });
     }
 }

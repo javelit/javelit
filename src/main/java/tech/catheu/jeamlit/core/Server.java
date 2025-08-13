@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.components.status.ErrorComponent;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -138,11 +139,21 @@ public class Server implements StateManager.RenderServer {
         }
 
         for (final String sessionId : sessions.keySet()) {
-            try {
-                hotReloader.runApp(sessionId);
-            } catch (Exception e) {
-                logger.error("Error reloading session " + sessionId, e);
+            runAppSafe(sessionId);
+        }
+    }
+
+    private void runAppSafe(final String sessionId) {
+        try {
+            hotReloader.runApp(sessionId);
+        } catch (CompilationException e) {
+            // can happen for some edge cases, even if the app is compiled
+            sendCompilationError(sessionId, e.getMessage());
+        } catch (Exception e) {
+            if (!(e instanceof AppRunException || e instanceof DuplicateWidgetIDException)) {
+                logger.error("Unknown error type: {}", e.getClass(), e);
             }
+            sendError(sessionId, e);
         }
     }
 
@@ -198,12 +209,7 @@ public class Server implements StateManager.RenderServer {
             }
 
             // Send initial render
-            try {
-                hotReloader.runApp(sessionId);
-            } catch (Exception e) {
-                logger.error("Error in initial render", e);
-                sendError(sessionId, e.getMessage());
-            }
+            runAppSafe(sessionId);
         }
     }
 
@@ -212,15 +218,14 @@ public class Server implements StateManager.RenderServer {
 
         if ("component_update".equals(type)) {
             final String componentKey = (String) message.get("componentKey");
-            // TODO IMPLEMENT - run callbacks here - need to maintain the list of components somewhere though
             final Object value = message.get("value");
 
             final boolean doRerun = StateManager.handleComponentUpdate(sessionId, componentKey, value);
             if (doRerun) {
-                hotReloader.runApp(sessionId);
+                runAppSafe(sessionId);
             }
         } else if ("reload".equals(type)) {
-            hotReloader.runApp(sessionId);
+            runAppSafe(sessionId);
         }
     }
 
@@ -273,11 +278,11 @@ public class Server implements StateManager.RenderServer {
         }
     }
 
-    private void sendError(final String sessionId, final String error) {
-        final Map<String, Object> message = new HashMap<>();
-        message.put("type", "error");
-        message.put("error", error);
-        sendMessage(sessionId, message);
+    private void sendError(final String sessionId, final Exception error) {
+        // Send error as a component through the delta mechanism
+        // FIXME CYRIL build a proper message with the exception, the message, the traceback, quick action links
+        final ErrorComponent errorComponent = new ErrorComponent.Builder(error.getMessage()).build();
+        send(sessionId, errorComponent, JtContainer.MAIN, null, false);
     }
 
     private void sendCompilationError(final String sessionId, final String error) {
