@@ -37,7 +37,7 @@
                 border-radius: var(--jt-border-radius-lg);
                 box-shadow: var(--jt-shadow-lg);
                 min-width: 400px;
-                max-width: 500px;
+                max-width: 80%;
                 margin: var(--jt-spacing-xl);
                 z-index: 1;
             }
@@ -107,37 +107,6 @@
                 background: var(--jt-bg-tertiary);
             }
 
-            .toast {
-                position: absolute;
-                bottom: var(--jt-spacing-lg);
-                left: 50%;
-                transform: translateX(-50%) translateY(10px);
-                background: var(--jt-success-color);
-                color: var(--jt-text-white);
-                padding: var(--jt-spacing-sm) var(--jt-spacing-lg);
-                border-radius: var(--jt-border-radius);
-                font-family: var(--jt-font-family);
-                font-size: var(--jt-font-size-sm);
-                font-weight: var(--jt-font-weight-medium);
-                box-shadow: var(--jt-shadow-lg);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity var(--jt-transition-fast), transform var(--jt-transition-fast);
-                z-index: 10;
-                display: flex;
-                align-items: center;
-                gap: var(--jt-spacing-xs);
-            }
-
-            .toast.show {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-
-            .toast-icon {
-                font-family: 'Material Symbols Rounded';
-                font-size: var(--jt-font-size-base);
-            }
 
             ::slotted(h1), ::slotted(h2), ::slotted(h3) {
                 margin: 0;
@@ -157,6 +126,7 @@
             ::slotted(p:last-child) {
                 margin-bottom: 0;
             }
+
         `;
 
         static properties = {
@@ -172,56 +142,8 @@
 
         firstUpdated() {
             super.firstUpdated();
-            this.setupCopyHandlers();
         }
 
-        setupCopyHandlers() {
-            // Find the copy icon in slotted content
-            const copyIcon = this.querySelector('#copy-icon');
-            const copyCommand = this.querySelector('#copy-command');
-            
-            if (copyIcon && copyCommand) {
-                // Add click handler for copy functionality
-                copyIcon.addEventListener('click', () => this.handleCopyCommand(copyCommand));
-                
-                // Add hover effects
-                copyIcon.addEventListener('mouseenter', () => {
-                    copyIcon.style.backgroundColor = 'var(--jt-bg-tertiary)';
-                    copyIcon.style.color = 'var(--jt-text-primary)';
-                });
-                
-                copyIcon.addEventListener('mouseleave', () => {
-                    copyIcon.style.backgroundColor = 'transparent';
-                    copyIcon.style.color = 'var(--jt-text-secondary)';
-                });
-            }
-        }
-
-        handleCopyCommand(copyCommandElement) {
-            const commandSpan = copyCommandElement.querySelector('span:first-child');
-            const text = commandSpan ? commandSpan.textContent.trim() : copyCommandElement.textContent.trim();
-            
-            navigator.clipboard.writeText(text).then(() => {
-                this.showToast('Copied!');
-            }).catch((error) => {
-                console.error('Failed to copy to clipboard:', error);
-                this.showToast('Copy failed');
-            });
-        }
-
-        showToast(message = 'Copied!') {
-            const toast = this.shadowRoot.querySelector('.toast');
-            if (toast) {
-                const textSpan = toast.querySelector('span:last-child');
-                if (textSpan) {
-                    textSpan.textContent = message;
-                }
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 1100);
-            }
-        }
 
         handleCloseClick() {
             this.show = false;
@@ -255,10 +177,6 @@
                         </div>
                         <div class="modal-body">
                             <slot></slot>
-                            <div class="toast">
-                                <span class="toast-icon">check</span>
-                                <span>Copied!</span>
-                            </div>
                         </div>
                     </div>
                 </div>

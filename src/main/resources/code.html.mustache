@@ -1,0 +1,151 @@
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtCode extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            .code-container {
+                position: relative;
+                background: var(--jt-bg-secondary);
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius);
+                overflow: hidden;
+            }
+
+            .code-content {
+                padding: var(--jt-spacing-md);
+                font-family: var(--jt-font-family-mono);
+                font-size: var(--jt-font-size-sm);
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                color: var(--jt-text-primary);
+                cursor: text;
+                user-select: text;
+                transition: background-color var(--jt-transition-fast);
+                min-height: 2em;
+            }
+
+
+            .copy-button {
+                position: absolute;
+                top: var(--jt-spacing-sm);
+                right: var(--jt-spacing-sm);
+                background: var(--jt-bg-primary);
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius-sm);
+                padding: var(--jt-spacing-xs);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background-color var(--jt-transition-fast), color var(--jt-transition-fast);
+                opacity: 0.7;
+            }
+
+            .copy-button:hover {
+                background: var(--jt-bg-tertiary);
+                opacity: 1;
+            }
+
+            .copy-icon {
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-base);
+                color: var(--jt-text-secondary);
+            }
+
+            .copy-button:hover .copy-icon {
+                color: var(--jt-text-primary);
+            }
+
+            .toast {
+                position: absolute;
+                bottom: var(--jt-spacing-md);
+                left: 50%;
+                transform: translateX(-50%) translateY(10px);
+                background: var(--jt-success-color);
+                color: var(--jt-text-white);
+                padding: var(--jt-spacing-sm) var(--jt-spacing-lg);
+                border-radius: var(--jt-border-radius);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                box-shadow: var(--jt-shadow-lg);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity var(--jt-transition-fast), transform var(--jt-transition-fast);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .toast-icon {
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-base);
+            }
+        `;
+
+        static properties = {
+            content: { type: String },
+            copyable: { type: Boolean }
+        };
+
+        constructor() {
+            super();
+            this.content = '';
+            this.copyable = true;
+        }
+
+        handleCopy() {
+            const text = this.content || '';
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Copied!');
+            }).catch((error) => {
+                console.error('Failed to copy to clipboard:', error);
+                this.showToast('Copy failed');
+            });
+        }
+
+        showToast(message = 'Copied!') {
+            const toast = this.shadowRoot.querySelector('.toast');
+            if (toast) {
+                const textSpan = toast.querySelector('span:last-child');
+                if (textSpan) {
+                    textSpan.textContent = message;
+                }
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1100);
+            }
+        }
+
+        render() {
+            return html`
+                <div class="code-container">
+                    <div class="code-content">${this.content || ''}</div>
+                    ${this.copyable ? html`
+                        <button class="copy-button" @click="${this.handleCopy}" title="Copy to clipboard">
+                            <span class="copy-icon">content_copy</span>
+                        </button>
+                    ` : ''}
+                    <div class="toast">
+                        <span class="toast-icon">check</span>
+                        <span>Copied!</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-code', JtCode);
+</script>

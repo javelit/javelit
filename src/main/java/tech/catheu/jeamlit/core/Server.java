@@ -129,12 +129,12 @@ public class Server implements StateManager.RenderServer {
         // reload the app and re-run the app for all sessions
         try {
             hotReloader.reloadFile();
-        } catch (CompilationException e) {
-            // FIXME CYRIL - here on CompilationException failure, report the error properly
-            // use sendError or something like that
-            throw new RuntimeException(e);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (!(e instanceof CompilationException)) {
+                logger.error("Unknown error type: {}", e.getClass(), e);
+            }
+            sessions.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
+            return;
         }
 
         for (final String sessionId : sessions.keySet()) {
@@ -187,12 +187,12 @@ public class Server implements StateManager.RenderServer {
                         neverLoaded.set(false);
                     }
                 }
-            } catch (CompilationException e) {
-                // FIXME CYRIL - here on CompilationException failure, report the error properly
-                // use sendError or something like that
-                throw new RuntimeException(e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                if (!(e instanceof CompilationException)) {
+                    logger.error("Unknown error type: {}", e.getClass(), e);
+                }
+                sendCompilationError(sessionId, e.getMessage());
+                return;
             } finally {
                 reloadAvailable.release();
             }
@@ -276,6 +276,13 @@ public class Server implements StateManager.RenderServer {
     private void sendError(final String sessionId, final String error) {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "error");
+        message.put("error", error);
+        sendMessage(sessionId, message);
+    }
+
+    private void sendCompilationError(final String sessionId, final String error) {
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "compilation_error");
         message.put("error", error);
         sendMessage(sessionId, message);
     }

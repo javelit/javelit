@@ -49,6 +49,7 @@
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
     {{> connection-error-modal.html.mustache }}
+    {{> code.html.mustache }}
 </head>
 <body>
 <div id="app" class="app-wrapper">
@@ -63,10 +64,14 @@
 <jt-connection-error-modal id="connection-modal" prevent-close>
     <span slot="title">Connection Error</span>
     <p>Is Jeamlit still running? If you accidentally stopped Jeamlit, just restart it in your terminal:</p>
-    <div id="copy-command" style="background: var(--jt-bg-secondary); border: 1px solid var(--jt-border-color); border-radius: var(--jt-border-radius); padding: var(--jt-spacing-sm) var(--jt-spacing-md); margin: var(--jt-spacing-md) 0; font-family: var(--jt-font-family-mono); font-size: var(--jt-font-size-sm); user-select: all; display: flex; align-items: center; justify-content: space-between;">
-        <span>jeamlit run YourApp.java</span>
-        <span id="copy-icon" style="font-family: 'Material Symbols Rounded'; font-size: var(--jt-font-size-base); color: var(--jt-text-secondary); margin-left: var(--jt-spacing-sm); cursor: pointer; user-select: none; padding: var(--jt-spacing-xs); border-radius: var(--jt-border-radius-sm); transition: background-color var(--jt-transition-fast), color var(--jt-transition-fast);">content_copy</span>
-    </div>
+    <jt-code content="jeamlit run YourApp.java"></jt-code>
+</jt-connection-error-modal>
+
+<!-- Compilation Error Modal -->
+<jt-connection-error-modal id="compilation-modal">
+    <span slot="title">Compilation error</span>
+    <p>Fix the compilation errors below and save the file to continue:</p>
+    <jt-code id="compilation-code" content=""></jt-code>
 </jt-connection-error-modal>
 
 <script>
@@ -74,6 +79,8 @@
     const mainContainer = document.getElementById('main-container');
     const sidebarContainer = document.getElementById('sidebar-container');
     const connectionModal = document.getElementById('connection-modal');
+    const compilationModal = document.getElementById('compilation-modal');
+    const compilationCode = document.getElementById('compilation-code');
 
     // Track if this is the first message to clear connecting text
     let isFirstMessage = true;
@@ -151,6 +158,8 @@
             applyDelta(message);
         } else if (message.type === 'error') {
             showError(message.error);
+        } else if (message.type === 'compilation_error') {
+            showCompilationError(message.error);
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
@@ -328,6 +337,13 @@
         errorDiv.className = 'error';
         errorDiv.textContent = 'Error: ' + error;
         mainContainer.appendChild(errorDiv);
+    }
+
+    function showCompilationError(error) {
+        // Set the error message in the jt-code component
+        compilationCode.content = error;
+        // Show the compilation modal
+        compilationModal.show = true;
     }
 
     // Initialize connection

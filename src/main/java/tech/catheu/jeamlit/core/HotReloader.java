@@ -76,7 +76,10 @@ class HotReloader {
      *                              Note: not implemented yet: re-compile multiple classes, the dependencies of the app class
      */
     protected void reloadFile() {
-        final String className = compileJavaFile(this.javaFile);
+        final @Nullable String className = compileJavaFile(this.javaFile);
+        if (className == null) {
+            throw new CompilationException("Could not determine class name in file %s. File is empty or invalid ?".formatted(javaFile));
+        }
         final byte[] classBytes = loadClassBytes(className);
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
                                                               getClass().getClassLoader())) {
@@ -143,7 +146,17 @@ class HotReloader {
                 return className;
             } else {
                 final String errorMessage = diagnosticsCollector.getDiagnostics().stream()
-                        .map(d -> d.getMessage(null)).collect(Collectors.joining("\n\n"));
+                        .map(d -> String.format(
+                                "[%s] %s:%d:%d %s",
+                                d.getKind(),                              // ERROR / WARNING / NOTE
+                                d.getSource() != null ? d.getSource().getName() : "<unknown source>",
+                                d.getLineNumber(),
+                                d.getColumnNumber(),
+                                d.getMessage(null)
+                        ))
+                        .collect(Collectors.joining("\n\n"));
+
+
                 LOG.error("Compilation failed for {}: \n{}", javaFile, errorMessage);
                 throw new CompilationException(errorMessage);
             }
