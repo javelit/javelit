@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.catheu.jeamlit.components.status.ErrorComponent;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -139,21 +138,7 @@ public class Server implements StateManager.RenderServer {
         }
 
         for (final String sessionId : sessions.keySet()) {
-            runAppSafe(sessionId);
-        }
-    }
-
-    private void runAppSafe(final String sessionId) {
-        try {
             hotReloader.runApp(sessionId);
-        } catch (CompilationException e) {
-            // can happen for some edge cases, even if the app is compiled
-            sendCompilationError(sessionId, e.getMessage());
-        } catch (Exception e) {
-            if (!(e instanceof AppRunException || e instanceof DuplicateWidgetIDException)) {
-                logger.error("Unknown error type: {}", e.getClass(), e);
-            }
-            sendError(sessionId, e);
         }
     }
 
@@ -209,7 +194,7 @@ public class Server implements StateManager.RenderServer {
             }
 
             // Send initial render
-            runAppSafe(sessionId);
+            hotReloader.runApp(sessionId);
         }
     }
 
@@ -222,10 +207,10 @@ public class Server implements StateManager.RenderServer {
 
             final boolean doRerun = StateManager.handleComponentUpdate(sessionId, componentKey, value);
             if (doRerun) {
-                runAppSafe(sessionId);
+                hotReloader.runApp(sessionId);
             }
         } else if ("reload".equals(type)) {
-            runAppSafe(sessionId);
+            hotReloader.runApp(sessionId);
         }
     }
 
@@ -276,13 +261,6 @@ public class Server implements StateManager.RenderServer {
                 logger.error("Error sending message", e);
             }
         }
-    }
-
-    private void sendError(final String sessionId, final Exception error) {
-        // Send error as a component through the delta mechanism
-        // FIXME CYRIL build a proper message with the exception, the message, the traceback, quick action links
-        final ErrorComponent errorComponent = new ErrorComponent.Builder(error.getMessage()).build();
-        send(sessionId, errorComponent, JtContainer.MAIN, null, false);
     }
 
     private void sendCompilationError(final String sessionId, final String error) {

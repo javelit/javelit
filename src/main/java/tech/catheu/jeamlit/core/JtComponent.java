@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 public abstract class JtComponent<T> {
 
     // used by the components' mustache templates
-    protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js";
+    protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
     protected static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
     protected static final String SPRINTF_DEPENDENCY = "https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js";
 
@@ -175,5 +176,9 @@ public abstract class JtComponent<T> {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown) {
+        return MarkdownUtils.markdownToHtml(markdown);
     }
 }

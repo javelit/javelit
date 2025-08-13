@@ -6,6 +6,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -28,15 +29,15 @@ public class ErrorComponent extends JtComponent<JtComponent.NONE> {
 
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, ErrorComponent, Builder> {
-        private @Nonnull String body;
+        private @Language("markdown") @Nonnull String body;
         private @Nullable String icon = null;
         private String width = "stretch";
 
-        public Builder(final @Nonnull String body) {
+        public Builder(final @Language("markdown") @Nonnull String body) {
             this.body = body;
         }
 
-        public Builder body(final @Nonnull String body) {
+        public Builder body(final @Language("markdown") @Nonnull String body) {
             this.body = body;
             return this;
         }
@@ -76,7 +77,7 @@ public class ErrorComponent extends JtComponent<JtComponent.NONE> {
 
     private ErrorComponent(Builder builder) {
         super(builder.generateKeyForInteractive(), NONE.NONE, null);
-        this.body = builder.body;
+        this.body = markdownToHtml(builder.body);
         this.icon = builder.icon;
         this.width = builder.width;
     }

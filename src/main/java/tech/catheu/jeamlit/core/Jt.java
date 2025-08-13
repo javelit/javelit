@@ -88,7 +88,7 @@ public class Jt {
         return new TitleComponent.Builder(body);
     }
 
-    public static ErrorComponent.Builder error(final @Nonnull String body) {
+    public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
         return new ErrorComponent.Builder(body);
     }
 

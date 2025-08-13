@@ -6,7 +6,7 @@ package tech.catheu.jeamlit.core;
  */
 class DuplicateWidgetIDException extends RuntimeException {
 
-    private DuplicateWidgetIDException(String message) {
+    private DuplicateWidgetIDException(final String message) {
         super(message);
     }
 

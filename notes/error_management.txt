@@ -40,3 +40,9 @@ Maintain a JavaScript object that mirrors all component states.
 1. Intercept all jeamlit.emit() calls to update local cache
 2. Store in window.componentStates = {}
 3. On reconnection, send entire cache to server
+
+
+- have a border around a code snippet in markdown
+- return full error message in all compilation error failure cases
+- make sure to close the compilationError modal when new events are coming
+- add copy and search links

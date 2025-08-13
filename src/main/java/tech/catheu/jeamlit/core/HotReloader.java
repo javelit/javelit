@@ -7,6 +7,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static tech.catheu.jeamlit.core.utils.JavaUtils.stackTraceString;
+import static tech.catheu.jeamlit.core.utils.StringUtils.percentEncode;
+
 
 class HotReloader {
     private static final Logger LOG = LoggerFactory.getLogger(HotReloader.class);
@@ -44,14 +49,14 @@ class HotReloader {
     private final JavaCompiler compiler;
     private final List<String> compilationOptions;
     private final Path javaFile;
-    private AtomicReference<Method> mainMethod = new AtomicReference<>();
+    private final AtomicReference<Method> mainMethod = new AtomicReference<>();
 
     /**
      * @param providedClasspath java classpath to use. If found, classpath resolved by jbang/maven/gradle will be appended to this classpath.
      * @param javaFile          the Jeamlit app file. If found, file dependencies resolved by jbang will be managed.
      *                          Note: maven, gradle and multi-file is not implemented yet.
      */
-     protected HotReloader(final @Nullable String providedClasspath, final Path javaFile) {
+    protected HotReloader(final @Nullable String providedClasspath, final Path javaFile) {
         final String classpath = ClasspathUtils.buildClasspath(providedClasspath, javaFile);
         LOG.info("Using classpath {}", classpath);
 
@@ -78,7 +83,9 @@ class HotReloader {
     protected void reloadFile() {
         final @Nullable String className = compileJavaFile(this.javaFile);
         if (className == null) {
-            throw new CompilationException("Could not determine class name in file %s. File is empty or invalid ?".formatted(javaFile));
+            throw new CompilationException(
+                    "Could not determine class name in file %s. File is empty or invalid ?".formatted(
+                            javaFile));
         }
         final byte[] classBytes = loadClassBytes(className);
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
@@ -86,14 +93,10 @@ class HotReloader {
             final Class<?> appClass = loader.defineClass(className, classBytes);
             mainMethod.set(appClass.getMethod("main", String[].class));
         } catch (IOException | NoSuchMethodException e) {
-            throw new CompilationException(e.getMessage());
+            throw new CompilationException(e);
         }
     }
 
-    /**
-     * @throws CompilationException: if the main method was not defined as expected
-     * @throws AppRunException       :      if the main method call raised an exception
-     */
     protected void runApp(final String sessionId) {
         if (mainMethod.get() == null) {
             // if there are edge cases where this could happen, simply call reloadFile instead of throwing
@@ -105,13 +108,48 @@ class HotReloader {
         StateManager.beginExecution(sessionId);
         try {
             mainMethod.get().invoke(null, new Object[]{new String[]{}});
-        } catch (IllegalAccessException e) {
-            throw new CompilationException("The main method of the app may not be public. Error: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new AppRunException(e);
+        } catch (Exception e) {
+            if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException)) {
+                LOG.error("Unexpected error type: {}", e.getClass(), e);
+            }
+            @Language("markdown") final String errorMessage = buildErrorMessage(e);
+            // Send error as a component usage - its lifecycle is managed like all other components
+            Jt.error(errorMessage).use();
         } finally {
             StateManager.endExecution();
         }
+    }
+
+
+    private static @Language("markdown") @NotNull String buildErrorMessage(Throwable error) {
+        if (error instanceof InvocationTargetException) {
+            error = error.getCause();
+        }
+        final String exceptionSimpleName = error.getClass().getSimpleName();
+        final String errorMesssage = error.getMessage();
+        final String stackTrace = stackTraceString(error);
+        final String googleLink = "https://www.google.com/search?q=" + percentEncode(
+                exceptionSimpleName + " " + errorMesssage);
+        final String chatGptLink = "https://chatgpt.com/?q=" + percentEncode(String.join("\n",
+                                                                                         List.of("Help me fix the following issue. I use Java Jeamlit and got:",
+                                                                                                 exceptionSimpleName,
+                                                                                                 errorMesssage,
+                                                                                                 stackTrace)));
+
+        final @Language("markdown") String errorMessage = """
+                **%s**: %s
+                
+                **Stacktrace**:
+                ```
+                %s
+                ```
+                [Ask Google](%s) • [Ask ChatGPT](%s)
+                """.formatted(exceptionSimpleName,
+                              errorMesssage,
+                              stackTrace,
+                              googleLink,
+                              chatGptLink);
+        return errorMessage;
     }
 
     // return the fully qualified classname of the compiled file
@@ -160,9 +198,9 @@ class HotReloader {
                 LOG.error("Compilation failed for {}: \n{}", javaFile, errorMessage);
                 throw new CompilationException(errorMessage);
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             LOG.error("Error compiling file {}", javaFile, e);
-            throw new CompilationException(e.getMessage());
+            throw new CompilationException(e);
         }
     }
 
@@ -185,7 +223,7 @@ class HotReloader {
                     className,
                     e);
             // note: this is not a CompilationException. This is most likely to be an implementation error.
-            throw new CompilationException(e.getMessage());
+            throw new CompilationException(e);
         }
     }
 

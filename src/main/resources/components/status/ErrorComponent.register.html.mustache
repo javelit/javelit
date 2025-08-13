@@ -1,5 +1,5 @@
 <script type="module">
-    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
 
     class JtError extends LitElement {
         static styles = css`
@@ -26,7 +26,7 @@
                 border-radius: var(--jt-border-radius-lg);
                 padding: var(--jt-spacing-md);
                 display: flex;
-                align-items: flex-start;
+                align-items: center;
                 gap: var(--jt-spacing-sm);
             }
 
@@ -52,29 +52,44 @@
             }
 
             .error-body {
+                min-width: 0;
+                overflow-x: auto;
+                white-space: nowrap;
                 flex: 1;
                 font-family: var(--jt-font-family);
                 font-size: var(--jt-font-size-base);
                 line-height: var(--jt-line-height-normal);
-                color: var(--jt-danger-color);
+                color: var(--jt-error-color);
                 margin: 0;
                 padding: 0;
-                white-space: normal;
-                word-wrap: break-word;
+            }
+
+            .markdown-content {
+                display: block;
+                pre {
+                    padding: var(--jt-font-size-base);
+                    margin-bottom: 0;
+                    border: 1px solid var(--jt-border-color);
+                    border-radius: var(--jt-border-radius-lg);
+                }
+
+                a {
+                    color: inherit;
+                }
             }
         `;
 
         static properties = {
-            body: { type: String },
             icon: { type: String },
-            width: { type: String }
+            width: { type: String },
+            body: { type: String }
         };
 
         constructor() {
             super();
-            this.body = '';
             this.icon = null;
             this.width = 'stretch';
+            this.body = '';
         }
 
         render() {
@@ -97,11 +112,15 @@
                 }
             }
 
+            console.log(this.body);
+
             return html`
                 <div class="error-container">
                     ${iconElement}
                     <div class="error-body">
-                        ${this.body || ''}
+                        <div class="markdown-content">
+                            ${unsafeHTML(this.body)}
+                        </div>
                     </div>
                 </div>
             `;
