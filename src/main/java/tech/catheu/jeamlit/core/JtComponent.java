@@ -196,4 +196,8 @@ public abstract class JtComponent<T> {
     protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown) {
         return MarkdownUtils.markdownToHtml(markdown);
     }
+
+    protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown, final boolean removeWrap) {
+        return MarkdownUtils.markdownToHtml(markdown,  removeWrap);
+    }
 }

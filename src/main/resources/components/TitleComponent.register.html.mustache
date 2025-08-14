@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtTitle extends LitElement {
         static styles = css`
@@ -98,25 +98,6 @@
             width: {type: String}
         };
 
-        formatText(body) {
-            if (!body) return '';
-
-            // Enhanced Markdown formatting
-            return body
-                    // Bold
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    // Italic
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    // Code
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    // Links
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                    // Basic color support :color[text]
-                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                    // Strikethrough
-                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
-        }
-
         generateAnchor(body) {
             if (!body) return '';
             return body
@@ -158,7 +139,7 @@
         render() {
             const widthClass = this.getValidatedWidth();
             const widthStyle = this.getWidthStyle();
-            const formattedText = this.formatText(this.body || '');
+            const formattedText = this.body;
 
             // Handle anchor logic
             let anchorId = '';
@@ -183,7 +164,7 @@
                     <h1 class="title ${widthClass}"
                         id="${anchorId}"
                         style="${widthStyle}">
-                        <span .innerHTML="${formattedText}"></span>
+                        <span class="markdown-content">${unsafeHTML(this.body)}</span>
                         ${showAnchorLink ? html`
                             <a href="#${anchorId}" class="anchor-link"
                                title="Link to this section">

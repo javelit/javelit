@@ -21,6 +21,8 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -28,7 +30,7 @@ import java.io.StringWriter;
 
 public class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
-    protected final String body;
+    protected final @Nonnull String body;
     protected final String anchor;
     protected final String help;
     protected final String width;
@@ -44,7 +46,7 @@ public class TitleComponent extends JtComponent<JtComponent.NONE> {
     
     private TitleComponent(final Builder builder) {
         super(builder.generateKeyForInteractive(), NONE.NONE, null);
-        this.body = builder.body;
+        this.body = markdownToHtml(builder.body, true);
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;
@@ -52,12 +54,13 @@ public class TitleComponent extends JtComponent<JtComponent.NONE> {
     
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
-        private String body;
+        @Language("markdown")
+        private final @Nonnull String body;
         private String anchor;
         private String help;
         private String width = "stretch";
         
-        public Builder(final String body) {
+        public Builder(final @Language("markdown") @NotNull String body) {
             this.body = body;
         }
         

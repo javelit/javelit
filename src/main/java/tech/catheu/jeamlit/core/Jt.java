@@ -99,7 +99,7 @@ public class Jt {
         return new TextComponent.Builder(body);
     }
 
-    public static TitleComponent.Builder title(final @Nonnull String body) {
+    public static TitleComponent.Builder title(@Language("markdown") final @Nonnull String body) {
         return new TitleComponent.Builder(body);
     }
 

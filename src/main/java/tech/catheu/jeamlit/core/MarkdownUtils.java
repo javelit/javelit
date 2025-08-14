@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.core;
 
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.ext.emoji.EmojiExtension;
+import com.vladsch.flexmark.ext.emoji.EmojiImageType;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -41,16 +42,31 @@ public class MarkdownUtils {
         extensions.add(EmojiExtension.create());
         extensions.add(StrikethroughExtension.create());
         extensions.add(AutolinkExtension.create());
+        options.set(EmojiExtension.USE_IMAGE_TYPE, EmojiImageType.UNICODE_ONLY);
         options.set(Parser.EXTENSIONS, extensions);
         parser = Parser.builder(options).build();
         renderer = HtmlRenderer.builder(options).build();
     }
 
+    ///  markdownToHtml with no post-processing
     protected static String markdownToHtml(final @Nullable String markdown) {
+        return MarkdownUtils.markdownToHtml(markdown, false);
+    }
+
+    /// @param removeWrap if true, removes the wrapping tag if it exists. Usefull to remove the wrapping <p> tag that is put to text like "this text". If false, no post-processing. The wrapping tag removed could be any type of tag as long as it's wrapping, ie it's open first and closed last in the string.
+    protected static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
         if (markdown == null) {
             return null;
         }
         final Node document = parser.parse(markdown);
-        return renderer.render(document);
+        String html =  renderer.render(document).trim();
+        if (removeWrap) {
+            final boolean thereIsAWrappingTag = document.getFirstChild() == document.getLastChild();
+            if (thereIsAWrappingTag) {
+                final int closeWrapTagIdx = html.indexOf('>');
+                html = html.substring(closeWrapTagIdx + 1, html.length() - closeWrapTagIdx - 2).trim();
+            }
+        }
+        return html;
     }
 }
