@@ -20,6 +20,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
@@ -32,7 +33,7 @@ import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class ButtonComponent extends JtComponent<Boolean> {
     // the following fields are protected to be visible to the template engine - see render function
-    protected final String label;
+    protected final @Nonnull String label;
     protected final String type;
     protected final String icon;
     protected final String help;
@@ -51,7 +52,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
     private ButtonComponent(final Builder builder) {
         super(builder.generateKeyForInteractive(), false, builder.onClick);
 
-        this.label = builder.label;
+        this.label = markdownToHtml(builder.label, true);
         this.type = builder.type;
         this.icon = builder.icon;
         this.help = builder.help;
@@ -60,7 +61,8 @@ public class ButtonComponent extends JtComponent<Boolean> {
     }
     
     public static class Builder extends JtComponentBuilder<Boolean, ButtonComponent, Builder> {
-        private final String label;
+        @Language("markdown")
+        private final @Nonnull String label;
         private String type = "secondary";
         private String icon;
         private String help;
@@ -68,7 +70,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
         private boolean useContainerWidth = false;
         private Consumer<Boolean> onClick;
         
-        public Builder(final @Nonnull String label) {
+        public Builder(final @Language("markdown") @Nonnull String label) {
             // Validate required parameters
             if (label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Button label cannot be null or empty");

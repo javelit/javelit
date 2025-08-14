@@ -107,7 +107,7 @@ public class Jt {
         return new ErrorComponent.Builder(body);
     }
 
-    public static ButtonComponent.Builder button(final @Nonnull String label) {
+    public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {
         return new ButtonComponent.Builder(label);
     }
 

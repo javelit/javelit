@@ -1,0 +1,11 @@
+1. render the markdown on the backend side - we will use https://github.com/vsch/flexmark-java
+1.1 Use the following extensions:
+- emoji - see https://github.com/vsch/flexmark-java/wiki/Extensions#emoji
+- tables - see https://github.com/vsch/flexmark-java/wiki/Extensions#tables and https://github.com/vsch/flexmark-java/wiki/Tables-Extension
+- strikethrough - see https://github.com/vsch/flexmark-java/wiki/Extensions#gfm-strikethroughsubscript
+- autolink
+2. support github flavored markdown
+3. do not escape html in mustache templates ( triple } I think)
+4. don't use slot to put html generated from markdown use unsafeHtml - this makes it easy to use css at the component level
+component css does not apply to slot
+

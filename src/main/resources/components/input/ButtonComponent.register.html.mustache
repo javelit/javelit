@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtButton extends LitElement {
         static styles = css`
@@ -214,25 +214,6 @@
             this.useContainerWidth = false;
         }
 
-        // TODO CYRIL use proper library for markdown support
-        formatText(label) {
-            if (!label) return '';
-
-            // Enhanced Markdown formatting
-            return label
-                    // Bold
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    // Italic
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    // Code
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    // Links
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                    // Basic color support :color[text]
-                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                    // Strikethrough
-                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
-        }
 
         isEmoji(str) {
             // Simple emoji detection
@@ -276,8 +257,6 @@
                             html`<span class="icon">${this.icon}</span>`
             ) : null;
 
-            const formattedLabel = this.formatText(this.label || '');
-
             return html`
                 <style>
                     @keyframes ripple {
@@ -294,7 +273,7 @@
                             @click="${this.handleClick}"
                             type="button">
                         ${iconContent}
-                        <span .innerHTML="${formattedLabel}"></span>
+                        <span class="markdown-content">${unsafeHTML(this.label)}</span>
                     </button>
                     ${this.help ? html`
                         <jt-tooltip text="${this.help}"></jt-tooltip>
