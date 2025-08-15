@@ -21,6 +21,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.core.JtComponent;
@@ -34,7 +35,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NumberInputComponent.class);
 
-    protected final String label;
+    protected final @Nonnull String label;
     protected final @Nullable T minValue;
     protected final @Nullable T maxValue;
     protected final T step;
@@ -59,7 +60,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
     private NumberInputComponent(final Builder<T> builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
-        this.label = builder.label;
+        this.label = markdownToHtml(builder.label, true);
         this.minValue = builder.minValue;
         this.maxValue = builder.maxValue;
         this.step = builder.step;
@@ -76,7 +77,8 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
     @SuppressWarnings("unused")
     public static class Builder<T extends Number> extends JtComponentBuilder<T, NumberInputComponent<T>, Builder<T>> {
 
-        private final String label;
+        @Language("markdown")
+        private final @Nonnull String label;
         private Class<T> valueType;
         private @Nullable T value = null;
         private @Nullable T minValue = null;
@@ -92,7 +94,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
         private @Nullable Consumer<T> onChange;
         private boolean valueSetToMin = false;
 
-        public Builder(final @Nonnull String label, final @Nullable Class<T> valueType) {
+        public Builder(final @Language("markdown") @Nonnull String label, final @Nullable Class<T> valueType) {
             if (label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Label cannot be null or empty");
             }
@@ -100,7 +102,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
             this.valueType = valueType;
         }
 
-        public Builder(final @Nonnull String label) {
+        public Builder(final @Language("markdown") @Nonnull String label) {
             this(label, null);
         }
 

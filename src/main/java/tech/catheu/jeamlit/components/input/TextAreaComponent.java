@@ -21,6 +21,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -28,7 +29,7 @@ import java.io.StringWriter;
 import java.util.function.Consumer;
 
 public class TextAreaComponent extends JtComponent<String> {
-    protected final String label;
+    protected final @Nonnull String label;
     protected final String value;
     protected final @Nullable String height;
     protected final @Nullable Integer maxChars;
@@ -50,7 +51,7 @@ public class TextAreaComponent extends JtComponent<String> {
     private TextAreaComponent(Builder builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
-        this.label = builder.label;
+        this.label = markdownToHtml(builder.label, true);
         this.value = builder.value;
         this.height = builder.height;
         this.maxChars = builder.maxChars;
@@ -63,7 +64,8 @@ public class TextAreaComponent extends JtComponent<String> {
     
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<String, TextAreaComponent, Builder> {
-        private final String label;
+        @Language("markdown")
+        private final @Nonnull String label;
         private String value = "";
         private @Nullable String height = null; // null means default (3 lines)
         private @Nullable Integer maxChars = null;
@@ -74,7 +76,7 @@ public class TextAreaComponent extends JtComponent<String> {
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
         
-        public Builder(@Nonnull String label) {
+        public Builder(@Language("markdown") @Nonnull String label) {
             if (label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Label cannot be null or empty");
             }

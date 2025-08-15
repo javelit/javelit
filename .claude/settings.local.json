@@ -16,7 +16,8 @@
       "Bash(gh:*)",
       "Bash(sed:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebSearch"
     ],
     "deny": []
   }

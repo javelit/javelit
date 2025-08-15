@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
+import tech.catheu.jeamlit.components.input.TextAreaComponent;
 import tech.catheu.jeamlit.components.input.TextInputComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
@@ -111,7 +112,7 @@ public class Jt {
         return new ButtonComponent.Builder(label);
     }
 
-    public static SliderComponent.Builder slider(final @Nonnull String label) {
+    public static SliderComponent.Builder slider(@Language("markdown") final @Nonnull String label) {
         return new SliderComponent.Builder(label);
     }
 
@@ -147,15 +148,19 @@ public class Jt {
         return new FormSubmitButtonComponent.Builder(label);
     }
 
-    public static TextInputComponent.Builder textInput(final @Nonnull String label) {
+    public static TextInputComponent.Builder textInput(@Language("markdown") final @Nonnull String label) {
         return new TextInputComponent.Builder(label);
     }
 
-    public static NumberInputComponent.Builder<Number> numberInput(final @Nonnull String label) {
+    public static TextAreaComponent.Builder textArea(@Language("markdown") final @Nonnull String label) {
+        return new TextAreaComponent.Builder(label);
+    }
+
+    public static NumberInputComponent.Builder<Number> numberInput(@Language("markdown") final @Nonnull String label) {
         return new NumberInputComponent.Builder<>(label);
     }
 
-    public static <T extends Number> NumberInputComponent.Builder<T> numberInput(final @Nonnull String label, final Class<T> valueClass) {
+    public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label, final Class<T> valueClass) {
         return new NumberInputComponent.Builder<>(label, valueClass);
     }
 

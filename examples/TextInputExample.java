@@ -1,4 +1,5 @@
 import tech.catheu.jeamlit.core.Jt;
+import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 
 import java.util.List;
@@ -31,13 +32,13 @@ public class TextInputExample {
             Jt.text("Today, you are %s!".formatted(text5)).key("t5").use();
         }
 
-        String text7 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility("hidden").use();
+        String text7 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility(JtComponent.LabelVisibility.HIDDEN).use();
         if (text7 != null && !text7.isEmpty()) {
             Jt.text("The label was hidden for this one. But the corresponding space was still here ! Today you are %s!".formatted(text7)).key("t7").use();
         }
 
 
-        String text6 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility("collapsed").use();
+        String text6 = Jt.textInput("Mystery label - can't be seen ?").labelVisibility(JtComponent.LabelVisibility.COLLAPSED).use();
         if (text6 != null && !text6.isEmpty()) {
             Jt.text("The label was hidden for this one, and no corresponding space for this one ! Today you are %s!".formatted(text6)).key("t6").use();
         }

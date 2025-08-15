@@ -20,6 +20,8 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
@@ -27,7 +29,7 @@ import java.io.StringWriter;
 import java.util.function.Consumer;
 
 public class SliderComponent extends JtComponent<Double> {
-    protected final String label;
+    protected final @NotNull String label;
     protected final double min;
     protected final double max;
     protected final double value;
@@ -50,7 +52,7 @@ public class SliderComponent extends JtComponent<Double> {
     private SliderComponent(Builder builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
-        this.label = builder.label;
+        this.label = markdownToHtml(builder.label, true);
         this.min = builder.min;
         this.max = builder.max;
         // builder.value cannot be null - see builder build()
@@ -65,7 +67,8 @@ public class SliderComponent extends JtComponent<Double> {
     
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<Double, SliderComponent, Builder> {
-        private final String label;
+        @Language("markdown")
+        private final @NotNull String label;
         private double min = 0.0;
         private double max = 100.0;
         private @Nullable Double value = null; // Will be set to min if not specified
@@ -77,7 +80,7 @@ public class SliderComponent extends JtComponent<Double> {
         private @Nullable Consumer<Double> onChange;
         private String width = "stretch";
         
-        public Builder(String label) {
+        public Builder(@Language("markdown") @NotNull String label) {
             this.label = label;
         }
         
