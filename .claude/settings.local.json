@@ -17,7 +17,8 @@
       "Bash(sed:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(grep:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:docs.openrewrite.org)"
     ],
     "deny": []
   }
