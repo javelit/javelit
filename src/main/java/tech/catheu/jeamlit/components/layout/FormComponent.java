@@ -15,6 +15,8 @@
  */
 package tech.catheu.jeamlit.components.layout;
 
+import java.io.StringWriter;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -22,11 +24,9 @@ import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-import tech.catheu.jeamlit.core.JtContainer;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-
-import java.io.StringWriter;
+import tech.catheu.jeamlit.core.JtContainer;
 
 public final class FormComponent extends JtComponent<JtContainer> {
 

@@ -1,12 +1,13 @@
-import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 
-import java.util.List;
+
+
+
+import java.util.List;import tech.catheu.jeamlit.components.layout.ColumnsComponent;import tech.catheu.jeamlit.core.Jt;
 
 public class TabsExample {
 
     public static void main(String[] args) throws InterruptedException {
-        final var tabs = Jt.tabs("first-tabs",List.of("Cat", "Dog", "An Owl")).use();
+        final var tabs = Jt.tabs("first-tabs", List.of("Cat", "Dog", "An Owl")).use();
         Jt.title("A cat").use(tabs.tab(0));
         Jt.title("A dog").use(tabs.tab(1));
         Jt.title("An owl").use(tabs.tab(2));

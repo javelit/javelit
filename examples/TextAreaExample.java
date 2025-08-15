@@ -1,5 +1,6 @@
-import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.components.input.TextAreaComponent;
+
+
+import tech.catheu.jeamlit.components.input.TextAreaComponent;import tech.catheu.jeamlit.core.Jt;
 
 public class TextAreaExample {
     public static void main(String[] args) {

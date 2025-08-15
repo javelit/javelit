@@ -11,7 +11,7 @@ public class NumberInputExample {
         Number age = Jt.numberInput("Age")
                 .minValue(0L)
                 .maxValue(120L)
-                .valueMin() // Uses min value (0) as default
+                .valueMin()// Uses min value (0) as default
                 .help("Enter your age in years")
                 .use();
 
@@ -62,7 +62,7 @@ public class NumberInputExample {
                 .maxValue(10000.0)
                 .step(100.1)
                 .value(500.5)
-                .format("%.3e")  // Scientific notation with 3 decimal places
+                .format("%.3e")// Scientific notation with 3 decimal places
                 .help("Uses scientific notation formatting")
                 .icon(":material/science:")
                 .use();

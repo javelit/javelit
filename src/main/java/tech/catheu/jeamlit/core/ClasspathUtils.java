@@ -15,18 +15,18 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.util.List;
+
 import dev.jbang.dependencies.DependencyResolver;
 import dev.jbang.dependencies.ModularClassPath;
 import dev.jbang.source.Project;
 import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.file.Path;
-import java.util.List;
 
 class ClasspathUtils {
 
@@ -39,6 +39,9 @@ class ClasspathUtils {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private ClasspathUtils() {
     }
 
     /**

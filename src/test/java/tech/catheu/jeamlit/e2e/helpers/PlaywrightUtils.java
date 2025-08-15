@@ -15,15 +15,15 @@
  */
 package tech.catheu.jeamlit.e2e.helpers;
 
+import java.nio.file.Path;
+import java.util.function.Consumer;
+
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import tech.catheu.jeamlit.core.Server;
-
-import java.nio.file.Path;
-import java.util.function.Consumer;
 
 public class PlaywrightUtils {
 
@@ -49,5 +49,8 @@ public class PlaywrightUtils {
             JeamlitTestHelper.stopServer(server);
             JeamlitTestHelper.cleanupTempDir(appFile.getParent());
         }
+    }
+
+    private PlaywrightUtils() {
     }
 }

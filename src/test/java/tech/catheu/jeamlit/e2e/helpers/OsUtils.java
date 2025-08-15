@@ -46,4 +46,7 @@ public class OsUtils {
         LOGGER.warn("Unrecognized OS: " + os);
         return OS.LINUX;
     }
+
+    private OsUtils() {
+    }
 }

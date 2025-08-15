@@ -73,4 +73,7 @@ class PortAllocator {
             return false;
         }
     }
+
+    private PortAllocator() {
+    }
 }

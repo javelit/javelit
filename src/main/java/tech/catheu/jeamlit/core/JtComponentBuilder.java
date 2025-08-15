@@ -15,11 +15,11 @@
  */
 package tech.catheu.jeamlit.core;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import java.lang.reflect.Field;
 import java.util.StringJoiner;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 
 // SELF is the self-referential generic to be able to return the correct implementing class in some methods of this abstract class

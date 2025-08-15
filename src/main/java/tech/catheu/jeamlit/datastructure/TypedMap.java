@@ -16,6 +16,9 @@
 package tech.catheu.jeamlit.datastructure;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * A Map wrapper that provides typed access methods for session state.
@@ -70,49 +73,49 @@ public class TypedMap implements Map<String, Object> {
     }
 
     // Typed compute methods
-    public String computeString(String key, java.util.function.BiFunction<String, String, String> remappingFunction) {
+    public String computeString(String key, BiFunction<String, String, String> remappingFunction) {
         return (String) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (String) v));
     }
 
-    public Integer computeInt(String key, java.util.function.BiFunction<String, Integer, Integer> remappingFunction) {
+    public Integer computeInt(String key, BiFunction<String, Integer, Integer> remappingFunction) {
         return (Integer) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Integer) v));
     }
 
-    public Long computeLong(String key, java.util.function.BiFunction<String, Long, Long> remappingFunction) {
+    public Long computeLong(String key, BiFunction<String, Long, Long> remappingFunction) {
         return (Long) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Long) v));
     }
 
-    public Double computeDouble(String key, java.util.function.BiFunction<String, Double, Double> remappingFunction) {
+    public Double computeDouble(String key, BiFunction<String, Double, Double> remappingFunction) {
         return (Double) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Double) v));
     }
 
-    public Boolean computeBoolean(String key, java.util.function.BiFunction<String, Boolean, Boolean> remappingFunction) {
+    public Boolean computeBoolean(String key, BiFunction<String, Boolean, Boolean> remappingFunction) {
         return (Boolean) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Boolean) v));
     }
 
     // Typed computeIfPresent methods
-    public String computeIfPresentString(String key, java.util.function.BiFunction<String, String, String> remappingFunction) {
+    public String computeIfPresentString(String key, BiFunction<String, String, String> remappingFunction) {
         return (String) delegate.computeIfPresent(key,
                                                   (k, v) -> remappingFunction.apply(k, (String) v));
     }
 
-    public Integer computeIfPresentInt(String key, java.util.function.BiFunction<String, Integer, Integer> remappingFunction) {
+    public Integer computeIfPresentInt(String key, BiFunction<String, Integer, Integer> remappingFunction) {
         return (Integer) delegate.computeIfPresent(key,
                                                    (k, v) -> remappingFunction.apply(k,
                                                                                      (Integer) v));
     }
 
-    public Long computeIfPresentLong(String key, java.util.function.BiFunction<String, Long, Long> remappingFunction) {
+    public Long computeIfPresentLong(String key, BiFunction<String, Long, Long> remappingFunction) {
         return (Long) delegate.computeIfPresent(key,
                                                 (k, v) -> remappingFunction.apply(k, (Long) v));
     }
 
-    public Double computeIfPresentDouble(String key, java.util.function.BiFunction<String, Double, Double> remappingFunction) {
+    public Double computeIfPresentDouble(String key, BiFunction<String, Double, Double> remappingFunction) {
         return (Double) delegate.computeIfPresent(key,
                                                   (k, v) -> remappingFunction.apply(k, (Double) v));
     }
 
-    public Boolean computeIfPresentBoolean(String key, java.util.function.BiFunction<String, Boolean, Boolean> remappingFunction) {
+    public Boolean computeIfPresentBoolean(String key, BiFunction<String, Boolean, Boolean> remappingFunction) {
         return (Boolean) delegate.computeIfPresent(key,
                                                    (k, v) -> remappingFunction.apply(k,
                                                                                      (Boolean) v));
@@ -201,12 +204,12 @@ public class TypedMap implements Map<String, Object> {
     }
 
     @Override
-    public void forEach(java.util.function.BiConsumer<? super String, ? super Object> action) {
+    public void forEach(BiConsumer<? super String, ? super Object> action) {
         delegate.forEach(action);
     }
 
     @Override
-    public void replaceAll(java.util.function.BiFunction<? super String, ? super Object, ? extends Object> function) {
+    public void replaceAll(BiFunction<? super String, ? super Object, ? extends Object> function) {
         delegate.replaceAll(function);
     }
 
@@ -231,22 +234,22 @@ public class TypedMap implements Map<String, Object> {
     }
 
     @Override
-    public Object computeIfAbsent(String key, java.util.function.Function<? super String, ? extends Object> mappingFunction) {
+    public Object computeIfAbsent(String key, Function<? super String, ? extends Object> mappingFunction) {
         return delegate.computeIfAbsent(key, mappingFunction);
     }
 
     @Override
-    public Object computeIfPresent(String key, java.util.function.BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
+    public Object computeIfPresent(String key, BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
         return delegate.computeIfPresent(key, remappingFunction);
     }
 
     @Override
-    public Object compute(String key, java.util.function.BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
+    public Object compute(String key, BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
         return delegate.compute(key, remappingFunction);
     }
 
     @Override
-    public Object merge(String key, Object value, java.util.function.BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
+    public Object merge(String key, Object value, BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
         return delegate.merge(key, value, remappingFunction);
     }
 }

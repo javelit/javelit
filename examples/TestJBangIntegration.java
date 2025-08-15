@@ -1,7 +1,8 @@
 //DEPS com.google.guava:guava:32.1.3-jre
 
-import tech.catheu.jeamlit.core.Jt;
-import com.google.common.collect.Lists;
+
+
+import com.google.common.collect.Lists;import tech.catheu.jeamlit.core.Jt;
 
 public class TestJBangIntegration {
     public static void main(String[] args) {

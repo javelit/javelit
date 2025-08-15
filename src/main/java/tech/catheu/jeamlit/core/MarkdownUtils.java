@@ -15,6 +15,9 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.ext.emoji.EmojiExtension;
 import com.vladsch.flexmark.ext.emoji.EmojiImageType;
@@ -26,9 +29,6 @@ import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.vladsch.flexmark.util.misc.Extension;
 import jakarta.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MarkdownUtils {
 
@@ -68,5 +68,8 @@ public class MarkdownUtils {
             }
         }
         return html;
+    }
+
+    private MarkdownUtils() {
     }
 }

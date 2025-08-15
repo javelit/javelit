@@ -1,6 +1,6 @@
-import tech.catheu.jeamlit.core.Jt;
 
-import java.util.function.Consumer;
+
+import java.util.function.Consumer;import tech.catheu.jeamlit.core.Jt;
 
 public class Callbacks {
     public static void main(String[] args) {

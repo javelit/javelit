@@ -15,6 +15,11 @@
  */
 package tech.catheu.jeamlit.e2e.core;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.regex.Pattern;
+
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -25,11 +30,6 @@ import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.core.Server;
 import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;

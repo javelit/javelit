@@ -15,6 +15,12 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -23,12 +29,6 @@ import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
-
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
@@ -102,9 +102,9 @@ public final class StateManager {
     protected static boolean handleComponentUpdate(final String sessionId, final String componentKey, final Object updatedValue) {
         // find the component and its container
         final InternalSessionState session = getSession(sessionId);
-        checkState(session != null,"No session with id %s. Implementation error ?" , sessionId);
+        checkState(session != null, "No session with id %s. Implementation error ?", sessionId);
         final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
-        checkState(lastExecution != null,"Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
+        checkState(lastExecution != null, "Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
         JtComponent<?> component = null;
         JtContainer componentContainer = null;
         for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> entry : lastExecution.containerToComponents.entrySet()) {
@@ -190,7 +190,7 @@ public final class StateManager {
                     .containerToComponents
                     .values().stream()
                     .filter(components -> components.containsKey(callbackComponentKey))
-                    .findAny() // there should be only one anyway
+                    .findAny()// there should be only one anyway
                     .map(components -> components.get(callbackComponentKey))
                     .orElse(null);
             if (jtComponent == null) {
@@ -365,7 +365,7 @@ public final class StateManager {
                         final JtComponent<?> component = entry.getValue();
                         component.resetToInitialValue();
                         session.getComponentsState().put(entry.getKey(), component.returnValue());
-                        renderServer.send(currentExecution.sessionId, component, container, i , false);
+                        renderServer.send(currentExecution.sessionId, component, container, i, false);
                     }
                     i++;
                 }

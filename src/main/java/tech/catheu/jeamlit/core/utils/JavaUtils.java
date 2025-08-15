@@ -15,17 +15,17 @@
  */
 package tech.catheu.jeamlit.core.utils;
 
-import jakarta.annotation.Nonnull;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+
+import jakarta.annotation.Nonnull;
 
 public class JavaUtils {
 
     /// same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Jeamlit removed
     public static String stackTraceString(final @Nonnull Throwable throwable) {
-        return stackTraceString(throwable,"jdk.internal.reflect.DirectMethodHandleAccessor");
+        return stackTraceString(throwable, "jdk.internal.reflect.DirectMethodHandleAccessor");
     }
 
     /// return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
@@ -65,6 +65,9 @@ public class JavaUtils {
         for (Throwable suppressed : t.getSuppressed()) {
             filterInPlace(suppressed, filterPrefix);
         }
+    }
+
+    private JavaUtils() {
     }
 
 }

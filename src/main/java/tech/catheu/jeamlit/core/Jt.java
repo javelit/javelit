@@ -15,6 +15,9 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
@@ -36,9 +39,6 @@ import tech.catheu.jeamlit.components.status.ErrorComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
-
-import java.util.List;
-import java.util.Map;
 
 
 // main interface for developers - should only contain functions of the public API.
@@ -162,6 +162,9 @@ public class Jt {
 
     public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label, final Class<T> valueClass) {
         return new NumberInputComponent.Builder<>(label, valueClass);
+    }
+
+    private Jt() {
     }
 
 }

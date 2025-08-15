@@ -15,6 +15,13 @@
  */
 package tech.catheu.jeamlit.cli;
 
+import java.awt.*;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.Callable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -22,13 +29,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import tech.catheu.jeamlit.core.Server;
-
-import java.awt.*;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.concurrent.Callable;
 
 
 @Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",

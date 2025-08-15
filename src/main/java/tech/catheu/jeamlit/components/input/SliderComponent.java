@@ -15,6 +15,9 @@
  */
 package tech.catheu.jeamlit.components.input;
 
+import java.io.StringWriter;
+import java.util.function.Consumer;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -24,9 +27,6 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-
-import java.io.StringWriter;
-import java.util.function.Consumer;
 
 public final class SliderComponent extends JtComponent<Double> {
     protected final @NotNull String label;

@@ -15,6 +15,9 @@
  */
 package tech.catheu.jeamlit.components.input;
 
+import java.io.StringWriter;
+import java.util.function.Consumer;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -24,9 +27,6 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-
-import java.io.StringWriter;
-import java.util.function.Consumer;
 
 public final class TextAreaComponent extends JtComponent<String> {
     protected final @Nonnull String label;
@@ -183,17 +183,17 @@ public final class TextAreaComponent extends JtComponent<String> {
                 int minHeight = labelVisibility == LabelVisibility.COLLAPSED ? 68 : 98;
                 if (pixels < minHeight) {
                     throw new IllegalArgumentException(
-                            "height must be at least " + minHeight + " pixels when label_visibility='" + 
-                            labelVisibility + "'. Got: " + pixels);
+                            "height must be at least " + minHeight + " pixels when label_visibility='" 
+                            + labelVisibility + "'. Got: " + pixels);
                 }
             }
             
             // Validate maxChars vs value length
             if (maxChars != null && value != null && value.length() > maxChars) {
                 throw new IllegalArgumentException(
-                        "maxChars is " + maxChars + ". Length of default value '" + value + 
-                        "' is " + value.length() + ". You must provide a default value with length " +
-                        "smaller or equal to max_chars");
+                        "maxChars is " + maxChars + ". Length of default value '" + value 
+                        + "' is " + value.length() + ". You must provide a default value with length "
+                        + "smaller or equal to max_chars");
             }
             
             return new TextAreaComponent(this);

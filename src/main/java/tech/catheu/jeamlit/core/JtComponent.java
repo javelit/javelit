@@ -15,15 +15,15 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Base class for all Jeamlit components.
@@ -198,6 +198,6 @@ public abstract class JtComponent<T> {
     }
 
     protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown, final boolean removeWrap) {
-        return MarkdownUtils.markdownToHtml(markdown,  removeWrap);
+        return MarkdownUtils.markdownToHtml(markdown, removeWrap);
     }
 }

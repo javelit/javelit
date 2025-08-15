@@ -15,6 +15,8 @@
  */
 package tech.catheu.jeamlit.components.text;
 
+import java.io.StringWriter;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -25,8 +27,6 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
-
-import java.io.StringWriter;
 
 public final class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine

@@ -1,9 +1,10 @@
 //DEPS com.google.guava:guava:32.1.3-jre
 //DEPS org.apache.commons:commons-lang3:3.13.0
 
-import tech.catheu.jeamlit.core.Jt;
+
+
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;import tech.catheu.jeamlit.core.Jt;
 
 public class MyAppWithDeps {
     public static void main(String[] args) {

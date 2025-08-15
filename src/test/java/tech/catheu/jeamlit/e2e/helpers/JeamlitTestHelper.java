@@ -15,14 +15,15 @@
  */
 package tech.catheu.jeamlit.e2e.helpers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tech.catheu.jeamlit.core.Server;
-
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.core.Server;
 
 /**
  * Helper class for Jeamlit E2E tests.
@@ -105,7 +106,7 @@ public class JeamlitTestHelper {
         for (int i = 0; i < maxAttempts; i++) {
             try {
                 // Try to connect to the server
-                java.net.Socket socket = new java.net.Socket("localhost", port);
+                Socket socket = new Socket("localhost", port);
                 socket.close();
                 return;
             } catch (IOException e) {
@@ -129,7 +130,7 @@ public class JeamlitTestHelper {
     public static void cleanupTempDir(Path dir) {
         if (dir != null && Files.exists(dir)) {
             try (final var paths = Files.walk(dir)) {
-                paths.sorted(Comparator.reverseOrder()) // Delete files before directories
+                paths.sorted(Comparator.reverseOrder())// Delete files before directories
                     .forEach(path -> {
                         try {
                             Files.delete(path);
@@ -141,5 +142,8 @@ public class JeamlitTestHelper {
                 System.err.println("Failed to cleanup temp dir: " + e.getMessage());
             }
         }
+    }
+
+    private JeamlitTestHelper() {
     }
 }
