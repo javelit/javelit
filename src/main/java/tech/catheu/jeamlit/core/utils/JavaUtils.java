@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import jakarta.annotation.Nonnull;
 
-public class JavaUtils {
+public final class JavaUtils {
 
     /// same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Jeamlit removed
     public static String stackTraceString(final @Nonnull Throwable throwable) {

@@ -50,7 +50,7 @@ import tech.catheu.jeamlit.datastructure.TypedMap;
  * Get the app cache Jt.cache().
  * Perform a deep copy with Jt.deepCopy(someObject).
  */
-public class Jt {
+public final class Jt {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

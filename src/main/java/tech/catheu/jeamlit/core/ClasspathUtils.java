@@ -28,7 +28,7 @@ import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-class ClasspathUtils {
+final class ClasspathUtils {
 
     private static final Method DEPENDENCY_COLLECT_REFLECTION;
 

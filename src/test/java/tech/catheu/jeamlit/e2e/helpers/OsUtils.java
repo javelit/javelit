@@ -18,7 +18,7 @@ package tech.catheu.jeamlit.e2e.helpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OsUtils {
+public final class OsUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
 

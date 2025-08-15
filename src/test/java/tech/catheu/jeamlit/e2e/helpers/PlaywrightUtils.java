@@ -25,7 +25,7 @@ import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import tech.catheu.jeamlit.core.Server;
 
-public class PlaywrightUtils {
+public final class PlaywrightUtils {
 
     public static final LocatorAssertions.IsVisibleOptions WAIT_1_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(1000);
     public static final LocatorAssertions.IsVisibleOptions WAIT_100_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(100);

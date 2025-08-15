@@ -30,7 +30,7 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.vladsch.flexmark.util.misc.Extension;
 import jakarta.annotation.Nullable;
 
-public class MarkdownUtils {
+public final class MarkdownUtils {
 
     private static final Parser parser;
     private static final HtmlRenderer renderer;

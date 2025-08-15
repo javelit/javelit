@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Helper class to allocate unique ports for parallel test execution.
  */
-class PortAllocator {
+final class PortAllocator {
     private static final int BASE_PORT = 8501;
     private static final AtomicInteger portOffset = new AtomicInteger(0);
     private static final ExecutorService executor = Executors.newCachedThreadPool();

@@ -29,7 +29,7 @@ import tech.catheu.jeamlit.core.Server;
  * Helper class for Jeamlit E2E tests.
  * Provides utilities for creating test apps, starting servers, and managing test lifecycle.
  */
-public class JeamlitTestHelper {
+public final class JeamlitTestHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeamlitTestHelper.class);
 
