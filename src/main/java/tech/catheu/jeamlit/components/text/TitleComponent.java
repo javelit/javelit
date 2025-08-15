@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class TitleComponent extends JtComponent<JtComponent.NONE> {
+public final class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
     protected final @Nonnull String body;
     protected final String anchor;

@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
-public class ButtonComponent extends JtComponent<Boolean> {
+public final class ButtonComponent extends JtComponent<Boolean> {
     // the following fields are protected to be visible to the template engine - see render function
     protected final @Nonnull String label;
     protected final String type;
@@ -66,8 +66,8 @@ public class ButtonComponent extends JtComponent<Boolean> {
         private String type = "secondary";
         private String icon;
         private String help;
-        private boolean disabled = false;
-        private boolean useContainerWidth = false;
+        private boolean disabled;
+        private boolean useContainerWidth;
         private Consumer<Boolean> onClick;
         
         public Builder(final @Language("markdown") @Nonnull String label) {
@@ -79,7 +79,7 @@ public class ButtonComponent extends JtComponent<Boolean> {
         }
         
         public Builder type(final @Nonnull String type) {
-            if (!type.equals("primary") && !type.equals("secondary") && !type.equals("tertiary")) {
+            if (!"primary".equals(type) && !"secondary".equals(type) && !"tertiary".equals(type)) {
                 throw new IllegalArgumentException("Button type must be 'primary', 'secondary', or 'tertiary'. Got: " + type);
             }
             this.type = type;

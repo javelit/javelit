@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
-public class TextAreaComponent extends JtComponent<String> {
+public final class TextAreaComponent extends JtComponent<String> {
     protected final @Nonnull String label;
     protected final String value;
     protected final @Nullable String height;
@@ -67,11 +67,11 @@ public class TextAreaComponent extends JtComponent<String> {
         @Language("markdown")
         private final @Nonnull String label;
         private String value = "";
-        private @Nullable String height = null; // null means default (3 lines)
-        private @Nullable Integer maxChars = null;
-        private @Nullable String help = null;
-        private @Nullable String placeholder = null;
-        private boolean disabled = false;
+        private @Nullable String height; // null means default (3 lines)
+        private @Nullable Integer maxChars;
+        private @Nullable String help;
+        private @Nullable String placeholder;
+        private boolean disabled;
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
@@ -91,7 +91,7 @@ public class TextAreaComponent extends JtComponent<String> {
         public Builder height(@Nullable String height) {
             if (height != null) {
                 // Validate height values
-                if (!height.equals("content") && !height.equals("stretch") && !height.matches("\\d+")) {
+                if (!"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {
                     throw new IllegalArgumentException(
                             "height must be 'content', 'stretch', or a pixel value (integer). Got: " + height);
                 }
@@ -146,7 +146,7 @@ public class TextAreaComponent extends JtComponent<String> {
         }
         
         public Builder width(@Nonnull String width) {
-            if (!width.equals("stretch") && !width.matches("\\d+")) {
+            if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }

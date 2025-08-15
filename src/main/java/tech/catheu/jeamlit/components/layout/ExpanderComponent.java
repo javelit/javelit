@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class ExpanderComponent extends JtComponent<JtContainer> {
+public final class ExpanderComponent extends JtComponent<JtContainer> {
 
     protected final @Nonnull String label;
     protected final boolean expanded;
@@ -53,7 +53,7 @@ public class ExpanderComponent extends JtComponent<JtContainer> {
 
     public static class Builder extends JtComponentBuilder<JtContainer, ExpanderComponent, Builder> {
         private final @Nonnull String label;
-        private boolean expanded = false;
+        private boolean expanded;
         private @Nullable String width = "stretch";
 
         public Builder(final @Nonnull String key, final @Nonnull String label) {
@@ -67,7 +67,7 @@ public class ExpanderComponent extends JtComponent<JtContainer> {
         }
 
         public Builder width(final @Nullable String width) {
-            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+            if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }

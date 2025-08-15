@@ -38,7 +38,9 @@ public class JavaUtils {
     }
 
     private static void filterInPlace(Throwable t, String filterPrefix) {
-        if (t == null) return;
+        if (t == null) {
+            return;
+        }
 
         StackTraceElement[] stack = t.getStackTrace();
 

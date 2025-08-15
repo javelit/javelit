@@ -19,7 +19,7 @@ package tech.catheu.jeamlit.core;
  * Exception thrown when two widgets have the same automatically generated or explicit key.
  * This mimics Streamlit's DuplicateWidgetID error behavior.
  */
-class DuplicateWidgetIDException extends RuntimeException {
+final class DuplicateWidgetIDException extends RuntimeException {
 
     private DuplicateWidgetIDException(final String message) {
         super(message);

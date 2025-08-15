@@ -27,7 +27,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class TextComponent extends JtComponent<JtComponent.NONE> {
+public final class TextComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
     protected final String body;
     protected final String help;

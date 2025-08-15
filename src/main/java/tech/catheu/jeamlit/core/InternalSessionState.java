@@ -45,7 +45,7 @@ class InternalSessionState {
     // set of component keys to reset after the run of the script - the update has to be sent to the frontend.
     private final Set<String> formComponentsToReset = new HashSet<>();
 
-    private String callbackComponentKey = null;
+    private String callbackComponentKey;
 
     protected InternalSessionState() {
     }

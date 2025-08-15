@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
+public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
     protected final int numColumns;
     protected final @Nullable List<@NotNull Double> widths;
@@ -78,10 +78,10 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
     public static class Builder extends JtComponentBuilder<Columns, ColumnsComponent, Builder> {
         private int numColumns;
-        private @Nullable List<@NotNull Double> widths = null;
+        private @Nullable List<@NotNull Double> widths;
         private @Nonnull Gap gap = Gap.SMALL;
         private @Nonnull ColumnsComponent.VerticalAlignment verticalAlignment = VerticalAlignment.TOP;
-        private boolean border = false;
+        private boolean border;
 
         public Builder(final @Nonnull String key, final int numColumns) {
             this.key = key;
@@ -177,7 +177,7 @@ public class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
     }
 
 
-    public static class Columns implements NotAState, JtLayout {
+    public static final class Columns implements NotAState, JtLayout {
         private final List<JtContainer> backing;
         private final JtContainer layoutContainer;
         // helper data structure for mustache templates

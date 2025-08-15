@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
-public class SliderComponent extends JtComponent<Double> {
+public final class SliderComponent extends JtComponent<Double> {
     protected final @NotNull String label;
     protected final double min;
     protected final double max;
@@ -71,11 +71,11 @@ public class SliderComponent extends JtComponent<Double> {
         private final @NotNull String label;
         private double min = 0.0;
         private double max = 100.0;
-        private @Nullable Double value = null; // Will be set to min if not specified
+        private @Nullable Double value; // Will be set to min if not specified
         private double step = 1.0;
-        private @Nullable String format = null;
-        private @Nullable String help = null;
-        private boolean disabled = false;
+        private @Nullable String format;
+        private @Nullable String help;
+        private boolean disabled;
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private @Nullable Consumer<Double> onChange;
         private String width = "stretch";
@@ -130,7 +130,7 @@ public class SliderComponent extends JtComponent<Double> {
         }
         
         public Builder width(final String width) {
-            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+            if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;

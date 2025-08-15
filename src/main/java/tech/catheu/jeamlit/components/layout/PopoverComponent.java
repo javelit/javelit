@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class PopoverComponent extends JtComponent<JtContainer> {
+public final class PopoverComponent extends JtComponent<JtContainer> {
 
     protected final @Nonnull String label;
     protected final @Nullable String help;
@@ -56,8 +56,8 @@ public class PopoverComponent extends JtComponent<JtContainer> {
     public static class Builder extends JtComponentBuilder<JtContainer, PopoverComponent, Builder> {
         private final @Nonnull String label;
         private @Nullable String help;
-        private boolean disabled = false;
-        private boolean useContainerWidth = false;
+        private boolean disabled;
+        private boolean useContainerWidth;
 
         public Builder(final @Nonnull String key, final @Nonnull String label) {
             this.key = key;

@@ -27,7 +27,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class ErrorComponent extends JtComponent<JtComponent.NONE> {
+public final class ErrorComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
     protected final String body;
     protected final String icon;
@@ -45,7 +45,7 @@ public class ErrorComponent extends JtComponent<JtComponent.NONE> {
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, ErrorComponent, Builder> {
         private @Language("markdown") @Nonnull String body;
-        private @Nullable String icon = null;
+        private @Nullable String icon;
         private String width = "stretch";
 
         public Builder(final @Language("markdown") @Nonnull String body) {
@@ -63,7 +63,7 @@ public class ErrorComponent extends JtComponent<JtComponent.NONE> {
         }
 
         public Builder width(final String width) {
-            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+            if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;

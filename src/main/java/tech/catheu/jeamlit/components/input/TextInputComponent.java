@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 import java.io.StringWriter;
 import java.util.function.Consumer;
 
-public class TextInputComponent extends JtComponent<String> {
+public final class TextInputComponent extends JtComponent<String> {
     protected final @Nonnull String label;
     protected final String value;
     protected final @Nullable Integer maxChars;
@@ -71,14 +71,14 @@ public class TextInputComponent extends JtComponent<String> {
         @Language("markdown")
         private final @Nonnull String label;
         private String value = "";
-        private @Nullable Integer maxChars = null;
+        private @Nullable Integer maxChars;
         private String type = "default";
-        private @Nullable String help = null;
-        private @Nullable String autocomplete = null;
-        private @Nullable String placeholder = null;
-        private boolean disabled = false;
+        private @Nullable String help;
+        private @Nullable String autocomplete;
+        private @Nullable String placeholder;
+        private boolean disabled;
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
-        private @Nullable String icon = null;
+        private @Nullable String icon;
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
 
@@ -103,7 +103,7 @@ public class TextInputComponent extends JtComponent<String> {
         }
 
         public Builder type(@Nonnull String type) {
-            if (!type.equals("default") && !type.equals("password")) {
+            if (!"default".equals(type) && !"password".equals(type)) {
                 throw new IllegalArgumentException("type must be 'default' or 'password'. Got: " + type);
             }
             this.type = type;
@@ -142,7 +142,7 @@ public class TextInputComponent extends JtComponent<String> {
         }
 
         public Builder width(@Nonnull String width) {
-            if (!width.equals("stretch") && !width.matches("\\d+")) {
+            if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }

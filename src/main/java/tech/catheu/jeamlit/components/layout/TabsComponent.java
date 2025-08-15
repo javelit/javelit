@@ -32,7 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
+public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
     protected final @Nonnull List<@NotNull String> tabs;
     protected final String width;
@@ -79,7 +79,7 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         }
 
         public Builder width(final String width) {
-            if (width != null && !width.equals("stretch") && !width.matches("\\d+")) {
+            if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
@@ -137,7 +137,7 @@ public class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     }
 
 
-    public static class Tabs implements NotAState, JtLayout {
+    public static final class Tabs implements NotAState, JtLayout {
         private final List<@NotNull String> tabNames;
         private final List<JtContainer> backing;
         private final JtContainer layoutContainer;

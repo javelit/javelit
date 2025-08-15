@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 import java.io.StringWriter;
 
-public class FormComponent extends JtComponent<JtContainer> {
+public final class FormComponent extends JtComponent<JtContainer> {
 
     protected final boolean clearOnSubmit;
     protected final boolean enterToSubmit;
@@ -56,7 +56,7 @@ public class FormComponent extends JtComponent<JtContainer> {
     }
 
     public static class Builder extends JtComponentBuilder<JtContainer, FormComponent, Builder> {
-        private boolean clearOnSubmit = false;
+        private boolean clearOnSubmit;
         private boolean enterToSubmit = true;
         private boolean border = true;
         private @Nullable String width = "stretch";
@@ -82,7 +82,7 @@ public class FormComponent extends JtComponent<JtContainer> {
         }
 
         public Builder width(final @Nullable String width) {
-            if (width != null && !width.equals("stretch") && !width.equals("content") && !width.matches("\\d+")) {
+            if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch', 'content', or a pixel value (integer). Got: " + width);
             }
@@ -91,7 +91,7 @@ public class FormComponent extends JtComponent<JtContainer> {
         }
 
         public Builder height(final @Nullable String height) {
-            if (height != null && !height.equals("content") && !height.equals("stretch") && !height.matches("\\d+")) {
+            if (height != null && !"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "height must be 'content', 'stretch', or a pixel value (integer). Got: " + height);
             }

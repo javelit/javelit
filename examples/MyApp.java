@@ -71,8 +71,12 @@ public class MyApp {
     }
     
     private static String getAgeCategory(Double age) {
-        if (age < 18) return "Minor";
-        if (age < 65) return "Adult";
+        if (age < 18) {
+            return "Minor";
+        }
+        if (age < 65) {
+            return "Adult";
+        }
         return "Senior";
     }
 }

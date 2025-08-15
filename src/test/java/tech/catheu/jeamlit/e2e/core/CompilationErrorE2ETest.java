@@ -55,9 +55,8 @@ public class CompilationErrorE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInBrowser(invalidApp, page -> {
+        PlaywrightUtils.runInBrowser(invalidApp, page ->
             // Verify app loads correctly first
-            assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX);
-        });
+            assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
     }
 }

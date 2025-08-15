@@ -29,7 +29,7 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 import java.io.StringWriter;
 
 /// implements both the Container component and the Empty component via the inPlace flag.
-public class ContainerComponent extends JtComponent<JtContainer> {
+public final class ContainerComponent extends JtComponent<JtContainer> {
 
     protected final Integer height;
     protected final Boolean border;

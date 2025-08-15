@@ -151,7 +151,7 @@ class HotReloader {
                                                                                                  errorMesssage,
                                                                                                  stackTrace)));
 
-        final @Language("markdown") String errorMessage = """
+        return """
                 **%s**: %s
                 
                 **Stacktrace**:
@@ -164,7 +164,6 @@ class HotReloader {
                               stackTrace,
                               googleLink,
                               chatGptLink);
-        return errorMessage;
     }
 
     // return the fully qualified classname of the compiled file
@@ -279,7 +278,7 @@ class HotReloader {
     }
 
 
-    private static class HotClassLoader extends URLClassLoader {
+    private static final class HotClassLoader extends URLClassLoader {
 
         private HotClassLoader(final URL[] urls, final ClassLoader parent) {
             super(urls, parent);

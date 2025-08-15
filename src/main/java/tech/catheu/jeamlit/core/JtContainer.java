@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
-public class JtContainer implements JtComponent.NotAState {
+public final class JtContainer implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
@@ -36,7 +36,7 @@ public class JtContainer implements JtComponent.NotAState {
     private final @Nonnull List<@NotNull String> path;
     private final @Nullable JtContainer parent;
     private final boolean inPlace;
-    private boolean formContainer = false;
+    private final boolean formContainer;
 
     private JtContainer(final @NotNull String key, @Nullable JtContainer parent, final boolean inPlace, final boolean formContainer) {
         if (key.contains(",")) {

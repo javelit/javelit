@@ -31,7 +31,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-public class NumberInputComponent<T extends Number> extends JtComponent<T> {
+public final class NumberInputComponent<T extends Number> extends JtComponent<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NumberInputComponent.class);
 
@@ -84,15 +84,15 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
         private @Nullable T minValue = null;
         private @Nullable T maxValue = null;
         private @Nullable T step = null;
-        private @Nullable String format = null;
-        private @Nullable String help = null;
-        private @Nullable String placeholder = null;
-        private boolean disabled = false;
+        private @Nullable String format;
+        private @Nullable String help;
+        private @Nullable String placeholder;
+        private boolean disabled;
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
-        private @Nullable String icon = null;
+        private @Nullable String icon;
         private String width = "stretch";
         private @Nullable Consumer<T> onChange;
-        private boolean valueSetToMin = false;
+        private boolean valueSetToMin;
 
         public Builder(final @Language("markdown") @Nonnull String label, final @Nullable Class<T> valueType) {
             if (label.trim().isEmpty()) {
@@ -169,7 +169,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
         }
 
         public Builder<T> width(@Nonnull String width) {
-            if (!width.equals("stretch") && !width.matches("\\d+")) {
+            if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
                         "width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
@@ -272,7 +272,7 @@ public class NumberInputComponent<T extends Number> extends JtComponent<T> {
 
     @Override
     protected TypeReference<T> getTypeReference() {
-        return new TypeReference<T>() {
+        return new TypeReference<>() {
             @Override
             public Type getType() {
                 return valueType;

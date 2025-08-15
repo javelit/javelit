@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
-public class StateManager {
+public final class StateManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
@@ -131,7 +131,7 @@ public class StateManager {
                 final FormComponent formComponent = lastExecution.containerToComponents.values().stream()
                         .filter(m -> m.containsKey(parentFormComponentKey))
                         .map(m -> m.get(parentFormComponentKey))
-                        .map(c -> (FormComponent) c)
+                        .map(FormComponent.class::cast)
                         .findFirst().orElse(null);
                 checkState(formComponent != null, "Form component not found for key %s", parentFormComponentKey);
                 if (formComponent.isClearOnSubmit()) {
