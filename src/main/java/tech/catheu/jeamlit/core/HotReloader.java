@@ -61,7 +61,7 @@ class HotReloader {
     private static final ConcurrentMap<String, Class<?>> LOADED_CLASSES = new ConcurrentHashMap<>();
 
     @Nullable
-    URL[] classPathUrls = null;
+    URL[] classPathUrls;
     private final JavaCompiler compiler;
     private @Nullable List<String> compilationOptions;
     private final Path javaFile;
