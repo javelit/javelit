@@ -151,11 +151,17 @@ public abstract class JtComponent<T> {
     public final T use(final @Nonnull JtContainer container) {
         beforeUse(container);
         StateManager.addComponent(this, container);
+        afterUse(container);
         return returnValue();
     }
 
     public void beforeUse(final @Nonnull JtContainer container) {
-        // Override in subclasses that need to do things before use() runs.
+        // Override in subclasses that need to do things before StateManager.addComponent runs in use()
+        // subclasses are not allowed to use StateManager hence using this template pattern
+    }
+
+    public void afterUse(final @Nonnull JtContainer container) {
+        // Override in subclasses that need to do things after StateManager.addComponent runs in use().
         // subclasses are not allowed to use StateManager hence using this template pattern
     }
 
