@@ -36,8 +36,7 @@ public final class PlaywrightUtils {
     public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
 
-    public static void runInBrowser(final String app, Consumer<Page> run) {
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
+    public static void runInBrowser(final Path appFile, Consumer<Page> run) {
         Server server = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
@@ -49,6 +48,12 @@ public final class PlaywrightUtils {
             JeamlitTestHelper.stopServer(server);
             JeamlitTestHelper.cleanupTempDir(appFile.getParent());
         }
+    }
+
+
+    public static void runInBrowser(final String app, Consumer<Page> run) {
+        final Path appFile = JeamlitTestHelper.writeTestApp(app);
+        runInBrowser(appFile, run);
     }
 
     private PlaywrightUtils() {

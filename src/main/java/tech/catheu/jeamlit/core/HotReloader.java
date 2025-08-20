@@ -25,11 +25,13 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -37,10 +39,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -54,8 +53,24 @@ import static tech.catheu.jeamlit.core.utils.StringUtils.percentEncode;
 
 
 class HotReloader {
+
+    protected enum ReloadStrategy {
+        ///  only reload the classes previous classpath will be used if it exists
+        /// no maven/gradle build
+        CLASS,
+        BUILD_CLASSPATH_AND_CLASS
+    }
+
+    protected enum BuildSystem {
+        VANILLA,
+        MAVEN,
+        GRADLE
+        // jbang is not considered a build system, jbang commands can be combined with maven ones
+    }
+
+
     private static final Logger LOG = LoggerFactory.getLogger(HotReloader.class);
-    private static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes");
+    protected static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes");
 
     // used for gc control - see note close to usage
     private static final ConcurrentMap<String, Class<?>> LOADED_CLASSES = new ConcurrentHashMap<>();
@@ -91,18 +106,38 @@ class HotReloader {
      * @throws CompilationException for any compilation that should be reported to the user in the app
      *                              Note: not implemented yet: re-compile multiple classes, the dependencies of the app class
      */
-    protected void reloadFile() {
-        final @Nullable String className = compileJavaFile(this.javaFile);
-        if (className == null) {
+    protected void reloadFile(final @Nonnull ReloadStrategy reloadStrategy) {
+        switch (reloadStrategy) {
+            case BUILD_CLASSPATH_AND_CLASS:
+                // detect the build system - run the relevant command
+                // FIXME CYRIL - the command can be customized to be faster - a good default will be used
+                // FIXME CYRIL at first start - default: do not build if a target directory is available with some files ? always build ? no build ?
+                // this will force the recomputation of the classpath
+                compilationOptions = null;
+                break;
+            case CLASS:
+                break;
+            default:
+                throw new RuntimeException("ReloadStrategy not implemented: " + reloadStrategy);
+        }
+
+        final @Nonnull List<String> classNames = compileJavaFile(this.javaFile);
+        final @Nullable String mainClassName = classNames.getFirst();
+        if (mainClassName == null) {
             throw new CompilationException(
                     "Could not determine class name in file %s. File is empty or invalid ?".formatted(
                             javaFile));
         }
-        final byte[] classBytes = loadClassBytes(className);
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
                                                               getClass().getClassLoader())) {
-            final Class<?> appClass = loader.defineClass(className, classBytes);
-            mainMethod.set(appClass.getMethod("main", String[].class));
+            for (int i = 0; i < classNames.size(); i++) {
+                final String className = classNames.get(i);
+                final byte[] classBytes = loadClassBytes(className);
+                final Class<?> appClass = loader.defineClass(className, classBytes);
+                if (i == 0) {
+                    mainMethod.set(appClass.getMethod("main", String[].class));
+                }
+            }
         } catch (IOException | NoSuchMethodException e) {
             throw new CompilationException(e);
         }
@@ -164,7 +199,7 @@ class HotReloader {
     }
 
     // return the fully qualified classname of the compiled file
-    private String compileJavaFile(final Path javaFile) {
+    private @Nonnull List<String> compileJavaFile(final Path javaFile) {
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null,
                                                                                    null,
                                                                                    null)) {
@@ -178,6 +213,8 @@ class HotReloader {
                                                   COMPILATION_TARGET_DIR.toString(),
                                                   "-cp",
                                                   classpath,
+                                                  // NOTE: reconsider this for a maven-backed project
+                                                  "-sourcepath", javaFile.getParent().toString(),
                                                   "-proc:none");
                 this.classPathUrls = createClassPathUrls(classpath);
             }
@@ -194,15 +231,17 @@ class HotReloader {
                         "Failed to compile Java file: %s. Reading of the file failed. This could be caused by file I/O errors,unsupported file formats, invalid encoding, etc...".formatted(
                                 javaFile));
             }
-            final CompilationUnitTree compilationUnitTree = l.iterator().next();
-            final String className = getFullyQualifiedClassName(compilationUnitTree);
-            task.analyze();    // semantic analysis, type checking
+            final Iterable<? extends Element> analysis = task.analyze();
+            final List<String> compiledClassNames = new ArrayList<>();
+            for (final Element element : analysis) {
+                compiledClassNames.add(element.toString());
+            }
             task.generate();
             final boolean success = diagnosticsCollector.getDiagnostics().stream()
                     .noneMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
             if (success) {
                 LOG.info("Successfully compiled {}", javaFile);
-                return className;
+                return compiledClassNames;
             } else {
                 final String errorMessage = diagnosticsCollector.getDiagnostics().stream()
                         .map(d -> String.format("[%s] %s:%d:%d %s",
@@ -261,17 +300,6 @@ class HotReloader {
         }
 
         return urls;
-    }
-
-    private static String getFullyQualifiedClassName(final CompilationUnitTree unit) {
-        final ExpressionTree packageName = unit.getPackageName();
-        for (final Tree typeDecl : unit.getTypeDecls()) {
-            if (typeDecl instanceof ClassTree classTree) {
-                final String className = classTree.getSimpleName().toString();
-                return packageName == null ? className : packageName + "." + className;
-            }
-        }
-        return null;
     }
 
     /**

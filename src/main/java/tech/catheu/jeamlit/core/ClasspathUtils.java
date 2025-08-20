@@ -50,15 +50,13 @@ final class ClasspathUtils {
      */
     protected static String buildClasspath(final @Nullable String providedClasspath, final @Nonnull Path javaFilePath) {
         final StringBuilder cp = new StringBuilder();
-        // Add current directory for standalone Java files
-        cp.append(".");
 
         // add provided classpath
         if (providedClasspath != null && !providedClasspath.isEmpty()) {
             cp.append(File.pathSeparator).append(providedClasspath);
         }
 
-        // Add target/classes directory for compiled Maven classes
+        // Add target/classes directory for compiled Maven classes NOTE - to review for multi-module
         cp.append(File.pathSeparator).append("target/classes");
 
         // add jbang style deps

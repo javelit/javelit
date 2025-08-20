@@ -1,0 +1,51 @@
+if file is in a maven project:
+
+- detect the pom
+- build project with maven if necessary
+- detect changes in the pom or in the child poms
+    - rebuild and update classpath
+- detect changes in Java classes
+    - rebuild and reload update classpath
+
+problem:
+- file event and change detection is too much logic to handle for a first version
+
+find the app automatically ? via annotation ? is this really necessary ?
+
+if project is detected to be in a maven/gradle project:
+- a new possibility is the rebuild command (let's make it a server path for the moment)
+- in the UI it will be possible to rebuild - it will run the maven command, then re-run the classpath detection, then re-run the app
+- eventually later we can hint at rebuilding when a change is detected, and eventually later on we can refresh automatically
+
+
+For Jbang: we will use in app javac
+
+3 cases:
+- rebuild then reload
+- reclasspath then reload
+- Reload
+
+BUT:
+- update_source: maven and gradle
+- update_classpath --> mostly for jbang --> for maven it should be a rebuild anyway
+
+So only one: update_source: no (or very light) op for jbang, clean rebuild for others
+
+
+Just make sure classes in the same directory work.
+
+
+If files are in the same folder, it will work out of the box.
+For instance
+
+
+
+server instantiate hot reloader and starts te
+
+
+
+
+
+
+
+

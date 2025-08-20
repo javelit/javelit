@@ -137,7 +137,7 @@ public class Server implements StateManager.RenderServer {
   protected void notifyReload() {
     // reload the app and re-run the app for all sessions
     try {
-      hotReloader.reloadFile();
+      hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
     } catch (Exception e) {
       if (!(e instanceof CompilationException)) {
         logger.error("Unknown error type: {}", e.getClass(), e);
@@ -188,7 +188,7 @@ public class Server implements StateManager.RenderServer {
           reloadAvailable.acquire();
           if (neverLoaded.get()) {
             logger.warn("Compiling the app for the first time.");
-            hotReloader.reloadFile();
+            hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
             neverLoaded.set(false);
           }
         }
@@ -337,27 +337,24 @@ public class Server implements StateManager.RenderServer {
       }
       final Path directory = watchedFile.getParent();
 
-      LOG.info("Starting file watcher for: {}", watchedFile);
-      LOG.info("Watching directory: {}", directory);
+      LOG.info("Watching for file changes in parent directory: {}", directory);
 
       watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
         final Path changedFile = event.path();
-
-        // Only respond to changes to our specific file
-        if (changedFile.equals(watchedFile)) {
-          if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
-            LOG.debug("File changed: {}", changedFile);
-            LOG.info("File changed: " + changedFile);
-            LOG.debug("Re-compiling because of file event");
-            notifyReload();
-          } else {
-            // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES
-            LOG.warn("File changed: {} but even type is not managed: {}.",
-                     changedFile,
-                     event.eventType());
-          }
-        }
-      }).build();
+            // Only respond to changes to .java files in the source tree
+            // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
+            if (changedFile.getFileName().toString().endsWith(".java")) {
+              if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
+                LOG.info("File changed: {}. Rebuilding...", changedFile);
+                notifyReload();
+              } else {
+                // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES
+                LOG.warn("File changed: {} but event type is not managed: {}.",
+                         changedFile,
+                         event.eventType());
+              }
+            }
+          }).build();
 
       watcherFuture = watcher.watchAsync();
       LOG.info("File watcher started successfully");

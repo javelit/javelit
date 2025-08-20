@@ -15,6 +15,12 @@
  */
 package tech.catheu.jeamlit.e2e.helpers;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,5 +54,18 @@ public final class OsUtils {
     }
 
     private OsUtils() {
+    }
+
+
+    /**
+     * Copy resource directory to target path.
+     */
+    public static void copyResourceDirectory(final String resourcePath, final Path target) throws IOException {
+        try {
+            final File resourceDir = new File(OsUtils.class.getClassLoader().getResource(resourcePath).toURI());
+            FileUtils.copyDirectory(resourceDir, target.toFile());
+        } catch (URISyntaxException e) {
+            throw new IOException("Failed to copy resource directory: " + resourcePath, e);
+        }
     }
 }
