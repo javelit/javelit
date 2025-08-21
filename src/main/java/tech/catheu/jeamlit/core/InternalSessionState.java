@@ -18,9 +18,12 @@ package tech.catheu.jeamlit.core;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import jakarta.annotation.Nonnull;
 
 /**
  * In streamlit, userState (free key-value storage in session_state) and
@@ -47,6 +50,12 @@ class InternalSessionState {
 
     private String callbackComponentKey;
 
+    record UrlContext(@Nonnull String currentPath,
+                             @Nonnull Map<String, List<String>> queryParameters) {
+    }
+
+    private UrlContext urlContext;
+
     protected InternalSessionState() {
     }
 
@@ -72,5 +81,13 @@ class InternalSessionState {
 
     public Set<String> formComponentsToReset() {
         return formComponentsToReset;
+    }
+
+    public void setUrlContext(UrlContext urlContext) {
+        this.urlContext = urlContext;
+    }
+
+    public UrlContext getUrlContext() {
+        return urlContext;
     }
 }

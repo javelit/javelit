@@ -20,16 +20,17 @@ import java.io.StringWriter;
 import java.util.Arrays;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public final class JavaUtils {
 
     /// same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Jeamlit removed
-    public static String stackTraceString(final @Nonnull Throwable throwable) {
+    public static @Nonnull String stackTraceString(final @Nonnull Throwable throwable) {
         return stackTraceString(throwable, "jdk.internal.reflect.DirectMethodHandleAccessor");
     }
 
     /// return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
-    protected static String stackTraceString(final @Nonnull Throwable t, final @Nonnull String filterPrefix) {
+    private static @Nonnull String stackTraceString(final @Nonnull Throwable t, final @Nonnull String filterPrefix) {
         filterInPlace(t, filterPrefix);
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -37,7 +38,7 @@ public final class JavaUtils {
         return sw.toString();
     }
 
-    private static void filterInPlace(Throwable t, String filterPrefix) {
+    private static void filterInPlace(final @Nullable Throwable t, final @Nonnull String filterPrefix) {
         if (t == null) {
             return;
         }

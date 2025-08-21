@@ -141,7 +141,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
     }
 
     @Override
-    public void beforeUse(@NotNull JtContainer container) {
+    protected void beforeUse(@NotNull JtContainer container) {
         final @Nullable String formParentKey = container.getParentFormComponentKey();
         checkState(formParentKey != null, "FormSubmitButton must be inside a form container. Please pass a valid container that is a form or in a form.");
     }

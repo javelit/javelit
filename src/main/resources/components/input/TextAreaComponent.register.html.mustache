@@ -404,7 +404,7 @@
             this.hasChanged = false;
             
             // Emit to backend
-            window.jeamlit.emit(this.componentKey, currentValue);
+            window.jeamlit.sendComponentUpdate(this.componentKey, currentValue);
             
             this.requestUpdate();
         }

@@ -25,13 +25,13 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import javax.lang.model.element.Element;
+import java.util.stream.StreamSupport;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static tech.catheu.jeamlit.core.utils.JavaUtils.stackTraceString;
+import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 import static tech.catheu.jeamlit.core.utils.StringUtils.percentEncode;
 
 
@@ -81,6 +82,7 @@ class HotReloader {
     private @Nullable List<String> compilationOptions;
     private final Path javaFile;
     private final AtomicReference<Method> mainMethod = new AtomicReference<>();
+    private final Semaphore reloadAvailable = new Semaphore(1, true);
     private final String providedClasspath;
 
     /**
@@ -121,20 +123,23 @@ class HotReloader {
                 throw new RuntimeException("ReloadStrategy not implemented: " + reloadStrategy);
         }
 
-        final @Nonnull List<String> classNames = compileJavaFile(this.javaFile);
-        final @Nullable String mainClassName = classNames.getFirst();
-        if (mainClassName == null) {
+        final @Nonnull List<JavaFileObject> classFiles = compileJavaFile(this.javaFile);
+        final @Nullable JavaFileObject mainClassFile = classFiles.stream()
+                // inner classes may appear before the main class in the list
+                .filter(e -> !e.getName().contains("$"))
+                .findFirst().orElse(null);
+        if (mainClassFile == null) {
             throw new CompilationException(
-                    "Could not determine class name in file %s. File is empty or invalid ?".formatted(
+                    "Could not determine class name in file %s. File is empty, invalid or there are only inner classes?".formatted(
                             javaFile));
         }
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
                                                               getClass().getClassLoader())) {
-            for (int i = 0; i < classNames.size(); i++) {
-                final String className = classNames.get(i);
-                final byte[] classBytes = loadClassBytes(className);
+            for (final JavaFileObject classFile : classFiles) {
+                final String className = classNameFor(classFile);
+                final byte[] classBytes = loadClassBytes(classFile);
                 final Class<?> appClass = loader.defineClass(className, classBytes);
-                if (i == 0) {
+                if (classFile == mainClassFile) {
                     mainMethod.set(appClass.getMethod("main", String[].class));
                 }
             }
@@ -143,19 +148,45 @@ class HotReloader {
         }
     }
 
+    /**
+     * convert a JavaFileObject to a className
+     * target/jeamlit/classes/com/example/MyClass.class -> com.example.MyClass
+     * target/jeamlit/classes/MyClass.class --> MyClass
+     * compatible with inner classes
+     */
+    private static String classNameFor(final @Nonnull JavaFileObject classFile) {
+        return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
+                .replace(File.separatorChar, '.')
+                .replace(".class", "");
+    }
+
+    /// @throws CompilationException if it is called for the first time, the files have never been compiled and and the compilation failed
     protected void runApp(final String sessionId) {
-        if (mainMethod.get() == null) {
-            // if there are edge cases where this could happen, simply call reloadFile instead of throwing
-            // for the moment throwing to catch implementation bugs
-            throw new RuntimeException(
-                    "Implementation Error ? Trying to run app before compiling it. Please reach out to support");
-        }
-        List<JtComponent<?>> result;
         StateManager.beginExecution(sessionId);
+        // if necessary: load the app for the first time
+        if (mainMethod.get() == null) {
+            try {
+                reloadAvailable.acquire();
+                if (mainMethod.get() == null) {
+                    LOG.warn("Compiling the app for the first time.");
+                    reloadFile(HotReloader.ReloadStrategy.CLASS);
+                }
+            } catch (InterruptedException e) {
+                Jt.error("Compilation interrupted.").use();
+            } catch (Exception e) {
+                if (!(e instanceof CompilationException)) {
+                    LOG.error("Unknown error type: {}", e.getClass(), e);
+                }
+                throw e;
+            } finally {
+                reloadAvailable.release();
+            }
+        }
+
         try {
             mainMethod.get().invoke(null, new Object[]{new String[]{}});
         } catch (Exception e) {
-            if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException)) {
+            if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
             }
             @Language("markdown") final String errorMessage = buildErrorMessage(e);
@@ -168,11 +199,14 @@ class HotReloader {
 
 
     private static @Language("markdown") @NotNull String buildErrorMessage(Throwable error) {
+        if (error instanceof PageRunException) {
+            error = error.getCause();
+        }
         if (error instanceof InvocationTargetException) {
             error = error.getCause();
         }
         final String exceptionSimpleName = error.getClass().getSimpleName();
-        final String errorMesssage = error.getMessage();
+        final String errorMesssage = optional(error.getMessage()).orElse("[ no error message ]");
         final String stackTrace = stackTraceString(error);
         final String googleLink = "https://www.google.com/search?q=" + percentEncode(
                 exceptionSimpleName + " " + errorMesssage);
@@ -199,7 +233,7 @@ class HotReloader {
     }
 
     // return the fully qualified classname of the compiled file
-    private @Nonnull List<String> compileJavaFile(final Path javaFile) {
+    private @Nonnull List<JavaFileObject> compileJavaFile(final Path javaFile) {
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null,
                                                                                    null,
                                                                                    null)) {
@@ -214,7 +248,8 @@ class HotReloader {
                                                   "-cp",
                                                   classpath,
                                                   // NOTE: reconsider this for a maven-backed project
-                                                  "-sourcepath", javaFile.getParent().toString(),
+                                                  "-sourcepath",
+                                                  javaFile.getParent().toString(),
                                                   "-proc:none");
                 this.classPathUrls = createClassPathUrls(classpath);
             }
@@ -231,17 +266,13 @@ class HotReloader {
                         "Failed to compile Java file: %s. Reading of the file failed. This could be caused by file I/O errors,unsupported file formats, invalid encoding, etc...".formatted(
                                 javaFile));
             }
-            final Iterable<? extends Element> analysis = task.analyze();
-            final List<String> compiledClassNames = new ArrayList<>();
-            for (final Element element : analysis) {
-                compiledClassNames.add(element.toString());
-            }
-            task.generate();
+            task.analyze();
+            final Iterable<JavaFileObject> generated = (Iterable<JavaFileObject>) task.generate();
             final boolean success = diagnosticsCollector.getDiagnostics().stream()
                     .noneMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
             if (success) {
                 LOG.info("Successfully compiled {}", javaFile);
-                return compiledClassNames;
+                return StreamSupport.stream(generated.spliterator(), false).toList();
             } else {
                 final String errorMessage = diagnosticsCollector.getDiagnostics().stream()
                         .map(d -> String.format("[%s] %s:%d:%d %s",
@@ -264,23 +295,22 @@ class HotReloader {
         }
     }
 
-    private @Nonnull byte[] loadClassBytes(final @Nonnull String className) {
+    private @Nonnull byte[] loadClassBytes(final @Nonnull JavaFileObject classFile) {
         try {
-            final String classFilePath = classFilePathFor(className);
-            final Path classFile = COMPILATION_TARGET_DIR.resolve(classFilePath);
-            if (!Files.exists(classFile)) {
-                LOG.error("Class file not found: {} for original class name {}",
+            final Path classFilePath = Paths.get(classFile.toUri());
+            if (!Files.exists(classFilePath)) {
+                LOG.error("Class file not found: {} for original class object {}",
                           classFile,
-                          className);
+                          classFile.getName());
                 throw new RuntimeException("Class file not found: %s for original class name %s".formatted(
                         classFile,
-                        className));
+                        classFile.getName()));
             }
-            return Files.readAllBytes(classFile);
+            return Files.readAllBytes(classFilePath);
         } catch (IOException e) {
             LOG.error(
                     "Error loading class bytes for {}. You may want to retry. If the error persists, please reach out to support.",
-                    className,
+                    classFile.getName(),
                     e);
             // note: this is not a CompilationException. This is most likely to be an implementation error.
             throw new CompilationException(e);
@@ -300,16 +330,6 @@ class HotReloader {
         }
 
         return urls;
-    }
-
-    /**
-     * convert a class name to a class file path
-     * com.example.MyClass --> com/example/MyClass.class
-     * MyClass --> MyClass.class
-     * should be compatible with windows
-     */
-    private static String classFilePathFor(final String className) {
-        return className.replace('.', File.separatorChar) + ".class";
     }
 
 

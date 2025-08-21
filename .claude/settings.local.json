@@ -18,7 +18,11 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(grep:*)",
       "WebSearch",
-      "WebFetch(domain:docs.openrewrite.org)"
+      "WebFetch(domain:docs.openrewrite.org)",
+      "Bash(open http://localhost:8080)",
+      "Bash(open http://localhost:8081/DashboardPage)",
+      "Bash(open http://localhost:8081/SettingsPage)",
+      "Bash(open http://localhost:8081/TestQueryPage)"
     ],
     "deny": []
   }

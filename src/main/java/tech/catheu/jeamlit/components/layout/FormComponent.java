@@ -136,7 +136,7 @@ public final class FormComponent extends JtComponent<JtContainer> {
     }
 
     @Override
-    public void beforeUse(final @NotNull JtContainer container) {
+    protected void beforeUse(final @NotNull JtContainer container) {
         this.currentValue = container.formChild(getKey());
     }
 

@@ -96,9 +96,8 @@
     let ws = null;
     let connectionState = 'disconnected'; // 'connected', 'disconnected', 'reconnecting'
 
-    // Create emit function for new component system
     window.jeamlit = {
-        emit: function(componentKey, value) {
+        sendComponentUpdate: function(componentKey, value) {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
                     type: 'component_update',
@@ -108,7 +107,29 @@
             } else {
                 console.log("Failed to send update to backend. Connection to backend is not available.");
             }
-        }
+        },
+        sendPathUpdate: function() {
+            // Parse query parameters using URLSearchParams
+            const params = new URLSearchParams(window.location.search);
+            const queryObj = {};
+            for (const key of params.keys()) {
+                queryObj[key] = params.getAll(key);
+            }
+
+            // Send path_update message to backend to trigger app re-run
+            window.jeamlit.sendMessage({
+                type: 'path_update',
+                path: window.location.pathname,
+                queryParameters: queryObj,
+            });
+        },
+        sendMessage: function(message) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(message));
+            } else {
+                console.log("Failed to send message to backend. Connection to backend is not available.");
+            }
+        },
     };
 
     // Connection management functions
@@ -122,23 +143,19 @@
             };
 
             ws.onmessage = handleWebSocketMessage;
-            
+
             ws.onopen = () => {
-                if (connectionState === 'reconnecting') {
-                    ws.send(JSON.stringify({
-                        type: 'reload'
-                    }));
-                }
+                window.jeamlit.sendPathUpdate();
                 connectionState = 'connected';
                 console.log('WebSocket connected');
                 connectionModal.show = false;
                 compilationModal.show = false;
             };
-            
+
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
             };
-            
+
         } catch (error) {
             console.error('Failed to create WebSocket:', error);
             handleConnectionLoss();
@@ -148,7 +165,8 @@
     function handleConnectionLoss() {
         if (connectionState === 'connected') {
             // First time losing connection - show the connection lost modal
-            connectionModal.show = true;
+            // wait 1s to avoid modal flickerings when a page is reloaded
+            setTimeout( () => {connectionModal.show = true;}, 1000)
         }
         connectionState = 'reconnecting';
         setTimeout(() => {
@@ -170,13 +188,13 @@
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
     }
-    
+
     // Layout management
     const layoutContainers = new Map([
         ['main', mainContainer],
         ['sidebar', sidebarContainer]
     ]);
-    
+
     // DOM mutation batching
     let pendingMutations = [];
     let mutationTimeout = null;
@@ -200,7 +218,7 @@
 
     function handleComponentRegistrations(registrations) {
         if (!registrations || registrations.length === 0) return;
-        
+
         // Ensure a hidden container is present
         let container = document.getElementById('jeamlit-registrations');
         if (!container) {
@@ -234,25 +252,25 @@
     }
 
     function applyDelta(message) {
-        const { 
+        const {
             index = null,                 // null means append
-            html, 
+            html,
             container,                       // should always be set
             clearBefore = false           // Default to no clearing
         } = message;
-        
+
         // Clear initial "Connecting..." message on first delta
         if (isFirstMessage) {
             mainContainer.innerHTML = '';
             isFirstMessage = false;
         }
-        
+
         // Close compilation modal since we're receiving successful deltas
         compilationModal.show = false;
-        
+
         // Handle component registrations immediately
         handleComponentRegistrations(message.registrations);
-        
+
         // Create element immediately (outside batch)
         const newElement = createElementFromHTML(html);
 
@@ -264,12 +282,12 @@
             container: container,
             clearBefore
         });
-        
+
         // Track first mutation time
         if (!firstMutationTime) {
             firstMutationTime = Date.now();
         }
-        
+
         // Check if we've waited too long
         const elapsed = Date.now() - firstMutationTime;
         if (elapsed >= MAX_BATCH_WAIT_TIME) {
@@ -285,7 +303,7 @@
             if (mutationTimeout) {
                 clearTimeout(mutationTimeout);
             }
-            
+
             mutationTimeout = setTimeout(() => {
                 processMutations();
                 mutationTimeout = null;
@@ -293,14 +311,14 @@
             }, MUTATION_BATCH_WINDOW);
         }
     }
-    
+
     function processMutations() {
         if (pendingMutations.length === 0) return;
-        
+
         requestAnimationFrame(() => {
             // Group mutations by container
             const mutationsByContainer = new Map();
-            
+
             pendingMutations.forEach(mutation => {
                 // Get target container for this container
                 if (!mutationsByContainer.has(mutation.container)) {
@@ -308,7 +326,7 @@
                 }
                 mutationsByContainer.get(mutation.container).push(mutation);
             });
-            
+
             // Process mutations for each container separately
             mutationsByContainer.forEach((mutations, container) => {
                 const containerEl = document.querySelector(`[data-container="${container}"]`);
@@ -317,7 +335,7 @@
                 }
                 // Find first mutation that requires clearing for this container
                 const firstClearMutation = mutations.find(m => m.clearBefore && m.index !== null);
-                
+
                 if (firstClearMutation) {
                     // CLEARING PATH: Clear from index and append all
                     const clearFromIndex = firstClearMutation.index;
@@ -336,7 +354,7 @@
                     }
                 });
             });
-            
+
             pendingMutations = [];
         });
     }

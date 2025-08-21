@@ -163,7 +163,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
     }
 
     @Override
-    public void beforeUse(final JtContainer container) {
+    protected void beforeUse(final JtContainer container) {
         final JtContainer baseContainer = container.child(getKey());
         this.currentValue = new Columns(baseContainer, numColumns);
     }

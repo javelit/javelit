@@ -502,7 +502,7 @@
             this.hasChanged = false;
             
             // Emit to backend
-            window.jeamlit.emit(this.componentKey, constrainedValue);
+            window.jeamlit.sendComponentUpdate(this.componentKey, constrainedValue);
             
             this.requestUpdate();
         }

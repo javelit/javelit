@@ -32,10 +32,10 @@ public class MyApp {
         //Jt.text("In column 2 ! ").use(columns.col(2));
         
         // Interactive widgets
-        //Jt.title("ANOTHER ONE").use(Jt.sidebar());
-        Jt.title("PLEASE WAIT").use(Jt.sidebar());
-        //Jt.title("ANOTHER ONE").use(Jt.sidebar());
-        Jt.title("WAIT").use(Jt.sidebar());
+        //Jt.title("ANOTHER ONE").use(JtContainer.SIDEBAR);
+        Jt.title("PLEASE WAIT").use(JtContainer.SIDEBAR);
+        //Jt.title("ANOTHER ONE").use(JtContainer.SIDEBAR);
+        Jt.title("WAIT").use(JtContainer.SIDEBAR);
         Double age = Jt.slider("Select your age").min(0).max(100).value(30).use();
         Jt.text("You selected age: " + age).use();
         var container = Jt.container("container-1").use();

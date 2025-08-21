@@ -291,7 +291,7 @@
             this.value = newValue;
 
             // Emit value change only when drag ends
-            window.jeamlit.emit(this.componentKey, newValue);
+            window.jeamlit.sendComponentUpdate(this.componentKey, newValue);
         }
 
         render() {

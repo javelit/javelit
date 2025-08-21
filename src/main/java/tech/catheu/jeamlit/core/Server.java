@@ -29,20 +29,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import io.methvin.watcher.DirectoryChangeEvent;
 import io.methvin.watcher.DirectoryWatcher;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.util.Headers;
@@ -60,317 +55,346 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
+
 public class Server implements StateManager.RenderServer {
-  private static final Logger logger = LoggerFactory.getLogger(Server.class);
-  @VisibleForTesting
-  public final int port;
-  private final HotReloader hotReloader;
-  private final FileWatcher fileWatcher;
+    private static final Logger LOG = LoggerFactory.getLogger(Server.class);
+    @VisibleForTesting
+    public final int port;
+    private final HotReloader hotReloader;
+    private final FileWatcher fileWatcher;
 
-  private Undertow server;
-  private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
-  private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
-  private final ObjectMapper objectMapper = new ObjectMapper();
-  private final String customHeaders;
+    private Undertow server;
+    private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
+    private final String customHeaders;
 
-  private static final Mustache indexTemplate;
+    private static final Mustache indexTemplate;
 
-  static {
-    final MustacheFactory mf = new DefaultMustacheFactory();
-    indexTemplate = mf.compile("index.html.mustache");
-  }
-
-  public Server(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
-    this.port = port;
-    this.hotReloader = new HotReloader(classpath, appPath);
-    this.customHeaders = loadCustomHeaders(headersFile);
-    this.fileWatcher = new FileWatcher(appPath);
-
-    // register in the state manager
-    StateManager.setRenderServer(this);
-  }
-
-  protected Server(final int port, final @Nullable String headersFile, final HotReloader hotReloader, final FileWatcher fileWatcher) {
-    this.port = port;
-    this.hotReloader = hotReloader;
-    this.customHeaders = loadCustomHeaders(headersFile);
-    this.fileWatcher = fileWatcher;
-
-    // register in the state manager
-    StateManager.setRenderServer(this);
-  }
-
-  public void start() {
-    final PathHandler pathHandler = Handlers.path()
-        .addPrefixPath("/ws", Handlers.websocket(new WebSocketHandler()))
-        // static file serving - see https://docs.streamlit.io/get-started/fundamentals/additional-features#static-file-serving
-        // FIXME CYRIL CLEAN THIS
-        .addPrefixPath("/static",
-                       new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
-                                                                        "static")))
-        .addExactPath("/", new HttpHandler() {
-          @Override
-          public void handleRequest(HttpServerExchange exchange) throws Exception {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-            exchange.getResponseSender().send(getIndexHtml());
-          }
-        });
-
-    server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(pathHandler).build();
-
-    server.start();
-    try {
-      fileWatcher.start();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    logger.info("Jeamlit server started on http://localhost:{}", port);
-  }
-
-  public void stop() {
-    fileWatcher.stop();
-    if (server != null) {
-      server.stop();
-    }
-  }
-
-  protected void notifyReload() {
-    // reload the app and re-run the app for all sessions
-    try {
-      hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
-    } catch (Exception e) {
-      if (!(e instanceof CompilationException)) {
-        logger.error("Unknown error type: {}", e.getClass(), e);
-      }
-      sessions.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
-      return;
+    static {
+        final MustacheFactory mf = new DefaultMustacheFactory();
+        indexTemplate = mf.compile("index.html.mustache");
     }
 
-    for (final String sessionId : sessions.keySet()) {
-      hotReloader.runApp(sessionId);
+    public Server(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
+        this.port = port;
+        this.hotReloader = new HotReloader(classpath, appPath);
+        this.customHeaders = loadCustomHeaders(headersFile);
+        this.fileWatcher = new FileWatcher(appPath);
+
+        // register in the state manager
+        StateManager.setRenderServer(this);
     }
-  }
 
-  private class WebSocketHandler implements WebSocketConnectionCallback {
+    protected Server(final int port, final @Nullable String headersFile, final HotReloader hotReloader, final FileWatcher fileWatcher) {
+        this.port = port;
+        this.hotReloader = hotReloader;
+        this.customHeaders = loadCustomHeaders(headersFile);
+        this.fileWatcher = fileWatcher;
 
-    private final AtomicBoolean neverLoaded = new AtomicBoolean(true);
-    private final Semaphore reloadAvailable = new Semaphore(1, true);
+        // register in the state manager
+        StateManager.setRenderServer(this);
+    }
+
+    public void start() {
+        // Create custom fallback handler for SPA routing
+        final WebSocketHandler sessionHandler = new WebSocketHandler();
+        final HttpHandler spaHandler = new HttpHandler() {
+            @Override
+            public void handleRequest(HttpServerExchange exchange) throws Exception {
+                final String path = exchange.getRequestPath();
+                // WebSocket connections
+                if (path.startsWith("/ws")) {
+                    Handlers.websocket(sessionHandler).handleRequest(exchange);
+                    return;
+                }
+                // static files
+                if (path.startsWith("/static")) {
+                    new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
+                                                                     "static"))
+                            .handleRequest(exchange);
+                    return;
+                }
+                // All other paths - serve the main app (SPA routing)
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+                exchange.getResponseSender().send(getIndexHtml());
+            }
+        };
+
+        server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(spaHandler).build();
+
+        server.start();
+        try {
+            fileWatcher.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        LOG.info("Jeamlit server started on http://localhost:{}", port);
+    }
+
+    public void stop() {
+        fileWatcher.stop();
+        if (server != null) {
+            server.stop();
+        }
+    }
+
+    protected void notifyReload() {
+        // reload the app and re-run the app for all sessions
+        try {
+            hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
+        } catch (Exception e) {
+            if (!(e instanceof CompilationException)) {
+                LOG.error("Unknown error type: {}", e.getClass(), e);
+            }
+            sessions.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
+            return;
+        }
+
+        for (final String sessionId : sessions.keySet()) {
+            hotReloader.runApp(sessionId);
+        }
+    }
+
+    private class WebSocketHandler implements WebSocketConnectionCallback {
+
+        @Override
+        public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
+            final String sessionId = UUID.randomUUID().toString();
+            sessions.put(sessionId, channel);
+
+            channel.getReceiveSetter().set(new AbstractReceiveListener() {
+                @Override
+                protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
+                    try {
+                        final String data = message.getData();
+                        final Message msg = Shared.OBJECT_MAPPER.readValue(data, Message.class);
+                        handleMessage(sessionId, msg);
+                    } catch (Exception e) {
+                        LOG.error("Error handling message", e);
+                    }
+                }
+
+                @Override
+                protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
+                    sessions.remove(sessionId);
+                    sessionRegisteredTypes.remove(sessionId);
+                    StateManager.clearSession(sessionId);
+                }
+            });
+            // No initial render - wait for path_update message from frontend
+            channel.resumeReceives();
+        }
+    }
+
+
+    private record Message(@Nonnull String type,
+                           @Nullable String componentKey, @Nullable Object value,
+                           // for component_update mesages
+                           @Nullable String path,
+                           @Nullable Map<String, List<String>> queryParameters
+    ) {
+    }
+
+    private void handleMessage(final String sessionId, final Message message) {
+        boolean doRerun = false;
+        switch (message.type()) {
+            case "component_update" -> {
+                doRerun = StateManager.handleComponentUpdate(sessionId,
+                                                             message.componentKey(),
+                                                             message.value());
+            }
+            case "reload" -> doRerun = true;
+            case "path_update" -> {
+                final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(
+                        optional(message.path()).orElse(""),
+                        optional(message.queryParameters()).orElse(Map.of()));
+                StateManager.setUrlContext(sessionId, urlContext);
+                // Trigger app execution with new URL context
+                doRerun = true;
+            }
+            default -> LOG.warn("Unknown message type: {}", message.type());
+        }
+
+        if (doRerun) {
+            try {
+                hotReloader.runApp(sessionId);
+            } catch (CompilationException e) {
+                sendCompilationError(sessionId, e.getMessage());
+            }
+        }
+    }
 
     @Override
-    public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
-      final String sessionId = UUID.randomUUID().toString();
-      sessions.put(sessionId, channel);
+    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
+        // Handle component registration
+        final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
+                sessionId,
+                k -> new HashSet<>());
+        final List<String> registrations = new ArrayList<>();
 
-      channel.getReceiveSetter().set(new AbstractReceiveListener() {
-        @Override
-        protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
-          try {
-            final String data = message.getData();
-            final Map<String, Object> msg = objectMapper.readValue(data, Map.class);
-            handleMessage(sessionId, msg);
-          } catch (Exception e) {
-            logger.error("Error handling message", e);
-          }
-        }
-
-        @Override
-        protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-          sessions.remove(sessionId);
-          sessionRegisteredTypes.remove(sessionId);
-          StateManager.clearSession(sessionId);
-        }
-      });
-
-      channel.resumeReceives();
-
-      try {
-        if (neverLoaded.get()) {
-          reloadAvailable.acquire();
-          if (neverLoaded.get()) {
-            logger.warn("Compiling the app for the first time.");
-            hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
-            neverLoaded.set(false);
-          }
-        }
-      } catch (Exception e) {
-        if (!(e instanceof CompilationException)) {
-          logger.error("Unknown error type: {}", e.getClass(), e);
-        }
-        sendCompilationError(sessionId, e.getMessage());
-        return;
-      } finally {
-        reloadAvailable.release();
-      }
-
-      // Send initial render
-      hotReloader.runApp(sessionId);
-    }
-  }
-
-  private void handleMessage(final String sessionId, final Map<String, Object> message) {
-    final String type = (String) message.get("type");
-
-    if ("component_update".equals(type)) {
-      final String componentKey = (String) message.get("componentKey");
-      final Object value = message.get("value");
-
-      final boolean doRerun = StateManager.handleComponentUpdate(sessionId, componentKey, value);
-      if (doRerun) {
-        hotReloader.runApp(sessionId);
-      }
-    } else if ("reload".equals(type)) {
-      hotReloader.runApp(sessionId);
-    }
-  }
-
-  @Override
-  public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
-    // Handle component registration
-    final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(sessionId,
-                                                                                           k -> new HashSet<>());
-    final List<String> registrations = new ArrayList<>();
-
-    if (component != null) {
-      // note: hot reload does not work for changes in the register() method
-      final String componentType = component.getClass().getName();
-      if (!componentsAlreadyRegistered.contains(componentType)) {
-        registrations.add(component.register());
-        componentsAlreadyRegistered.add(componentType);
-      }
-    }
-
-    // Send message to frontend
-    final Map<String, Object> message = new HashMap<>();
-    message.put("type", "delta");
-    message.put("html", component != null ? component.render() : null);
-    message.put("container", container.frontendDataContainerField());
-    if (index != null) {
-      message.put("index", index);
-    }
-    if (clearBefore) {
-      message.put("clearBefore", true);
-    }
-    if (!registrations.isEmpty()) {
-      message.put("registrations", registrations);
-    }
-    logger.debug("Sending delta: index={}, clearBefore={}, component={}",
-                 index,
-                 clearBefore,
-                 component != null ? component.getKey() : null);
-    logger.debug("  HTML: {}", component != null ? component.render() : null);
-    logger.debug("  Registrations: {}", registrations.size());
-    sendMessage(sessionId, message);
-  }
-
-  private void sendMessage(final String sessionId, final Map<String, Object> message) {
-    final WebSocketChannel channel = sessions.get(sessionId);
-    if (channel != null) {
-      try {
-        String json = objectMapper.writeValueAsString(message);
-        WebSockets.sendText(json, channel, null);
-      } catch (Exception e) {
-        logger.error("Error sending message", e);
-      }
-    }
-  }
-
-  private void sendCompilationError(final String sessionId, final String error) {
-    final Map<String, Object> message = new HashMap<>();
-    message.put("type", "compilation_error");
-    message.put("error", error);
-    sendMessage(sessionId, message);
-  }
-
-
-  private String getIndexHtml() {
-    final StringWriter writer = new StringWriter();
-    indexTemplate.execute(writer,
-                          Map.of("MATERIAL_SYMBOLS_CDN",
-                                 JtComponent.MATERIAL_SYMBOLS_CDN,
-                                 "LIT_DEPENDENCY",
-                                 JtComponent.LIT_DEPENDENCY,
-                                 "customHeaders",
-                                 customHeaders,
-                                 "port",
-                                 port));
-    return writer.toString();
-  }
-
-  private static String loadCustomHeaders(final @Nullable String headersFile) {
-    if (headersFile == null) {
-      return "";
-    }
-    final Path headerPath = Paths.get(headersFile);
-    if (!Files.exists(headerPath)) {
-      throw new IllegalArgumentException("Custom headers file not found: " + headersFile);
-    }
-    try {
-      final String content = Files.readString(headerPath);
-      logger.info("Loaded custom headers from {}", headersFile);
-      // poor's man logic to check if the header looks valid and help the user debug in case of mistake
-      // best would be to check full validity
-      if (!content.replaceAll("\\s", "").startsWith("<")) {
-        logger.warn(
-            "The custom headers do not start with an html tag. You may want to double check the custom headers if the frontend is not able to load. Here is the custom headers: \n{}",
-            content);
-      }
-      return content;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile), e);
-    }
-  }
-
-  protected class FileWatcher {
-    private static final Logger LOG = LoggerFactory.getLogger(FileWatcher.class);
-
-    private final Path watchedFile;
-    private DirectoryWatcher watcher;
-    private CompletableFuture<Void> watcherFuture;
-
-    protected FileWatcher(final Path filePath) {
-      this.watchedFile = filePath.toAbsolutePath();
-    }
-
-    protected void start() throws IOException {
-      if (watcher != null) {
-        throw new IllegalStateException("FileWatcher is already running");
-      }
-      final Path directory = watchedFile.getParent();
-
-      LOG.info("Watching for file changes in parent directory: {}", directory);
-
-      watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
-        final Path changedFile = event.path();
-            // Only respond to changes to .java files in the source tree
-            // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-            if (changedFile.getFileName().toString().endsWith(".java")) {
-              if (event.eventType() == DirectoryChangeEvent.EventType.MODIFY) {
-                LOG.info("File changed: {}. Rebuilding...", changedFile);
-                notifyReload();
-              } else {
-                // TODO CYRIL IMPLEMENT SUPPORT FOR ALL EVENT TYPES
-                LOG.warn("File changed: {} but event type is not managed: {}.",
-                         changedFile,
-                         event.eventType());
-              }
+        if (component != null) {
+            // note: hot reload does not work for changes in the register() method
+            final String componentType = component.getClass().getName();
+            if (!componentsAlreadyRegistered.contains(componentType)) {
+                registrations.add(component.register());
+                componentsAlreadyRegistered.add(componentType);
             }
-          }).build();
-
-      watcherFuture = watcher.watchAsync();
-      LOG.info("File watcher started successfully");
-    }
-
-    protected void stop() {
-      if (watcher != null) {
-        try {
-          watcher.close();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
         }
-      }
-      if (watcherFuture != null) {
-        watcherFuture.cancel(true);
-      }
+
+        // Send message to frontend
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "delta");
+        message.put("html", component != null ? component.render() : null);
+        message.put("container", container.frontendDataContainerField());
+        if (index != null) {
+            message.put("index", index);
+        }
+        if (clearBefore) {
+            message.put("clearBefore", true);
+        }
+        if (!registrations.isEmpty()) {
+            message.put("registrations", registrations);
+        }
+        LOG.debug("Sending delta: index={}, clearBefore={}, component={}",
+                  index,
+                  clearBefore,
+                  component != null ? component.getKey() : null);
+        LOG.debug("  HTML: {}", component != null ? component.render() : null);
+        LOG.debug("  Registrations: {}", registrations.size());
+        sendMessage(sessionId, message);
     }
-  }
+
+    private void sendMessage(final String sessionId, final Map<String, Object> message) {
+        final WebSocketChannel channel = sessions.get(sessionId);
+        if (channel != null) {
+            try {
+                String json = Shared.OBJECT_MAPPER.writeValueAsString(message);
+                WebSockets.sendText(json, channel, null);
+            } catch (Exception e) {
+                LOG.error("Error sending message", e);
+            }
+        }
+    }
+
+    private void sendCompilationError(final String sessionId, final String error) {
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "compilation_error");
+        message.put("error", error);
+        sendMessage(sessionId, message);
+    }
+
+    private String getIndexHtml() {
+        final StringWriter writer = new StringWriter();
+        indexTemplate.execute(writer,
+                              Map.of("MATERIAL_SYMBOLS_CDN",
+                                     JtComponent.MATERIAL_SYMBOLS_CDN,
+                                     "LIT_DEPENDENCY",
+                                     JtComponent.LIT_DEPENDENCY,
+                                     "customHeaders",
+                                     customHeaders,
+                                     "port",
+                                     port));
+        return writer.toString();
+    }
+
+    private static String loadCustomHeaders(final @Nullable String headersFile) {
+        if (headersFile == null) {
+            return "";
+        }
+        final Path headerPath = Paths.get(headersFile);
+        if (!Files.exists(headerPath)) {
+            throw new IllegalArgumentException("Custom headers file not found: " + headersFile);
+        }
+        try {
+            final String content = Files.readString(headerPath);
+            LOG.info("Loaded custom headers from {}", headersFile);
+            // poor's man logic to check if the header looks valid and help the user debug in case of mistake
+            // best would be to check full validity
+            if (!content.replaceAll("\\s", "").startsWith("<")) {
+                LOG.warn(
+                        "The custom headers do not start with an html tag. You may want to double check the custom headers if the frontend is not able to load. Here is the custom headers: \n{}",
+                        content);
+            }
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile),
+                                       e);
+        }
+    }
+
+    protected class FileWatcher {
+        private static final Logger LOG = LoggerFactory.getLogger(FileWatcher.class);
+
+        private final Path watchedFile;
+        private DirectoryWatcher watcher;
+        private CompletableFuture<Void> watcherFuture;
+
+        protected FileWatcher(final Path filePath) {
+            this.watchedFile = filePath.toAbsolutePath();
+        }
+
+        protected void start() throws IOException {
+            if (watcher != null) {
+                throw new IllegalStateException("FileWatcher is already running");
+            }
+            final Path directory = watchedFile.getParent();
+
+            LOG.info("Watching for file changes in parent directory: {}", directory);
+
+            watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
+                final Path changedFile = event.path();
+                // Only respond to changes to .java files in the source tree
+                // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
+                if (changedFile.getFileName().toString().endsWith(".java")) {
+                    switch (event.eventType()) {
+                        case MODIFY -> {
+                            LOG.info("File changed: {}. Rebuilding...", changedFile);
+                            notifyReload();
+                        }
+                        case DELETE -> {
+                            if (changedFile.equals(watchedFile)) {
+                                LOG.warn(
+                                        "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
+                                        watchedFile);
+                                sessions.keySet().forEach(id -> sendCompilationError(id,
+                                                                                     "App file was deleted."));
+                            }
+                        }
+                        case CREATE -> {
+                            if (changedFile.equals(watchedFile)) {
+                                LOG.warn(
+                                        "App file {} recreated. Attempting to reload from the new file.",
+                                        watchedFile);
+                                notifyReload();
+                            }
+                        }
+                        case OVERFLOW -> {
+                            LOG.warn("Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
+                        }
+                        case null, default ->
+                                LOG.warn("File changed: {} but event type is not managed: {}.",
+                                         changedFile,
+                                         event.eventType());
+                    }
+                }
+            }).build();
+
+            watcherFuture = watcher.watchAsync();
+            LOG.info("File watcher started successfully");
+        }
+
+        protected void stop() {
+            if (watcher != null) {
+                try {
+                    watcher.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (watcherFuture != null) {
+                watcherFuture.cancel(true);
+            }
+        }
+    }
 }

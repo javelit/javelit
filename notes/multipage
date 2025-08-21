@@ -1,0 +1,348 @@
+- have a single build
+- the navigation component will be responsible for calling the right page in the main container
+- clicking in the navigation changes the navigation state
+- the frontend is maintaining the page url - it is more used as a display than as a strong logic
+
+
+When the PageNavigationComponent is clicked, its value is changed
+The PageNavigationComponent refreshes
+
+
+The API will look like the following:
+
+public class MultiPageApp {
+
+    public static void main(String[] args) throws InterruptedException {
+        Jt.navigation()
+                .pages(
+                Jt.page("Display Name for Page 1", Page1.class).build(),
+                Jt.page("Display Name for Page 2", Page2.class).build(),
+                Jt.page("Display Name for Page 3", Page3.class).build(),
+                )
+                .home(Page1.class)
+                .use(JtContainer.SIDEBAR).use();
+    }
+}
+
+Jt.page returns a simple record
+
+record JtPage(String displayName, Class<?> pageClazz)
+
+A navigationComponent generates a a table of content style thing.
+When a link is clicked, the value of the Jt.navigation is updated.
+The value is in effect the current page, it is a String that corresponds to the display name.
+Display names are unique because contained in a map, so they are effectively keys that are easy to debug.
+
+In the frontend, it is actually the NavigationComponent that updates the page title and other stuffs.
+This can be done later by adding some other fields to the JtPage record.
+
+The navigation Component uses afterUse() to run the current page.
+It runs it runnning the main class, with something like this:
+
+ public void callMainWithMethodHandle(Class<?> clazz) throws Throwable {
+      MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+      MethodType methodType = MethodType.methodType(void.class, String[].class);
+
+      MethodHandle mainHandle = lookup.findStatic(clazz, "main", methodType);
+
+      String[] args = new String[0];
+      mainHandle.invoke(args);
+  }
+
+Why using a class versus just using a function ? Because it makes it easy to debug pages one by one ?
+
+There can only be one Jt.navigation. So we can use a static key ? Let's use THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT.
+
+
+Multipage component can be used in JtContainer.MAIN or in JtContainer.SIDEBAR.
+The style will depend on the container and will be automatic. We will start by sidebar only.
+
+With this design, it's totally possible for an app to append other things to the sidebar.
+With this design, it's totally possible for an app to display things before or after the page element. it makes it easy to have a canvas in the main page.
+
+States are shared between pages. I think it's okay. Will it break things in some edge cases? yes.
+
+
+For the navigation:
+Jt.navigateTo(Page1.Class, Map.of("cars", carId, "drivers", "driverId")) will be possible.
+This will work in coordination with the Navigation component in the frontend.
+Not sure how yet, most likely --> find the jt-navigation component, set some value, then the Navigation component
+runs its update logic.
+Page1.class is more comfortable, but this would have to be resolved internally to the correct key - maybe a redesign will be necessary here
+
+Path and path parameters only should be used. I don't want arguments.
+A utility will be provided to parse string args to Maps in main(String[] args)
+Eg
+toMap(String[] args) {
+  // ensure even number
+  m = new HashMap()
+  for (int i=0; i=i+2; i<args.length) {
+    m.put(arg[i], args[i+1])
+  }
+}
+
+Design note:
+Are the path params used to re-use the same class for multiple pages, or to make a page dynamic by path params ?
+Answer: make a page dynamic by path params.
+If a user has many pages with the same logic with a few params varying, and really wants different pages,
+the user should introduce a utility function.
+
+Instead of path params, we will use query parameters.
+Issues with path params:
+  - less clear how to parse, some users may introduce some strange parsing logic
+  - Can't handle complex values (arrays, special chars)
+
+Old:
+  Path Parameters:
+  /users/123/cars/456
+  main(["userId", "123", "carId", "456"])
+
+New:
+  Query Parameters:
+  ?page=UserDetails&userId=123&carId=456
+
+Pros:
+  - Standard web format
+  - Easy and single way to parse
+  - Handles special characters, can support arrays
+  - closer to streamlit
+  From the Streamlit docs, st.query_params provides a dict-like interface:
+  # URL: /user?&id=123&tags=python&tags=java
+  st.query_params["id"]     # "123"
+  st.query_params.get_all("tags")  # ["python", "java"]
+
+  API:
+  TypedMap params = Jt.queryParams();
+  String userId = Jt.queryParams().getString("userId");
+  Integer carId = Jt.queryParams().getInt("carId");
+  Jt.queryParams().getAllStrings("tags");
+  Jt.queryParams().getAllInts("tags");
+
+  2. Navigation with Query Params:
+
+  // Navigate with parameters
+  Jt.navigateTo(UserProfile.class, Map.of(
+      "userId", "123",
+      "view", "details"
+  ));
+  // Results in: /UserProfile?Profile&userId=123&view=details
+
+  3. URL Structure:
+
+  http://localhost:8080/Dashboard
+  http://localhost:8080/Users?filter=active&sort=name
+  http://localhost:8080/CarDetails?carId=123&showHistory=true
+
+  4. Frontend Implementation:
+
+  // Parse query params
+  function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const result = {};
+
+      // Handle multiple values for same key
+      for (const key of params.keys()) {
+          const values = params.getAll(key);
+          result[key] = values.length === 1 ? values[0] : values;
+      }
+      return result;
+  }
+
+  // Update URL with new params
+  function updateQueryParams(page, params) {
+      const url = new URL(window.location);
+      url.searchParams.set('page', page);
+
+      Object.entries(params).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+              url.searchParams.delete(key);
+              value.forEach(v => url.searchParams.append(key, v));
+          } else {
+              url.searchParams.set(key, value);
+          }
+      });
+
+      window.history.pushState({}, '', url);
+  }
+
+  5. Backend Handling:
+
+  public class NavigationComponent {
+
+      @Override
+      public void handleUpdate(Object value) {
+          Map<String, Object> update = (Map<String, Object>) value;
+          String pageName = (String) update.get("page");
+          Map<String, Object> params = (Map<String, Object>) update.get("params");
+
+          // Store params in session for Jt.queryParams() access
+          StateManager.getCurrentSession()
+              .getUserState()
+              .put("__query_params__", params);
+
+          // Execute page
+          executePageWithParams(pageName);
+      }
+  }
+
+  main(String[] args) will be kept empty
+
+  URL Structure:
+  http://localhost:8080/Dashboard
+  http://localhost:8080/UserDetails?userId=123&view=profile
+  http://localhost:8080/CarDetails?carId=456&showHistory=true
+
+  This is much better because:
+  - Page identity is clear: /UserDetails vs /Dashboard
+  - Parameters are separate: ?userId=123 is clearly data, not routing
+  - RESTful and familiar: Standard web pattern
+  - Clean URLs: /Dashboard instead of /?page=Dashboard
+
+
+
+    Implementation Details
+
+    1. Frontend URL Management:
+
+    // Navigate to a page with params
+    function navigateToPage(pageName, params = {}) {
+        // Build URL with path and query params
+        const queryString = new URLSearchParams(params).toString();
+        const url = `/${pageName}${queryString ? '?' + queryString : ''}`;
+
+        // Update browser URL
+        window.history.pushState({}, '', url);
+
+        // Send to backend
+        window.jeamlit.emit(navigationComponentKey, {
+            page: pageName,
+            params: params
+        });
+    }
+
+    // Parse current location
+    function getCurrentPageAndParams() {
+        const path = window.location.pathname.substring(1); // Remove leading /
+        const params = Object.fromEntries(new URLSearchParams(window.location.search));
+
+        return {
+            page: path || 'Home',  // Default to Home if root
+            params: params
+        };
+    }
+
+    2. Server-side Routing:
+
+    Since Jeamlit serves a single HTML page, you'll need to handle all paths:
+
+    // In Server.java
+    .addPrefixPath("/", new HttpHandler() {
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            // Always serve the same index.html regardless of path
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+
+            // Pass the requested path to the frontend
+            String requestPath = exchange.getRequestPath();
+            exchange.getResponseSender().send(getIndexHtml(requestPath));
+        }
+    })
+
+    3. Initial Page Loading:
+
+    // In index.html.mustache
+    window.addEventListener('DOMContentLoaded', () => {
+        // Get initial page from URL path
+        const path = window.location.pathname.substring(1) || 'Home';
+        const params = Object.fromEntries(new URLSearchParams(window.location.search));
+
+        // Once WebSocket connects, sync with backend
+        ws.onopen = () => {
+            ws.send(JSON.stringify({
+                type: 'navigation_init',
+                page: path,
+                params: params
+            }));
+        };
+    });
+
+    4. Java API Usage:
+
+    public class UserDetailsPage {
+        public static void main(String[] args) {
+            // URL would be: /UserDetails?userId=123&view=profile
+
+            String userId = Jt.queryParams().get("userId");
+            String view = Jt.queryParams().get("view", "profile"); // with default
+
+            Jt.title("User " + userId).use();
+
+            // Navigate to another page
+            if (Jt.button("View Orders").use()) {
+                Jt.navigateTo(OrdersPage.class, Map.of(
+                    "userId", userId,
+                    "status", "pending"
+                ));
+                // Results in: /OrdersPage?userId=123&status=pending
+            }
+        }
+    }
+
+    5. Navigation Component Rendering:
+
+    // In NavigationComponent.toHtml()
+    private String renderNavLink(JtPage page) {
+        String path = "/" + page.displayName().replace(" ", "");  // or use a slug
+        boolean isActive = currentPage.equals(page.displayName());
+
+        return """
+            <a href="%s"
+               class="nav-link%s"
+               onclick="handleNavClick(event, '%s')">
+                %s
+            </a>
+            """.formatted(
+                path,
+                isActive ? " active" : "",
+                page.displayName(),
+                page.displayName()
+            );
+    }
+
+    Benefits of This Hybrid Approach
+
+    1. Clean Page URLs: /Dashboard, /UserProfile, /Settings
+    2. Clear Separation: Path = where you are, Query = what data to show
+    3. SEO Friendly: If ever needed, paths are more SEO-friendly
+    4. Intuitive: /UserDetails?userId=123 clearly shows you're on the user details page for user 123
+    5. Standard Pattern: This is how most web apps work
+
+    Examples:
+
+    /Dashboard                           - Dashboard page, no params
+    /Users                              - Users list page
+    /Users?filter=active&sort=name      - Users with filtering
+    /UserDetails?userId=123             - Specific user
+    /CarDetails?carId=456&tab=history  - Car with specific tab
+    /Reports?from=2024-01-01&to=2024-12-31  - Reports with date range
+
+    Handling Special Cases
+
+    Root Path
+
+    // "/" should map to default/home page
+    const pageName = path === '' ? 'Home' : path;
+
+    Spaces in Page Names
+
+    // "User Details" -> "UserDetails" or "user-details"
+    String urlPath = displayName.replace(" ", "");  // we will use the class name instead
+
+    404 Handling
+
+    if (!pageExists(requestedPage)) {
+        // Show 404 or redirect to home
+        Jt.navigateTo(HomePage.class);
+    }
+
+    This hybrid approach gives you the best of both worlds - clean, meaningful URLs with flexible parameter passing! 🎯

@@ -114,7 +114,7 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
     /// Add the component to the app in the provided [JtContainer] and return this component's [JtContainer].
     /// for instance, if the container is "main", returns a container \["main", $key\]
     @Override
-    public void beforeUse(final @NotNull JtContainer container) {
+    protected void beforeUse(final @NotNull JtContainer container) {
         if (inPlace) {
             this.currentValue = container.inPlaceChild(getKey());
         } else {

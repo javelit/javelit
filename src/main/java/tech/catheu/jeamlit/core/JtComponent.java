@@ -16,11 +16,11 @@
 package tech.catheu.jeamlit.core;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
@@ -32,6 +32,8 @@ import org.intellij.lang.annotations.Language;
  */
 public abstract class JtComponent<T> {
 
+    protected static final String UNIQUE_NAVIGATION_COMPONENT_KEY = "THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT";
+
     // used by the components' mustache templates
     protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
     protected static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
@@ -41,9 +43,9 @@ public abstract class JtComponent<T> {
     protected T currentValue;
     private T initialValue;
     protected @Nullable Consumer<T> callback;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final JtContainer defaultContainer;
 
-    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
+    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback, final @Nonnull JtContainer defaultContainer) {
         this.key = key;
         this.currentValue = currentValue;
         if (returnValueIsAState() && currentValue != null && !(currentValue instanceof Number) && !(currentValue instanceof String)) {
@@ -51,13 +53,18 @@ public abstract class JtComponent<T> {
             try {
                 // NOTE: some getTypeReference can only be resolved properly after the instantiation - so this call would throw an error
                 // see NumberInputComponent - we avoid the issue by excluding deep copies for values of type Number - it works because they are immutable
-                this.initialValue = OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsString(
+                this.initialValue = Shared.OBJECT_MAPPER.readValue(Shared.OBJECT_MAPPER.writeValueAsString(
                         currentValue), getTypeReference());
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
         this.callback = callback;
+        this.defaultContainer = defaultContainer;
+    }
+
+    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
+        this(key, currentValue, callback, JtContainer.MAIN);
     }
 
     public String getKey() {
@@ -109,9 +116,11 @@ public abstract class JtComponent<T> {
         T value;
         try {
             // Use Jackson to convert to the target type
-            value = OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
+            value = Shared.OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse input widget value coming from the app. Please reach out to support.", e);
+            throw new RuntimeException(
+                    "Failed to parse input widget value coming from the app. Please reach out to support.",
+                    e);
         }
         value = validate(value);
         this.currentValue = value;
@@ -142,7 +151,7 @@ public abstract class JtComponent<T> {
      * Add the component to the app in the main container and return its value.
      */
     public final T use() {
-        return use(JtContainer.MAIN);
+        return use(defaultContainer);
     }
 
     /**
@@ -155,12 +164,12 @@ public abstract class JtComponent<T> {
         return returnValue();
     }
 
-    public void beforeUse(final @Nonnull JtContainer container) {
+    protected void beforeUse(final @Nonnull JtContainer container) {
         // Override in subclasses that need to do things before StateManager.addComponent runs in use()
         // subclasses are not allowed to use StateManager hence using this template pattern
     }
 
-    public void afterUse(final @Nonnull JtContainer container) {
+    protected void afterUse(final @Nonnull JtContainer container) {
         // Override in subclasses that need to do things after StateManager.addComponent runs in use().
         // subclasses are not allowed to use StateManager hence using this template pattern
     }
@@ -179,7 +188,7 @@ public abstract class JtComponent<T> {
         VISIBLE,
         HIDDEN,
         COLLAPSED;
-        
+
         @Override
         public String toString() {
             return name().toLowerCase();
@@ -193,7 +202,7 @@ public abstract class JtComponent<T> {
 
     protected static String toJson(final List<?> objs) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(objs);
+            return Shared.OBJECT_MAPPER.writeValueAsString(objs);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -205,5 +214,13 @@ public abstract class JtComponent<T> {
 
     protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown, final boolean removeWrap) {
         return MarkdownUtils.markdownToHtml(markdown, removeWrap);
+    }
+
+    protected final @Nonnull String getCurrentPath() {
+        return StateManager.getUrlContext().currentPath();
+    }
+
+    protected final @Nonnull Map<String, List<String>> getCurrentQueryParameters() {
+        return StateManager.getUrlContext().queryParameters();
     }
 }

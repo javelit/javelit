@@ -1,0 +1,293 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    
+    class JtNavigation extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                width: 100%;
+            }
+            
+            /* Hidden position - no display */
+            :host([position="HIDDEN"]) {
+                display: none;
+            }
+            
+            /* SIDEBAR Navigation Styles */
+            :host([position="SIDEBAR"]) .navigation-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--jt-spacing-xs);
+                padding: var(--jt-spacing-md) 0;
+            }
+            :host([position="SIDEBAR"]:not(:only-child)) {
+                border-bottom: 1px solid var(--jt-border-color);
+            }
+            
+            :host([position="SIDEBAR"]) .nav-item {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+                padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+                border-radius: var(--jt-border-radius);
+                
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                font-weight: var(--jt-font-weight-normal);
+                color: var(--jt-text-secondary);
+                
+                text-decoration: none;
+                cursor: pointer;
+                transition: all var(--jt-transition-fast);
+                
+                border: 1px solid transparent;
+                background: transparent;
+                position: relative;
+            }
+            
+            :host([position="SIDEBAR"]) .nav-item:hover {
+                background: var(--jt-bg-tertiary);
+                color: var(--jt-text-primary);
+            }
+            
+            :host([position="SIDEBAR"]) .nav-item.active {
+                background: var(--jt-theme-light);
+                color: var(--jt-theme-color);
+                font-weight: var(--jt-font-weight-medium);
+            }
+            
+            :host([position="SIDEBAR"]) .nav-item.active::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 3px;
+                height: 70%;
+                background: var(--jt-theme-color);
+                border-radius: 0 var(--jt-border-radius-sm) var(--jt-border-radius-sm) 0;
+            }
+            
+            :host([position="SIDEBAR"]) .nav-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            
+            :host([position="SIDEBAR"]) .nav-icon:empty {
+                display: none;
+            }
+            
+            :host([position="SIDEBAR"]) .nav-title {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            /* Section headers for future use */
+            :host([position="SIDEBAR"]) .nav-section {
+                padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-bold);
+                color: var(--jt-text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-top: var(--jt-spacing-md);
+            }
+            
+            :host([position="SIDEBAR"]) .nav-section:first-child {
+                margin-top: 0;
+            }
+            
+            /* TOP_IN_MAIN Navigation Styles (placeholder for future) */
+            :host([position="TOP_IN_MAIN"]) .navigation-container {
+                display: flex;
+                flex-direction: row;
+                gap: var(--jt-spacing-md);
+                padding: var(--jt-spacing-md) 0;
+                border-bottom: 1px solid var(--jt-border-color);
+            }
+            
+            :host([position="TOP_IN_MAIN"]) .nav-item {
+                /* Future implementation */
+            }
+        `;
+        
+        static properties = {
+            componentKey: {type: String, attribute: 'component-key'},
+            pages: {type: Array},
+            currentPage: {type: Object, attribute: 'current-page'},
+            position: {type: String}
+        };
+        
+        constructor() {
+            super();
+            this.pages = [];
+            this.currentPage = null;
+            this.position = 'SIDEBAR';
+            
+            // Handle browser back/forward
+            this.handlePopState = this.handlePopState.bind(this);
+        }
+        
+        connectedCallback() {
+            super.connectedCallback();
+            window.addEventListener('popstate', this.handlePopState);
+            // No need to sync path on load - backend already has correct URL from initial path_update
+        }
+        
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            window.removeEventListener('popstate', this.handlePopState);
+        }
+        
+        firstUpdated() {
+            // Update URL to match current page if needed
+            if (this.currentPage && this.position !== 'HIDDEN') {
+                this.updateURL(this.currentPage, false);
+            }
+        }
+        
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // When current page changes externally, update URL
+            if (changedProperties.has('currentPage') && this.currentPage && this.position !== 'HIDDEN') {
+                this.updateURL(this.currentPage, false);
+            }
+        }
+        
+        handlePopState(event) {
+            // Browser back/forward pressed - send path_update to backend
+            window.jeamlit.sendPathUpdate();
+        }
+        
+        syncWithURL() {
+            const path = window.location.pathname;
+            
+            if (path) {
+                // Find page by URL
+                const page = this.pages.find(p => p.url === path);
+                if (page) {
+                    this.navigateToPage(page, false);
+                }
+            }
+        }
+        
+        updateURL(page, addToHistory = true) {
+            if (this.position === 'HIDDEN') return;
+            
+            const newPath = page.url;
+            const currentPath = window.location.pathname;
+            
+            if (newPath !== currentPath) {
+                if (addToHistory) {
+                    window.history.pushState({page: page.url}, '', newPath);
+                } else {
+                    window.history.replaceState({page: page.url}, '', newPath);
+                }
+                
+                // Update document title if available
+                if (page.title) {
+                    document.title = page.title;
+                }
+            }
+        }
+        
+        handleNavClick(page, event) {
+            event.preventDefault();
+            this.updateURL(page, true);
+            window.jeamlit.sendPathUpdate();
+        }
+        
+        navigateToPage(page, updateHistory = true) {
+            if (this.position !== 'HIDDEN') {
+                this.updateURL(page, updateHistory);
+            }
+            // Emit the page object as the new value
+            window.jeamlit.sendComponentUpdate(this.componentKey, page);
+        }
+        
+        isActivePage(page) {
+            return this.currentPage && 
+                   this.currentPage.pageApp === page.pageApp &&
+                   this.currentPage.url === page.url;
+        }
+        
+        renderIcon(icon) {
+            if (!icon) return '';
+            
+            // Check if it's a material icon (single word) or emoji
+            if (icon && !icon.includes(' ') && icon.length > 1) {
+                // Material icon
+                return html`<span class="nav-icon material-symbols-outlined">${icon}</span>`;
+            } else if (icon) {
+                // Emoji or other text
+                return html`<span class="nav-icon">${icon}</span>`;
+            }
+            
+            return '';
+        }
+        
+        renderSidebarNavigation() {
+            // Group pages by section for future use
+            const ungroupedPages = this.pages.filter(p => !p.section || p.section.length === 0);
+            const groupedPages = this.pages.filter(p => p.section && p.section.length > 0);
+            
+            // For now, just render all pages flat (sections will be implemented later)
+            return html`
+                <nav class="navigation-container">
+                    ${this.pages.map(page => html`
+                        <a class="nav-item ${this.isActivePage(page) ? 'active' : ''}"
+                           href="${page.url}"
+                           @click="${(e) => this.handleNavClick(page, e)}">
+                            ${this.renderIcon(page.icon)}
+                            <span class="nav-title">${page.title}</span>
+                        </a>
+                    `)}
+                </nav>
+            `;
+        }
+        
+        render() {
+            // Don't render anything for HIDDEN position
+            if (this.position === 'HIDDEN') {
+                return html``;
+            }
+            
+            // Render based on position
+            if (this.position === 'SIDEBAR') {
+                return this.renderSidebarNavigation();
+            }
+            
+            // TOP_IN_MAIN not implemented yet
+            if (this.position === 'TOP_IN_MAIN') {
+                return html`<div class="navigation-container">Navigation in main container coming soon</div>`;
+            }
+            
+            return html``;
+        }
+    }
+    
+    customElements.define('jt-navigation', JtNavigation);
+</script>

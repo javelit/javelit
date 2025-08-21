@@ -56,7 +56,40 @@ public class CompilationErrorE2ETest {
                 """;
 
         PlaywrightUtils.runInBrowser(invalidApp, page ->
+                // Verify app loads correctly first
+                assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
+    }
+
+    @Test
+    void testFileDeletionErrorMessage() {
+        // Create a valid app
+        final @Language("java") String validApp = """
+                import tech.catheu.jeamlit.core.Jt;
+                
+                public class TestApp {
+                    public static void main(String[] args) {
+                        Jt.title("Test App").use();
+                        Jt.text("This app is running.").use();
+                    }
+                }
+                """;
+
+        final Path appFile = JeamlitTestHelper.writeTestApp(validApp);
+
+        PlaywrightUtils.runInBrowser(appFile, page -> {
             // Verify app loads correctly first
-            assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
+            assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("This app is running.")).isVisible();
+
+            // Delete the app file
+            try {
+                Files.delete(appFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Verify error message appears
+            assertThat(page.getByText("App file was deleted.")).isVisible(WAIT_1_SEC_MAX);
+        });
     }
 }

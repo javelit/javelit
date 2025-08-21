@@ -247,7 +247,7 @@
             setTimeout(() => ripple.remove(), 600);
 
             // Emit button click
-            window.jeamlit.emit(this.componentKey, true);
+            window.jeamlit.sendComponentUpdate(this.componentKey, true);
         }
 
         render() {

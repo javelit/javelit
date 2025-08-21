@@ -79,10 +79,6 @@ public final class StateManager {
     private StateManager() {
     }
 
-    private static InternalSessionState getSession(final String sessionId) {
-        return SESSIONS.get(sessionId);
-    }
-
     protected static InternalSessionState getCurrentSession() {
         final String currentSessionId = CURRENT_EXECUTION_IN_THREAD.get().sessionId;
         if (currentSessionId == null) {
@@ -101,7 +97,7 @@ public final class StateManager {
      */
     protected static boolean handleComponentUpdate(final String sessionId, final String componentKey, final Object updatedValue) {
         // find the component and its container
-        final InternalSessionState session = getSession(sessionId);
+        final InternalSessionState session = SESSIONS.get(sessionId);
         checkState(session != null, "No session with id %s. Implementation error ?", sessionId);
         final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
         checkState(lastExecution != null, "Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
@@ -172,18 +168,12 @@ public final class StateManager {
     /// - run the user app - it will call addComponent (done via Jt methods)
     /// - endExecution
     protected static void beginExecution(final String sessionId) {
-        if (CURRENT_EXECUTION_IN_THREAD.get() != null) {
-            throw new RuntimeException(
+        checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                     "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
-        }
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
 
-        if (!SESSIONS.containsKey(sessionId)) {
-            SESSIONS.put(sessionId, new InternalSessionState());
-        }
-
         // run callback before everything else
-        final InternalSessionState internalSessionState = SESSIONS.get(sessionId);
+        final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
         final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
         if (callbackComponentKey != null) {
             final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId)
@@ -209,10 +199,7 @@ public final class StateManager {
     /// Return if the component was added successfully. Else throw.
     protected static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer container) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
-        if (currentExecution == null) {
-            throw new IllegalStateException(
-                    "No active execution context. Please reach out to support.");
-        }
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
 
         if (currentExecution.containerToComponents.values().stream().anyMatch(components -> components.containsKey(component.getKey()))) {
             // a component with the same id was already registered while running the app top to bottom
@@ -313,12 +300,9 @@ public final class StateManager {
     /// - beginExecution
     /// - run the user app - it will call addComponent (done via Jt methods)
     /// - endExecution
-    protected static void endExecution() {
+    static void endExecution() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
-        if (currentExecution == null) {
-            throw new IllegalStateException(
-                    "No active execution context. Please reach out to support.");
-        }
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
         final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
         // empty containers that did not appear in the current execution
         // clean up the end of containers that had their number of components decrease - can happen if no clear is triggered, eg if only a statement is removed
@@ -386,6 +370,20 @@ public final class StateManager {
 
         LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
         CURRENT_EXECUTION_IN_THREAD.remove();
+    }
+
+    static void setUrlContext(final @Nonnull String sessionId, final @Nonnull InternalSessionState.UrlContext urlContext) {
+        final InternalSessionState session = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
+        session.setUrlContext(urlContext);
+        session.getComponentsState().remove(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
+    }
+
+    static @Nonnull InternalSessionState.UrlContext getUrlContext() {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
+        final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
+        checkState(session != null, "No active session. Please reach out to support.");
+        return session.getUrlContext();
     }
 
     private static class NoOpRenderServer implements RenderServer {

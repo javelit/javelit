@@ -147,7 +147,7 @@ public final class ButtonComponent extends JtComponent<Boolean> {
   }
 
   @Override
-  public void beforeUse(@NotNull JtContainer container) {
+  protected void beforeUse(@NotNull JtContainer container) {
     final String parentFormComponentKey = container.getParentFormComponentKey();
     checkArgument(parentFormComponentKey == null,
                   "Attempting to create a button inside a form. %s. A button cannot be added to a form. Please use a form submit button instead with Jt.formSubmitButton.",

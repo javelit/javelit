@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +34,8 @@ import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
+import tech.catheu.jeamlit.components.multipage.JtPage;
+import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.components.status.ErrorComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
@@ -51,8 +52,6 @@ import tech.catheu.jeamlit.datastructure.TypedMap;
  * Perform a deep copy with Jt.deepCopy(someObject).
  */
 public final class Jt {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static TypedMap sessionState() {
         final InternalSessionState session = StateManager.getCurrentSession();
@@ -74,6 +73,15 @@ public final class Jt {
         return StateManager.getCache();
     }
 
+    public static String urlPath() {
+        return StateManager.getUrlContext().currentPath();
+    }
+
+    // TODO consider adding a TypedMap interface + getOne to unwrap the list
+    public static Map<String, List<String>> urlQueryParameters() {
+        return StateManager.getUrlContext().queryParameters();
+    }
+
     /**
      * Slow deep copy utility: serialize then deserialize json.
      * Made available to be able to implement the behaviour of st.cache_data that does a copy on read.
@@ -84,14 +92,10 @@ public final class Jt {
      */
     public static <T> T deepCopy(final T original, final TypeReference<T> typeRef) {
         try {
-            return OBJECT_MAPPER.readValue(OBJECT_MAPPER.writeValueAsBytes(original), typeRef);
+            return Shared.OBJECT_MAPPER.readValue(Shared.OBJECT_MAPPER.writeValueAsBytes(original), typeRef);
         } catch (Exception e) {
             throw new RuntimeException("Deep copy failed", e);
         }
-    }
-
-    public static JtContainer sidebar() {
-        return JtContainer.SIDEBAR;
     }
 
     // syntactic sugar for all components - 1 method per component
@@ -162,6 +166,14 @@ public final class Jt {
 
     public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label, final Class<T> valueClass) {
         return new NumberInputComponent.Builder<>(label, valueClass);
+    }
+
+    public static JtPage.Builder page(final @Nonnull Class<?> pageApp) {
+        return new JtPage.Builder(pageApp);
+    }
+
+    public static NavigationComponent.Builder navigation(final JtPage.Builder... pages) {
+        return new NavigationComponent.Builder(pages);
     }
 
     private Jt() {

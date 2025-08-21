@@ -30,8 +30,8 @@ public final class JtContainer implements JtComponent.NotAState {
 
     public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    protected static final JtContainer MAIN = new JtContainer("main", null, false, false);
-    protected static final JtContainer SIDEBAR = new JtContainer("sidebar", null, false, false);
+    public static final JtContainer MAIN = new JtContainer("main", null, false, false);
+    public static final JtContainer SIDEBAR = new JtContainer("sidebar", null, false, false);
 
     private final @Nonnull List<@NotNull String> path;
     private final @Nullable JtContainer parent;
