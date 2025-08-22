@@ -80,6 +80,17 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("About Page")).not().isVisible();
             // Verify persistent footer is still visible
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            
+            // Test root path "/" redirects to home page
+            page.navigate(page.url().replace("/invalid/page", "/"));
+            // Verify home page loads when navigating to root
+            assertThat(page.getByText("Home Page")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page")).isVisible();
+            // Verify URL redirected to /HomePage
+            String rootUrl = page.url();
+            assertTrue(rootUrl.endsWith("/HomePage"));
+            // Verify persistent footer is still visible
+            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
         });
     }
     
