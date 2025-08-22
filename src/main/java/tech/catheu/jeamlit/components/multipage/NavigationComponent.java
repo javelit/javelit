@@ -31,6 +31,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
+import tech.catheu.jeamlit.core.Jt;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 import tech.catheu.jeamlit.core.JtContainer;
@@ -47,6 +48,13 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     protected final List<JtPage> pages;
     protected final JtPage home;
     protected NavigationPosition position;
+    protected final JtPage pageNotFound = JtPage.builder(NotFoundPage.class).title("Page not found").build();
+
+    public static class NotFoundPage {
+        public static void main(String[] args) {
+            Jt.title("Page Not Found.");
+        }
+    }
 
     private final Map<String, Class<?>> classNameToClass = new HashMap<>();
 
@@ -68,7 +76,8 @@ public final class NavigationComponent extends JtComponent<JtPage> {
               null, // set later in this constructor
               null,
               JtContainer.SIDEBAR);
-        final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome)
+        final List<JtPage.Builder> homePages = builder.pageBuilders.stream()
+                .filter(JtPage.Builder::isHome)
                 .toList();
         if (homePages.isEmpty()) {
             builder.pageBuilders.getFirst().home();
@@ -83,9 +92,10 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         }
         this.home = homePages.getFirst().build();
         builder.pageBuilders.forEach(e -> classNameToClass.put(e.page().getName(), e.page()));
-        this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
+        this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build)
+                .collect(Collectors.toList());
         this.position = builder.position;
-        
+
         // Set initial page based on current URL, not always home
         this.currentValue = determineInitialPage();
     }
@@ -96,16 +106,16 @@ public final class NavigationComponent extends JtComponent<JtPage> {
      */
     private JtPage determineInitialPage() {
         final @Nonnull String currentPath = this.getCurrentPath();
-        if (!currentPath.isBlank()) {
-            for (final JtPage page : pages) {
-                if (page.url().equals(currentPath)) {
-                    return page;
-                }
+        if (currentPath.isBlank() || "/".equals(currentPath)) {
+            return home;
+        }
+        for (final JtPage page : pages) {
+            if (page.url().equals(currentPath)) {
+                return page;
             }
         }
-
-        // Fall back to home page if no URL match
-        return home;
+        // 404
+        return null;
     }
 
 
@@ -177,9 +187,16 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
     @Override
     protected void afterUse(@NotNull JtContainer container) {
-        final Class<?> clazz = classNameToClass.get(currentValue.fullyQualifiedName());
-        checkArgument(clazz != null, "Unknown page: %s. Please reach out to support", currentValue.fullyQualifiedName());
-        callMainMethod(clazz);
+        if (currentValue != null) {
+            final Class<?> clazz = classNameToClass.get(currentValue.fullyQualifiedName());
+            checkArgument(clazz != null,
+                          "Unknown page: %s. Please reach out to support",
+                          currentValue.fullyQualifiedName());
+            callMainMethod(clazz);
+        } else {
+            // TODO can be improved and made customizable later
+            Jt.title("Page Not Found.").use();
+        }
     }
 
     private static void callMainMethod(final @Nonnull Class<?> clazz) {
@@ -195,24 +212,23 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             throw new PageRunException(e);
         }
     }
-    
-    
 
-      public String getPagesJson() {
-          try {
-              return Shared.OBJECT_MAPPER.writeValueAsString(pages);
-          } catch (Exception e) {
-              throw new RuntimeException("Failed to serialize pages", e);
-          }
-      }
 
-      public String getCurrentValueJson() {
-          try {
-              return Shared.OBJECT_MAPPER.writeValueAsString(currentValue);
-          } catch (Exception e) {
-              throw new RuntimeException("Failed to serialize currentValue", e);
-          }
-      }
+    public String getPagesJson() {
+        try {
+            return Shared.OBJECT_MAPPER.writeValueAsString(pages);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize pages", e);
+        }
+    }
+
+    public String getCurrentValueJson() {
+        try {
+            return Shared.OBJECT_MAPPER.writeValueAsString(currentValue);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize currentValue", e);
+        }
+    }
 
 
 }

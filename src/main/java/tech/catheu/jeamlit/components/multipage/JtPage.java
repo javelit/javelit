@@ -50,10 +50,10 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             return this;
         }
 
-        public Builder url(final @Nonnull String url) {
-            String cleanedUrl = url.trim();
+        public Builder urlPath(final @Nonnull String urlPath) {
+            String cleanedUrl = urlPath.trim();
             if (!cleanedUrl.startsWith("/")) {
-                cleanedUrl = "/" + url;
+                cleanedUrl = "/" + urlPath;
             }
             if (cleanedUrl.endsWith("/")) {
                 cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length() - 1);
@@ -63,6 +63,7 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             return this;
         }
 
+        ///  make the page the default homepage
         public Builder home() {
             this.isHome = true;
             return this;
