@@ -21,7 +21,7 @@ public class MultiPageApp {
         // Navigation with multiple pages
         Jt.navigation(
             Jt.page(HomePage.class).title("Home").icon("🏠").home(),
-            Jt.page(SettingsPage.class).title("Settings").icon("⚙️"),
+            Jt.page(SettingsPage.class).title("Settings").icon("⚙️").urlPath("/config/settings"),
             Jt.page(AboutPage.class).title("About").icon("ℹ️")
         ).use();
         
