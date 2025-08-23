@@ -71,7 +71,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     }
 
     private NavigationComponent(final Builder builder) {
-        super("THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT",
+        super(UNIQUE_NAVIGATION_COMPONENT_KEY,
               null, // set later in this constructor
               null,
               builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
