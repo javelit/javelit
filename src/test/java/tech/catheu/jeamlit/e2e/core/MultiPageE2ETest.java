@@ -27,7 +27,10 @@ import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tech.catheu.jeamlit.e2e.helpers.OsUtils.copyResourceDirectory;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT_C;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
 /**
  * End-to-end tests for multipage navigation support.
@@ -43,54 +46,54 @@ public class MultiPageE2ETest {
         
         PlaywrightUtils.runInBrowser(mainFile, page -> {
             // Verify initial home page loads
-            assertThat(page.getByText("Home Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Welcome to the home page")).isVisible();
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify persistent footer is always visible
-            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate directly to Settings page using custom URL path
             page.navigate(page.url().replace("/HomePage", "/config/settings"));
             // Verify Settings page content is visible
-            assertThat(page.getByText("Settings Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Configure your settings here")).isVisible();
+            assertThat(page.getByText("Settings Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify URL uses custom path
             assertTrue(page.url().endsWith("/config/settings"));
             // Verify Home page content is NOT visible
-            assertThat(page.getByText("Welcome to the home page")).not().isVisible();
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             // Verify persistent footer is always visible
-            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate directly to About page
             page.navigate(page.url().replace("/config/settings", "/AboutPage"));
             // Verify About page content is visible
-            assertThat(page.getByText("About Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Learn more about this app")).isVisible();
+            assertThat(page.getByText("About Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Learn more about this app", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify Settings page content is NOT visible
-            assertThat(page.getByText("Configure your settings here")).not().isVisible();
+            assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             // Verify persistent footer is always visible
-            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Test page not found - navigate to an invalid URL
             page.navigate(page.url().replace("/AboutPage", "/invalid/page"));
             // Verify page not found message appears
-            assertThat(page.getByText("Page Not Found.")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Page Not Found.", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify other page content is NOT visible
-            assertThat(page.getByText("Settings Page")).not().isVisible();
-            assertThat(page.getByText("Home Page")).not().isVisible();
-            assertThat(page.getByText("About Page")).not().isVisible();
+            assertThat(page.getByText("Settings Page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
+            assertThat(page.getByText("About Page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             // Verify persistent footer is still visible
-            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Test root path "/" redirects to home page
             page.navigate(page.url().replace("/invalid/page", "/"));
             // Verify home page loads when navigating to root
-            assertThat(page.getByText("Home Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Welcome to the home page")).isVisible();
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible();
             // Verify URL redirected to /HomePage
             String rootUrl = page.url();
             assertTrue(rootUrl.endsWith("/HomePage"));
             // Verify persistent footer is still visible
-            assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible();
+            assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
         });
     }
     
@@ -102,8 +105,8 @@ public class MultiPageE2ETest {
         
         PlaywrightUtils.runInBrowser(mainFile, page -> {
             // Verify initial home page loads
-            assertThat(page.getByText("Home Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Welcome to the home page")).isVisible();
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Verify initial URL ends with /HomePage
             String initialUrl = page.url();
@@ -115,10 +118,10 @@ public class MultiPageE2ETest {
             String settingsUrl = page.url();
             assertTrue(settingsUrl.endsWith("/config/settings"));
             // Verify Settings page content appears
-            assertThat(page.getByText("Settings Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Configure your settings here")).isVisible();
+            assertThat(page.getByText("Settings Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify Home page content is hidden
-            assertThat(page.getByText("Welcome to the home page")).not().isVisible();
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             
             // Click on About in the sidebar
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).click();
@@ -126,10 +129,10 @@ public class MultiPageE2ETest {
             String aboutUrl = page.url();
             assertTrue(aboutUrl.endsWith("/AboutPage"));
             // Verify About page content appears
-            assertThat(page.getByText("About Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Learn more about this app")).isVisible();
+            assertThat(page.getByText("About Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Learn more about this app", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify Settings page content is hidden
-            assertThat(page.getByText("Configure your settings here")).not().isVisible();
+            assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             
             // Click back to Home
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Home")).click();
@@ -137,8 +140,8 @@ public class MultiPageE2ETest {
             String homeUrl = page.url();
             assertTrue(homeUrl.endsWith("/HomePage"));
             // Verify Home page content reappears
-            assertThat(page.getByText("Home Page")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Welcome to the home page")).isVisible();
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
         });
     }
     
@@ -152,35 +155,75 @@ public class MultiPageE2ETest {
             // Verify footer is visible on home page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar is visible
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible();
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate to Settings page
             page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click();
             // Verify footer persists on Settings page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar persists
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible();
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate to About page
             page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click();
             // Verify footer persists on About page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar persists
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible();
-            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible();
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Home"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings"))).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible(WAIT_1_SEC_MAX);
             
             // Verify the active page highlighting changes
             // The Settings link should have the 'active' class when on Settings page
             page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click();
-            assertThat(page.locator(".nav-item.active")).hasText("Settings");
+            assertThat(page.locator(".nav-item.active")).containsText("Settings", WAIT_1_SEC_MAX_TEXT_C);
             // The About link should have the 'active' class when on About page  
             page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click();
-            assertThat(page.locator(".nav-item.active")).hasText("About");
+            assertThat(page.locator(".nav-item.active")).containsText("About", WAIT_1_SEC_MAX_TEXT_C);
+        });
+    }
+    
+    @Test
+    void testHiddenNavigation() throws IOException {
+        final Path tempDir = Files.createTempDirectory("jeamlit-hidden-nav-test-");
+        copyResourceDirectory("multipage-test", tempDir);
+        final Path mainFile = tempDir.resolve("HiddenNavApp.java");
+        
+        PlaywrightUtils.runInBrowser(mainFile, page -> {
+            // Verify home page loads
+            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            // Verify navigation sidebar is NOT visible
+            assertThat(page.locator(".nav-item")).not().isVisible(WAIT_50_MS_MAX);
+            assertThat(page.locator(".navigation-container")).not().isVisible(WAIT_50_MS_MAX);
+            // Verify app content is still visible
+            assertThat(page.getByText("App with hidden navigation")).isVisible(WAIT_1_SEC_MAX);
+
+            // Verify initial URL ends with /HomePage
+            String initialUrl = page.url();
+            assertTrue(initialUrl.endsWith("/HomePage"));
+
+            // Verify direct URL navigation still works
+            page.navigate(page.url().replace("/HomePage", "/SettingsPage"));
+            // Verify Settings page loads via direct URL
+            assertThat(page.getByText("Settings Page")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Configure your settings here")).isVisible(WAIT_1_SEC_MAX);
+            // Verify navigation is still hidden on Settings page
+            assertThat(page.locator(".nav-item")).not().isVisible(WAIT_50_MS_MAX);
+
+            // Navigate to About page directly
+            page.navigate(page.url().replace("/SettingsPage", "/AboutPage"));
+            // Verify About page loads
+            assertThat(page.getByText("About Page")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Learn more about this app")).isVisible(WAIT_1_SEC_MAX);
+            // Verify navigation remains hidden on About page
+            assertThat(page.locator(".nav-item")).not().isVisible(WAIT_50_MS_MAX);
+            // Verify app content is still visible on all pages
+            assertThat(page.getByText("App with hidden navigation")).isVisible(WAIT_1_SEC_MAX);
         });
     }
 }

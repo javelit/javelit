@@ -31,6 +31,13 @@ public final class PlaywrightUtils {
     public static final LocatorAssertions.IsVisibleOptions WAIT_100_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(100);
     public static final LocatorAssertions.IsVisibleOptions WAIT_50_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(50);
     public static final LocatorAssertions.IsVisibleOptions WAIT_10_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(10);
+
+    public static final LocatorAssertions.HasTextOptions WAIT_1_SEC_MAX_TEXT = new LocatorAssertions.HasTextOptions().setTimeout(1000);
+    public static final LocatorAssertions.ContainsTextOptions WAIT_1_SEC_MAX_TEXT_C = new LocatorAssertions.ContainsTextOptions().setTimeout(1000);
+
+    public static final Page.GetByTextOptions EXACT_MATCH = new Page.GetByTextOptions().setExact(true);
+
+
     public static final BrowserType.LaunchOptions HEADLESS = new BrowserType.LaunchOptions().setHeadless(true);
     @SuppressWarnings("unused") // used when editing tests
     public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);

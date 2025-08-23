@@ -34,13 +34,13 @@ public class QueryParameterE2ETest {
                 
                 public class TestApp {
                     public static void main(String[] args) {
-                        var params = Jt.queryParameters();
+                        var params = Jt.urlQueryParameters();
                         Jt.title("Query Parameter Test").use();
                         if (params.containsKey("name")) {
-                            Jt.text("Name: " + params.get("name").get(0)).use();
+                            Jt.text("Name: " + params.get("name").getFirst()).use();
                         }
                         if (params.containsKey("id")) {
-                            Jt.text("ID: " + params.get("id").get(0)).use();
+                            Jt.text("ID: " + params.get("id").getFirst()).use();
                         }
                         if (params.isEmpty()) {
                             Jt.text("No query parameters").use();
@@ -58,7 +58,7 @@ public class QueryParameterE2ETest {
             
             // Verify query parameters are displayed
             assertThat(page.getByText("Name: Alice")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("ID: 456")).isVisible();
+            assertThat(page.getByText("ID: 456")).isVisible(WAIT_1_SEC_MAX);
         });
     }
 }

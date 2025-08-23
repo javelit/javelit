@@ -5,6 +5,8 @@ import pages.SettingsPage;
 import pages.TestQueryPage;
 import pages.UsersPage;
 import tech.catheu.jeamlit.core.Jt;
+import tech.catheu.jeamlit.core.JtContainer;
+import tech.catheu.jeamlit.components.multipage.*;
 
 public class MultiPageApp {
     public static void main(String[] args) throws InterruptedException {
@@ -25,7 +27,7 @@ public class MultiPageApp {
                     .icon("🔍 ")
                     .title("Query Parameters"),
             Jt.page(AnotherPage.class).title("Inner class page")
-        ).use(); //
+        ).use();
     }
 
     public static class AnotherPage {

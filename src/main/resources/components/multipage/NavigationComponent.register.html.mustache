@@ -163,7 +163,7 @@
         
         firstUpdated() {
             // Update URL to match current page if needed
-            if (this.currentPage && this.position !== 'HIDDEN') {
+            if (this.currentPage) {
                 this.updateURL(this.currentPage, false);
             }
         }
@@ -172,7 +172,7 @@
             super.updated(changedProperties);
             
             // When current page changes externally, update URL
-            if (changedProperties.has('currentPage') && this.currentPage && this.position !== 'HIDDEN') {
+            if (changedProperties.has('currentPage') && this.currentPage) {
                 this.updateURL(this.currentPage, false);
             }
         }
@@ -195,8 +195,6 @@
         }
         
         updateURL(page, addToHistory = true) {
-            if (this.position === 'HIDDEN') return;
-            
             const newPath = page.url;
             const currentPath = window.location.pathname;
             

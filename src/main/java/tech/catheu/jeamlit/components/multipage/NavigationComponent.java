@@ -48,7 +48,6 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     protected final List<JtPage> pages;
     protected final JtPage home;
     protected NavigationPosition position;
-    protected final JtPage pageNotFound = JtPage.builder(NotFoundPage.class).title("Page not found").build();
 
     public static class NotFoundPage {
         public static void main(String[] args) {
@@ -60,8 +59,8 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
     public enum NavigationPosition {
         SIDEBAR,
-        TOP_IN_MAIN,
-        HIDDEN
+        HIDDEN,
+        TOP
     }
 
     static {
@@ -75,7 +74,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         super("THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT",
               null, // set later in this constructor
               null,
-              JtContainer.SIDEBAR);
+              builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
         final List<JtPage.Builder> homePages = builder.pageBuilders.stream()
                 .filter(JtPage.Builder::isHome)
                 .toList();
@@ -176,7 +175,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         if (container == JtContainer.SIDEBAR) {
             position = NavigationPosition.SIDEBAR;
         } else if (container == JtContainer.MAIN) {
-            position = NavigationPosition.TOP_IN_MAIN;
+            position = NavigationPosition.TOP;
             throw new UnsupportedOperationException(
                     "Navigation component in the main container is not supported yet. Please reach out to support for more information.");
         } else {
@@ -195,6 +194,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             callMainMethod(clazz);
         } else {
             // TODO can be improved and made customizable later
+            // FIXME add a go home link
             Jt.title("Page Not Found.").use();
         }
     }

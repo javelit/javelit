@@ -16,12 +16,12 @@
 package tech.catheu.jeamlit.e2e.components.layout;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
@@ -61,10 +61,9 @@ public class TabsComponentE2ETest {
             // Wait for tabs to be visible
             assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
             // Check tab headers are visible
-            Page.GetByTextOptions exactTextMatch = new Page.GetByTextOptions().setExact(true);
-            assertThat(page.getByText("Tab 0", exactTextMatch)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Tab 1", exactTextMatch)).isVisible(WAIT_1_SEC_MAX);
-            final Locator tab2Header = page.getByText("Tab 2", exactTextMatch);
+            assertThat(page.getByText("Tab 0", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("Tab 1", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            final Locator tab2Header = page.getByText("Tab 2", EXACT_MATCH);
             assertThat(tab2Header).isVisible(WAIT_1_SEC_MAX);
             // Initially, Tab 1 content should be visible
             assertThat(page.getByText("Content of Tab 0")).isVisible(WAIT_1_SEC_MAX);
