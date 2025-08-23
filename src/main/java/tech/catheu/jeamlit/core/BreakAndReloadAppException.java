@@ -16,12 +16,14 @@
 package tech.catheu.jeamlit.core;
 
 
+import java.util.function.Consumer;
+
+import jakarta.annotation.Nullable;
 
 /**
  * Exception used as a control flow.
  * This exception should be thrown to request to break the current app run and restart it from the beginning.
- * For instance, Jt.switchPage changes the current urlPath then throws this exception.
- * A runner upstream is expected to catch this exception and behave accordingly.
+ * A function that takes in input the sessionId can be provided. It will be run after the current run is breaked, after StateManager.endExecution().
  * This exception should never be surfaced to users.
  *
  * Note: because this exception is used a control flow, it does not collect a stacktrace.
@@ -29,14 +31,15 @@ package tech.catheu.jeamlit.core;
  */
 class BreakAndReloadAppException extends RuntimeException {
 
-    protected final InternalSessionState.UrlContext urlContext;
+    // takes a sessionId and run - this is run after break
+    protected final Consumer<String> runAfterBreak;
 
-    BreakAndReloadAppException(InternalSessionState.UrlContext urlContext) {
+    BreakAndReloadAppException(final @Nullable Consumer<String> runAfterBreak) {
         super("Requesting internal break—and-reload operation. If this exception is not caught and surfaced in the app, please reach out to support.");
-        this.urlContext = urlContext;
+        this.runAfterBreak = runAfterBreak;
     }
 
-    // very slow operation not necessary here
+    // very slow operation that is not necessary here - override to do nothing
     @Override
     public synchronized Throwable fillInStackTrace() {
         return this;

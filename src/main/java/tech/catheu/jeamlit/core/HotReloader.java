@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.tools.Diagnostic;
@@ -183,17 +184,34 @@ class HotReloader {
             }
         }
 
+        boolean doRerun = false;
+        Consumer<String> runAfterBreak = null;
         try {
             mainMethod.get().invoke(null, new Object[]{new String[]{}});
         } catch (Exception e) {
             if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
             }
-            @Language("markdown") final String errorMessage = buildErrorMessage(e);
-            // Send error as a component usage - its lifecycle is managed like all other components
-            Jt.error(errorMessage).use();
+            if (e.getCause() instanceof BreakAndReloadAppException u) {
+                runAfterBreak = u.runAfterBreak;
+                doRerun = true;
+            } else if (e.getCause() != null && e.getCause().getCause() instanceof BreakAndReloadAppException u) {
+                runAfterBreak = u.runAfterBreak;
+                doRerun = true;
+            } else {
+                @Language("markdown") final String errorMessage = buildErrorMessage(e);
+                // Send error as a component usage - its lifecycle is managed like all other components
+                Jt.error(errorMessage).use();
+            }
         } finally {
             StateManager.endExecution();
+        }
+
+        if (doRerun) {
+            if (runAfterBreak != null) {
+                runAfterBreak.accept(sessionId);
+            }
+            runApp(sessionId);
         }
     }
 
