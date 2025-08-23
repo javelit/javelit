@@ -182,18 +182,6 @@
             window.jeamlit.sendPathUpdate();
         }
         
-        syncWithURL() {
-            const path = window.location.pathname;
-            
-            if (path) {
-                // Find page by URL
-                const page = this.pages.find(p => p.url === path);
-                if (page) {
-                    this.navigateToPage(page, false);
-                }
-            }
-        }
-        
         updateURL(page, addToHistory = true) {
             const newPath = page.url;
             const currentPath = window.location.pathname;
@@ -216,14 +204,6 @@
             event.preventDefault();
             this.updateURL(page, true);
             window.jeamlit.sendPathUpdate();
-        }
-        
-        navigateToPage(page, updateHistory = true) {
-            if (this.position !== 'HIDDEN') {
-                this.updateURL(page, updateHistory);
-            }
-            // Emit the page object as the new value
-            window.jeamlit.sendComponentUpdate(this.componentKey, page);
         }
         
         isActivePage(page) {
