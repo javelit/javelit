@@ -183,14 +183,14 @@
         }
         
         updateURL(page, addToHistory = true) {
-            const newPath = page.url;
+            const newPath = page.urlPath;
             const currentPath = window.location.pathname;
             
             if (newPath !== currentPath) {
                 if (addToHistory) {
-                    window.history.pushState({page: page.url}, '', newPath);
+                    window.history.pushState({page: page.urlPath}, '', newPath);
                 } else {
-                    window.history.replaceState({page: page.url}, '', newPath);
+                    window.history.replaceState({page: page.urlPath}, '', newPath);
                 }
                 
                 // Update document title if available
@@ -209,7 +209,7 @@
         isActivePage(page) {
             return this.currentPage && 
                    this.currentPage.pageApp === page.pageApp &&
-                   this.currentPage.url === page.url;
+                   this.currentPage.urlPath === page.urlPath;
         }
         
         renderIcon(icon) {
@@ -237,7 +237,7 @@
                 <nav class="navigation-container">
                     ${this.pages.map(page => html`
                         <a class="nav-item ${this.isActivePage(page) ? 'active' : ''}"
-                           href="${page.url}"
+                           href="${page.urlPath}"
                            @click="${(e) => this.handleNavClick(page, e)}">
                             ${this.renderIcon(page.icon)}
                             <span class="nav-title">${page.title}</span>

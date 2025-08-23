@@ -20,7 +20,7 @@ import java.util.List;
 import jakarta.annotation.Nonnull;
 
 public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, @Nonnull String icon,
-                     @Nonnull String url, boolean isHome,
+                     @Nonnull String urlPath, boolean isHome,
                      // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
                      List<String> section) {
 
@@ -32,7 +32,7 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
         private final @Nonnull Class<?> pageApp;
         private String title;
         private String icon;
-        private String url;
+        private String urlPath;
         private boolean isHome;
         private List<String> section;
 
@@ -58,7 +58,7 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             if (cleanedUrl.endsWith("/")) {
                 cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length() - 1);
             }
-            this.url = cleanedUrl;
+            this.urlPath = cleanedUrl;
 
             return this;
         }
@@ -84,10 +84,10 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             if (title == null) {
                 title = pageApp.getSimpleName();
             }
-            if (url == null) {
-                url = "/" + pageApp.getSimpleName();
+            if (urlPath == null) {
+                urlPath = "/" + pageApp.getSimpleName();
             }
-            return new JtPage(pageApp.getName(), title, icon, url, isHome, section);
+            return new JtPage(pageApp.getName(), title, icon, urlPath, isHome, section);
         }
 
         // used internally by the navigation component to modify some pages if necessary

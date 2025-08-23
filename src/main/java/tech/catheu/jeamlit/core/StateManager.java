@@ -28,8 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
+import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
+import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
 public final class StateManager {
@@ -396,5 +398,16 @@ public final class StateManager {
                     index,
                     sessionId);
         }
+    }
+
+    static NavigationComponent getNavigationComponent() {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        return (NavigationComponent) optional(currentExecution.containerToComponents.values().stream()
+                .filter(components -> components
+                        .containsKey(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY))
+                .findFirst()
+                         .orElse(null))
+                .map(m -> m.get(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY)).orElse(null);
+
     }
 }

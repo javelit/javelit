@@ -30,6 +30,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.Jt;
 import tech.catheu.jeamlit.core.JtComponent;
@@ -96,24 +97,34 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         this.position = builder.position;
 
         // Set initial page based on current URL, not always home
-        this.currentValue = determineInitialPage();
+        final String currentPath = this.getCurrentPath();
+        this.currentValue = getPageFor(currentPath);
     }
 
     /**
      * Determines the initial page based on current URL path.
      * Falls back to home page if no URL match is found.
      */
-    private JtPage determineInitialPage() {
-        final @Nonnull String currentPath = this.getCurrentPath();
-        if (currentPath.isBlank() || "/".equals(currentPath)) {
+    private JtPage getPageFor(final @Nonnull String urlPath) {
+        if (urlPath.isBlank() || "/".equals(urlPath)) {
             return home;
         }
         for (final JtPage page : pages) {
-            if (page.url().equals(currentPath)) {
+            if (page.urlPath().equals(urlPath)) {
                 return page;
             }
         }
         // 404
+        return null;
+    }
+
+    public @Nullable JtPage getPageFor(final @Nonnull Class<?> pageApp) {
+        for (final JtPage page : pages) {
+            if (page.fullyQualifiedName().equals(pageApp.getName())) {
+                return page;
+            }
+        }
+        // unknow app
         return null;
     }
 
@@ -229,6 +240,5 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             throw new RuntimeException("Failed to serialize currentValue", e);
         }
     }
-
 
 }

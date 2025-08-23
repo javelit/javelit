@@ -41,6 +41,8 @@ import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
 
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
 // main interface for developers - should only contain functions of the public API.
 
@@ -174,6 +176,17 @@ public final class Jt {
 
     public static NavigationComponent.Builder navigation(final JtPage.Builder... pages) {
         return new NavigationComponent.Builder(pages);
+    }
+
+    public static void switchPage(final @Nonnull Class<?> pageApp) {
+        // note: the design here is pretty hacky
+        final NavigationComponent nav = StateManager.getNavigationComponent();
+        checkState(nav != null, "No navigation component found in app. switchPage only works with multipage app. Make sure switchPage is called after Jt.navigation().[...].use().");
+        final JtPage newPage = nav.getPageFor(pageApp);
+        checkArgument(newPage != null, "Invalid page %s. This page is not registered in Jt.navigation().", pageApp.getName());
+        final InternalSessionState.UrlContext urlContext = new InternalSessionState
+                .UrlContext(newPage.urlPath(), Map.of());
+        throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
     }
 
     private Jt() {
