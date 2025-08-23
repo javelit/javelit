@@ -28,9 +28,12 @@ package tech.catheu.jeamlit.core;
  * Should not be part of the public API. May be removed for a non-exception-based control flow any time.
  */
 class BreakAndReloadAppException extends RuntimeException {
-    
-    BreakAndReloadAppException() {
+
+    protected final InternalSessionState.UrlContext urlContext;
+
+    BreakAndReloadAppException(InternalSessionState.UrlContext urlContext) {
         super("Requesting internal break—and-reload operation. If this exception is not caught and surfaced in the app, please reach out to support.");
+        this.urlContext = urlContext;
     }
 
     // very slow operation not necessary here

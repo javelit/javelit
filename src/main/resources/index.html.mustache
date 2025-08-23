@@ -333,17 +333,13 @@
                 if (!containerEl) {
                     throw new Error(`Nested container not found for path: ${container}. Implementation error. Please reach out to support.`);
                 }
-                // Find first mutation that requires clearing for this container
-                const firstClearMutation = mutations.find(m => m.clearBefore && m.index !== null);
 
-                if (firstClearMutation) {
-                    // CLEARING PATH: Clear from index and append all
-                    const clearFromIndex = firstClearMutation.index;
-                    while (containerEl.children.length > clearFromIndex) {
-                        containerEl.removeChild(containerEl.lastChild);
-                    }
-                }
                 mutations.forEach(mutation => {
+                    if (mutation.clearBefore && mutation.index !== null) {
+                        while (containerEl.children.length > mutation.index) {
+                            containerEl.removeChild(containerEl.lastChild);
+                        }
+                    }
                     // in the clearing case, it can happen that the element is null to trigger a full cleanup - so checking here but not below
                     if (mutation.element) {
                         if (mutation.index !== null && mutation.index < containerEl.children.length) {
