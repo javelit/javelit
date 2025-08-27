@@ -34,7 +34,11 @@ import tech.catheu.jeamlit.datastructure.TypedMap;
 import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
-public final class StateManager {
+// no api here should ever be exposed
+// users should use Jt
+// components developers should use JtContainer and JtComponent
+// it's ok to break methods and interfaces here as long as the ones above are not broken
+final class StateManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
 
@@ -400,7 +404,7 @@ public final class StateManager {
         }
     }
 
-    static NavigationComponent getNavigationComponent() {
+    static @Nullable NavigationComponent getNavigationComponent() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         return (NavigationComponent) optional(currentExecution.containerToComponents.values().stream()
                 .filter(components -> components

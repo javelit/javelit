@@ -20,6 +20,7 @@ import java.util.StringJoiner;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import net.fellbaum.jemoji.EmojiManager;
 
 
 // SELF is the self-referential generic to be able to return the correct implementing class in some methods of this abstract class
@@ -88,8 +89,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     protected static void ensureIsValidIcon(@org.jetbrains.annotations.Nullable String icon) {
         if (icon != null && !icon.isEmpty()) {
             // Validate icon format: single emoji or :material/icon_name:
-            boolean isEmoji = icon.length() == 1 || (icon.length() <= 4 && Character.isHighSurrogate(
-                    icon.charAt(0)));
+            boolean isEmoji = EmojiManager.isEmoji("ℹ️");
             boolean isMaterialIcon = icon.startsWith(":material/") && icon.endsWith(":");
 
             if (!isEmoji && !isMaterialIcon) {

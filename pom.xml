@@ -146,6 +146,13 @@
             <version>${flexmark.version}</version>
         </dependency>
 
+        <!-- emoji checks -->
+        <dependency>
+            <groupId>net.fellbaum</groupId>
+            <artifactId>jemoji</artifactId>
+            <version>1.7.4</version>
+        </dependency>
+
 
         <!-- testing dependencies -->
         <dependency>
@@ -215,32 +222,6 @@
                     <threadCount>8</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                 </configuration>
-            </plugin>
-
-            <!-- Build agent JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>agent-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>agent</classifier>
-                            <archive>
-                                <manifestEntries>
-                                    <Premain-Class>tech.catheu.jeamlit.core.JeamlitAgent</Premain-Class>
-                                    <Agent-Class>tech.catheu.jeamlit.core.JeamlitAgent</Agent-Class>
-                                    <Can-Redefine-Classes>true</Can-Redefine-Classes>
-                                    <Can-Retransform-Classes>true</Can-Retransform-Classes>
-                                </manifestEntries>
-                            </archive>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Main executable JAR -->

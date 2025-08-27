@@ -346,3 +346,48 @@ Pros:
     }
 
     This hybrid approach gives you the best of both worlds - clean, meaningful URLs with flexible parameter passing! 🎯
+
+
+
+We now need to implement page links.
+The streamlit reference is here:
+https://docs.streamlit.io/develop/api-reference/widgets/st.page_link
+
+if external link: no execution --> behaves like a normal <a> link, and the link is opened in a new tab
+if pageApp class Class<?> is passed --> when clicked, the component sends a window.jeamlit.sendPathUpdate message with the new path.
+
+For the page app case, the logic implementation uses a StateManager.getNavigationComponent()
+and NavigationCOmponent.getPageFor to get the link that corresponds to the page app class.
+
+In Java we cannot have the page argument of the builder String OR Class<?>
+So we will use the following instead:
+- appPage()
+- externalPage()
+in the builder, there will be one field for the external case and one for app page
+The builder will have 2 constructors:
+- PageLinkComponent.Builder(final @Nonnull Class<?> pageApp)
+- PageLinkComponent.Builder(final @NonNull String pageLink, final @NonNull String label) // label is mandatory for external pages. It is not for internal ones.
+
+The link can have an icon and a help, similar to the other components like the button.
+The link can be disabled.
+
+icon: An optional emoji or icon to display next to the button label. If icon is None (default), the icon is inferred from the StreamlitPage object or no icon is displayed. If icon is a string, the following options are valid:
+
+    A single-character emoji. For example, you can set icon="🚨" or icon="🔥". Emoji short codes are not supported.
+
+    An icon from the Material Symbols library (rounded style) in the format ":material/icon_name:" where "icon_name" is the name of the icon in snake case.
+
+    For example, icon=":material/thumb_up:" will display the Thumb Up icon. Find additional icons in the Material Symbols font library.
+
+help: A tooltip that gets displayed when the link is hovered over. If this is None (default), no tooltip is displayed. The tooltip can optionally contain Markdown.
+
+disabled: An optional boolean that disables the page link if set to True. The default is False.
+
+width: The width of the page-link button. This can be one of the following:
+    "content" (default): The width of the button matches the width of its content, but doesn't exceed the width of the parent container.
+    "stretch": The width of the button matches the width of the parent container.
+    An integer specifying the width in pixels: The button has a fixed width. If the specified width is greater than the width of the parent container, the width of the button matches the width of the parent container.
+
+In terms of style: if the link is a pageApp link and the current page matches the link page, it should look like it's selected and clicking on it should have no effect.
+You can find an example of this here: https://doc-page-link.streamlit.app/?utm_medium=oembed&
+click on the <a> inide the stPageLink

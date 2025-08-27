@@ -22,14 +22,25 @@ This file provides guidance to Claude Code when working with this repository.
 ```
 
 ### Running
-TODO
+To run Jeamlit applications, use the CLI:
+```bash
+./mvnw package -DskipTests         # Build JAR first
+java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
+```
 
 ### Testing
 ```bash
-./mvnw test                        # Run all tests
-./mvnw test -Dtest=TestClassName   # Run specific test
-./mvnw package -DskipTests         # Build without tests
+./mvnw test                            # Run all tests
+./mvnw test -Dtest=TestClassName       # Run specific test class
+./mvnw test -Dtest=TestClass#testMethod # Run specific test method
+./mvnw package -DskipTests             # Build without tests
 ```
+
+**IMPORTANT**: Do NOT use `java -cp target/classes ...` to test components. Use the proper CLI or write proper tests.
+
+### Manual Testing
+1. Build the JAR: `./mvnw package -DskipTests`
+2. Run examples: `java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/ExampleFile.java`
 
 ## Project Structure
 

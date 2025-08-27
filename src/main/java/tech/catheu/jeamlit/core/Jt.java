@@ -36,6 +36,7 @@ import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
 import tech.catheu.jeamlit.components.multipage.JtPage;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
+import tech.catheu.jeamlit.components.multipage.PageLinkComponent;
 import tech.catheu.jeamlit.components.status.ErrorComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
@@ -176,6 +177,14 @@ public final class Jt {
 
     public static NavigationComponent.Builder navigation(final JtPage.Builder... pages) {
         return new NavigationComponent.Builder(pages);
+    }
+
+    public static PageLinkComponent.Builder pageLink(final @Nonnull Class<?> pageClass) {
+        return new PageLinkComponent.Builder(pageClass);
+    }
+
+    public static PageLinkComponent.Builder pageLink(final @Nonnull String url, final @Language("markdown") @Nonnull String label) {
+        return new PageLinkComponent.Builder(url, label);
     }
 
     public static void switchPage(final @Nonnull Class<?> pageApp) {

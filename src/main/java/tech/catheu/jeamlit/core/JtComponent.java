@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
+import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 
 /**
  * Base class for all Jeamlit components.
@@ -216,11 +217,23 @@ public abstract class JtComponent<T> {
         return MarkdownUtils.markdownToHtml(markdown, removeWrap);
     }
 
-    protected final @Nonnull String getCurrentPath() {
+
+    //// StateManager wrappers
+    // the methods below are simply wrapping StateManager methods
+    // this is because the JtComponent class is part of the component developer API, and we will try to not break it
+    // StateManager is not part of the developer API and may get broken
+
+    protected static @Nonnull String getCurrentPath() {
         return StateManager.getUrlContext().currentPath();
     }
 
-    protected final @Nonnull Map<String, List<String>> getCurrentQueryParameters() {
+    protected static  @Nonnull Map<String, List<String>> getCurrentQueryParameters() {
         return StateManager.getUrlContext().queryParameters();
     }
+
+    protected static @Nullable NavigationComponent  getNavigationComponent() {
+        return StateManager.getNavigationComponent();
+    }
+
+    //// end of StateManager wrappers
 }
