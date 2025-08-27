@@ -3,6 +3,7 @@
 
 
 import java.util.List;import tech.catheu.jeamlit.components.layout.ColumnsComponent;import tech.catheu.jeamlit.core.Jt;
+import tech.catheu.jeamlit.core.JtContainer;
 
 public class MyApp {
 

@@ -43,14 +43,89 @@
             max-width: 768px;
             margin: 0 auto;
         }
-        .sidebar-layout {
+        .full-sidebar {
             display: block;
             width: 256px;
             flex-shrink: 0;
             background: var(--jt-bg-secondary);
+            position: relative;
+            transition: width var(--jt-transition-normal);
+            padding: var(--jt-spacing-md) var(--jt-spacing-xl);
         }
-        .sidebar-layout:empty {
-            display: none; /* Hidden by default */
+        
+        /* Hide entire sidebar when content is empty */
+        .full-sidebar:has(.sidebar-content:empty) {
+            display: none;
+        }
+        
+        /* Fallback for browsers without :has() support */
+        @supports not (selector(:has(*))) {
+            .sidebar-content:empty {
+                display: none;
+            }
+            .sidebar-content:empty + * {
+                display: none;
+            }
+        }
+        
+        /* Collapsed state */
+        .full-sidebar.collapsed {
+            width: 24px;
+            background-color: var(--jt-bg-primary);
+        }
+        
+        /* Sidebar tooling (chevron area) */
+        .sidebar-tooling {
+            display: flex;
+            justify-content: right;
+        }
+        
+        /* Collapse button */
+        .collapse-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: var(--jt-border-radius-lg);
+            color: var(--jt-text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all var(--jt-transition-fast);
+        }
+        
+        .collapse-btn:hover {
+            background: var(--jt-bg-tertiary);
+            color: var(--jt-text-primary);
+        }
+        
+        /* Hide chevron by default when sidebar is expanded */
+        .full-sidebar:not(.collapsed) .collapse-btn {
+            opacity: 0;
+            transition: opacity var(--jt-transition-fast);
+        }
+        
+        /* Show chevron on hover when sidebar is expanded */
+        .full-sidebar:not(.collapsed):hover .collapse-btn {
+            opacity: 1;
+        }
+        
+        /* Always show chevron when collapsed */
+        .full-sidebar.collapsed .collapse-btn {
+            opacity: 1;
+        }
+        
+        /* Rotate chevron when collapsed */
+        .full-sidebar.collapsed .collapse-btn .material-symbols-rounded {
+            transform: rotate(180deg);
+        }
+        
+        /* Hide content when collapsed, but keep tooling visible */
+        .full-sidebar.collapsed .sidebar-content {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
     {{ customHeaders }}
@@ -60,8 +135,16 @@
 </head>
 <body>
 <div id="app" class="app-wrapper">
-    <!-- make sure this stays empty with no spaces - it uses the :empty selector to hide if there is nothing inside -->
-    <div id="sidebar-container" class="layout-container sidebar-layout" data-container="sidebar"></div>
+    <!-- Sidebar with separated UI chrome and content -->
+    <div id="the-full-sidebar" class="full-sidebar">
+        <div id="sidebar-tooling" class="sidebar-tooling">
+                <button id="collapse-btn" class="collapse-btn" aria-label="Toggle sidebar">
+                    <span class="material-symbols-rounded">keyboard_double_arrow_left</span>
+                </button>
+        </div>
+        <!-- make sure this stays empty with no spaces - it uses the :empty selector to hide if there is nothing inside -->
+        <div id="sidebar-container" class="sidebar-content" data-container="sidebar"></div>
+    </div>
     <div id="main-container" class="layout-container main-layout" data-container="main">
         <p>Connecting to Jeamlit server...</p>
     </div>
@@ -84,7 +167,9 @@
 <script>
     const app = document.getElementById('app');
     const mainContainer = document.getElementById('main-container');
+    const fullSidebar = document.getElementById('the-full-sidebar');
     const sidebarContainer = document.getElementById('sidebar-container');
+    const collapseBtn = document.getElementById('collapse-btn');
     const connectionModal = document.getElementById('connection-modal');
     const compilationModal = document.getElementById('compilation-modal');
     const compilationCode = document.getElementById('compilation-code');
@@ -95,6 +180,26 @@
     // Connection management
     let ws = null;
     let connectionState = 'disconnected'; // 'connected', 'disconnected', 'reconnecting'
+
+    // Sidebar collapse state management
+    let sidebarCollapsed = localStorage.getItem('jeamlit-sidebar-collapsed') === 'true';
+
+    function initializeSidebar() {
+        if (sidebarCollapsed) {
+            fullSidebar.classList.add('collapsed');
+        }
+        
+        collapseBtn.addEventListener('click', toggleSidebarCollapse);
+    }
+
+    function toggleSidebarCollapse() {
+        sidebarCollapsed = !sidebarCollapsed;
+        
+        fullSidebar.classList.toggle('collapsed', sidebarCollapsed);
+        
+        // Store state in localStorage
+        localStorage.setItem('jeamlit-sidebar-collapsed', sidebarCollapsed.toString());
+    }
 
     window.jeamlit = {
         sendComponentUpdate: function(componentKey, value) {
@@ -192,7 +297,7 @@
     // Layout management
     const layoutContainers = new Map([
         ['main', mainContainer],
-        ['sidebar', sidebarContainer]
+        ['sidebar', sidebarContainer] // Backend content goes to the inner container
     ]);
 
     // DOM mutation batching
@@ -362,7 +467,8 @@
         compilationModal.show = true;
     }
 
-    // Initialize connection
+    // Initialize sidebar and connection
+    initializeSidebar();
     createWebSocketConnection();
 </script>
 </body>
