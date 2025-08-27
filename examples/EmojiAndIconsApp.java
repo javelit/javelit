@@ -1,6 +1,6 @@
 import tech.catheu.jeamlit.core.Jt;
 
-public class TestApp {
+public class EmojiAndIconsApp {
     public static void main(String[] args) {
         Jt.text("Icon Test Suite").use();
         

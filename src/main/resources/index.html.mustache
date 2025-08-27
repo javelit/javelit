@@ -23,31 +23,31 @@
         body {
             font-family: var(--jt-font-family);
             margin: 0;
-            padding: var(--jt-spacing-xl);
-            background-color: var(--jt-bg-secondary);
+            background-color: var(--jt-bg-primary);
             color: var(--jt-text-primary);
             line-height: var(--jt-line-height-normal);
         }
         .app-wrapper {
             display: flex;
-            max-width: 1200px;
             margin: 0 auto;
             gap: var(--jt-spacing-lg);
         }
         .layout-container {
             background: var(--jt-bg-primary);
             padding: var(--jt-spacing-xl);
-            border-radius: var(--jt-border-radius-lg);
-            box-shadow: var(--jt-shadow);
         }
         .main-layout {
             flex: 1;
             min-width: 0; /* Allow shrinking */
+            /* TODO make this configurable */
+            max-width: 768px;
+            margin: 0 auto;
         }
         .sidebar-layout {
             display: block;
-            width: 300px;
+            width: 256px;
             flex-shrink: 0;
+            background: var(--jt-bg-secondary);
         }
         .sidebar-layout:empty {
             display: none; /* Hidden by default */
