@@ -127,6 +127,34 @@
             opacity: 0;
             pointer-events: none;
         }
+        
+        /* Resize handle for dragging sidebar width */
+        .sidebar-resize-handle {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            bottom: 0;
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            z-index: 20;
+            transition: background-color var(--jt-transition-fast);
+        }
+        
+        .sidebar-resize-handle:hover {
+            background: var(--jt-border-color);
+        }
+        
+        /* Hide handle when sidebar is collapsed */
+        .full-sidebar.collapsed .sidebar-resize-handle {
+            display: none;
+        }
+        
+        /* Prevent text selection during resize */
+        body.resizing {
+            user-select: none;
+            cursor: col-resize;
+        }
     </style>
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
@@ -136,7 +164,7 @@
 <body>
 <div id="app" class="app-wrapper">
     <!-- Sidebar with separated UI chrome and content -->
-    <div id="the-full-sidebar" class="full-sidebar">
+    <div id="full-sidebar" class="full-sidebar">
         <div id="sidebar-tooling" class="sidebar-tooling">
                 <button id="collapse-btn" class="collapse-btn" aria-label="Toggle sidebar">
                     <span class="material-symbols-rounded">keyboard_double_arrow_left</span>
@@ -167,7 +195,7 @@
 <script>
     const app = document.getElementById('app');
     const mainContainer = document.getElementById('main-container');
-    const fullSidebar = document.getElementById('the-full-sidebar');
+    const fullSidebar = document.getElementById('full-sidebar');
     const sidebarContainer = document.getElementById('sidebar-container');
     const collapseBtn = document.getElementById('collapse-btn');
     const connectionModal = document.getElementById('connection-modal');
@@ -183,19 +211,134 @@
 
     // Sidebar collapse state management
     let sidebarCollapsed = localStorage.getItem('jeamlit-sidebar-collapsed') === 'true';
+    
+    // Sidebar resize state
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    let animationFrameId = null;
+    const MIN_SIDEBAR_WIDTH = 150;
+    const MAX_SIDEBAR_WIDTH = 500;
+    const DEFAULT_SIDEBAR_WIDTH = 256;
 
     function initializeSidebar() {
         if (sidebarCollapsed) {
             fullSidebar.classList.add('collapsed');
+        } else {
+            // Restore saved width if not collapsed
+            const savedWidth = localStorage.getItem('jeamlit-sidebar-width');
+            if (savedWidth) {
+                fullSidebar.style.width = savedWidth + 'px';
+            }
         }
         
         collapseBtn.addEventListener('click', toggleSidebarCollapse);
+        
+        // Enable resize functionality
+        enableSidebarResize();
+    }
+    
+    function enableSidebarResize() {
+        // Create resize handle
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'sidebar-resize-handle';
+        fullSidebar.appendChild(resizeHandle);
+        
+        // Mouse events
+        resizeHandle.addEventListener('mousedown', initResize);
+        
+        // Touch events for mobile
+        resizeHandle.addEventListener('touchstart', initResize, { passive: false });
+    }
+    
+    function initResize(e) {
+        if (sidebarCollapsed) return;
+        
+        isResizing = true;
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        startWidth = parseInt(getComputedStyle(fullSidebar).width, 10);
+        
+        // Disable transition during drag to prevent lag
+        fullSidebar.style.transition = 'none';
+        
+        document.body.classList.add('resizing');
+        
+        // Add listeners to document for drag/end
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('touchmove', doResize, { passive: false });
+        document.addEventListener('touchend', stopResize);
+        
+        e.preventDefault();
+    }
+    
+    function doResize(e) {
+        if (!isResizing) return;
+        
+        // Cancel previous frame if pending
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        
+        // Use requestAnimationFrame for smooth updates
+        animationFrameId = requestAnimationFrame(() => {
+            const currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const newWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, startWidth + currentX - startX));
+            
+            fullSidebar.style.width = newWidth + 'px';
+            animationFrameId = null;
+        });
+        
+        e.preventDefault();
+    }
+    
+    function stopResize(e) {
+        if (!isResizing) return;
+        
+        isResizing = false;
+        document.body.classList.remove('resizing');
+        
+        // Cancel any pending animation frame
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        
+        // Re-enable transition after drag
+        fullSidebar.style.transition = '';
+        
+        // Save width
+        if (!sidebarCollapsed) {
+            const currentWidth = fullSidebar.offsetWidth;
+            localStorage.setItem('jeamlit-sidebar-width', currentWidth);
+        }
+        
+        // Remove document listeners
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', stopResize);
+        document.removeEventListener('touchmove', doResize);
+        document.removeEventListener('touchend', stopResize);
     }
 
     function toggleSidebarCollapse() {
         sidebarCollapsed = !sidebarCollapsed;
         
-        fullSidebar.classList.toggle('collapsed', sidebarCollapsed);
+        if (sidebarCollapsed) {
+            // Save current width before collapsing
+            const currentWidth = fullSidebar.offsetWidth;
+            if (currentWidth > 24) {
+                localStorage.setItem('jeamlit-sidebar-expanded-width', currentWidth);
+            }
+            fullSidebar.classList.add('collapsed');
+            fullSidebar.style.width = '24px';
+        } else {
+            // Restore saved width when expanding
+            fullSidebar.classList.remove('collapsed');
+            const savedWidth = localStorage.getItem('jeamlit-sidebar-expanded-width') || 
+                              localStorage.getItem('jeamlit-sidebar-width') || 
+                              DEFAULT_SIDEBAR_WIDTH;
+            fullSidebar.style.width = savedWidth + 'px';
+        }
         
         // Store state in localStorage
         localStorage.setItem('jeamlit-sidebar-collapsed', sidebarCollapsed.toString());
