@@ -92,6 +92,15 @@
                 justify-content: center;
                 flex-shrink: 0;
             }
+
+            :host([position="SIDEBAR"]) .nav-icon.material {
+                font-family: 'Material Symbols Rounded';
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+
+            :host([position="SIDEBAR"]) .nav-icon.emoji-icon {
+                font-size: 18px;
+            }
             
             :host([position="SIDEBAR"]) .nav-icon:empty {
                 display: none;
@@ -211,17 +220,27 @@
                    this.currentPage.pageApp === page.pageApp &&
                    this.currentPage.urlPath === page.urlPath;
         }
+
+        isEmoji(str) {
+            return str && str.length <= 2 && /\p{Emoji}/u.test(str);
+        }
+
+        isMaterialIcon(str) {
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(1, -1);  // Remove leading and trailing colons
+        }
         
         renderIcon(icon) {
             if (!icon) return '';
             
-            // Check if it's a material icon (single word) or emoji
-            if (icon && !icon.includes(' ') && icon.length > 1) {
-                // Material icon
-                return html`<span class="nav-icon material-symbols-outlined">${icon}</span>`;
-            } else if (icon) {
-                // Emoji or other text
-                return html`<span class="nav-icon">${icon}</span>`;
+            if (this.isEmoji(icon)) {
+                return html`<span class="nav-icon emoji-icon">${icon}</span>`;
+            } else if (this.isMaterialIcon(icon)) {
+                return html`<span class="nav-icon material">${this.getMaterialIconName(icon)}</span>`;
             }
             
             return '';
