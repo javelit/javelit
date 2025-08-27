@@ -75,6 +75,14 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
             return this;
         }
 
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
+
         @Override
         public ExpanderComponent build() {
             if (JtContainer.RESERVED_PATHS.contains(this.key)) {

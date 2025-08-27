@@ -67,6 +67,14 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
+
         @Override
         public TextComponent build() {
             return new TextComponent(this);

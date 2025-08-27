@@ -90,6 +90,14 @@ public final class FormComponent extends JtComponent<JtContainer> {
             return this;
         }
 
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
+
         public Builder height(final @Nullable String height) {
             if (height != null && !"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {
                 throw new IllegalArgumentException(

@@ -117,9 +117,9 @@
 
             let iconElement = '';
             if (this.icon) {
-                if (this.icon.startsWith(':material/') && this.icon.endsWith(':')) {
-                    // Material icon format :material/icon_name:
-                    const iconName = this.icon.slice(10, -1).replace(/_/g, '_');
+                if (this.icon.startsWith(':') && this.icon.endsWith(':') && this.icon.length > 2) {
+                    // Material icon format :icon_name:
+                    const iconName = this.icon.slice(1, -1);
                     iconElement = html`<span class="error-icon material-icon">${iconName}</span>`;
                 } else if (this.icon.length <= 2) {
                     // Single emoji character

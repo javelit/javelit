@@ -176,19 +176,28 @@
             return str && str.length <= 2 && /\p{Emoji}/u.test(str);
         }
 
+        isMaterialIcon(str) {
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(1, -1);  // Remove leading and trailing colons
+        }
+
         getValidatedWidth() {
             if (!this.width) return '';
-            
+
             // Check for valid width values
             if (this.width === 'stretch' || this.width === 'content') {
                 return `width-${this.width}`;
             }
-            
+
             // Check for integer (pixels)
             if (/^\d+$/.test(this.width)) {
                 return 'width-custom';
             }
-            
+
             // Invalid width, default to empty
             return '';
         }
@@ -229,7 +238,9 @@
             const iconContent = this.icon ? (
                 this.isEmoji(this.icon) ?
                     html`<span class="emoji-icon">${this.icon}</span>` :
-                    html`<span class="icon">${this.icon}</span>`
+                    this.isMaterialIcon(this.icon) ?
+                        html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
+                        null
             ) : null;
 
             const widthClass = this.getValidatedWidth();

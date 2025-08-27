@@ -88,13 +88,13 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
     protected static void ensureIsValidIcon(@org.jetbrains.annotations.Nullable String icon) {
         if (icon != null && !icon.isEmpty()) {
-            // Validate icon format: single emoji or :material/icon_name:
+            // Validate icon format: single emoji or :icon_name:
             boolean isEmoji = EmojiManager.isEmoji("ℹ️");
-            boolean isMaterialIcon = icon.startsWith(":material/") && icon.endsWith(":");
+            boolean isMaterialIcon = icon.startsWith(":") && icon.endsWith(":") && icon.length() > 2;
 
             if (!isEmoji && !isMaterialIcon) {
                 throw new IllegalArgumentException(
-                        "icon must be a single emoji or Material Symbols in format ':material/icon_name:'. Got: " + icon);
+                        "icon must be a single emoji or Material Symbols in format ':icon_name:'. Got: " + icon);
             }
         }
     }

@@ -239,6 +239,15 @@
             return str && str.length <= 2 && /\p{Emoji}/u.test(str);
         }
 
+        isMaterialIcon(str) {
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(1, -1);  // Remove leading and trailing colons
+        }
+
         handleClick(e) {
             if (this.disabled) return;
 
@@ -273,7 +282,9 @@
             const iconContent = this.icon ? (
                     this.isEmoji(this.icon) ?
                             html`<span class="emoji-icon">${this.icon}</span>` :
-                            html`<span class="icon">${this.icon}</span>`
+                            this.isMaterialIcon(this.icon) ?
+                                html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
+                                null
             ) : null;
 
             const formattedLabel = this.formatText(this.label || '');

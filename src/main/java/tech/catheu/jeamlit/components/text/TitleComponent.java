@@ -78,6 +78,14 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
             this.width = width;
             return this;
         }
+
+        public Builder width(final int widthPixels) {
+            if (widthPixels < 0) {
+                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+            }
+            this.width = String.valueOf(widthPixels);
+            return this;
+        }
         
         @Override
         public TitleComponent build() {

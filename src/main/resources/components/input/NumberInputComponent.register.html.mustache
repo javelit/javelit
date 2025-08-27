@@ -285,12 +285,12 @@
         }
 
         isMaterialIcon(str) {
-            return str && str.startsWith(':material/') && str.endsWith(':');
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
         }
 
         getMaterialIconName(str) {
             if (!this.isMaterialIcon(str)) return '';
-            return str.slice(10, -1).replace(/_/g, '_');
+            return str.slice(1, -1);  // Remove leading and trailing colons
         }
 
         formatDisplayValue(rawValue) {

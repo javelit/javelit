@@ -85,21 +85,37 @@
 
             .input-wrapper {
                 position: relative;
-            }
-
-            .input-field {
-                width: 100%;
-                box-sizing: border-box;
-                padding-top: var(--jt-spacing-sm);
-                padding-left: var(--jt-spacing-lg);
-                padding-bottom: 1em;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
                 background-color: var(--jt-bg-input);
                 border: 1px solid var(--jt-bg-input);
                 border-radius: var(--jt-border-radius);
+                transition: border-color var(--jt-transition-fast), 
+                           box-shadow var(--jt-transition-fast);
+            }
+
+            .input-icon-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-left: var(--jt-spacing-md);
+                flex-shrink: 0;
+            }
+
+            .input-field {
+                flex: 1;
+                width: 100%;
+                box-sizing: border-box;
+                padding-top: var(--jt-spacing-sm);
+                padding-left: var(--jt-spacing-sm);
+                padding-right: var(--jt-spacing-sm);
+                padding-bottom: 1em;
+                background: transparent;
+                border: none;
                 font-family: var(--jt-font-family);
                 font-size: var(--jt-font-size-base);
                 color: var(--jt-text-primary);
-                transition: all var(--jt-transition-fast);
                 outline: none;
             }
 
@@ -108,7 +124,7 @@
                 opacity: 0.7;
             }
 
-            .input-field:focus {
+            .input-wrapper:has(.input-field:focus) {
                 border-color: var(--jt-theme-color);
                 box-shadow: 0 0 0 1px var(--jt-theme-color);
             }
@@ -116,12 +132,13 @@
             .input-field:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
+            }
+
+            .input-wrapper:has(.input-field:disabled) {
                 background-color: var(--jt-bg-secondary);
             }
 
             .input-icon {
-                position: absolute;
-                left: var(--jt-spacing-md);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -140,7 +157,7 @@
             }
 
             :host([has-icon]) .input-field {
-                padding-left: calc(var(--jt-spacing-md) * 3);
+                padding-left: var(--jt-spacing-sm);
             }
 
             .helper-text {
@@ -255,12 +272,12 @@
         }
 
         isMaterialIcon(str) {
-            return str && str.startsWith(':material/') && str.endsWith(':');
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
         }
 
         getMaterialIconName(str) {
             if (!this.isMaterialIcon(str)) return '';
-            return str.slice(10, -1).replace(/_/g, '_');
+            return str.slice(1, -1);  // Remove leading and trailing colons
         }
 
         handleInput(e) {
@@ -368,7 +385,11 @@
                     </div>
                     
                     <div class="input-wrapper">
-                        ${iconElement}
+                        ${iconElement ? html`
+                            <div class="input-icon-wrapper">
+                                ${iconElement}
+                            </div>
+                        ` : ''}
                         <input
                             class="input-field"
                             type="${this.type === 'password' ? 'password' : 'text'}"
