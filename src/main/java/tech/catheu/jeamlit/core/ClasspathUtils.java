@@ -84,8 +84,8 @@ final class ClasspathUtils {
                         "Found a pom.xml file. Trying to add maven dependencies to the classpath...");
                 final String mavenClasspath = computeMavenClasspath();
                 cp.append(File.pathSeparator).append(mavenClasspath);
-                LOG.info("Maven dependencies added to the classpath successfully: {}",
-                         mavenClasspath);
+                LOG.info("Maven dependencies added to the classpath successfully.");
+                LOG.debug("Added from maven: {}", mavenClasspath);
                 // assume maven classpath contains the jeamlit dependencies and even respect overrides
                 // NOTE: this is also the codepath that is reached when developing jeamlit
                 addJeamlitClasspath = false;
