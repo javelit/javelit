@@ -267,7 +267,7 @@ class HotReloader {
                                                   classpath,
                                                   // NOTE: reconsider this for a maven-backed project
                                                   "-sourcepath",
-                                                  javaFile.getParent().toString(),
+                                                  javaFile.toAbsolutePath().getParent().toString(),
                                                   "-proc:none");
                 this.classPathUrls = createClassPathUrls(classpath);
             }
