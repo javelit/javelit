@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +54,8 @@ final class ClasspathUtils {
 
     static {
         try {
-            DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod("collectBinaryDependencies");
+            DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod(
+                    "collectBinaryDependencies");
             DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -75,6 +77,7 @@ final class ClasspathUtils {
             cp.append(File.pathSeparator).append(providedClasspath);
         }
 
+        boolean addJeamlitClasspath = true;
         if (new File(MAVEN_PROJECT_FILE).exists()) {
             try {
                 LOG.info(
@@ -83,12 +86,33 @@ final class ClasspathUtils {
                 cp.append(File.pathSeparator).append(mavenClasspath);
                 LOG.info("Maven dependencies added to the classpath successfully: {}",
                          mavenClasspath);
+                // assume maven classpath contains the jeamlit dependencies and even respect overrides
+                // NOTE: this is also the codepath that is reached when developing jeamlit
+                addJeamlitClasspath = false;
             } catch (IOException | InterruptedException e) {
-                LOG.error("Failed resolving maven dependencies in pom.xml.", e);
+                LOG.error("Failed resolving maven dependencies in pom.xml. Maven classpath not injected in app. Please reach out to support with this error if need be.", e);
             }
         } else if (new File(GRADLE_PROJECT_FILE).exists()) {
             LOG.warn(
                     "Automatic inclusion of classpath with gradle is not implemented. Use --classpath argument to pass manually.");
+            // logic will be similar to maven
+        }
+        if (addJeamlitClasspath) {
+            // Add Jeamlit itself to classpath if it runs from a Jar
+            final String jeamlitLocation = ClasspathUtils.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .getPath();
+            // Decode URL encoding (e.g., %20 for spaces)
+            final String decodedPath = java.net.URLDecoder.decode(jeamlitLocation,
+                                                                  StandardCharsets.UTF_8);
+            if (decodedPath.endsWith(".jar")) {
+                // Running from JAR - add entire JAR (includes all dependencies)
+                LOG.info("Injecting Jeamlit dependencies in classpath: {}", decodedPath);
+                cp.append(decodedPath);
+            } else {
+                LOG.warn("Jeamlit is not running from its jar, nor running from maven. Support may be limited. Please reach out to support if you encounter classpath issues.");
+            }
         }
 
         // add jbang style deps
