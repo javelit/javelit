@@ -20,6 +20,9 @@
     <link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
     {{> design_system.html.mustache }}
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
             font-family: var(--jt-font-family);
             margin: 0;
@@ -29,19 +32,38 @@
         }
         .app-wrapper {
             display: flex;
-            margin: 0 auto;
+            height: 100vh;
             gap: var(--jt-spacing-lg);
         }
         .layout-container {
             background: var(--jt-bg-primary);
             padding: var(--jt-spacing-xl);
-        }
-        .main-layout {
+            padding-bottom: 0;
+            padding-top: 0;
+            overflow-y: auto;
+            height: 100%;
             flex: 1;
             min-width: 0; /* Allow shrinking */
+        }
+        .main-layout {
             /* TODO make this configurable */
             max-width: 768px;
             margin: 0 auto;
+
+                /* likely people will ask for this - first child margin
+                :first-child {
+                    margin-top: 0;
+                }
+                */
+            }
+        .fixed-element {
+            min-height: 3.25rem;
+            background: var(--jt-bg-primary);
+            margin: 0 0;
+            display: block;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         .full-sidebar {
             display: block;
@@ -51,6 +73,8 @@
             position: relative;
             transition: width var(--jt-transition-normal);
             padding: var(--jt-spacing-md) var(--jt-spacing-xl);
+            overflow-y: auto;
+            height: 100%;
         }
         
         /* Hide entire sidebar when content is empty */
@@ -173,8 +197,11 @@
         <!-- make sure this stays empty with no spaces - it uses the :empty selector to hide if there is nothing inside -->
         <div id="sidebar-container" class="sidebar-content" data-container="sidebar"></div>
     </div>
-    <div id="main-container" class="layout-container main-layout" data-container="main">
-        <p>Connecting to Jeamlit server...</p>
+    <div class="layout-container">
+        <div class="fixed-element"></div>
+        <div id="main-container" class="main-layout" data-container="main">
+            <p>Connecting to Jeamlit server...</p>
+        </div>
     </div>
 </div>
 
