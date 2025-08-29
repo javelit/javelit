@@ -114,7 +114,7 @@ public final class Server implements StateManager.RenderServer {
 
     private Server(final Builder builder) {
         this.port = builder.port;
-        this.hotReloader = new HotReloader(builder.classpath, builder.appPath, builder.buildSystem);
+        this.hotReloader = new HotReloader(builder.classpath, builder.appPath, builder.buildSystem, null, null);
         this.customHeaders = loadCustomHeaders(builder.headersFile);
         this.fileWatcher = new FileWatcher(builder.appPath);
 

@@ -118,7 +118,7 @@ public enum BuildSystem {
         }
 
         @Override
-        void compile(@org.jetbrains.annotations.Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
+        void compile(@org.jetbrains.annotations.Nullable String[] customCompileCmdArgs) throws IOException, InterruptedException {
             // do nothing
         }
     },
@@ -135,7 +135,7 @@ public enum BuildSystem {
         }
 
         @Override
-        void compile(@org.jetbrains.annotations.Nullable String[] customClasspathCmdArgs) {
+        void compile(@org.jetbrains.annotations.Nullable String[] customCompileCmdArgs) {
             // do nothing
         }
     };
@@ -220,10 +220,10 @@ public enum BuildSystem {
         }
     }
 
-    void compile(final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
+    void compile(final @Nullable String[] customCompileCmdArgs) throws IOException, InterruptedException {
         final String[] cmd = ArrayUtils.addAll(new String[]{this.getExecutable()},
-                                               customClasspathCmdArgs != null ?
-                                                       customClasspathCmdArgs :
+                                               customCompileCmdArgs != null ?
+                                                       customCompileCmdArgs :
                                                        this.compileCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {

@@ -74,13 +74,18 @@ class HotReloader {
     private final Semaphore reloadAvailable = new Semaphore(1, true);
     private final String providedClasspath;
     final BuildSystem buildSystem;
+    private final @Nullable String[] customClasspathCmdArgs;
+    private final @Nullable String[] customCompileCmdArgs;
 
     /**
      * @param providedClasspath java classpath to use. If found, classpath resolved by jbang/maven/gradle will be appended to this classpath.
      * @param javaFile          the Jeamlit app file. If found, file dependencies resolved by jbang will be managed.
      *                          Note: maven, gradle and multi-file is not implemented yet.
      */
-    protected HotReloader(final @Nullable String providedClasspath, final @NotNull Path javaFile, final @Nullable BuildSystem buildSystem) {
+    protected HotReloader(final @Nullable String providedClasspath, final @NotNull Path javaFile, final @Nullable BuildSystem buildSystem,
+                          @Nullable String[] customClasspathCmdArgs, @Nullable String[] customCompileCmdArgs) {
+        this.customClasspathCmdArgs = customClasspathCmdArgs;
+        this.customCompileCmdArgs = customCompileCmdArgs;
         LOG.info("Using provided classpath {}", providedClasspath);
         this.providedClasspath = providedClasspath;
 
@@ -118,7 +123,7 @@ class HotReloader {
         switch (reloadStrategy) {
             case BUILD_CLASSPATH_AND_CLASS:
                 try {
-                    buildSystem.compile(null);
+                    buildSystem.compile(customCompileCmdArgs);
                 } catch (Exception e) {
                     throw new CompilationException(e);
                 }
@@ -383,7 +388,7 @@ class HotReloader {
 
         try {
             LOG.info("Trying to add {} dependencies to the classpath...", buildSystem);
-            final String classpath = buildSystem.obtainClasspath(javaFilePath, null); // FIXME HERE CYRIL get customClasspathCmdArgs
+            final String classpath = buildSystem.obtainClasspath(javaFilePath, customClasspathCmdArgs);
             if (!classpath.isBlank()) {
                 cp.append(File.pathSeparator).append(classpath);
             }
