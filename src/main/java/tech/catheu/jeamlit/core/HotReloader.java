@@ -26,8 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -72,10 +70,7 @@ class HotReloader {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(HotReloader.class);
-    protected static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes");
-
-    // used for gc control - see note close to usage
-    private static final ConcurrentMap<String, Class<?>> LOADED_CLASSES = new ConcurrentHashMap<>();
+    protected static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes").toAbsolutePath();
 
     @Nullable
     URL[] classPathUrls;
@@ -112,9 +107,11 @@ class HotReloader {
     protected void reloadFile(final @Nonnull ReloadStrategy reloadStrategy) {
         switch (reloadStrategy) {
             case BUILD_CLASSPATH_AND_CLASS:
-                // detect the build system - run the relevant command
-                // FIXME CYRIL - the command can be customized to be faster - a good default will be used
-                // FIXME CYRIL at first start - default: do not build if a target directory is available with some files ? always build ? no build ?
+                try {
+                    ClasspathUtils.rebuild();
+                } catch (Exception e) {
+                    throw new CompilationException(e);
+                }
                 // this will force the recomputation of the classpath
                 compilationOptions = null;
                 break;
@@ -170,7 +167,7 @@ class HotReloader {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
                     LOG.warn("Compiling the app for the first time.");
-                    reloadFile(HotReloader.ReloadStrategy.CLASS);
+                    reloadFile(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                 }
             } catch (InterruptedException e) {
                 Jt.error("Compilation interrupted.").use();

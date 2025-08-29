@@ -139,10 +139,10 @@ public class Server implements StateManager.RenderServer {
         }
     }
 
-    protected void notifyReload() {
+    protected void notifyReload(final  @Nonnull HotReloader.ReloadStrategy reloadStrategy) {
         // reload the app and re-run the app for all sessions
         try {
-            hotReloader.reloadFile(HotReloader.ReloadStrategy.CLASS);
+            hotReloader.reloadFile(reloadStrategy);
         } catch (Exception e) {
             if (!(e instanceof CompilationException)) {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
@@ -338,19 +338,28 @@ public class Server implements StateManager.RenderServer {
             if (watcher != null) {
                 throw new IllegalStateException("FileWatcher is already running");
             }
-            final Path directory = watchedFile.getParent();
+            final Path directory;
+            if (ClasspathUtils.isMavenProject() || ClasspathUtils.isGradleProject()) {
+                directory = Paths.get("").toAbsolutePath();
+            } else {
+                directory = watchedFile.getParent();
+            }
 
             LOG.info("Watching for file changes in parent directory: {}", directory);
 
             watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
                 final Path changedFile = event.path();
-                // Only respond to changes to .java files in the source tree
+                // Only respond to changes to .java files in the source tree and pom.xml files
                 // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-                if (changedFile.getFileName().toString().endsWith(".java")) {
+                if (changedFile.getFileName().toString().endsWith(".java") || changedFile.getFileName().toString().equals("pom.xml")) {
                     switch (event.eventType()) {
                         case MODIFY -> {
                             LOG.info("File changed: {}. Rebuilding...", changedFile);
-                            notifyReload();
+                            if (changedFile.equals(watchedFile)) {
+                                notifyReload(HotReloader.ReloadStrategy.CLASS);
+                            } else {
+                                notifyReload(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                            }
                         }
                         case DELETE -> {
                             if (changedFile.equals(watchedFile)) {
@@ -366,7 +375,7 @@ public class Server implements StateManager.RenderServer {
                                 LOG.warn(
                                         "App file {} recreated. Attempting to reload from the new file.",
                                         watchedFile);
-                                notifyReload();
+                                notifyReload(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                             }
                         }
                         case OVERFLOW -> {

@@ -24,7 +24,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import dev.jbang.dependencies.DependencyResolver;
 import dev.jbang.dependencies.ModularClassPath;
@@ -47,8 +46,12 @@ final class ClasspathUtils {
     private static final String MAVEN_PROJECT_FILE = "pom.xml";
     private static final String MAVEN_WRAPPER_FILE =
             IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw";
-    public static final String[] MAVEN_CP_COMMAND = new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""};
-    public static final String[] MAVEN_CP_COMMAND_WINDOWS = new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""};
+    private static final String[] MAVEN_CP_COMMAND = new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""};
+    private static final String[] MAVEN_CP_COMMAND_WINDOWS = new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""};
+    private static final String[] MAVEN_COMPILE_COMMAND = new String[]{"compile"};
+
+    private static Boolean isGradleProject = null;
+    private static Boolean isMavenProject = null;
 
     private static final Method DEPENDENCY_COLLECT_REFLECTION;
 
@@ -74,11 +77,13 @@ final class ClasspathUtils {
 
         // add provided classpath
         if (providedClasspath != null && !providedClasspath.isEmpty()) {
+            LOG.info("User-provided classpath added to the classpath successfully.");
+            LOG.debug("Added from user-provided input: {}", providedClasspath);
             cp.append(File.pathSeparator).append(providedClasspath);
         }
 
         boolean addJeamlitClasspath = true;
-        if (new File(MAVEN_PROJECT_FILE).exists()) {
+        if (isMavenProject()) {
             try {
                 LOG.info(
                         "Found a pom.xml file. Trying to add maven dependencies to the classpath...");
@@ -92,7 +97,7 @@ final class ClasspathUtils {
             } catch (IOException | InterruptedException e) {
                 LOG.error("Failed resolving maven dependencies in pom.xml. Maven classpath not injected in app. Please reach out to support with this error if need be.", e);
             }
-        } else if (new File(GRADLE_PROJECT_FILE).exists()) {
+        } else if (isGradleProject()) {
             LOG.warn(
                     "Automatic inclusion of classpath with gradle is not implemented. Use --classpath argument to pass manually.");
             // logic will be similar to maven
@@ -130,6 +135,45 @@ final class ClasspathUtils {
         return cp.toString();
     }
 
+    static boolean isGradleProject() {
+        if (isGradleProject == null) {
+            isGradleProject = new File(GRADLE_PROJECT_FILE).exists();
+        }
+        return  isGradleProject;
+    }
+
+    static boolean isMavenProject() {
+        if (isMavenProject == null) {
+            isMavenProject = new File(MAVEN_PROJECT_FILE).exists();
+        }
+        return isMavenProject;
+    }
+
+    static void rebuild() throws IOException, InterruptedException {
+        if (isMavenProject()) {
+            compileMaven();
+        } else if (isGradleProject()) {
+            LOG.warn("Auto rebuild from Gradle projects is not supported yet. Reach out to support for help if need be.");
+        } else {
+            // no rebuild command to trigger
+        }
+    }
+
+    private static void compileMaven() throws IOException, InterruptedException {
+        final String mavenExecutable = getMavenExecutable();
+        final String[] cmd = ArrayUtils.addAll(new String[]{mavenExecutable}, MAVEN_COMPILE_COMMAND);
+        final CmdRunResult cmdResult = runCmd(cmd);
+        if (cmdResult.exitCode() != 0) {
+            throw new RuntimeException(("""
+                        Failed to compile with maven toolchain.
+                        Maven command finished with exit code %s.
+                        Maven command: %s.
+                        Error: %s""").formatted(
+                    cmdResult.exitCode,
+                    cmd, String.join("\n", cmdResult.outputLines())));
+        }
+    }
+
     private static List<String> getDependenciesFrom(final Source mainSource) {
         try {
             return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
@@ -142,30 +186,37 @@ final class ClasspathUtils {
         final String mavenExecutable = getMavenExecutable();
         final String[] mavenCommand = IS_OS_WINDOWS ? MAVEN_CP_COMMAND_WINDOWS : MAVEN_CP_COMMAND;
         final String[] cmd = ArrayUtils.addAll(new String[]{mavenExecutable}, mavenCommand);
-        final Runtime run = Runtime.getRuntime();
-        final Process pr = run.exec(cmd);
-        final int exitCode = pr.waitFor();
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
-            if (exitCode != 0) {
-                throw new RuntimeException(("""
+        final CmdRunResult cmdResult = runCmd(cmd);
+        if (cmdResult.exitCode() != 0) {
+            throw new RuntimeException(("""
                         Failed to add maven dependencies to the classpath.
                         Maven command finished with exit code %s.
                         Maven command: %s.
                         Error: %s""").formatted(
-                        exitCode,
-                        cmd, reader.lines().collect(Collectors.joining("\n"))));
-            }
-            final List<String> classpaths = reader.lines().toList();
-            if (classpaths.isEmpty()) {
-                LOG.warn("Maven dependencies command ran successfully, but classpath is empty");
-                return "";
-            } else if (classpaths.size() == 1) {
-                return classpaths.getFirst();
-            } else {
-                LOG.warn(
-                        "Maven dependencies command ran successfully, but multiple classpath were returned. This can happen with multi-modules projects. Combining all classpath.");
-                return String.join(":", classpaths);
-            }
+                    cmdResult.exitCode,
+                    cmd, String.join("\n", cmdResult.outputLines())));
+        }
+        if (cmdResult.outputLines().isEmpty()) {
+            LOG.warn("Maven dependencies command ran successfully, but classpath is empty");
+            return "";
+        } else if (cmdResult.outputLines().size() == 1) {
+            return cmdResult.outputLines().getFirst();
+        } else {
+            LOG.warn(
+                    "Maven dependencies command ran successfully, but multiple classpath were returned. This can happen with multi-modules projects. Combining all classpath.");
+            return String.join(":", cmdResult.outputLines());
+        }
+    }
+
+    private record CmdRunResult(int exitCode, List<String> outputLines) {}
+
+    private static CmdRunResult runCmd(final @Nonnull String[] cmd) throws IOException, InterruptedException {
+        final Runtime run = Runtime.getRuntime();
+        final Process pr = run.exec(cmd);
+        final int exitCode = pr.waitFor();
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
+            final List<String> outputLines = reader.lines().toList();
+            return new CmdRunResult(exitCode, outputLines);
         }
     }
 
