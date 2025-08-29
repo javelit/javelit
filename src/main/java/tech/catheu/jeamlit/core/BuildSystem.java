@@ -4,8 +4,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 
+import dev.jbang.dependencies.DependencyResolver;
+import dev.jbang.dependencies.ModularClassPath;
+import dev.jbang.source.Project;
+import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,22 +22,108 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 
 public enum BuildSystem {
     GRADLE("build.gradle",
            IS_OS_WINDOWS ? "gradlew.bat" : "gradlew",
            "gradle",
            new String[]{"-q", "dependencies", "--configuration runtimeClasspath"},
-           new String[]{"classes"}),
+           new String[]{"classes"}) {
+        @Override
+        boolean isUsed() {
+            return new File(this.buildSystemFile).exists();
+        }
+    },
     MAVEN("pom.xml",
           IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw",
           "mvn",
           IS_OS_WINDOWS ?
                   new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
                   new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""},
-          new String[]{"compile"}),
-    VANILLA("__NO_FILE__", "", "", new String[]{}, new String[]{});
-    // jbang is not considered a build system, jbang commands can be combined with maven ones - may change later
+          new String[]{"compile"}) {
+        @Override
+        boolean isUsed() {
+            return new File(this.buildSystemFile).exists();
+        }
+    },
+    FATJAR_AND_JBANG("java app file", "", "", new String[]{}, new String[]{}) {
+
+        private static final Method DEPENDENCY_COLLECT_REFLECTION;
+
+        static {
+            try {
+                DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod(
+                        "collectBinaryDependencies");
+                DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
+        @Override
+        boolean isUsed() {
+            final String jeamlitLocation = HotReloader.class.getProtectionDomain().getCodeSource()
+                    .getLocation().getPath();
+            // Decode URL encoding (e.g., %20 for spaces)
+            final String decodedPath = URLDecoder.decode(jeamlitLocation, StandardCharsets.UTF_8);
+            return decodedPath.endsWith("-all.jar");
+        }
+
+        @Override
+        @Nonnull
+        String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) {
+            final String jeamlitLocation = BuildSystem.class.getProtectionDomain().getCodeSource()
+                    .getLocation().getPath();
+            // Decode URL encoding (e.g., %20 for spaces)
+            final StringBuilder cp = new StringBuilder(URLDecoder.decode(jeamlitLocation,
+                                                                         StandardCharsets.UTF_8));
+
+            // add jbang style deps
+            final Project jbangProject = Project.builder().build(javaFilePath);
+            final Source mainSource = jbangProject.getMainSource();
+            final List<String> dependencies = getDependenciesFrom(mainSource);
+            if (!dependencies.isEmpty()) {
+                final DependencyResolver resolver = new DependencyResolver();
+                resolver.addDependencies(dependencies);
+                final ModularClassPath modularClasspath = resolver.resolve();
+                cp.append(File.pathSeparator).append(modularClasspath.getClassPath());
+            }
+
+            return cp.toString();
+        }
+
+        private static List<String> getDependenciesFrom(final Source mainSource) {
+            try {
+                return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        void compile(@org.jetbrains.annotations.Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
+            // do nothing
+        }
+    },
+    RUNTIME("java runtime", "", "", new String[]{}, new String[]{}) {
+        @Override
+        boolean isUsed() {
+            return false;
+        }
+
+        @Override
+        @Nonnull
+        String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) {
+            return optional(System.getProperty("java.class.path")).orElse("");
+        }
+
+        @Override
+        void compile(@org.jetbrains.annotations.Nullable String[] customClasspathCmdArgs) {
+            // do nothing
+        }
+    };
 
     private final static Logger LOG = LoggerFactory.getLogger(BuildSystem.class);
 
@@ -50,6 +145,8 @@ public enum BuildSystem {
         this.compileCmdArgs = compileCmdArgs;
     }
 
+    abstract boolean isUsed();
+
     // lazily find whether the base executable of the wrapper should be used and return it
     private @Nonnull String getExecutable() {
         if (executable == null) {
@@ -66,28 +163,34 @@ public enum BuildSystem {
 
     static BuildSystem inferBuildSystem() {
         for (BuildSystem buildSystem : BuildSystem.values()) {
-            if (new File(buildSystem.buildSystemFile).exists()) {
+            if (buildSystem.isUsed()) {
                 return buildSystem;
             }
         }
-        return BuildSystem.VANILLA;
+
+        return BuildSystem.RUNTIME;
     }
 
-    String obtainClasspath() throws IOException, InterruptedException {
+    // NOTE: javaFilePath may be required by some build system, even if most won't use it
+    @Nonnull
+    String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
         final String[] cmd = ArrayUtils.addAll(new String[]{this.getExecutable()},
-                                               this.classpathCmdArgs);
+                                               customClasspathCmdArgs != null ?
+                                                       customClasspathCmdArgs :
+                                                       this.classpathCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
-            throw new RuntimeException(("""
-                    Failed to obtain %s classpath.
-                    %s command finished with exit code %s.
-                    %s command: %s.
-                    Error: %s""").formatted(this,
-                                            this,
-                                            cmdResult.exitCode,
-                                            this,
-                                            cmd,
-                                            String.join("\n", cmdResult.outputLines())));
+            throw new RuntimeException("""
+                                       Failed to obtain %s classpath.
+                                       %s command finished with exit code %s.
+                                       %s command: %s.
+                                       Error: %s""".formatted(this,
+                                                              this,
+                                                              cmdResult.exitCode,
+                                                              this,
+                                                              cmd,
+                                                              String.join("\n",
+                                                                          cmdResult.outputLines())));
         }
         if (cmdResult.outputLines().isEmpty()) {
             LOG.warn("{} dependencies command ran successfully, but classpath is empty", this);
@@ -102,22 +205,24 @@ public enum BuildSystem {
         }
     }
 
-    void compile() throws IOException, InterruptedException {
-        if (this == VANILLA) {
-            return;
-        }
+    void compile(final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
         final String[] cmd = ArrayUtils.addAll(new String[]{this.getExecutable()},
-                                               this.compileCmdArgs);
+                                               customClasspathCmdArgs != null ?
+                                                       customClasspathCmdArgs :
+                                                       this.compileCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
             throw new RuntimeException(("""
-                    Failed to compile with %s toolchain.
-                    %s command finished with exit code %s.
-                    %s command: %s.
-                    Error: %s""").formatted(this, this, cmdResult.exitCode,
-                                            this,
-                                            cmd,
-                                            String.join("\n", cmdResult.outputLines())));
+                                        Failed to compile with %s toolchain.
+                                        %s command finished with exit code %s.
+                                        %s command: %s.
+                                        Error: %s""").formatted(this,
+                                                                this,
+                                                                cmdResult.exitCode,
+                                                                this,
+                                                                cmd,
+                                                                String.join("\n",
+                                                                            cmdResult.outputLines())));
         }
     }
 

@@ -365,7 +365,7 @@ public class Server implements StateManager.RenderServer {
                 throw new IllegalStateException("FileWatcher is already running");
             }
             final Path directory;
-            if (hotReloader.buildSystem == BuildSystem.VANILLA) {
+            if (hotReloader.buildSystem == BuildSystem.FATJAR_AND_JBANG || hotReloader.buildSystem == BuildSystem.RUNTIME) {
                 directory = watchedFile.getParent();
             } else {
                 directory = Paths.get("").toAbsolutePath();

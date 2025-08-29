@@ -59,7 +59,7 @@ public final class JeamlitTestHelper {
         final int port = PortAllocator.getNextAvailablePort();
         try {
             // Create server instance
-            final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.VANILLA).build();
+            final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME).build();
             
             // Start server in a separate thread
             final Thread serverThread = new Thread(() -> {

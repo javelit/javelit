@@ -22,8 +22,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,10 +40,6 @@ import javax.tools.ToolProvider;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
-import dev.jbang.dependencies.DependencyResolver;
-import dev.jbang.dependencies.ModularClassPath;
-import dev.jbang.source.Project;
-import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
@@ -65,18 +59,6 @@ class HotReloader {
         /// no maven/gradle build
         CLASS,
         BUILD_CLASSPATH_AND_CLASS
-    }
-
-    private static final Method DEPENDENCY_COLLECT_REFLECTION;
-
-    static {
-        try {
-            DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod(
-                    "collectBinaryDependencies");
-            DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 
@@ -136,7 +118,7 @@ class HotReloader {
         switch (reloadStrategy) {
             case BUILD_CLASSPATH_AND_CLASS:
                 try {
-                    buildSystem.compile();
+                    buildSystem.compile(null);
                 } catch (Exception e) {
                     throw new CompilationException(e);
                 }
@@ -387,7 +369,7 @@ class HotReloader {
     }
 
     /**
-     * combine all required classpaths.
+     * obtain and combine classpaths.
      */
     private String buildClasspath(final @Nullable String providedClasspath, final @Nonnull Path javaFilePath) {
         final StringBuilder cp = new StringBuilder();
@@ -399,60 +381,23 @@ class HotReloader {
             cp.append(File.pathSeparator).append(providedClasspath);
         }
 
-        if (buildSystem != BuildSystem.VANILLA) {
-            try {
-                LOG.info("Found a {} file. Trying to add {} dependencies to the classpath...",
-                         buildSystem.buildSystemFile,
-                         buildSystem);
-                final String classpath = buildSystem.obtainClasspath();
+        try {
+            LOG.info("Trying to add {} dependencies to the classpath...", buildSystem);
+            final String classpath = buildSystem.obtainClasspath(javaFilePath, null); // FIXME HERE CYRIL get customClasspathCmdArgs
+            if (!classpath.isBlank()) {
                 cp.append(File.pathSeparator).append(classpath);
-                LOG.info("{} dependencies added to the classpath successfully.", buildSystem);
-                LOG.debug("Added from {}: {}", buildSystem, classpath);
-                // assume classpath contains the jeamlit dependencies
-            } catch (IOException | InterruptedException e) {
-                LOG.error(
-                        "Failed resolving {} dependencies from {}. {} classpath not injected in app. Please reach out to support with this error if need be.",
-                        buildSystem,
-                        buildSystem.buildSystemFile,
-                        buildSystem,
-                        e);
             }
-        } else {
-            // Add Jeamlit itself to the classpath if it runs from a Jar
-            final String jeamlitLocation = HotReloader.class.getProtectionDomain().getCodeSource()
-                    .getLocation().getPath();
-            // Decode URL encoding (e.g., %20 for spaces)
-            final String decodedPath = URLDecoder.decode(jeamlitLocation, StandardCharsets.UTF_8);
-            if (decodedPath.endsWith(".jar")) {
-                // Running from JAR - add entire JAR (includes all dependencies, assuming it's the -all version)
-                LOG.info("Injecting Jeamlit dependencies in classpath: {}", decodedPath);
-                cp.append(decodedPath);
-            } else {
-                LOG.warn(
-                        "Jeamlit is not running from its jar, nor running from maven or gradle. Injecting runtime classpath.");
-                cp.append(System.getProperty("java.class.path"));
-            }
-        }
-
-        // add jbang style deps
-        final Project jbangProject = Project.builder().build(javaFilePath);
-        final Source mainSource = jbangProject.getMainSource();
-        final List<String> dependencies = getDependenciesFrom(mainSource);
-        if (!dependencies.isEmpty()) {
-            final DependencyResolver resolver = new DependencyResolver();
-            resolver.addDependencies(dependencies);
-            final ModularClassPath modularClasspath = resolver.resolve();
-            cp.append(File.pathSeparator).append(modularClasspath.getClassPath());
+            LOG.info("{} dependencies added to the classpath successfully.", buildSystem);
+            LOG.debug("Added from {}: {}", buildSystem, classpath);
+        } catch (IOException | InterruptedException e) {
+            LOG.error(
+                    "Failed resolving {} dependencies from {}. {} classpath not injected in app. Please reach out to support with this error if need be.",
+                    buildSystem,
+                    buildSystem.buildSystemFile,
+                    buildSystem,
+                    e);
         }
 
         return cp.toString();
-    }
-
-    private static List<String> getDependenciesFrom(final Source mainSource) {
-        try {
-            return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
