@@ -31,8 +31,7 @@ import picocli.CommandLine.Parameters;
 import tech.catheu.jeamlit.core.Server;
 
 
-@Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0",
-        description = "Streamlit-like framework for Java")
+@Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0", description = "Streamlit-like framework for Java")
 public class Cli implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(Cli.class);
@@ -60,6 +59,18 @@ public class Cli implements Callable<Integer> {
         @Option(names = {"--headers-file"}, description = "File containing additional HTML headers")
         private String headersFile;
 
+        @SuppressWarnings("unused")
+        @Option(names = {"-cca", "--custom-compile-args"},
+                description = "Custom arguments for compile command. To avoid breaking spaces, separated by :: (e.g., clean::compile::-DargLine=\"-Xmx1024m -XX:MaxPermSize=256m\"). Alternatively, specify multiple times (e.g., -cca clean -cca compile -cca \"-DargLine=-Xmx1024m -XX:MaxPermSize=256m\"). Overrides default Maven/Gradle compile arguments.",
+                split = "::")
+        private String[] customCompileCmdArgs;
+
+        @SuppressWarnings("unused")
+        @Option(names = {"-ccpa", "--custom-classpath-args"},
+                description = "Custom arguments for classpath command, separated by :: (e.g., dependency:build-classpath::-DincludeScope=test). Alternatively, specify multiple times (e.g., -ccpa dependency:build-classpath -ccpa -DincludeScope=test). Overrides default Maven/Gradle classpath arguments.",
+                split = "::")
+        private String[] customClasspathCmdArgs;
+
         @Override
         public Integer call() throws Exception {
             if (!parametersAreValid()) {
@@ -74,7 +85,10 @@ public class Cli implements Callable<Integer> {
             }
             // Create server
             final Server server = Server.builder(javaFilePath, port).additionalClasspath(classpath)
-                    .headersFile(headersFile).build();
+                    .headersFile(headersFile)
+                    .customCompileCmdArgs(customCompileCmdArgs)
+                    .customClasspathCmdArgs(customClasspathCmdArgs)
+                    .build();
 
             // Start everything
             final String url = "http://localhost:" + port;
@@ -132,8 +146,7 @@ public class Cli implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new Cli())
-                .addSubcommand("run", new RunCommand())
+        final int exitCode = new CommandLine(new Cli()).addSubcommand("run", new RunCommand())
                 .execute(args);
         System.exit(exitCode);
     }

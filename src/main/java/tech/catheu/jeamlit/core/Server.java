@@ -77,11 +77,13 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public static final class Builder {
-        private final @Nonnull Path appPath;
-        private final int port;
-        private @Nullable String classpath;
-        private @Nullable String headersFile;
-        private @Nullable BuildSystem buildSystem;
+        final @Nonnull Path appPath;
+        final int port;
+        @Nullable String classpath;
+        @Nullable String headersFile;
+        @Nullable BuildSystem buildSystem;
+        @Nullable String[] customClasspathCmdArgs;
+        @Nullable String[] customCompileCmdArgs;
 
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
@@ -103,6 +105,16 @@ public final class Server implements StateManager.RenderServer {
             return this;
         }
 
+        public Builder customClasspathCmdArgs(@Nullable String[] customClasspathCmdArgs) {
+            this.customClasspathCmdArgs = customClasspathCmdArgs;
+            return this;
+        }
+
+        public Builder customCompileCmdArgs(@Nullable String[] customCompileCmdArgs) {
+            this.customCompileCmdArgs = customCompileCmdArgs;
+            return this;
+        }
+
         public Server build() {
             return new Server(this);
         }
@@ -114,7 +126,7 @@ public final class Server implements StateManager.RenderServer {
 
     private Server(final Builder builder) {
         this.port = builder.port;
-        this.hotReloader = new HotReloader(builder.classpath, builder.appPath, builder.buildSystem, null, null);
+        this.hotReloader = new HotReloader(builder);
         this.customHeaders = loadCustomHeaders(builder.headersFile);
         this.fileWatcher = new FileWatcher(builder.appPath);
 

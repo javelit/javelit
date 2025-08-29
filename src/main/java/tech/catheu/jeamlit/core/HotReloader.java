@@ -77,25 +77,21 @@ class HotReloader {
     private final @Nullable String[] customClasspathCmdArgs;
     private final @Nullable String[] customCompileCmdArgs;
 
-    /**
-     * @param providedClasspath java classpath to use. If found, classpath resolved by jbang/maven/gradle will be appended to this classpath.
-     * @param javaFile          the Jeamlit app file. If found, file dependencies resolved by jbang will be managed.
-     *                          Note: maven, gradle and multi-file is not implemented yet.
-     */
-    protected HotReloader(final @Nullable String providedClasspath, final @NotNull Path javaFile, final @Nullable BuildSystem buildSystem,
-                          @Nullable String[] customClasspathCmdArgs, @Nullable String[] customCompileCmdArgs) {
-        this.customClasspathCmdArgs = customClasspathCmdArgs;
-        this.customCompileCmdArgs = customCompileCmdArgs;
-        LOG.info("Using provided classpath {}", providedClasspath);
-        this.providedClasspath = providedClasspath;
+
+    // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
+    protected HotReloader(final @Nonnull Server.Builder builder) {
+        this.customClasspathCmdArgs = builder.customClasspathCmdArgs;
+        this.customCompileCmdArgs = builder.customCompileCmdArgs;
+        LOG.info("Using provided classpath {}", builder.classpath);
+        this.providedClasspath = builder.classpath;
 
         this.compiler = ToolProvider.getSystemJavaCompiler();
         if (this.compiler == null) {
             throw new RuntimeException(
                     "System java compiler not available. Make sure you're running Jeamlit with a JDK, not a JRE, and that the java compiler is available.");
         }
-        this.javaFile = javaFile;
-        this.buildSystem = buildSystem == null ? BuildSystem.inferBuildSystem() : buildSystem;
+        this.javaFile = builder.appPath;
+        this.buildSystem = builder.buildSystem == null ? BuildSystem.inferBuildSystem() : builder.buildSystem;
 
         new Thread(() -> {
             try {
