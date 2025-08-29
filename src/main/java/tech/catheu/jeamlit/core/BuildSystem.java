@@ -1,3 +1,18 @@
+/*
+ * Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package tech.catheu.jeamlit.core;
 
 import java.io.BufferedReader;
@@ -38,8 +53,8 @@ public enum BuildSystem {
     MAVEN("pom.xml",
           IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw",
           "mvn",
-          IS_OS_WINDOWS ?
-                  new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
+          IS_OS_WINDOWS
+                  ? new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
                   new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""},
           new String[]{"compile"}) {
         @Override
@@ -125,7 +140,7 @@ public enum BuildSystem {
         }
     };
 
-    private final static Logger LOG = LoggerFactory.getLogger(BuildSystem.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BuildSystem.class);
 
     final @Nonnull String buildSystemFile;
     // do not use directly - use getExecutable
@@ -175,8 +190,8 @@ public enum BuildSystem {
     @Nonnull
     String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
         final String[] cmd = ArrayUtils.addAll(new String[]{this.getExecutable()},
-                                               customClasspathCmdArgs != null ?
-                                                       customClasspathCmdArgs :
+                                               customClasspathCmdArgs != null
+                                                       ? customClasspathCmdArgs :
                                                        this.classpathCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
@@ -212,11 +227,11 @@ public enum BuildSystem {
                                                        this.compileCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
-            throw new RuntimeException(("""
+            throw new RuntimeException("""
                                         Failed to compile with %s toolchain.
                                         %s command finished with exit code %s.
                                         %s command: %s.
-                                        Error: %s""").formatted(this,
+                                        Error: %s""".formatted(this,
                                                                 this,
                                                                 cmdResult.exitCode,
                                                                 this,

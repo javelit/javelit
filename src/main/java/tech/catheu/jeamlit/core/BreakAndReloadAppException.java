@@ -15,7 +15,6 @@
  */
 package tech.catheu.jeamlit.core;
 
-
 import java.util.function.Consumer;
 
 import jakarta.annotation.Nullable;

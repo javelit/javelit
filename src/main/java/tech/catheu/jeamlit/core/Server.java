@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 
-public class Server implements StateManager.RenderServer {
+public final class Server implements StateManager.RenderServer {
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     @VisibleForTesting
     public final int port;
@@ -76,7 +76,7 @@ public class Server implements StateManager.RenderServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
-    public static class Builder {
+    public static final class Builder {
         private final @Nonnull Path appPath;
         private final int port;
         private @Nullable String classpath;
@@ -377,7 +377,7 @@ public class Server implements StateManager.RenderServer {
                 final Path changedFile = event.path();
                 // Only respond to changes to .java files in the source tree and pom.xml files
                 // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-                if (changedFile.getFileName().toString().endsWith(".java") || changedFile.getFileName().toString().equals("pom.xml")) {
+                if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile.getFileName().toString())) {
                     switch (event.eventType()) {
                         case MODIFY -> {
                             LOG.info("File changed: {}. Rebuilding...", changedFile);
