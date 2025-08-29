@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.catheu.jeamlit.core.BuildSystem;
 import tech.catheu.jeamlit.core.Server;
 
 /**
@@ -58,7 +59,7 @@ public final class JeamlitTestHelper {
         final int port = PortAllocator.getNextAvailablePort();
         try {
             // Create server instance
-            final Server server = new Server(appFile, null, port, null);
+            final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.VANILLA).build();
             
             // Start server in a separate thread
             final Thread serverThread = new Thread(() -> {

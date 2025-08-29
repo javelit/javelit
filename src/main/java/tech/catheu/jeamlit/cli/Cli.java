@@ -73,7 +73,8 @@ public class Cli implements Callable<Integer> {
                 return 1;
             }
             // Create server
-            final Server server = new Server(javaFilePath, classpath, port, headersFile);
+            final Server server = Server.builder(javaFilePath, port).additionalClasspath(classpath)
+                    .headersFile(headersFile).build();
 
             // Start everything
             final String url = "http://localhost:" + port;

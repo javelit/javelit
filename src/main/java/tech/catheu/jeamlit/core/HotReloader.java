@@ -15,10 +15,8 @@
  */
 package tech.catheu.jeamlit.core;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -50,13 +48,11 @@ import dev.jbang.source.Project;
 import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.apache.commons.lang3.ArrayUtils;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static tech.catheu.jeamlit.core.utils.JavaUtils.stackTraceString;
 import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 import static tech.catheu.jeamlit.core.utils.StringUtils.percentEncode;
@@ -69,129 +65,6 @@ class HotReloader {
         /// no maven/gradle build
         CLASS,
         BUILD_CLASSPATH_AND_CLASS
-    }
-
-    protected enum BuildSystem {
-        GRADLE("build.gradle",
-               IS_OS_WINDOWS ? "gradlew.bat" : "gradlew",
-               "gradle",
-               new String[]{"-q", "dependencies", "--configuration runtimeClasspath"},
-               new String[]{"classes"}),
-        MAVEN("pom.xml",
-              IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw",
-              "mvn",
-              IS_OS_WINDOWS ?
-                      new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
-                      new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""},
-              new String[]{"compile"}),
-        VANILLA("__NO_FILE__", "", "", new String[]{}, new String[]{});
-        // jbang is not considered a build system, jbang commands can be combined with maven ones - may change later
-
-        private final @Nonnull String buildSystemFile;
-        private final @Nonnull String executable;
-        private final @Nonnull String[] classpathCmdArgs;
-        private final @Nonnull String[] compileCmdArgs;
-
-        BuildSystem(@Nonnull String buildSystemFile, @Nonnull String wrapperFile, @Nonnull String executable, @Nonnull String[] classpathCmdArgs, @Nonnull String[] compileCmdArgs) {
-            this.buildSystemFile = buildSystemFile;
-            this.classpathCmdArgs = classpathCmdArgs;
-            this.compileCmdArgs = compileCmdArgs;
-
-            // use wrapper if found, else use basic executable - NOTE: may be slow
-            final File wrapperInFS = lookForFile(wrapperFile, new File(""), 0);
-            if (wrapperInFS != null) {
-                this.executable = wrapperInFS.getAbsolutePath();
-            } else {
-                LOG.warn("{} wrapper not found. Will use `{}` directly.", this, executable);
-                this.executable = executable;
-            }
-        }
-
-        static BuildSystem inferBuildSystem() {
-            for (BuildSystem buildSystem : BuildSystem.values()) {
-                if (new File(buildSystem.buildSystemFile).exists()) {
-                    return buildSystem;
-                }
-            }
-            return BuildSystem.VANILLA;
-        }
-
-        private String obtainClasspath() throws IOException, InterruptedException {
-            final String[] cmd = ArrayUtils.addAll(new String[]{this.executable},
-                                                   this.classpathCmdArgs);
-            final CmdRunResult cmdResult = runCmd(cmd);
-            if (cmdResult.exitCode() != 0) {
-                throw new RuntimeException(("""
-                        Failed to obtain %s classpath.
-                        %s command finished with exit code %s.
-                        %s command: %s.
-                        Error: %s""").formatted(this,
-                                                this,
-                                                cmdResult.exitCode,
-                                                this,
-                                                cmd,
-                                                String.join("\n", cmdResult.outputLines())));
-            }
-            if (cmdResult.outputLines().isEmpty()) {
-                LOG.warn("{} dependencies command ran successfully, but classpath is empty", this);
-                return "";
-            } else if (cmdResult.outputLines().size() == 1) {
-                return cmdResult.outputLines().getFirst();
-            } else {
-                LOG.warn(
-                        "{} dependencies command ran successfully, but multiple classpath were returned. This can happen with multi-modules projects. Combining all classpath.",
-                        this);
-                return String.join(File.pathSeparator, cmdResult.outputLines());
-            }
-        }
-
-        private void compile() throws IOException, InterruptedException {
-            if (this == VANILLA) {
-                return;
-            }
-            final String[] cmd = ArrayUtils.addAll(new String[]{this.executable},
-                                                   this.compileCmdArgs);
-            final CmdRunResult cmdResult = runCmd(cmd);
-            if (cmdResult.exitCode() != 0) {
-                throw new RuntimeException(("""
-                        Failed to compile with maven toolchain.
-                        Maven command finished with exit code %s.
-                        Maven command: %s.
-                        Error: %s""").formatted(cmdResult.exitCode,
-                                                cmd,
-                                                String.join("\n", cmdResult.outputLines())));
-            }
-        }
-
-        /**
-         * Look for a file. If not found, look into the parent.
-         */
-        private static File lookForFile(final @Nonnull String filename, final @Nonnull File startDirectory, final int depthLimit) {
-            final File absoluteDirectory = startDirectory.getAbsoluteFile();
-            if (new File(absoluteDirectory, filename).exists()) {
-                return new File(absoluteDirectory, filename);
-            } else {
-                File parentDirectory = absoluteDirectory.getParentFile();
-                if (parentDirectory != null && depthLimit > 0) {
-                    return lookForFile(filename, parentDirectory, depthLimit - 1);
-                } else {
-                    return null;
-                }
-            }
-        }
-
-        private record CmdRunResult(int exitCode, List<String> outputLines) {
-        }
-
-        private static CmdRunResult runCmd(final @Nonnull String[] cmd) throws IOException, InterruptedException {
-            final Runtime run = Runtime.getRuntime();
-            final Process pr = run.exec(cmd);
-            final int exitCode = pr.waitFor();
-            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
-                final List<String> outputLines = reader.lines().toList();
-                return new CmdRunResult(exitCode, outputLines);
-            }
-        }
     }
 
     private static final Method DEPENDENCY_COLLECT_REFLECTION;
@@ -214,7 +87,7 @@ class HotReloader {
     private @Nullable URL[] classPathUrls;
     private final JavaCompiler compiler;
     private @Nullable List<String> compilationOptions;
-    private final Path javaFile;
+    private final @Nonnull Path javaFile;
     private final AtomicReference<Method> mainMethod = new AtomicReference<>();
     private final Semaphore reloadAvailable = new Semaphore(1, true);
     private final String providedClasspath;
@@ -225,7 +98,7 @@ class HotReloader {
      * @param javaFile          the Jeamlit app file. If found, file dependencies resolved by jbang will be managed.
      *                          Note: maven, gradle and multi-file is not implemented yet.
      */
-    protected HotReloader(final @Nullable String providedClasspath, final Path javaFile) {
+    protected HotReloader(final @Nullable String providedClasspath, final @NotNull Path javaFile, final @Nullable BuildSystem buildSystem) {
         LOG.info("Using provided classpath {}", providedClasspath);
         this.providedClasspath = providedClasspath;
 
@@ -235,7 +108,22 @@ class HotReloader {
                     "System java compiler not available. Make sure you're running Jeamlit with a JDK, not a JRE, and that the java compiler is available.");
         }
         this.javaFile = javaFile;
-        this.buildSystem = BuildSystem.inferBuildSystem();
+        this.buildSystem = buildSystem == null ? BuildSystem.inferBuildSystem() : buildSystem;
+
+        new Thread(() -> {
+            try {
+                reloadAvailable.acquire();
+                if (mainMethod.get() == null) {
+                    LOG.info("Compiling the app for the first time.");
+                    reloadFile(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                    LOG.info("First time compilation successful.");
+                }
+            } catch (Exception e) {
+                LOG.warn("First compilation failed. Will re-attempt compilation when user connects and return the error to the user.", e);
+            } finally {
+                reloadAvailable.release();
+            }
+        }).start();
     }
 
     /**
@@ -304,7 +192,7 @@ class HotReloader {
             try {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
-                    LOG.warn("Compiling the app for the first time.");
+                    LOG.warn("Pre-compilation of the app failed the first time. Attempting first compilation again.");
                     reloadFile(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                 }
             } catch (InterruptedException e) {
@@ -386,7 +274,7 @@ class HotReloader {
     }
 
     // return the fully qualified classname of the compiled file
-    private @Nonnull List<JavaFileObject> compileJavaFile(final Path javaFile) {
+    private @Nonnull List<JavaFileObject> compileJavaFile(final @Nonnull Path javaFile) {
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null,
                                                                                    null,
                                                                                    null)) {
@@ -521,7 +409,6 @@ class HotReloader {
                 LOG.info("{} dependencies added to the classpath successfully.", buildSystem);
                 LOG.debug("Added from {}: {}", buildSystem, classpath);
                 // assume classpath contains the jeamlit dependencies
-                // NOTE: this is also the codepath that is reached when developing on jeamlit
             } catch (IOException | InterruptedException e) {
                 LOG.error(
                         "Failed resolving {} dependencies from {}. {} classpath not injected in app. Please reach out to support with this error if need be.",
@@ -542,7 +429,8 @@ class HotReloader {
                 cp.append(decodedPath);
             } else {
                 LOG.warn(
-                        "Jeamlit is not running from its jar, nor running from maven. Support may be limited. Please reach out to support if you encounter classpath issues.");
+                        "Jeamlit is not running from its jar, nor running from maven or gradle. Injecting runtime classpath.");
+                cp.append(System.getProperty("java.class.path"));
             }
         }
 

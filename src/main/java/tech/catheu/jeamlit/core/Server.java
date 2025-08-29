@@ -76,21 +76,47 @@ public class Server implements StateManager.RenderServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
-    public Server(final Path appPath, final String classpath, int port, @Nullable String headersFile) {
-        this.port = port;
-        this.hotReloader = new HotReloader(classpath, appPath);
-        this.customHeaders = loadCustomHeaders(headersFile);
-        this.fileWatcher = new FileWatcher(appPath);
+    public static class Builder {
+        private final @Nonnull Path appPath;
+        private final int port;
+        private @Nullable String classpath;
+        private @Nullable String headersFile;
+        private @Nullable BuildSystem buildSystem;
 
-        // register in the state manager
-        StateManager.setRenderServer(this);
+        private Builder(final @Nonnull Path appPath, final int port) {
+            this.appPath = appPath;
+            this.port = port;
+        }
+
+        public Builder additionalClasspath(@Nullable String additionalClasspath) {
+            this.classpath = additionalClasspath;
+            return this;
+        }
+
+        public Builder headersFile(@Nullable String headersFile) {
+            this.headersFile = headersFile;
+            return this;
+        }
+
+        public Builder buildSystem(@Nullable BuildSystem buildSystem) {
+            this.buildSystem = buildSystem;
+            return this;
+        }
+
+        public Server build() {
+            return new Server(this);
+        }
+    }
+    
+    public static Builder builder(final @Nonnull Path appPath, final int port) {
+        return new Builder(appPath, port);
     }
 
-    protected Server(final int port, final @Nullable String headersFile, final HotReloader hotReloader, final FileWatcher fileWatcher) {
-        this.port = port;
-        this.hotReloader = hotReloader;
-        this.customHeaders = loadCustomHeaders(headersFile);
-        this.fileWatcher = fileWatcher;
+    private Server(final Builder builder) {
+        this.port = builder.port;
+        this.hotReloader = new HotReloader(builder.classpath, builder.appPath, builder.buildSystem);
+        this.customHeaders = loadCustomHeaders(builder.headersFile);
+        this.fileWatcher = new FileWatcher(builder.appPath);
 
         // register in the state manager
         StateManager.setRenderServer(this);
@@ -339,7 +365,7 @@ public class Server implements StateManager.RenderServer {
                 throw new IllegalStateException("FileWatcher is already running");
             }
             final Path directory;
-            if (hotReloader.buildSystem == HotReloader.BuildSystem.VANILLA) {
+            if (hotReloader.buildSystem == BuildSystem.VANILLA) {
                 directory = watchedFile.getParent();
             } else {
                 directory = Paths.get("").toAbsolutePath();
