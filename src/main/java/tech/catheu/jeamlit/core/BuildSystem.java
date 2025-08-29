@@ -111,10 +111,11 @@ public enum BuildSystem {
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
             throw new RuntimeException(("""
-                    Failed to compile with maven toolchain.
-                    Maven command finished with exit code %s.
-                    Maven command: %s.
-                    Error: %s""").formatted(cmdResult.exitCode,
+                    Failed to compile with %s toolchain.
+                    %s command finished with exit code %s.
+                    %s command: %s.
+                    Error: %s""").formatted(this, this, cmdResult.exitCode,
+                                            this,
                                             cmd,
                                             String.join("\n", cmdResult.outputLines())));
         }
