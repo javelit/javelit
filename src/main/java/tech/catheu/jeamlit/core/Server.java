@@ -339,10 +339,10 @@ public class Server implements StateManager.RenderServer {
                 throw new IllegalStateException("FileWatcher is already running");
             }
             final Path directory;
-            if (ClasspathUtils.isMavenProject() || ClasspathUtils.isGradleProject()) {
-                directory = Paths.get("").toAbsolutePath();
-            } else {
+            if (hotReloader.buildSystem == HotReloader.BuildSystem.VANILLA) {
                 directory = watchedFile.getParent();
+            } else {
+                directory = Paths.get("").toAbsolutePath();
             }
 
             LOG.info("Watching for file changes in parent directory: {}", directory);
