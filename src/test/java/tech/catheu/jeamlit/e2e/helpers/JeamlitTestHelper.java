@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
+import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.catheu.jeamlit.core.BuildSystem;
@@ -48,42 +49,53 @@ public final class JeamlitTestHelper {
             throw new RuntimeException("Failed to write test app", e);
         }
     }
-    
+
     /**
      * Start a Jeamlit server for the given app.
-     * 
+     *
      * @param appFile Path to the app Java file
      * @return The started Server instance
      */
     public static Server startServer(final Path appFile) {
         final int port = PortAllocator.getNextAvailablePort();
-        try {
-            // Create server instance
-            final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME).build();
-            
-            // Start server in a separate thread
-            final Thread serverThread = new Thread(() -> {
-                try {
-                    server.start();
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to start server", e);
-                }
-            });
-            serverThread.setDaemon(true);
-            serverThread.start();
-            
-            // Wait for server to be ready
-            waitForServerReady(port);
-            
-            return server;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to start Jeamlit server", e);
-        }
+        final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME)
+                .build();
+        return startServer(server);
     }
-    
+
+    /**
+     * Start a Jeamlit embedded server for the given app class
+     *
+     * @param appClass class of the app
+     * @return The started Server instance
+     */
+    public static Server startEmbeddedServer(final @Nonnull Class<?> appClass) {
+        final int port = PortAllocator.getNextAvailablePort();
+        final Server server = Server.builder(appClass, port).build();
+        return startServer(server);
+    }
+
+    private static Server startServer(final @Nonnull Server server) {
+        // Start server in a separate thread
+        final Thread serverThread = new Thread(() -> {
+            try {
+                server.start();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to start server", e);
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+
+        // Wait for server to be ready
+        waitForServerReady(server.port);
+
+        return server;
+    }
+
     /**
      * Stop a Jeamlit server.
-     * 
+     *
      * @param server The server to stop
      */
     public static void stopServer(final Server server) {
@@ -96,10 +108,10 @@ public final class JeamlitTestHelper {
             }
         }
     }
-    
+
     /**
      * Wait for the server to be ready to accept connections.
-     * 
+     *
      * @param port The port to check
      */
     private static void waitForServerReady(int port) {
@@ -122,23 +134,23 @@ public final class JeamlitTestHelper {
         }
         throw new RuntimeException("Server did not start within timeout");
     }
-    
+
     /**
      * Clean up a temporary directory and its contents.
-     * 
+     *
      * @param dir The directory to delete
      */
     public static void cleanupTempDir(Path dir) {
         if (dir != null && Files.exists(dir)) {
             try (final var paths = Files.walk(dir)) {
                 paths.sorted(Comparator.reverseOrder())// Delete files before directories
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            System.err.println("Failed to delete: " + path);
-                        }
-                    });
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                System.err.println("Failed to delete: " + path);
+                            }
+                        });
             } catch (IOException e) {
                 System.err.println("Failed to cleanup temp dir: " + e.getMessage());
             }

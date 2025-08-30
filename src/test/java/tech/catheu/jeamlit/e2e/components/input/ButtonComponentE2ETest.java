@@ -15,12 +15,12 @@
  */
 package tech.catheu.jeamlit.e2e.components.input;
 
-import com.microsoft.playwright.Locator;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX_CLICK;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
@@ -51,7 +51,7 @@ public class ButtonComponentE2ETest {
             // "Button was clicked" text is not visible
             assertThat(page.getByText("Button was clicked!")).not().isVisible(WAIT_50_MS_MAX);
             // Click the button
-            page.locator("jt-button button").click(new Locator.ClickOptions().setTimeout(100));
+            page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
             // "Button was clicked" new text is now visible
             assertThat(page.getByText("Button was clicked!")).isVisible(WAIT_1_SEC_MAX);
         });

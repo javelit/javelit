@@ -24,6 +24,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import jakarta.annotation.Nonnull;
 import tech.catheu.jeamlit.core.Server;
 
 public final class PlaywrightUtils {
@@ -37,6 +38,7 @@ public final class PlaywrightUtils {
     public static final LocatorAssertions.ContainsTextOptions WAIT_1_SEC_MAX_TEXT_C = new LocatorAssertions.ContainsTextOptions().setTimeout(1000);
 
     public static final Locator.ClickOptions WAIT_1_SEC_MAX_CLICK = new Locator.ClickOptions().setTimeout(1000);
+    public static final Locator.ClickOptions WAIT_100_MS_MAX_CLICK = new Locator.ClickOptions().setTimeout(100);
 
     public static final Page.GetByTextOptions EXACT_MATCH = new Page.GetByTextOptions().setExact(true);
 
@@ -46,7 +48,7 @@ public final class PlaywrightUtils {
     public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
 
-    public static void runInBrowser(final Path appFile, Consumer<Page> run) {
+    public static void runInBrowser(final @Nonnull Path appFile, final @Nonnull Consumer<Page> run) {
         Server server = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
@@ -61,9 +63,23 @@ public final class PlaywrightUtils {
     }
 
 
-    public static void runInBrowser(final String app, Consumer<Page> run) {
+    public static void runInBrowser(final @Nonnull String app, final @Nonnull Consumer<Page> run) {
         final Path appFile = JeamlitTestHelper.writeTestApp(app);
         runInBrowser(appFile, run);
+    }
+
+    // run an embedded jeamlit server
+    public static void runInBrowser(final @Nonnull Class<?> appClass, final @Nonnull Consumer<Page> run) {
+        Server server = null;
+        try (final Playwright playwright = Playwright.create();
+             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Page page = browser.newPage()) {
+            server = JeamlitTestHelper.startEmbeddedServer(appClass);
+            page.navigate("http://localhost:" + server.port);
+            run.accept(page);
+        } finally {
+            JeamlitTestHelper.stopServer(server);
+        }
     }
 
     private PlaywrightUtils() {

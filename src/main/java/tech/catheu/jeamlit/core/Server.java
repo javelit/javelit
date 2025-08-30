@@ -56,13 +56,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
 public final class Server implements StateManager.RenderServer {
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     @VisibleForTesting
     public final int port;
-    private final HotReloader hotReloader;
-    private final FileWatcher fileWatcher;
+    private final @Nonnull AppRunner appRunner;
+    private final @Nullable FileWatcher fileWatcher;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
@@ -77,7 +78,8 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public static final class Builder {
-        final @Nonnull Path appPath;
+        final @Nullable Path appPath;
+        final @Nullable Class<?> appClass;
         final int port;
         @Nullable String classpath;
         @Nullable String headersFile;
@@ -87,7 +89,15 @@ public final class Server implements StateManager.RenderServer {
 
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
+            this.appClass = null;
             this.port = port;
+        }
+
+        private Builder(final @Nonnull Class<?> appClass, final int port) {
+            this.appPath = null;
+            this.appClass = appClass;
+            this.port = port;
+            this.buildSystem = BuildSystem.RUNTIME;
         }
 
         public Builder additionalClasspath(@Nullable String additionalClasspath) {
@@ -101,6 +111,7 @@ public final class Server implements StateManager.RenderServer {
         }
 
         public Builder buildSystem(@Nullable BuildSystem buildSystem) {
+            checkState(appClass == null, "Cannot set build system when appClass is provided directly.");
             this.buildSystem = buildSystem;
             return this;
         }
@@ -124,11 +135,15 @@ public final class Server implements StateManager.RenderServer {
         return new Builder(appPath, port);
     }
 
+    public static Builder builder(final @Nonnull Class<?> appClass, final int port) {
+        return new Builder(appClass, port);
+    }
+
     private Server(final Builder builder) {
         this.port = builder.port;
-        this.hotReloader = new HotReloader(builder);
         this.customHeaders = loadCustomHeaders(builder.headersFile);
-        this.fileWatcher = new FileWatcher(builder.appPath);
+        this.appRunner = new AppRunner(builder);
+        this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
 
         // register in the state manager
         StateManager.setRenderServer(this);
@@ -162,25 +177,29 @@ public final class Server implements StateManager.RenderServer {
         server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(spaHandler).build();
 
         server.start();
-        try {
-            fileWatcher.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (fileWatcher != null) {
+            try {
+                fileWatcher.start();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         LOG.info("Jeamlit server started on http://localhost:{}", port);
     }
 
     public void stop() {
-        fileWatcher.stop();
+        if (fileWatcher != null) {
+            fileWatcher.stop();
+        }
         if (server != null) {
             server.stop();
         }
     }
 
-    private void notifyReload(final  @Nonnull HotReloader.ReloadStrategy reloadStrategy) {
+    private void notifyReload(final  @Nonnull Reloader.ReloadStrategy reloadStrategy) {
         // reload the app and re-run the app for all sessions
         try {
-            hotReloader.reloadFile(reloadStrategy);
+            appRunner.reload(reloadStrategy);
         } catch (Exception e) {
             if (!(e instanceof CompilationException)) {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
@@ -190,7 +209,7 @@ public final class Server implements StateManager.RenderServer {
         }
 
         for (final String sessionId : sessions.keySet()) {
-            hotReloader.runApp(sessionId);
+            appRunner.runApp(sessionId);
         }
     }
 
@@ -257,7 +276,7 @@ public final class Server implements StateManager.RenderServer {
 
         if (doRerun) {
             try {
-                hotReloader.runApp(sessionId);
+                appRunner.runApp(sessionId);
             } catch (CompilationException e) {
                 sendCompilationError(sessionId, e.getMessage());
             }
@@ -386,7 +405,7 @@ public final class Server implements StateManager.RenderServer {
                 throw new IllegalStateException("FileWatcher is already running");
             }
             final Path directory;
-            if (hotReloader.buildSystem == BuildSystem.FATJAR_AND_JBANG || hotReloader.buildSystem == BuildSystem.RUNTIME) {
+            if (appRunner.getBuildSystem() == BuildSystem.FATJAR_AND_JBANG || appRunner.getBuildSystem() == BuildSystem.RUNTIME) {
                 directory = watchedFile.getParent();
             } else {
                 directory = Paths.get("").toAbsolutePath();
@@ -403,9 +422,9 @@ public final class Server implements StateManager.RenderServer {
                         case MODIFY -> {
                             LOG.info("File changed: {}. Rebuilding...", changedFile);
                             if (changedFile.equals(watchedFile)) {
-                                notifyReload(HotReloader.ReloadStrategy.CLASS);
+                                notifyReload(Reloader.ReloadStrategy.CLASS);
                             } else {
-                                notifyReload(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                                notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                             }
                         }
                         case DELETE -> {
@@ -422,7 +441,7 @@ public final class Server implements StateManager.RenderServer {
                                 LOG.warn(
                                         "App file {} recreated. Attempting to reload from the new file.",
                                         watchedFile);
-                                notifyReload(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                                notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                             }
                         }
                         case OVERFLOW -> {

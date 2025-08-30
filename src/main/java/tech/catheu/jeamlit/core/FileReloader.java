@@ -17,7 +17,6 @@ package tech.catheu.jeamlit.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,9 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.tools.Diagnostic;
@@ -42,27 +38,15 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static tech.catheu.jeamlit.core.utils.JavaUtils.stackTraceString;
-import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
-import static tech.catheu.jeamlit.core.utils.StringUtils.percentEncode;
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
-
-class HotReloader {
-
-    protected enum ReloadStrategy {
-        ///  only reload the classes previous classpath will be used if it exists
-        /// no maven/gradle build
-        CLASS,
-        BUILD_CLASSPATH_AND_CLASS
-    }
-
-
-    private static final Logger LOG = LoggerFactory.getLogger(HotReloader.class);
+// requires a JDK
+class FileReloader extends Reloader {
+    private static final Logger LOG = LoggerFactory.getLogger(FileReloader.class);
     protected static final Path COMPILATION_TARGET_DIR = Paths.get("target/jeamlit/classes")
             .toAbsolutePath();
 
@@ -70,44 +54,11 @@ class HotReloader {
     private final JavaCompiler compiler;
     private @Nullable List<String> compilationOptions;
     private final @Nonnull Path javaFile;
-    private final AtomicReference<Method> mainMethod = new AtomicReference<>();
-    private final Semaphore reloadAvailable = new Semaphore(1, true);
     private final String providedClasspath;
     final BuildSystem buildSystem;
     private final @Nullable String[] customClasspathCmdArgs;
     private final @Nullable String[] customCompileCmdArgs;
 
-
-    // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
-    protected HotReloader(final @Nonnull Server.Builder builder) {
-        this.customClasspathCmdArgs = builder.customClasspathCmdArgs;
-        this.customCompileCmdArgs = builder.customCompileCmdArgs;
-        LOG.info("Using provided classpath {}", builder.classpath);
-        this.providedClasspath = builder.classpath;
-
-        this.compiler = ToolProvider.getSystemJavaCompiler();
-        if (this.compiler == null) {
-            throw new RuntimeException(
-                    "System java compiler not available. Make sure you're running Jeamlit with a JDK, not a JRE, and that the java compiler is available.");
-        }
-        this.javaFile = builder.appPath;
-        this.buildSystem = builder.buildSystem == null ? BuildSystem.inferBuildSystem() : builder.buildSystem;
-
-        new Thread(() -> {
-            try {
-                reloadAvailable.acquire();
-                if (mainMethod.get() == null) {
-                    LOG.info("Compiling the app for the first time.");
-                    reloadFile(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
-                    LOG.info("First time compilation successful.");
-                }
-            } catch (Exception e) {
-                LOG.warn("First compilation failed. Will re-attempt compilation when user connects and return the error to the user.", e);
-            } finally {
-                reloadAvailable.release();
-            }
-        }).start();
-    }
 
     /**
      * Recompile the app class. Returns the Class.
@@ -115,7 +66,24 @@ class HotReloader {
      * @throws CompilationException for any compilation that should be reported to the user in the app
      *                              Note: not implemented yet: re-compile multiple classes, the dependencies of the app class
      */
-    protected void reloadFile(final @Nonnull ReloadStrategy reloadStrategy) {
+    FileReloader(Server.Builder builder) {
+        this.customClasspathCmdArgs = builder.customClasspathCmdArgs;
+        this.customCompileCmdArgs = builder.customCompileCmdArgs;
+        this.providedClasspath = builder.classpath;
+        this.compiler = ToolProvider.getSystemJavaCompiler();
+        if (this.compiler == null) {
+            throw new RuntimeException(
+                    "System java compiler not available. Make sure you're running Jeamlit with a JDK, not a JRE, and that the java compiler is available.");
+        }
+        checkArgument(builder.appPath != null);
+        this.javaFile = builder.appPath;
+        this.buildSystem = builder.buildSystem == null ?
+                BuildSystem.inferBuildSystem() :
+                builder.buildSystem;
+    }
+
+    @Override
+    Method reload(@NotNull Reloader.ReloadStrategy reloadStrategy) {
         switch (reloadStrategy) {
             case BUILD_CLASSPATH_AND_CLASS:
                 try {
@@ -141,6 +109,7 @@ class HotReloader {
                     "Could not determine class name in file %s. File is empty, invalid or there are only inner classes?".formatted(
                             javaFile));
         }
+        Method mainMethod = null;
         try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
                                                               getClass().getClassLoader())) {
             for (final JavaFileObject classFile : classFiles) {
@@ -148,112 +117,13 @@ class HotReloader {
                 final byte[] classBytes = loadClassBytes(classFile);
                 final Class<?> appClass = loader.defineClass(className, classBytes);
                 if (classFile == mainClassFile) {
-                    mainMethod.set(appClass.getMethod("main", String[].class));
+                    mainMethod = appClass.getMethod("main", String[].class);
                 }
             }
         } catch (IOException | NoSuchMethodException e) {
             throw new CompilationException(e);
         }
-    }
-
-    /**
-     * convert a JavaFileObject to a className
-     * target/jeamlit/classes/com/example/MyClass.class -> com.example.MyClass
-     * target/jeamlit/classes/MyClass.class --> MyClass
-     * compatible with inner classes
-     */
-    private static String classNameFor(final @Nonnull JavaFileObject classFile) {
-        return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
-                .replace(File.separatorChar, '.').replace(".class", "");
-    }
-
-    /// @throws CompilationException if it is called for the first time, the files have never been compiled and and the compilation failed
-    protected void runApp(final String sessionId) {
-        StateManager.beginExecution(sessionId);
-        // if necessary: load the app for the first time
-        if (mainMethod.get() == null) {
-            try {
-                reloadAvailable.acquire();
-                if (mainMethod.get() == null) {
-                    LOG.warn("Pre-compilation of the app failed the first time. Attempting first compilation again.");
-                    reloadFile(HotReloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
-                }
-            } catch (InterruptedException e) {
-                Jt.error("Compilation interrupted.").use();
-            } catch (Exception e) {
-                if (!(e instanceof CompilationException)) {
-                    LOG.error("Unknown error type: {}", e.getClass(), e);
-                }
-                throw e;
-            } finally {
-                reloadAvailable.release();
-            }
-        }
-
-        boolean doRerun = false;
-        Consumer<String> runAfterBreak = null;
-        try {
-            mainMethod.get().invoke(null, new Object[]{new String[]{}});
-        } catch (Exception e) {
-            if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
-                LOG.error("Unexpected error type: {}", e.getClass(), e);
-            }
-            if (e.getCause() instanceof BreakAndReloadAppException u) {
-                runAfterBreak = u.runAfterBreak;
-                doRerun = true;
-            } else if (e.getCause() != null && e.getCause()
-                    .getCause() instanceof BreakAndReloadAppException u) {
-                runAfterBreak = u.runAfterBreak;
-                doRerun = true;
-            } else {
-                @Language("markdown") final String errorMessage = buildErrorMessage(e);
-                // Send error as a component usage - its lifecycle is managed like all other components
-                Jt.error(errorMessage).use();
-            }
-        } finally {
-            StateManager.endExecution();
-        }
-
-        if (doRerun) {
-            if (runAfterBreak != null) {
-                runAfterBreak.accept(sessionId);
-            }
-            runApp(sessionId);
-        }
-    }
-
-
-    private static @Language("markdown") @NotNull String buildErrorMessage(Throwable error) {
-        if (error instanceof PageRunException) {
-            error = error.getCause();
-        }
-        if (error instanceof InvocationTargetException) {
-            error = error.getCause();
-        }
-        final String exceptionSimpleName = error.getClass().getSimpleName();
-        final String errorMesssage = optional(error.getMessage()).orElse("[ no error message ]");
-        final String stackTrace = stackTraceString(error);
-        final String googleLink = "https://www.google.com/search?q=" + percentEncode(
-                exceptionSimpleName + " " + errorMesssage);
-        final String chatGptLink = "https://chatgpt.com/?q=" + percentEncode(String.join("\n",
-                                                                                         List.of("Help me fix the following issue. I use Java Jeamlit and got:",
-                                                                                                 exceptionSimpleName,
-                                                                                                 errorMesssage,
-                                                                                                 stackTrace)));
-
-        return """
-                **%s**: %s
-                
-                **Stacktrace**:
-                ```
-                %s
-                ```
-                [Ask Google](%s) • [Ask ChatGPT](%s)
-                """.formatted(exceptionSimpleName,
-                              errorMesssage,
-                              stackTrace,
-                              googleLink,
-                              chatGptLink);
+        return mainMethod;
     }
 
     // return the fully qualified classname of the compiled file
@@ -384,7 +254,8 @@ class HotReloader {
 
         try {
             LOG.info("Trying to add {} dependencies to the classpath...", buildSystem);
-            final String classpath = buildSystem.obtainClasspath(javaFilePath, customClasspathCmdArgs);
+            final String classpath = buildSystem.obtainClasspath(javaFilePath,
+                                                                 customClasspathCmdArgs);
             if (!classpath.isBlank()) {
                 cp.append(File.pathSeparator).append(classpath);
             }
@@ -401,4 +272,17 @@ class HotReloader {
 
         return cp.toString();
     }
+
+    /**
+     * convert a JavaFileObject to a className
+     * target/jeamlit/classes/com/example/MyClass.class -> com.example.MyClass
+     * target/jeamlit/classes/MyClass.class --> MyClass
+     * compatible with inner classes
+     */
+    private static String classNameFor(final @Nonnull JavaFileObject classFile) {
+        return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
+                .replace(File.separatorChar, '.').replace(".class", "");
+    }
+
+
 }

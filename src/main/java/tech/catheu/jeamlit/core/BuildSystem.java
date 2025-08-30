@@ -79,7 +79,7 @@ public enum BuildSystem {
 
         @Override
         boolean isUsed() {
-            final String jeamlitLocation = HotReloader.class.getProtectionDomain().getCodeSource()
+            final String jeamlitLocation = BuildSystem.class.getProtectionDomain().getCodeSource()
                     .getLocation().getPath();
             // Decode URL encoding (e.g., %20 for spaces)
             final String decodedPath = URLDecoder.decode(jeamlitLocation, StandardCharsets.UTF_8);
