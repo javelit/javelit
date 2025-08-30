@@ -52,7 +52,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <undertow.version>2.3.18.Final</undertow.version>
         <flexmark.version>0.64.8</flexmark.version>
-        <sonatype.url>https://s01.oss.sonatype.org</sonatype.url>
+        <sonatype.url>https://ossrh-staging-api.central.sonatype.com</sonatype.url>
     </properties>
 
     <scm>
