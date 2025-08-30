@@ -28,15 +28,13 @@ jobs:
         run: |
           git config --global user.name "jeamlit-ci"
           git config --global user.email "jeamlit-ci@users.noreply.github.com"
-      - name: Ensure browsers are installed
-        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps" -D exec.classpathScope=test
+      #- name: Ensure browsers are installed
+      #  run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps" -D exec.classpathScope=test
       - name: create release
         run: |
-          git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-          ./mvnw -B -V -ntp -Prelease release:clean initialize release:prepare release:perform
+          ./mvnw -B -V -ntp -Prelease release:clean initialize release:prepare release:perform -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          GITHUB_TOKEN: ${{ github.token }}
 
