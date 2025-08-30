@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
+import ch.qos.logback.classic.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -71,8 +72,17 @@ public class Cli implements Callable<Integer> {
                 split = "::")
         private String[] customClasspathCmdArgs;
 
+        @SuppressWarnings("unused")
+        @Option(names = {"--log-level"}, 
+                description = "Set log level (TRACE, DEBUG, INFO, WARN, ERROR). Default: INFO. If the value is not recognized, fallbacks to DEBUG.",
+                defaultValue = "INFO")
+        private String logLevel;
+
         @Override
         public Integer call() throws Exception {
+            final Level logLevel = Level.valueOf(this.logLevel);
+            setLoggingLevel(logLevel);
+
             if (!parametersAreValid()) {
                 return 1;
             }
@@ -149,5 +159,10 @@ public class Cli implements Callable<Integer> {
         final int exitCode = new CommandLine(new Cli()).addSubcommand("run", new RunCommand())
                 .execute(args);
         System.exit(exitCode);
+    }
+
+    public static void setLoggingLevel(Level level) {
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        root.setLevel(level);
     }
 }
