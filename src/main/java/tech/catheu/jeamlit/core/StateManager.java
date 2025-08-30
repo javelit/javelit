@@ -73,9 +73,17 @@ final class StateManager {
     /// This value is supposed to be changed to a proper rendering server with [#setRenderServer(RenderServer)]
     private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
+    protected enum ExecutionStatus {
+        BEGIN,
+        RUNNING, // can be used to provide a hearbeat for very long runs - not used for the moment
+        END
+    }
+
     protected interface RenderServer {
         // component can be null to trigger a full cleanup
         void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @Nonnull JtContainer container, final @Nullable Integer index, final boolean clearBefore);
+
+        void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus);
     }
 
     protected static void setRenderServer(final @Nonnull RenderServer sender) {
@@ -177,6 +185,7 @@ final class StateManager {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                     "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
+        renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN);
 
         // run callback before everything else
         final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
@@ -375,6 +384,7 @@ final class StateManager {
         }
 
         LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
+        renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);
         CURRENT_EXECUTION_IN_THREAD.remove();
     }
 
@@ -394,13 +404,18 @@ final class StateManager {
 
     private static class NoOpRenderServer implements RenderServer {
         @Override
-        public void send(String sessionId, @Nullable JtComponent<?> component, @NotNull JtContainer container, @Nullable Integer index, boolean clearBefore) {
+        public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, final @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
             LOG.error(
                     "Cannot send indexed delta for component {} in container {} at index {} to session {}. No render server is registered.",
                     component != null ? component.getKey() : null,
                     container,
                     index,
                     sessionId);
+        }
+
+        @Override
+        public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
+            LOG.error("Cannot send run status {} to session {}. No render server is registered", executionStatus, sessionId);
         }
     }
 

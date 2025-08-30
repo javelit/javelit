@@ -461,6 +461,8 @@
             applyDelta(message);
         } else if (message.type === 'compilation_error') {
             showCompilationError(message.error);
+        } else if (message.type === 'status') {
+            console.log(`Execution status: ${message.status}.`);
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }

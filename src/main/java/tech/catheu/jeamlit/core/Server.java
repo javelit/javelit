@@ -177,7 +177,7 @@ public final class Server implements StateManager.RenderServer {
         }
     }
 
-    protected void notifyReload(final  @Nonnull HotReloader.ReloadStrategy reloadStrategy) {
+    private void notifyReload(final  @Nonnull HotReloader.ReloadStrategy reloadStrategy) {
         // reload the app and re-run the app for all sessions
         try {
             hotReloader.reloadFile(reloadStrategy);
@@ -206,7 +206,7 @@ public final class Server implements StateManager.RenderServer {
                 protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
                     try {
                         final String data = message.getData();
-                        final Message msg = Shared.OBJECT_MAPPER.readValue(data, Message.class);
+                        final FrontendMessage msg = Shared.OBJECT_MAPPER.readValue(data, FrontendMessage.class);
                         handleMessage(sessionId, msg);
                     } catch (Exception e) {
                         LOG.error("Error handling message", e);
@@ -226,32 +226,33 @@ public final class Server implements StateManager.RenderServer {
     }
 
 
-    private record Message(@Nonnull String type,
-                           @Nullable String componentKey, @Nullable Object value,
-                           // for component_update mesages
-                           @Nullable String path,
-                           @Nullable Map<String, List<String>> queryParameters
+    private record FrontendMessage(@Nonnull String type,
+                                   // for component_update message
+                                   @Nullable String componentKey, @Nullable Object value,
+                                   // for path_update message
+                                   @Nullable String path,
+                                   @Nullable Map<String, List<String>> queryParameters
     ) {
     }
 
-    private void handleMessage(final String sessionId, final Message message) {
+    private void handleMessage(final String sessionId, final FrontendMessage frontendMessage) {
         boolean doRerun = false;
-        switch (message.type()) {
+        switch (frontendMessage.type()) {
             case "component_update" -> {
                 doRerun = StateManager.handleComponentUpdate(sessionId,
-                                                             message.componentKey(),
-                                                             message.value());
+                                                             frontendMessage.componentKey(),
+                                                             frontendMessage.value());
             }
             case "reload" -> doRerun = true;
             case "path_update" -> {
                 final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(
-                        optional(message.path()).orElse(""),
-                        optional(message.queryParameters()).orElse(Map.of()));
+                        optional(frontendMessage.path()).orElse(""),
+                        optional(frontendMessage.queryParameters()).orElse(Map.of()));
                 StateManager.setUrlContext(sessionId, urlContext);
                 // Trigger app execution with new URL context
                 doRerun = true;
             }
-            default -> LOG.warn("Unknown message type: {}", message.type());
+            default -> LOG.warn("Unknown message type: {}", frontendMessage.type());
         }
 
         if (doRerun) {
@@ -300,6 +301,14 @@ public final class Server implements StateManager.RenderServer {
                   component != null ? component.getKey() : null);
         LOG.debug("  HTML: {}", component != null ? component.render() : null);
         LOG.debug("  Registrations: {}", registrations.size());
+        sendMessage(sessionId, message);
+    }
+
+    @Override
+    public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
+        final Map<String, Object> message = new HashMap<>();
+        message.put("type", "status");
+        message.put("status", executionStatus);
         sendMessage(sessionId, message);
     }
 
