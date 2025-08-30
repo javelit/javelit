@@ -21,7 +21,7 @@
 
     <groupId>tech.catheu</groupId>
     <artifactId>jeamlit</artifactId>
-    <version>${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Jeamlit</name>
@@ -344,6 +344,25 @@
                 </executions>
             </plugin>
 
+            <!-- make parsedVersion available in maven release-plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>parse-versions-for-release</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsedVersion</propertyPrefix>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Maven Release Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -358,7 +377,7 @@
                     <!-- activating the release profile explicitly -->
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
-                    <tagNameFormat>jeamlit-${project.version}</tagNameFormat>
+                    <tagNameFormat>jeamlit-@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
 
