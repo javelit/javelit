@@ -28,6 +28,8 @@ jobs:
         run: |
           git config --global user.name "jeamlit-ci"
           git config --global user.email "jeamlit-ci@users.noreply.github.com"
+      - name: Ensure browsers are installed
+        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
       - name: create release
         run: |
           ./mvnw -B -V -ntp -Prelease release:clean initialize release:prepare release:perform
