@@ -379,23 +379,6 @@
                     <releaseProfiles>release</releaseProfiles>
                     <tagNameFormat>jeamlit-@{project.version}</tagNameFormat>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-scm-plugin</artifactId>
-                        <version>1.8.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.maven.scm</groupId>
-                        <artifactId>maven-scm-provider-gitexe</artifactId>
-                        <version>2.1.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.maven.scm</groupId>
-                        <artifactId>maven-scm-api</artifactId>
-                        <version>2.1.0</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <!-- makes project metadata available in other plugin configs -->
