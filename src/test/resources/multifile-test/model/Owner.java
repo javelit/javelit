@@ -16,6 +16,6 @@
 package model;
 
 public enum Owner {
-    ME,
+    BOSS,
     SOMEBODY_ELSE
 }

@@ -22,6 +22,6 @@ public class Test {
 
     public static void main(String[] args) throws InterruptedException {
         Jt.text(String.valueOf(Car.BLUE)).use();
-        Jt.text(String.valueOf(Owner.ME)).use();
+        Jt.text(String.valueOf(Owner.BOSS)).use();
     }
 }

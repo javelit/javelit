@@ -40,8 +40,8 @@ public class MultiFileE2ETest {
         PlaywrightUtils.runInBrowser(mainFile, page -> {
             // Verify that Car.BLUE is rendered (from model/Car.java)
             assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
-            // Verify that Owner.ME is rendered (from model/Owner.java)
-            assertThat(page.getByText("ME")).isVisible(WAIT_1_SEC_MAX);
+            // Verify that Owner.BOSS is rendered (from model/Owner.java)
+            assertThat(page.getByText("BOSS")).isVisible(WAIT_1_SEC_MAX);
         });
     }
     
