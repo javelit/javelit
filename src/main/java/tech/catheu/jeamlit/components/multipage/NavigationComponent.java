@@ -50,12 +50,6 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     protected final JtPage home;
     protected NavigationPosition position;
 
-    public static class NotFoundPage {
-        public static void main(String[] args) {
-            Jt.title("Page Not Found.");
-        }
-    }
-
     private final Map<String, Class<?>> classNameToClass = new HashMap<>();
 
     public enum NavigationPosition {
@@ -204,9 +198,10 @@ public final class NavigationComponent extends JtComponent<JtPage> {
                           currentValue.fullyQualifiedName());
             callMainMethod(clazz);
         } else {
-            // TODO can be improved and made customizable later
-            // FIXME add a go home link
             Jt.title("Page Not Found.").use();
+            if (Jt.button("Go to home").use()) {
+                Jt.switchPage(classNameToClass.get(home.fullyQualifiedName()));
+            }
         }
     }
 

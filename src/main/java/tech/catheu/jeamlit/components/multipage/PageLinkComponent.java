@@ -75,7 +75,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
 
     public static class Builder extends JtComponentBuilder<NONE, PageLinkComponent, Builder> {
         @Language("markdown")
-        private final @Nonnull String label;
+        private @Nonnull String label;
         private final @Nonnull String url;
         private final @Nullable Class<?> pageClass;
         private final boolean isHomePage;
@@ -112,6 +112,12 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
             this.pageClass = null;
             this.isExternal = true;
             this.isHomePage = false;
+        }
+
+        public Builder label(final @Nonnull String label) {
+            checkArgument(!label.isBlank(), "Label cannot be empty");
+            this.label = label;
+            return this;
         }
 
         public Builder icon(final String icon) {
