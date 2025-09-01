@@ -214,6 +214,26 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .jeamlit-attribution {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 500;
+            font-family: var(--jt-font-family);
+            font-size: var(--jt-font-size-xs);
+            color: var(--jt-text-white);
+            text-decoration: none;
+            transition: color var(--jt-transition-fast);
+            background-color: var(--jt-theme-color);
+            padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+            border-radius: var(--jt-border-radius) 0 0 0;
+        }
+
+        .jeamlit-attribution:hover {
+            font-weight: var(--jt-font-weight-bold);
+            padding: var(--jt-spacing-sm) var(--jt-spacing-sm);
+        }
     </style>
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
@@ -269,6 +289,9 @@
     <jt-settings-content></jt-settings-content>
 </jt-connection-error-modal>
 
+<!-- Attribution -->
+<a href="https://github.com/cyrilou242/jeamlit" class="jeamlit-attribution" target="_blank" rel="noopener">&hearts; Built with Jeamlit &hearts;</a>
+
 <script>
     const app = document.getElementById('app');
     const mainContainer = document.getElementById('main-container');
@@ -284,6 +307,12 @@
 
     // Track if this is the first message to clear connecting text
     let isFirstMessage = true;
+
+    // Localhost detection - available globally
+    window.jeamlit = {isLocalhost: window.location.hostname === 'localhost'};
+    if (window.jeamlit.isLocalhost) {
+        document.querySelector('.jeamlit-attribution').style.display = 'none';
+    }
 
     // Connection management
     let ws = null;
@@ -424,7 +453,7 @@
         localStorage.setItem('jeamlit-sidebar-collapsed', sidebarCollapsed.toString());
     }
 
-    window.jeamlit = {
+    window.jeamlit = {...window.jeamlit,
         sendComponentUpdate: function(componentKey, value) {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
