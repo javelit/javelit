@@ -56,11 +56,15 @@
                 }
                 */
             }
-        .fixed-element {
+        .toolbar {
             min-height: 3.25rem;
             background: var(--jt-bg-primary);
             margin: 0 0;
-            display: block;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: var(--jt-spacing-md);
+            padding: 0 var(--jt-spacing-lg);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -181,11 +185,43 @@
             user-select: none;
             cursor: col-resize;
         }
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--jt-spacing-md);
+            height: 200px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--jt-border-color);
+            border-top-color: var(--jt-theme-active);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            font-family: var(--jt-font-family);
+            font-size: var(--jt-font-size-sm);
+            color: var(--jt-text-secondary);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
     {{> connection-error-modal.html.mustache }}
     {{> code.html.mustache }}
+    {{> toolbar-menu.html.mustache }}
+    {{> status-widget.html.mustache }}
+    {{> settings-content.html.mustache }}
 </head>
 <body>
 <div id="app" class="app-wrapper">
@@ -200,9 +236,15 @@
         <div id="sidebar-container" class="sidebar-content" data-container="sidebar"></div>
     </div>
     <div class="layout-container">
-        <div class="fixed-element"></div>
+        <div class="toolbar">
+            <jt-status-widget id="status-widget"></jt-status-widget>
+            <jt-toolbar-menu id="toolbar-menu"></jt-toolbar-menu>
+        </div>
         <div id="main-container" class="main-layout" data-container="main">
-            <p>Connecting to Jeamlit server...</p>
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading...</div>
+            </div>
         </div>
     </div>
 </div>
@@ -221,6 +263,12 @@
     <jt-code id="compilation-code" content=""></jt-code>
 </jt-connection-error-modal>
 
+<!-- Settings Modal -->
+<jt-connection-error-modal id="settings-modal" top-aligned>
+    <span slot="title">Settings</span>
+    <jt-settings-content></jt-settings-content>
+</jt-connection-error-modal>
+
 <script>
     const app = document.getElementById('app');
     const mainContainer = document.getElementById('main-container');
@@ -230,6 +278,9 @@
     const connectionModal = document.getElementById('connection-modal');
     const compilationModal = document.getElementById('compilation-modal');
     const compilationCode = document.getElementById('compilation-code');
+    const statusWidget = document.getElementById('status-widget');
+    const settingsContent = document.querySelector('jt-settings-content');
+    const mainLayout = document.querySelector('.main-layout');
 
     // Track if this is the first message to clear connecting text
     let isFirstMessage = true;
@@ -462,7 +513,9 @@
         } else if (message.type === 'compilation_error') {
             showCompilationError(message.error);
         } else if (message.type === 'status') {
-            console.log(`Execution status: ${message.status}.`);
+            if (statusWidget) {
+                statusWidget.updateStatus(message.status);
+            }
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
@@ -641,7 +694,38 @@
         compilationModal.show = true;
     }
 
-    // Initialize sidebar and connection
+    // Settings management
+    function applySettings(config) {
+        if (config.appearance && config.appearance.wideMode !== undefined) {
+            if (config.appearance.wideMode) {
+                mainLayout.style.maxWidth = 'none';
+            } else {
+                mainLayout.style.maxWidth = '768px';
+            }
+        }
+    }
+
+    function loadAndApplySettings() {
+        try {
+            const stored = localStorage.getItem('jeamlit-settings');
+            if (stored) {
+                const config = JSON.parse(stored);
+                applySettings(config);
+            }
+        } catch (e) {
+            console.warn('Failed to load settings on startup:', e);
+        }
+    }
+
+    // Listen for settings changes
+    if (settingsContent) {
+        settingsContent.addEventListener('config-change', (e) => {
+            applySettings(e.detail.config);
+        });
+    }
+
+    // Initialize sidebar, settings, and connection
+    loadAndApplySettings();
     initializeSidebar();
     createWebSocketConnection();
 </script>

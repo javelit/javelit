@@ -37,6 +37,7 @@ public abstract class JtComponent<T> {
 
     // used by the components' mustache templates
     protected static final String LIT_DEPENDENCY = "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js";
+    // see https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded
     protected static final String MATERIAL_SYMBOLS_CDN = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
     protected static final String SPRINTF_DEPENDENCY = "https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js";
 
