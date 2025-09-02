@@ -308,8 +308,11 @@
     // Track if this is the first message to clear connecting text
     let isFirstMessage = true;
 
-    // Localhost detection - available globally
-    window.jeamlit = {isLocalhost: window.location.hostname === 'localhost'};
+    // Localhost detection and XSRF token - available globally
+    window.jeamlit = {
+        isLocalhost: window.location.hostname === 'localhost',
+        xsrfToken: "{{ XSRF_TOKEN }}"
+    };
     if (window.jeamlit.isLocalhost) {
         document.querySelector('.jeamlit-attribution').style.display = 'none';
     }
@@ -537,7 +540,10 @@
 
     function handleWebSocketMessage(event) {
         const message = JSON.parse(event.data);
-        if (message.type === 'delta') {
+        if (message.type === 'session_init') {
+            // Store WebSocket session ID for POST/PUT requests - eg file uploads
+            window.jeamlit.sessionId = message.sessionId;
+        } else if (message.type === 'delta') {
             applyDelta(message);
         } else if (message.type === 'compilation_error') {
             showCompilationError(message.error);

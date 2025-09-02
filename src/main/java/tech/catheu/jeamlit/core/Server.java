@@ -20,7 +20,10 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,9 +41,17 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.server.session.InMemorySessionManager;
+import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionAttachmentHandler;
+import io.undertow.server.session.SessionCookieConfig;
+import io.undertow.server.session.SessionManager;
 import io.undertow.util.Headers;
+import io.undertow.util.Sessions;
+import io.undertow.util.StatusCodes;
 import io.undertow.websockets.WebSocketConnectionCallback;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
@@ -59,6 +70,8 @@ import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
 public final class Server implements StateManager.RenderServer {
+    private static final String SESSION_XSRF_ATTRIBUTE = "XSRF_TOKEN";
+
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     @VisibleForTesting
     public final int port;
@@ -66,7 +79,8 @@ public final class Server implements StateManager.RenderServer {
     private final @Nullable FileWatcher fileWatcher;
 
     private Undertow server;
-    private final Map<String, WebSocketChannel> sessions = new ConcurrentHashMap<>();
+    private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
+    private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final String customHeaders;
 
@@ -168,13 +182,54 @@ public final class Server implements StateManager.RenderServer {
                             .handleRequest(exchange);
                     return;
                 }
-                // All other paths - serve the main app (SPA routing)
-                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-                exchange.getResponseSender().send(getIndexHtml());
+                // get or create session, then generate and attach XSRF token cookie
+                final Session currentSession = Sessions.getOrCreateSession(exchange);
+                String method = exchange.getRequestMethod().toString();
+                if ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method) || "DELETE".equals(method)) {
+                    // perform CSRF validation
+                    final String expectedToken = (String) currentSession.getAttribute(
+                            SESSION_XSRF_ATTRIBUTE);
+                    final String providedToken = exchange.getRequestHeaders()
+                            .getFirst("X-XSRF-TOKEN");
+                    if (providedToken == null || !providedToken.equals(expectedToken)) {
+                        exchange.setStatusCode(StatusCodes.FORBIDDEN);
+                        exchange.getResponseSender().send("Invalid CSRF token");
+                    }
+                    exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                    exchange.getResponseSender()
+                            .send("bad request."); // nothing implemented here yet
+
+                } else {
+                    if (!currentSession.getAttributeNames().contains(SESSION_XSRF_ATTRIBUTE)) {
+                        final String xsrfToken = generateSecureXsrfToken();
+                        currentSession.setAttribute(SESSION_XSRF_ATTRIBUTE, xsrfToken);
+                        exchange.setResponseCookie(new CookieImpl("JEAMLIT-XSRF-TOKEN", xsrfToken)
+                                                           .setHttpOnly(false)
+                                                           .setSameSite(true)
+                                                           .setPath("/")
+                                                           .setMaxAge(86400 * 7));
+                    }
+                    final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+                    exchange.getResponseSender().send(getIndexHtml(xsrfToken));
+                }
             }
         };
 
-        server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(spaHandler).build();
+        // attach a BROWSER session cookie - this is not the same as app state "session" used downstream
+        final SessionAttachmentHandler handlerWithSessions = new SessionAttachmentHandler(
+                spaHandler,
+                new InMemorySessionManager("jeamlit_session"),
+                new SessionCookieConfig().setCookieName("jeamlit-session-id")
+                        .setHttpOnly(true)
+                        .setMaxAge(86400 * 7)// 7 days
+                        .setPath("/")
+                        //make below configurable
+                        //.setSecure()
+                        //.setDomain()
+        );
+        server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(handlerWithSessions)
+                .build();
 
         server.start();
         if (fileWatcher != null) {
@@ -204,11 +259,11 @@ public final class Server implements StateManager.RenderServer {
             if (!(e instanceof CompilationException)) {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
             }
-            sessions.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
+            session2WsChannel.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
             return;
         }
 
-        for (final String sessionId : sessions.keySet()) {
+        for (final String sessionId : session2WsChannel.keySet()) {
             appRunner.runApp(sessionId);
         }
     }
@@ -218,7 +273,21 @@ public final class Server implements StateManager.RenderServer {
         @Override
         public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
             final String sessionId = UUID.randomUUID().toString();
-            sessions.put(sessionId, channel);
+            session2WsChannel.put(sessionId, channel);
+            // Send session ID to frontend immediately
+            final Map<String, Object> sessionInitMessage = new HashMap<>();
+            sessionInitMessage.put("type", "session_init");
+            sessionInitMessage.put("sessionId", sessionId);
+            sendMessage(channel, sessionInitMessage);
+            final Session currentSession = getHttpSessionFromWebSocket(exchange);
+            if (currentSession == null) {
+                throw new RuntimeException("No session found for sessionId: " + sessionId);
+            }
+            final @Nullable String xsrf = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
+            if (xsrf == null) {
+                throw new RuntimeException("Session did not provide a valid xsrf token: " + sessionId);
+            }
+            session2Xsrf.put(sessionId, xsrf);
 
             channel.getReceiveSetter().set(new AbstractReceiveListener() {
                 @Override
@@ -234,13 +303,31 @@ public final class Server implements StateManager.RenderServer {
 
                 @Override
                 protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-                    sessions.remove(sessionId);
+                    session2WsChannel.remove(sessionId);
+                    session2Xsrf.remove(sessionId);
                     sessionRegisteredTypes.remove(sessionId);
                     StateManager.clearSession(sessionId);
                 }
             });
             // No initial render - wait for path_update message from frontend
             channel.resumeReceives();
+        }
+
+        private @Nullable Session getHttpSessionFromWebSocket(WebSocketHttpExchange exchange) {
+            final String cookieHeader = exchange.getRequestHeader("Cookie");
+            if (cookieHeader != null) {
+                // Parse jeamlit-session-id cookie
+                final String[] cookies = cookieHeader.split(";");
+                for (String cookie : cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith("jeamlit-session-id=")) {
+                        String sessionId = cookie.substring("jeamlit-session-id=".length());
+                        SessionManager sessionManager = exchange.getAttachment(SessionManager.ATTACHMENT_KEY);
+                        return sessionManager.getSession(sessionId);
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -332,14 +419,20 @@ public final class Server implements StateManager.RenderServer {
     }
 
     private void sendMessage(final String sessionId, final Map<String, Object> message) {
-        final WebSocketChannel channel = sessions.get(sessionId);
+        final WebSocketChannel channel = session2WsChannel.get(sessionId);
         if (channel != null) {
-            try {
-                String json = Shared.OBJECT_MAPPER.writeValueAsString(message);
-                WebSockets.sendText(json, channel, null);
-            } catch (Exception e) {
-                LOG.error("Error sending message", e);
-            }
+            sendMessage(channel, message);
+        } else {
+            LOG.error("Error sending message. Unknown sessionId: {}", sessionId);
+        }
+    }
+
+    private static void sendMessage(final @Nonnull WebSocketChannel channel, final Map<String, Object> message) {
+        try {
+            String json = Shared.OBJECT_MAPPER.writeValueAsString(message);
+            WebSockets.sendText(json, channel, null);
+        } catch (Exception e) {
+            LOG.error("Error sending message", e);
         }
     }
 
@@ -350,7 +443,7 @@ public final class Server implements StateManager.RenderServer {
         sendMessage(sessionId, message);
     }
 
-    private String getIndexHtml() {
+    private String getIndexHtml(String xsrfToken) {
         final StringWriter writer = new StringWriter();
         indexTemplate.execute(writer,
                               Map.of("MATERIAL_SYMBOLS_CDN",
@@ -360,8 +453,23 @@ public final class Server implements StateManager.RenderServer {
                                      "customHeaders",
                                      customHeaders,
                                      "port",
-                                     port));
+                                     port,
+                                     "XSRF_TOKEN",
+                                     xsrfToken));
         return writer.toString();
+    }
+
+    private static String generateSecureXsrfToken() {
+        final SecureRandom random;
+        try {
+            random = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        ;
+        final byte[] bytes = new byte[32]; // 256-bit token
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private static String loadCustomHeaders(final @Nullable String headersFile) {
@@ -432,8 +540,8 @@ public final class Server implements StateManager.RenderServer {
                                 LOG.warn(
                                         "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
                                         watchedFile);
-                                sessions.keySet().forEach(id -> sendCompilationError(id,
-                                                                                     "App file was deleted."));
+                                session2WsChannel.keySet().forEach(id -> sendCompilationError(id,
+                                                                                              "App file was deleted."));
                             }
                         }
                         case CREATE -> {
