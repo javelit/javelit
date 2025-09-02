@@ -36,7 +36,7 @@ public class ToolbarE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) throws InterruptedException {
-                    Thread.sleep(300);
+                    Thread.sleep(500);
                     Jt.text("App loaded successfully").use();
                 }
             }
