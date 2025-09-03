@@ -114,18 +114,24 @@ public abstract class JtComponent<T> {
      * Update the component's value from frontend.
      * Uses Jackson for type-safe deserialization.
      */
-    protected void updateValue(final Object rawValue) {
-        T value;
+    protected void updateValue(final Object valueUpdate) {
+        this.currentValue = validate((T) valueUpdate);
+    }
+
+    // convert the frontend value to the java representation
+    // in most cases the components T is json serializable and this method should not be overridden
+    // components that maintain not json-serializable states may need to override this method
+    // NOTE: in effect, overriding this method enables any kind of message passing between the frontend and the backend,
+    // it is not recommended to deviate too much from the expected "json deser" logic though
+    protected T convert(final Object rawValue) {
         try {
             // Use Jackson to convert to the target type
-            value = Shared.OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
+            return Shared.OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
         } catch (Exception e) {
             throw new RuntimeException(
                     "Failed to parse input widget value coming from the app. Please reach out to support.",
                     e);
         }
-        value = validate(value);
-        this.currentValue = value;
     }
 
     protected T validate(final T value) {

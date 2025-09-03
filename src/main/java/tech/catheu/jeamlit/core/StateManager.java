@@ -159,12 +159,12 @@ final class StateManager {
             if (component.returnValueIsAState()) {
                 session.pendingInFormComponentsState()
                         .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
-                        .put(componentKey, updatedValue);
+                        .put(componentKey, component.convert(updatedValue));
             }
             return false;
         }
         // handle normal case
-        session.getComponentsState().put(componentKey, updatedValue);
+        session.getComponentsState().put(componentKey, component.convert(updatedValue));
         registerCallback(sessionId, componentKey);
         return rerun;
     }
