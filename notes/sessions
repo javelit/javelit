@@ -1,0 +1,82 @@
+Great question 👍. Let’s untangle sessions vs. authentication/identity management (IdM) in Undertow.
+
+1. What sessions are in Undertow
+
+A session is just a server-side map of key/value pairs tied to a client, identified by a cookie (default JSESSIONID).
+
+Undertow doesn’t care what you put in there: it could be a shopping cart, a CSRF token, or a user ID.
+
+By itself, sessions are not about authentication — they’re just storage with lifecycle management (timeouts, cookie handling, etc.).
+
+2. Authentication / Identity in Undertow
+
+Undertow has an io.undertow.security package that provides a security framework:
+
+You configure an AuthenticationMechanism (e.g. Basic auth, form login, bearer token, client cert…).
+
+You provide an IdentityManager, which knows how to validate credentials and produce an Account (user principal + roles).
+
+Undertow then attaches the authenticated SecurityContext to the request, so your handlers can ask things like:
+
+So auth is about:
+
+Verifying “who are you?”
+
+Producing an Account object with roles/permissions.
+
+
+3. How sessions and auth relate
+
+The glue is: sessions can persist authentication state.
+
+In Undertow’s form-based auth, once the user logs in, the user’s Account is stored in the HTTP session.
+
+On subsequent requests, the session is checked to see if the user is already authenticated.
+
+That way, the user doesn’t have to re-enter credentials for every request.
+
+So the lifecycle is usually:
+
+Anonymous user hits login form → posts credentials.
+
+AuthenticationMechanism verifies credentials via IdentityManager.
+
+Undertow stores the resulting Account in the session.
+
+Next requests: Undertow checks the session for an existing Account and reuses it.
+
+
+
+SecurityContext sc = exchange.getSecurityContext();
+Account account = sc.getAuthenticatedAccount();
+
+
+
+4. Example in Undertow
+
+Here’s a sketch:
+
+IdentityManager idm = new SimpleIdentityManager(); // your implementation
+
+HttpHandler securedHandler = Handlers.authentication(
+    new FormAuthenticationMechanism("login", "/login", "/error"),
+    idm
+);
+
+HttpHandler rootHandler = new SessionAttachmentHandler(
+    securedHandler,
+    new InMemorySessionManager("mysessions"),
+    new SessionCookieConfig()
+);
+
+Undertow server = Undertow.builder()
+    .addHttpListener(8080, "localhost")
+    .setHandler(rootHandler)
+    .build();
+
+
+
+
+2. Accessing the session at onConnect
+
+When you do:

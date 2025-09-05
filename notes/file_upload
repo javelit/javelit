@@ -1,0 +1,232 @@
+https://www.christian-schneider.net/blog/cross-site-websocket-hijacking/
+
+
+
+Streamlit ref
+
+https://docs.streamlit.io/develop/api-reference/widgets/st.file_uploader
+
+Streamlit manages your uploaded files for you. Files are stored in memory (i.e. RAM, not disk), and they get deleted immediately as soon as they’re not needed anymore.
+
+This means we remove a file from memory when:
+
+- The user uploads another file, replacing the original one
+- The user clears the file uploader
+- The user closes the browser tab where they uploaded the file
+
+File behaves like any other component state.
+
+
+There will be an upload endpoint
+ /<SOME_RESERVED_STUFF>/upload/{componentKey} endpoint needs to know which session to update.
+
+
+Cookies are cross page, so this is not what we want, because each page is a different session in jeamlit.
+We want something accessible via javascript.
+Eg it will be put in window.jeamlit.session_id
+It should be secured.
+
+To be secured, we will also use a xsrf cookie.
+
+If we have a request with a session id and the xsrf matches the known xsrf,
+then it's a match and we can continue.
+
+
+  Secure Session ID for Each Page
+
+    Requirements:
+
+    1. Page-specific: Each page gets its own session ID
+    2. JavaScript accessible: window.jeamlit.sessionId
+    3. Secure: Not predictable/guessable
+    4. Server-generated: Controlled by server
+
+    Approach: Server-side Template Injection
+
+    Server.java - when serving index.html:
+    .get("/").handler(exchange -> {
+        // Generate cryptographically secure session ID
+        String sessionId = generateSecureSessionId();
+
+        // Create session
+        AppSession session = new AppSession(sessionId);
+        sessions.put(sessionId, session);
+
+        // Inject into template
+        Map<String, String> templateVars = Map.of(
+            "SESSION_ID", sessionId,
+            "port", String.valueOf(port)
+            // ... other template vars
+        );
+
+        String html = templateEngine.render("index.html.mustache", templateVars);
+        exchange.getResponseSender().send(html);
+    })
+
+    private String generateSecureSessionId() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[32]; // 256-bit
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    index.html.mustache:
+    <script>
+        window.jeamlit = {
+            sessionId: "{{ SESSION_ID }}", // Server-injected secure session ID
+            // ... other properties
+            sendMessage: function(message) {
+                // WebSocket send logic
+            }
+        };
+
+        // WebSocket connection includes session ID in first message
+        const ws = new WebSocket('ws://localhost:{{ port }}/ws');
+        ws.onopen = () => {
+            // Authenticate WebSocket with session ID
+            ws.send(JSON.stringify({
+                type: 'auth',
+                sessionId: window.jeamlit.sessionId
+            }));
+        };
+    </script>
+
+    WebSocket Handler:
+    Handlers.websocket((exchange, channel) -> {
+        // Wait for auth message with session ID
+        channel.getReceiveSetter().set(new AbstractReceiveListener() {
+            @Override
+            protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
+                JsonObject msg = Json.parse(message.getData());
+
+                if ("auth".equals(msg.getString("type"))) {
+                    String sessionId = msg.getString("sessionId");
+                    AppSession session = sessions.get(sessionId);
+
+                    if (session != null) {
+                        session.setWebSocketChannel(channel);
+                        // Send auth success
+                        WebSockets.sendText("{\"type\":\"auth_success\"}", channel, null);
+                    } else {
+                        // Invalid session - close connection
+                        channel.close();
+                    }
+                }
+                // ... handle other message types
+            }
+        });
+    })
+
+    File Upload Endpoint:
+    .post("/upload/{componentKey}").handler(exchange -> {
+        // Get session ID from custom header
+        String sessionId = exchange.getRequestHeaders().getFirst("X-Jeamlit-Session");
+
+        if (sessionId == null) {
+            exchange.setStatusCode(401).endExchange();
+            return;
+        }
+
+        AppSession session = sessions.get(sessionId);
+        if (session == null) {
+            exchange.setStatusCode(401).endExchange();
+            return;
+        }
+
+        // Process file upload...
+    })
+
+    Frontend File Upload:
+    // In file uploader component
+    async uploadFiles(files) {
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        const response = await fetch(`/upload/${this.componentKey}`, {
+            method: 'POST',
+            headers: {
+                'X-Jeamlit-Session': window.jeamlit.sessionId  // Secure session ID
+            },
+            body: formData
+        });
+    }
+
+    Security Benefits:
+
+    1. Cryptographically secure: 256-bit random session ID
+    2. Server-controlled: Generated and validated server-side
+    3. Page-specific: Each page load gets new session ID
+    4. Not predictable: Can't guess other session IDs
+    5. Short-lived: Sessions can timeout/expire
+    6. No cookies: Avoids cross-page sharing
+
+    Session Lifecycle:
+
+    1. Page load → Server generates secure session ID → Injects into HTML
+    2. JavaScript starts → window.jeamlit.sessionId available immediately
+    3. WebSocket connects → Authenticates with session ID
+    4. File uploads → Use same session ID in headers
+    5. Page refresh/navigation → New session ID generated
+
+    This gives you the security of server-generated sessions with the JavaScript accessibility you need for file
+     uploads, while keeping each page isolated.
+
+
+
+
+
+
+now lets prepare for the frontend implementation .                                       │
+│   YOu'll have to implement the render and register templates.                              │
+│   Spec:                                                                                    │
+│   Display a file uploader widget.                                                          │
+│   label:  short label explaining to the user what this file uploader is for.  (see how     │
+│   markdown labels are used in other components)                                            │
+│                                                                                            │
+│   type: List<String>: The allowed file extension(s) for uploaded files. If null, all file  │
+│   extensions are allowed. Else, the list is not empty and 1 or multiple file extensions    │
+│   are allowed. For example, to only accept JPG/JPEG and PNG files, use ["jpg", "jpeg",     │
+│   "png"].                                                                                  │
+│                                                                                            │
+│   accept_multiple_files: Whether to accept more than one file in a submission. This can    │
+│   be one of the following values:                                                          │
+│   FALSE: The user can only submit one file at a time.                                      │
+│   TRUE: The user can upload multiple files at the same time.                               │
+│   DIRECTORY: The user can select a directory to upload all files in the directory and its  │
+│   subdirectories. If types is set, only files matching those type(s) will be uploaded.     │
+│                                                                                            │
+│   help:  tooltip that gets displayed next to the widget label. Streamlit only displays     │
+│   the tooltip when label_visibility="visible". If this is None (default), no tooltip is    │
+│   displayed. - see how it's implemented in other components                                │
+│                                                                                            │
+│   disabled: a  boolean that disables the file uploader if set to True.                     │
+│                                                                                            │
+│   label_visibility: The visibility of the label. The default is "visible". If this is      │
+│   "hidden", Streamlit displays an empty spacer instead of the label, which can help keep   │
+│   the widget aligned with other widgets. If this is "collapsed", Streamlit displays no     │
+│   label or spacer. - see how it's implemented for other components                         │
+│                                                                                            │
+│   width:                                                                                   │
+│                                                                                            │
+│   The width of the file uploader widget. This can be one of the following:                 │
+│                                                                                            │
+│       "stretch" (default): The width of the widget matches the width of the parent         │
+│   container.                                                                               │
+│       An integer specifying the width in pixels: The widget has a fixed width. If the      │
+│   specified width is greater than the width of the parent container, the width of the      │
+│   widget matches the width of the parent container. - see how it's implemented for other   │
+│   components                                                                               │
+│                                                                                            │
+│   Here are some screenshots:                                                               │
+│   [Image #1]                                                                               │
+│   when the user clicks on browse files, the native file browser opens. If the              │
+│   acceptMultipleFiles value is DIRECTORY, the native browsing should allow directory       │
+│   selection, not files.                                                                    │
+│   [Image #2]                                                                               │
+│                                                                                            │
+│   Here is how it looks when a file is uploaded:                                            │
+│   [Image #3] --> this value can be obatined from currentValue                              │
+│   THe file upload should trigger a PUT call to /_/upload so that files are uploaded.       │
+│   If the call is successful, the backend will take care of updating the states and         │
+│   sending an update to the frontend. If there is an error during the upload, the frontend  │
+│   should take care of showing it.
