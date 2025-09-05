@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.core;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,9 +40,16 @@ import com.github.mustachejava.MustacheFactory;
 import io.methvin.watcher.DirectoryWatcher;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.BlockingHandler;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.form.FormData;
+import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.session.InMemorySessionManager;
@@ -67,14 +75,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
+import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 import static tech.catheu.jeamlit.core.utils.Preconditions.checkState;
 
 public final class Server implements StateManager.RenderServer {
     private static final String SESSION_XSRF_ATTRIBUTE = "XSRF_TOKEN";
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
-    @VisibleForTesting
-    public final int port;
+    @VisibleForTesting public final int port;
     private final @Nonnull AppRunner appRunner;
     private final @Nullable FileWatcher fileWatcher;
 
@@ -144,7 +152,7 @@ public final class Server implements StateManager.RenderServer {
             return new Server(this);
         }
     }
-    
+
     public static Builder builder(final @Nonnull Path appPath, final int port) {
         return new Builder(appPath, port);
     }
@@ -164,72 +172,25 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public void start() {
-        // Create custom fallback handler for SPA routing
-        final WebSocketHandler sessionHandler = new WebSocketHandler();
-        final HttpHandler spaHandler = new HttpHandler() {
-            @Override
-            public void handleRequest(HttpServerExchange exchange) throws Exception {
-                final String path = exchange.getRequestPath();
-                // WebSocket connections
-                if (path.startsWith("/ws")) {
-                    Handlers.websocket(sessionHandler).handleRequest(exchange);
-                    return;
-                }
-                // static files
-                if (path.startsWith("/static")) {
-                    new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
-                                                                     "static"))
-                            .handleRequest(exchange);
-                    return;
-                }
-                // get or create session, then generate and attach XSRF token cookie
-                final Session currentSession = Sessions.getOrCreateSession(exchange);
-                String method = exchange.getRequestMethod().toString();
-                if ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method) || "DELETE".equals(method)) {
-                    // perform CSRF validation
-                    final String expectedToken = (String) currentSession.getAttribute(
-                            SESSION_XSRF_ATTRIBUTE);
-                    final String providedToken = exchange.getRequestHeaders()
-                            .getFirst("X-XSRF-TOKEN");
-                    if (providedToken == null || !providedToken.equals(expectedToken)) {
-                        exchange.setStatusCode(StatusCodes.FORBIDDEN);
-                        exchange.getResponseSender().send("Invalid CSRF token");
-                    }
-                    exchange.setStatusCode(StatusCodes.BAD_REQUEST);
-                    exchange.getResponseSender()
-                            .send("bad request."); // nothing implemented here yet
-
-                } else {
-                    if (!currentSession.getAttributeNames().contains(SESSION_XSRF_ATTRIBUTE)) {
-                        final String xsrfToken = generateSecureXsrfToken();
-                        currentSession.setAttribute(SESSION_XSRF_ATTRIBUTE, xsrfToken);
-                        exchange.setResponseCookie(new CookieImpl("JEAMLIT-XSRF-TOKEN", xsrfToken)
-                                                           .setHttpOnly(false)
-                                                           .setSameSite(true)
-                                                           .setPath("/")
-                                                           .setMaxAge(86400 * 7));
-                    }
-                    final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
-                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-                    exchange.getResponseSender().send(getIndexHtml(xsrfToken));
-                }
-            }
-        };
-
+        HttpHandler app = new PathHandler().addExactPath("/ws", Handlers.websocket(new WebSocketHandler()))
+                                           .addExactPath("/static",
+                                                         new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
+                                                                                                          "static")))
+                                           .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
+                                           .addPrefixPath("/", new IndexHandler());
+        app = new XsrfValidationHandler(app);
         // attach a BROWSER session cookie - this is not the same as app state "session" used downstream
-        final SessionAttachmentHandler handlerWithSessions = new SessionAttachmentHandler(
-                spaHandler,
-                new InMemorySessionManager("jeamlit_session"),
-                new SessionCookieConfig().setCookieName("jeamlit-session-id")
-                        .setHttpOnly(true)
-                        .setMaxAge(86400 * 7)// 7 days
-                        .setPath("/")
-                        //make below configurable
-                        //.setSecure()
-                        //.setDomain()
+        app = new SessionAttachmentHandler(app,
+                                           new InMemorySessionManager("jeamlit_session"),
+                                           new SessionCookieConfig().setCookieName("jeamlit-session-id")
+                                                                    .setHttpOnly(true).setMaxAge(86400 * 7)// 7 days
+                                                                    .setPath("/")
+                                           //make below configurable
+                                           //.setSecure()
+                                           //.setDomain()
         );
-        server = Undertow.builder().addHttpListener(port, "0.0.0.0").setHandler(handlerWithSessions)
-                .build();
+        server = Undertow.builder().setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 10 * 1024 * 1024L)// 10Mb
+                         .addHttpListener(port, "0.0.0.0").setHandler(app).build();
 
         server.start();
         if (fileWatcher != null) {
@@ -251,7 +212,7 @@ public final class Server implements StateManager.RenderServer {
         }
     }
 
-    private void notifyReload(final  @Nonnull Reloader.ReloadStrategy reloadStrategy) {
+    private void notifyReload(final @Nonnull Reloader.ReloadStrategy reloadStrategy) {
         // reload the app and re-run the app for all sessions
         try {
             appRunner.reload(reloadStrategy);
@@ -265,6 +226,147 @@ public final class Server implements StateManager.RenderServer {
 
         for (final String sessionId : session2WsChannel.keySet()) {
             appRunner.runApp(sessionId);
+        }
+    }
+
+    private class IndexHandler implements HttpHandler {
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            // get or create session, then generate and attach XSRF token cookie
+            final Session currentSession = Sessions.getOrCreateSession(exchange);
+            final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+            exchange.getResponseSender().send(getIndexHtml(xsrfToken));
+        }
+    }
+
+    // Separate XSRF validation handler
+    private class XsrfValidationHandler implements HttpHandler {
+        private static final String XSRF_COOKIE_KEY = "jeamlit-xsrf";
+
+        private final HttpHandler next;
+
+        private XsrfValidationHandler(final @Nonnull HttpHandler next) {
+            this.next = next;
+        }
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            final boolean requiresXsrfValidation = Set.of("POST", "PUT", "PATCH", "DELETE")
+                                                      .contains(exchange.getRequestMethod().toString());
+            final Session currentSession = Sessions.getOrCreateSession(exchange);
+            if (requiresXsrfValidation) {
+                // validate Xsrf Token
+                final String expectedToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
+                if (expectedToken == null) {
+                    // the session just got created - this should not happen
+                    exchange.setStatusCode(StatusCodes.FORBIDDEN);
+                    exchange.getResponseSender().send("Request coming from invalid session.");
+                    return;
+                }
+                // perform XSRF validation
+                final String providedToken = exchange.getRequestHeaders().getFirst("X-XSRF-TOKEN");
+                final String cookieProvidedToken = optional(exchange.getRequestCookie(XSRF_COOKIE_KEY)).map(Cookie::getValue).orElse(null);
+                if (providedToken == null || !providedToken.equals(cookieProvidedToken) || !providedToken.equals(expectedToken)) {
+                    exchange.setStatusCode(StatusCodes.FORBIDDEN);
+                    exchange.getResponseSender().send("Invalid XSRF token");
+                    return;
+                }
+
+                final String pageSessionId = exchange.getRequestHeaders().getFirst("X-Session-ID");
+                if (pageSessionId == null || !session2WsChannel.containsKey(pageSessionId)) {
+                    exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
+                    exchange.getResponseSender().send("Invalid session");
+                    return;
+                }
+                // Verify XSRF token matches the one stored for this WebSocket session
+                final String sessionXsrf = session2Xsrf.get(pageSessionId);
+                if (sessionXsrf == null || !sessionXsrf.equals(providedToken)) {
+                    exchange.setStatusCode(StatusCodes.FORBIDDEN);
+                    exchange.getResponseSender().send("XSRF token mismatch");
+                    return;
+                }
+            } else {
+                // attempt to create one if need be
+                if (!currentSession.getAttributeNames().contains(SESSION_XSRF_ATTRIBUTE)) {
+                    final String xsrfToken = generateSecureXsrfToken();
+                    currentSession.setAttribute(SESSION_XSRF_ATTRIBUTE, xsrfToken);
+                    exchange.setResponseCookie(new CookieImpl(XSRF_COOKIE_KEY, xsrfToken).setHttpOnly(false)
+                                                                                         .setSameSite(true)
+                                                                                         .setPath("/")
+                                                                                         .setMaxAge(86400 * 7));
+                }
+            }
+
+            next.handleRequest(exchange); // Continue to next handler
+        }
+    }
+
+
+    private class UploadHandler implements HttpHandler {
+
+        private final FormParserFactory formParserFactory;
+
+        public UploadHandler() {
+            final FormParserFactory.Builder parserBuilder = FormParserFactory.builder();
+            parserBuilder.setDefaultCharset(StandardCharsets.UTF_8.name());
+            this.formParserFactory = parserBuilder.build();
+        }
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            switch (exchange.getRequestMethod().toString()) {
+                case "PUT" -> {
+                    handlePuts(exchange);
+                }
+                case null, default -> {
+                    // invalid endpoint / method
+                    exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                    exchange.getResponseSender().send("bad request.");
+                }
+            }
+        }
+
+        private void handlePuts(HttpServerExchange exchange) {
+            try (final FormDataParser parser = formParserFactory.createParser(exchange)) {
+                if (parser == null) {
+                    exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                    exchange.getResponseSender().send("Request is not multipart/form-data");
+                    return;
+                }
+                final FormData formData = parser.parseBlocking();
+                // either an element is a file, has fileName and fileItem, either it has value set.
+
+                final List<JtUploadedFile> uploadedFiles = new ArrayList<>();
+                for (final @Nonnull String fieldName : formData) {
+                    final FormData.FormValue formValue = formData.getFirst(fieldName);
+                    checkArgument(formValue.isFileItem(), "Upload form data is not a file item: %s", fieldName);
+                    final FormData.FileItem fileItem = formValue.getFileItem();
+                    final byte[] content;
+                    try {
+                        content = fileItem.getInputStream().readAllBytes();
+                    } catch (IOException e) {
+                        exchange.setStatusCode(StatusCodes.INTERNAL_SERVER_ERROR);
+                        exchange.getResponseSender().send("Failed to read uploaded file: " + formValue.getFileName());
+                        return;
+                    }
+                    final JtUploadedFile f = new JtUploadedFile(formValue.getFileName(),
+                                                                formValue.getHeaders().getFirst("Content-Type"),
+                                                                content);
+                    uploadedFiles.add(f);
+                }
+
+                // TODO NEED TO GET THE SESSION ID PROPERLY
+                final String sessionId = exchange.getRequestHeaders().getFirst("X-Session-ID");
+                final String componentKey = exchange.getRequestHeaders().getFirst("X-Component-Key");
+                FrontendMessage componentUpdate = new FrontendMessage("component_update", componentKey, uploadedFiles, null, null);
+                handleMessage(sessionId, componentUpdate);
+                exchange.setStatusCode(StatusCodes.OK);
+            } catch (Exception e) {
+                LOG.error("Error processing file upload", e);
+                exchange.setStatusCode(StatusCodes.INTERNAL_SERVER_ERROR);
+                exchange.getResponseSender().send("Upload failed:  " + e.getMessage());
+            }
         }
     }
 
@@ -330,7 +432,6 @@ public final class Server implements StateManager.RenderServer {
             return null;
         }
     }
-
 
     private record FrontendMessage(@Nonnull String type,
                                    // for component_update message
@@ -443,7 +544,7 @@ public final class Server implements StateManager.RenderServer {
         sendMessage(sessionId, message);
     }
 
-    private String getIndexHtml(String xsrfToken) {
+    private String getIndexHtml(final String xsrfToken) {
         final StringWriter writer = new StringWriter();
         indexTemplate.execute(writer,
                               Map.of("MATERIAL_SYMBOLS_CDN",

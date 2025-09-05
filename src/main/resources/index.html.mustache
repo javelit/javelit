@@ -538,7 +538,7 @@
         ws = null;
     }
 
-    function handleWebSocketMessage(event) {
+    async function handleWebSocketMessage(event) {
         const message = JSON.parse(event.data);
         if (message.type === 'session_init') {
             // Store WebSocket session ID for POST/PUT requests - eg file uploads
@@ -549,6 +549,11 @@
             showCompilationError(message.error);
         } else if (message.type === 'status') {
             if (statusWidget) {
+                // TODO: This await is a workaround for a race condition. The custom element 
+                // (jt-status-widget) is defined asynchronously via type="module" script, but 
+                // this code runs before the element is upgraded. A better fix would be to load 
+                // the custom element synchronously or restructure the script loading order.
+                await customElements.whenDefined('jt-status-widget');
                 statusWidget.updateStatus(message.status);
             }
         } else {

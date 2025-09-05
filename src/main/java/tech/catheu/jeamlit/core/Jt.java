@@ -34,6 +34,7 @@ import tech.catheu.jeamlit.components.layout.FormComponent;
 import tech.catheu.jeamlit.components.layout.FormSubmitButtonComponent;
 import tech.catheu.jeamlit.components.layout.PopoverComponent;
 import tech.catheu.jeamlit.components.layout.TabsComponent;
+import tech.catheu.jeamlit.components.media.FileUploaderComponent;
 import tech.catheu.jeamlit.components.multipage.JtPage;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.components.multipage.PageLinkComponent;
@@ -185,6 +186,10 @@ public final class Jt {
 
     public static PageLinkComponent.Builder pageLink(final @Nonnull String url, final @Language("markdown") @Nonnull String label) {
         return new PageLinkComponent.Builder(url, label);
+    }
+
+    public static FileUploaderComponent.Builder fileUploader(@Language("markdown") final @Nonnull String label) {
+        return new FileUploaderComponent.Builder(label);
     }
 
     public static void switchPage(final @Nonnull Class<?> pageApp) {
