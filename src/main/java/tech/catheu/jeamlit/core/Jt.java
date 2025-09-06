@@ -20,8 +20,11 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Nonnull;
+import org.icepear.echarts.Chart;
+import org.icepear.echarts.Option;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import tech.catheu.jeamlit.components.chart.EchartsComponent;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
@@ -190,6 +193,18 @@ public final class Jt {
 
     public static FileUploaderComponent.Builder fileUploader(@Language("markdown") final @Nonnull String label) {
         return new FileUploaderComponent.Builder(label);
+    }
+
+    public static EchartsComponent.Builder echarts(final @Nonnull Chart<?, ?> chart) {
+        return new EchartsComponent.Builder(chart);
+    }
+
+    public static EchartsComponent.Builder echarts(final @Nonnull Option chartOption) {
+        return new EchartsComponent.Builder(chartOption);
+    }
+
+    public static EchartsComponent.Builder echarts(final @Language("json") String chartOptionJson) {
+        return new EchartsComponent.Builder(chartOptionJson);
     }
 
     public static void switchPage(final @Nonnull Class<?> pageApp) {
