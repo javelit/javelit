@@ -172,11 +172,11 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public void start() {
-        HttpHandler app = new PathHandler().addExactPath("/ws", Handlers.websocket(new WebSocketHandler()))
-                                           .addExactPath("/static",
-                                                         new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
-                                                                                                          "static")))
+        HttpHandler app = new PathHandler().addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()))
                                            .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
+                                           .addPrefixPath("/_/static",
+                                                          new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
+                                                                                                           "static")))
                                            .addPrefixPath("/", new IndexHandler());
         app = new XsrfValidationHandler(app);
         // attach a BROWSER session cookie - this is not the same as app state "session" used downstream

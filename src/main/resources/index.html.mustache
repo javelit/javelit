@@ -496,7 +496,7 @@
     // Connection management functions
     function createWebSocketConnection() {
         try {
-            ws = new WebSocket('ws://localhost:{{ port }}/ws');
+            ws = new WebSocket('ws://localhost:{{ port }}/_/ws');
 
             ws.onclose = () => {
                 console.log('WebSocket closed');
