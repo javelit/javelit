@@ -277,6 +277,34 @@
                 </configuration>
             </plugin>
 
+            <!-- minify some jsons -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>minify-echarts-themes</id>
+                        <!-- not assigned to a phase - please run manually with ./mvnw antrun:run@minify-echarts-themes
+                        <phase>process-resources</phase>
+                        -->
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replaceregexp match="\s+" replace="" flags="g">
+                                    <fileset dir="${project.basedir}/src/main/resources/static/_jeamlit/components/chart">
+                                        <include name="echarts_theme_*.json"/>
+                                    </fileset>
+                                </replaceregexp>
+                                <echo message="Minified ECharts theme files"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Configure test execution -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
