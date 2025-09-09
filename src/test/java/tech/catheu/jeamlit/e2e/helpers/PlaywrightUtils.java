@@ -54,7 +54,7 @@ public final class PlaywrightUtils {
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
             server = JeamlitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port);
+            page.navigate("http://localhost:" + server.port, new Page.NavigateOptions().setTimeout(10000));
             run.accept(page);
         } finally {
             JeamlitTestHelper.stopServer(server);
