@@ -23,7 +23,8 @@
       "Bash(open http://localhost:8081/DashboardPage)",
       "Bash(open http://localhost:8081/SettingsPage)",
       "Bash(open http://localhost:8081/TestQueryPage)",
-      "WebFetch(domain:echarts.icepear.org)"
+      "WebFetch(domain:echarts.icepear.org)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }
