@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.core;
 
 import java.util.List;
 import java.util.Map;
+import java.util.SequencedCollection;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.annotation.Nonnull;
@@ -24,7 +25,9 @@ import org.icepear.echarts.Chart;
 import org.icepear.echarts.Option;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tech.catheu.jeamlit.components.chart.EchartsComponent;
+import tech.catheu.jeamlit.components.data.TableComponent;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
@@ -205,6 +208,22 @@ public final class Jt {
 
     public static EchartsComponent.Builder echarts(final @Language("json") String chartOptionJson) {
         return new EchartsComponent.Builder(chartOptionJson);
+    }
+
+    public static TableComponent.Builder table(final @Nonnull List<Object> rows) {
+        return TableComponent.Builder.ofObjsList(rows);
+    }
+
+    public static TableComponent.Builder table(final @Nonnull Object[] rows) {
+        return TableComponent.Builder.ofObjsArray(rows);
+    }
+
+    public static TableComponent.Builder tableFromArrayColumns(final @Nonnull Map<@NotNull String, @NotNull Object[]> cols) {
+        return TableComponent.Builder.ofColumnsArrays(cols);
+    }
+
+    public static <Values extends @NotNull SequencedCollection<@Nullable Object>> TableComponent.Builder tableFromListColumns(final @Nonnull Map<@NotNull String, Values> cols) {
+        return TableComponent.Builder.ofColumnsLists(cols);
     }
 
     public static void switchPage(final @Nonnull Class<?> pageApp) {

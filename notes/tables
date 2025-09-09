@@ -1,0 +1,53 @@
+2 things:
+- simple tables: no logic, no interactivity
+- advanced tables (dataframe), possible to search, etc...
+
+
+
+--> but should be possible to put anything a column --> sounds more like a layout  ?
+adding to table will be easy via loop ?
+JtTable t = Jt.table(rows, columns);
+
+keys = m.keys()
+for (int i =0; i<keys.size()) {
+    colName = keys.get(i);
+    col = m.get(colName)
+    for (int i=0, i<col.length, i++) {
+       val = col[val];
+       Jt.someStuff(val).use(t.cell(row, col))
+    }
+}
+
+and from this:
+Jt.table(Map<> --> will autofill the values)
+Jt.table(List<Objects> --> will autofill the values too --> will do a best effort inference)
+
+OR: need to make this generic for Jt.dataframe too.
+
+transformations are replaced
+
+transform at row, transform at column, transform at index --> will inject div containers
+2 kind of runnables: void --> should be a valid jeamlit snippet that will produce some component
+                     returns something --> the output will be used
+
+- markdown should be supported in all cells
+- allow transforms, per cell ? per column ? what about list of objects ?
+- It'll make it hard to perform transforms without reflection
+- is this really a need ?
+
+
+st.table: everything is treated as a markdown string --> columns can be overwritten by use of JtLayout - no return value
+st.dataframe --> allow transforms and advanced usage
+
+or keep things as simple as possible, do not allow transforms
+then implement dataframe
+
+
+Keep things extremely simple for table:
+Map()
+List(objects)
+Map<S
+
+
+
+

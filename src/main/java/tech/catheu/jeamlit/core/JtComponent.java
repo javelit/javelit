@@ -210,7 +210,7 @@ public abstract class JtComponent<T> {
         NONE
     }
 
-    protected static String toJson(final List<?> objs) {
+    protected static String toJson(final Object objs) {
         try {
             return Shared.OBJECT_MAPPER.writeValueAsString(objs);
         } catch (JsonProcessingException e) {
