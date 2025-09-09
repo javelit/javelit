@@ -41,7 +41,7 @@ public class TextComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for text components to be visible
             assertThat(page.locator("jt-text")).hasCount(2, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             assertThat(page.getByText("A first text")).isVisible(WAIT_1_SEC_MAX);

@@ -46,7 +46,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -80,7 +80,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -116,7 +116,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -151,7 +151,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             

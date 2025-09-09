@@ -48,7 +48,7 @@ public class ContainerComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for container to be visible
             assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
             // Check content before container

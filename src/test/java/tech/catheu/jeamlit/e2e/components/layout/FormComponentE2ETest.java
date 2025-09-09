@@ -53,7 +53,7 @@ public class FormComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // used to get out of inputs easily
             final Locator textUtilLocator = page.locator("jt-text", new Page.LocatorOptions().setHasText("used to get out of form"));
             assertThat(textUtilLocator).isVisible(WAIT_1_SEC_MAX);

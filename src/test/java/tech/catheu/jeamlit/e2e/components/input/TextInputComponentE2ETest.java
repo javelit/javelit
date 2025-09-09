@@ -42,7 +42,7 @@ public class TextInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // text input is visible
             page.waitForSelector("jt-text-input", new Page.WaitForSelectorOptions().setTimeout(5000));
             // greating has an empty name

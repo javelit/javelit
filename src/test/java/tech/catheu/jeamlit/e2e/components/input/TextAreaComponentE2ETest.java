@@ -47,7 +47,7 @@ public class TextAreaComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // text area input is visible
             assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
             // current message is empty

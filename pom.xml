@@ -311,8 +311,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.3</version>
                 <configuration>
-                    <parallel>classes</parallel>
-                    <threadCount>8</threadCount>
+                    <parallel>all</parallel>
+                    <threadCount>40</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
                 </configuration>
             </plugin>

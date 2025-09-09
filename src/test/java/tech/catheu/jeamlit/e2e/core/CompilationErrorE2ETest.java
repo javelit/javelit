@@ -18,22 +18,14 @@ package tech.catheu.jeamlit.e2e.core;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Pattern;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
-import tech.catheu.jeamlit.core.Server;
 import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.HEADLESS;
 import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
@@ -55,7 +47,7 @@ public class CompilationErrorE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInBrowser(invalidApp, page ->
+        PlaywrightUtils.runInSharedBrowser(invalidApp, page ->
                 // Verify app loads correctly first
                 assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
     }
@@ -76,7 +68,7 @@ public class CompilationErrorE2ETest {
 
         final Path appFile = JeamlitTestHelper.writeTestApp(validApp);
 
-        PlaywrightUtils.runInBrowser(appFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(appFile, page -> {
             // Verify app loads correctly first
             assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This app is running.")).isVisible();

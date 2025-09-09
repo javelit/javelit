@@ -73,7 +73,7 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Verify page links are visible
             assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -131,7 +131,7 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Start on home page
             assertThat(page).hasURL(Pattern.compile(".*/Home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

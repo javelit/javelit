@@ -37,7 +37,7 @@ public class MultiFileE2ETest {
         final Path tempDir = Files.createTempDirectory("jeamlit-multifile-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
             // Verify that Car.BLUE is rendered (from model/Car.java)
             assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
             // Verify that Owner.BOSS is rendered (from model/Owner.java)
@@ -51,7 +51,7 @@ public class MultiFileE2ETest {
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
@@ -73,7 +73,7 @@ public class MultiFileE2ETest {
         final Path mainFile = tempDir.resolve("Test.java");
         final Path carFile = tempDir.resolve("model/Car.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);

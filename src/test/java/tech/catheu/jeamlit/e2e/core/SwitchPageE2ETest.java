@@ -79,7 +79,7 @@ class SwitchPageE2ETest {
             }
             """;
         
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(app, page -> {
             // Wait for app to load and verify we're on HomePage
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

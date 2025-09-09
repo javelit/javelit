@@ -43,7 +43,7 @@ public class ButtonComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // button exists
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             // button text is correct

@@ -59,7 +59,7 @@ public class FileUploaderE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(app, page -> {
             try {
                 // Wait for the file uploader component to be visible
                 assertThat(page.locator("jt-file-uploader")).isVisible(WAIT_1_SEC_MAX);

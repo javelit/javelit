@@ -50,7 +50,7 @@ public class ColumnsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for columns component to be visible
             assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
             // there are 2 columns

@@ -49,7 +49,7 @@ public class QueryParameterE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // First verify no query params
             assertThat(page.getByText("No query parameters")).isVisible(WAIT_1_SEC_MAX);
             

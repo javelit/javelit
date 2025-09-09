@@ -44,7 +44,7 @@ public class MultiPageE2ETest {
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -103,7 +103,7 @@ public class MultiPageE2ETest {
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -151,7 +151,7 @@ public class MultiPageE2ETest {
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
             // Verify footer is visible on home page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar is visible
@@ -193,7 +193,7 @@ public class MultiPageE2ETest {
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("HiddenNavApp.java");
         
-        PlaywrightUtils.runInBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
             // Verify home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

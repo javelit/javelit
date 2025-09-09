@@ -36,7 +36,7 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInBrowser(app, page ->
+        PlaywrightUtils.runInSharedBrowser(app, page ->
             assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX));
     }
 
@@ -52,7 +52,7 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInBrowser(app, page ->
+        PlaywrightUtils.runInSharedBrowser(app, page ->
             assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX));
     }
 }

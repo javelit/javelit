@@ -47,8 +47,23 @@ public final class PlaywrightUtils {
     @SuppressWarnings("unused") // used when editing tests
     public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
+    private static Browser sharedBrowser = null;
 
-    public static void runInBrowser(final @Nonnull Path appFile, final @Nonnull Consumer<Page> run) {
+
+    public static void runInSharedBrowser(final @Nonnull Path appFile, final @Nonnull Consumer<Page> run) {
+        final Browser browser = getSharedBrowser();
+        Server server = null;
+        try (final Page page = browser.newPage()) {
+            server = JeamlitTestHelper.startServer(appFile);
+            page.navigate("http://localhost:" + server.port, new Page.NavigateOptions().setTimeout(10000));
+            run.accept(page);
+        } finally {
+            JeamlitTestHelper.stopServer(server);
+            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
+        }
+    }
+
+    public static void runInDedicatedBrowser(final @Nonnull Path appFile, final @Nonnull Consumer<Page> run) {
         Server server = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
@@ -62,10 +77,29 @@ public final class PlaywrightUtils {
         }
     }
 
+    private static synchronized Browser getSharedBrowser() {
+        if (sharedBrowser == null) {
+            final Playwright playwright = Playwright.create();
+            sharedBrowser = playwright.chromium().launch(HEADLESS);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (sharedBrowser != null) {
+                    sharedBrowser.close();
+                }
+                playwright.close();
+            }));
+        }
+        return sharedBrowser;
+    }
 
-    public static void runInBrowser(final @Nonnull String app, final @Nonnull Consumer<Page> run) {
+
+    public static void runInSharedBrowser(final @Nonnull String app, final @Nonnull Consumer<Page> run) {
         final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        runInBrowser(appFile, run);
+        runInSharedBrowser(appFile, run);
+    }
+
+    public static void runInDedicatedBrowser(final @Nonnull String app, final @Nonnull Consumer<Page> run) {
+        final Path appFile = JeamlitTestHelper.writeTestApp(app);
+        runInDedicatedBrowser(appFile, run);
     }
 
     // run an embedded jeamlit server

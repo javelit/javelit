@@ -56,7 +56,7 @@ public class TabsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             
             // Wait for tabs to be visible
             assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);

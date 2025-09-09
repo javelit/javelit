@@ -45,7 +45,7 @@ public class ExpanderComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
             // Wait for expander to be visible
             final Locator expanderLocator = page.locator("jt-expander");
             assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);
