@@ -47,7 +47,7 @@ public final class PlaywrightUtils {
     @SuppressWarnings("unused") // used when editing tests
     public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
-    private static Browser sharedBrowser = null;
+    private static Browser sharedBrowser;
 
 
     public static void runInSharedBrowser(final @Nonnull Path appFile, final @Nonnull Consumer<Page> run) {
