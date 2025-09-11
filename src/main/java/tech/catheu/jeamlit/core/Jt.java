@@ -47,6 +47,7 @@ import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.components.multipage.PageLinkComponent;
 import tech.catheu.jeamlit.components.status.ErrorComponent;
 import tech.catheu.jeamlit.components.text.HtmlComponent;
+import tech.catheu.jeamlit.components.text.MarkdownComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
@@ -118,6 +119,10 @@ public final class Jt {
 
     public static TitleComponent.Builder title(@Language("markdown") final @Nonnull String body) {
         return new TitleComponent.Builder(body);
+    }
+
+    public static MarkdownComponent.Builder markdown(final @Nonnull @Language("markdown") String body) {
+        return new MarkdownComponent.Builder(body);
     }
 
     public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {

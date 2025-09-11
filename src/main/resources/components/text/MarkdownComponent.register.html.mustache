@@ -1,0 +1,157 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+
+    class JtMarkdown extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            :host([width="content"]) {
+                width: auto;
+                display: inline-block;
+            }
+
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--markdown-width);
+                max-width: 100%;
+            }
+
+            .markdown-wrapper {
+                position: relative;
+                display: block;
+                width: 100%;
+            }
+
+            .markdown-content {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-normal);
+                color: var(--jt-text-primary);
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Markdown-specific styles */
+            .markdown-content h1, 
+            .markdown-content h2, 
+            .markdown-content h3, 
+            .markdown-content h4, 
+            .markdown-content h5, 
+            .markdown-content h6 {
+                margin: var(--jt-spacing-lg) 0 var(--jt-spacing-md) 0;
+                font-weight: var(--jt-font-weight-bold);
+            }
+
+            .markdown-content p {
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            .markdown-content ul, 
+            .markdown-content ol {
+                margin: var(--jt-spacing-md) 0;
+                padding-left: var(--jt-spacing-xl);
+            }
+
+            .markdown-content li {
+                margin: var(--jt-spacing-xs) 0;
+            }
+
+            .markdown-content a {
+                color: var(--jt-theme-color);
+                text-decoration: none;
+            }
+
+            .markdown-content a:hover {
+                text-decoration: underline;
+            }
+
+            .markdown-content code {
+                background: var(--jt-bg-tertiary);
+                padding: 2px 4px;
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family-mono);
+                font-size: 0.9em;
+            }
+
+            .markdown-content pre {
+                background: var(--jt-bg-tertiary);
+                padding: var(--jt-spacing-md);
+                border-radius: var(--jt-border-radius-md);
+                overflow-x: auto;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            .markdown-content blockquote {
+                margin: var(--jt-spacing-md) 0;
+                padding-left: var(--jt-spacing-md);
+                border-left: 4px solid var(--jt-border-color);
+                color: var(--jt-text-secondary);
+            }
+
+            .tooltip {
+                position: absolute;
+                top: 0;
+                right: -24px;
+                z-index: 10;
+            }
+        `;
+
+        static properties = {
+            body: { type: String },
+            help: { type: String },
+            width: { type: String, reflect: true }
+        };
+
+        constructor() {
+            super();
+            this.body = '';
+        }
+
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // Set width CSS variable if width is specified and is a pixel value
+            if (changedProperties.has('width')) {
+                if (this.width && /^\d+$/.test(this.width)) {
+                    this.style.setProperty('--markdown-width', `${this.width}px`);
+                } else {
+                    this.style.removeProperty('--markdown-width');
+                }
+            }
+        }
+
+        render() {
+            return html`
+                <div class="markdown-wrapper">
+                    <div class="markdown-content">
+                        ${unsafeHTML(this.body)}
+                    </div>
+                    ${this.help ? html`
+                        <div class="tooltip">
+                            <jt-tooltip text="${this.help}"></jt-tooltip>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-markdown', JtMarkdown);
+</script>
