@@ -1,0 +1,22 @@
+name: test.yml
+on:
+  push:
+    branches: [main]
+  # not running automatically from PRs yet - need to figure out security first
+  workflow_dispatch:
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: run tests
+        run: |
+          ./mvnw clean test  
