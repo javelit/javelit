@@ -15,6 +15,7 @@
  */
 package tech.catheu.jeamlit.core;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.SequencedCollection;
@@ -45,6 +46,7 @@ import tech.catheu.jeamlit.components.multipage.JtPage;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.components.multipage.PageLinkComponent;
 import tech.catheu.jeamlit.components.status.ErrorComponent;
+import tech.catheu.jeamlit.components.text.HtmlComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
 import tech.catheu.jeamlit.components.text.TitleComponent;
 import tech.catheu.jeamlit.datastructure.TypedMap;
@@ -120,6 +122,14 @@ public final class Jt {
 
     public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
         return new ErrorComponent.Builder(body);
+    }
+
+    public static HtmlComponent.Builder html(final @Nonnull @Language("HTML") String body) {
+        return new HtmlComponent.Builder(body);
+    }
+
+    public static HtmlComponent.Builder html(final @Nonnull Path filePath) {
+        return new HtmlComponent.Builder(filePath);
     }
 
     public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {

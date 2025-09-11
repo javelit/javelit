@@ -42,6 +42,7 @@ public abstract class JtComponent<T> {
     protected static final String SPRINTF_DEPENDENCY = "https://cdn.jsdelivr.net/npm/sprintf-js@1.1.3/dist/sprintf.min.js";
     // not esm on purpose - use default if possible - esm has some hard to fix gotchas
     protected static final String ECHARTS_DEPENDENCY = "https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js";
+    protected static final String DOM_PURIFY_DEPENDENCY = "https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js";
 
     private final String key;
     protected T currentValue;

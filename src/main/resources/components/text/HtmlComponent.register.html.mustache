@@ -1,0 +1,97 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+
+    // Load DOMPurify if not already loaded
+    if (!window.DOMPurify) {
+        const script = document.createElement('script');
+        script.src = '{{ DOM_PURIFY_DEPENDENCY }}';
+        await new Promise(resolve => {
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    }
+
+    class JtHtml extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+            }
+
+            :host([width="content"]) {
+                width: auto;
+                display: inline-block;
+            }
+
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--html-width);
+                max-width: 100%;
+            }
+
+            .html-container {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        `;
+
+        static properties = {
+            htmlContent: { type: String, attribute: 'html-content' },
+            width: { type: String, reflect: true }
+        };
+
+        constructor() {
+            super();
+            this.htmlContent = '';
+        }
+
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            
+            // Set width CSS variable if width is specified and is a pixel value
+            if (changedProperties.has('width')) {
+                if (this.width && /^\d+$/.test(this.width)) {
+                    this.style.setProperty('--html-width', `${this.width}px`);
+                } else {
+                    this.style.removeProperty('--html-width');
+                }
+            }
+        }
+
+        sanitizeHtml(html) {
+            if (window.DOMPurify) {
+                return window.DOMPurify.sanitize(html);
+            }
+            
+            // Fallback: basic HTML escaping if DOMPurify is not available
+            const div = document.createElement('div');
+            div.textContent = html;
+            return div.innerHTML;
+        }
+
+        render() {
+            const sanitizedHtml = this.sanitizeHtml(this.htmlContent);
+            
+            return html`
+                <div class="html-container">
+                    ${unsafeHTML(sanitizedHtml)}
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-html', JtHtml);
+</script>

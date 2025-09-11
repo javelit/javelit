@@ -36,6 +36,8 @@ public final class PlaywrightUtils {
 
     public static final LocatorAssertions.HasTextOptions WAIT_1_SEC_MAX_TEXT = new LocatorAssertions.HasTextOptions().setTimeout(1000);
     public static final LocatorAssertions.ContainsTextOptions WAIT_1_SEC_MAX_TEXT_C = new LocatorAssertions.ContainsTextOptions().setTimeout(1000);
+    public static final LocatorAssertions.HasAttributeOptions WAIT_1_SEC_MAX_ATTRIBUTE = new LocatorAssertions.HasAttributeOptions().setTimeout(1000);
+    public static final LocatorAssertions.IsHiddenOptions WAIT_1_SEC_MAX_HIDDEN = new LocatorAssertions.IsHiddenOptions().setTimeout(1000);
 
     public static final Locator.ClickOptions WAIT_1_SEC_MAX_CLICK = new Locator.ClickOptions().setTimeout(1000);
     public static final Locator.ClickOptions WAIT_100_MS_MAX_CLICK = new Locator.ClickOptions().setTimeout(100);
