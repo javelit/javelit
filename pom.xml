@@ -21,7 +21,7 @@
 
     <groupId>tech.catheu</groupId>
     <artifactId>jeamlit</artifactId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.7.0</version>
     <packaging>jar</packaging>
 
     <name>Jeamlit</name>
@@ -59,7 +59,7 @@
         <url>https://github.com/cyrilou242/jeamlit.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <tag>HEAD</tag>
+        <tag>jeamlit-0.7.0</tag>
     </scm>
 
     <distributionManagement>
@@ -295,10 +295,10 @@
                             <target>
                                 <replaceregexp match="\s+" replace="" flags="g">
                                     <fileset dir="${project.basedir}/src/main/resources/static/_jeamlit/components/chart">
-                                        <include name="echarts_theme_*.json"/>
+                                        <include name="echarts_theme_*.json" />
                                     </fileset>
                                 </replaceregexp>
-                                <echo message="Minified ECharts theme files"/>
+                                <echo message="Minified ECharts theme files" />
                             </target>
                         </configuration>
                     </execution>
