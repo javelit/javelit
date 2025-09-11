@@ -48,13 +48,8 @@ public final class MarkdownUtils {
         renderer = HtmlRenderer.builder(options).build();
     }
 
-    ///  markdownToHtml with no post-processing
-    protected static String markdownToHtml(final @Nullable String markdown) {
-        return MarkdownUtils.markdownToHtml(markdown, false);
-    }
-
     /// @param removeWrap if true, removes the wrapping tag if it exists. Usefull to remove the wrapping <p> tag that is put to text like "this text". If false, no post-processing. The wrapping tag removed could be any type of tag as long as it's wrapping, ie it's open first and closed last in the string.
-    protected static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
+    static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
         if (markdown == null) {
             return null;
         }

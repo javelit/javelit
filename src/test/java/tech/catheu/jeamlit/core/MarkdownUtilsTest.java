@@ -51,7 +51,7 @@ public class MarkdownUtilsTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testMarkdownConversion(final String input, final String keepWrap, final String removeWrap) {
-        assertThat(MarkdownUtils.markdownToHtml(input)).isEqualTo(keepWrap);
+        assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
         assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
         assertThat(MarkdownUtils.markdownToHtml(input, true)).isEqualTo(removeWrap);
     }
