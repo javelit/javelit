@@ -276,14 +276,14 @@
 <jt-connection-error-modal id="connection-modal" prevent-close>
     <span slot="title">Connection Error</span>
     <p>Is Jeamlit still running? If you accidentally stopped Jeamlit, just restart it in your terminal:</p>
-    <jt-code content="jeamlit run YourApp.java"></jt-code>
+    <jt-internal-code content="jeamlit run YourApp.java"></jt-internal-code>
 </jt-connection-error-modal>
 
 <!-- Compilation Error Modal -->
 <jt-connection-error-modal id="compilation-modal">
     <span slot="title">Compilation error</span>
     <p>Fix the compilation errors below and save the file to continue:</p>
-    <jt-code id="compilation-code" content=""></jt-code>
+    <jt-internal-code id="compilation-code" content=""></jt-internal-code>
 </jt-connection-error-modal>
 
 <!-- Settings Modal -->
@@ -731,7 +731,7 @@
     }
 
     function showCompilationError(error) {
-        // Set the error message in the jt-code component
+        // Set the error message in the jt-internal-code component
         compilationCode.content = error;
         // Show the compilation modal
         compilationModal.show = true;
