@@ -37,10 +37,8 @@ java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
 ```
 
 **IMPORTANT**: Do NOT use `java -cp target/classes ...` to test components. Use the proper CLI or write proper tests.
-
-### Manual Testing
-1. Build the JAR: `./mvnw package -DskipTests`
-2. Run examples: `java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/ExampleFile.java`
+**IMPORTANT**: NEVER launch a server with java -jar jeamlit.jar run TestApp.java
+**IMPORTANT**: Instead, write E2E tests
 
 ## Project Structure
 
