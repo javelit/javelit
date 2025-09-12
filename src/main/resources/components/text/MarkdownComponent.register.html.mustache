@@ -15,9 +15,12 @@
 }}
 <script type="module">
     import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    {{{ PRISM_SETUP_SNIPPET }}}
 
     class JtMarkdown extends LitElement {
         static styles = css`
+            {{{ PRISM_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -82,20 +85,13 @@
                 text-decoration: underline;
             }
 
-            .markdown-content code {
+            {{! inline code is styled manually, code blocks are styled with prism }}
+            .markdown-content :not(pre) > code {
                 background: var(--jt-bg-tertiary);
                 padding: 2px 4px;
                 border-radius: var(--jt-border-radius-sm);
                 font-family: var(--jt-font-family-mono);
                 font-size: 0.9em;
-            }
-
-            .markdown-content pre {
-                background: var(--jt-bg-tertiary);
-                padding: var(--jt-spacing-md);
-                border-radius: var(--jt-border-radius-md);
-                overflow-x: auto;
-                margin: var(--jt-spacing-md) 0;
             }
 
             .markdown-content blockquote {
@@ -132,6 +128,13 @@
                 } else {
                     this.style.removeProperty('--markdown-width');
                 }
+            }
+
+            // Trigger Prism highlighting after DOM update
+            if (Prism) {
+                Prism.highlightAllUnder(this.shadowRoot);
+            } else {
+                console.warn("prism not available");
             }
         }
 
