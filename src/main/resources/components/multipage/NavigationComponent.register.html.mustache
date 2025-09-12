@@ -178,8 +178,6 @@
         }
         
         updated(changedProperties) {
-            super.updated(changedProperties);
-            
             // When current page changes externally, update URL
             if (changedProperties.has('currentPage') && this.currentPage) {
                 this.updateURL(this.currentPage, false);

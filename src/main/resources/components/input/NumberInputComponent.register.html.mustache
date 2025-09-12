@@ -259,8 +259,6 @@
         }
 
         updated(changedProperties) {
-            super.updated(changedProperties);
-            
             // Update width CSS variable
             if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
                 this.style.setProperty('--input-width', `${this.width}px`);

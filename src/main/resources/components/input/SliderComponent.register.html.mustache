@@ -235,8 +235,6 @@
         }
 
         updated(changedProperties) {
-            super.updated(changedProperties);
-
             // Update tempValue when value changes from backend (but not during dragging)
             if (changedProperties.has('value') && !this.dragging) {
                 this.tempValue = this.value;

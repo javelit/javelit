@@ -59,8 +59,6 @@
         }
 
         updated(changedProperties) {
-            super.updated(changedProperties);
-            
             // Set width CSS variable if width is specified and is a pixel value
             if (changedProperties.has('width')) {
                 if (this.width && /^\d+$/.test(this.width)) {
