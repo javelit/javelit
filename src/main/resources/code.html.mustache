@@ -14,149 +14,184 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+        {{{ PRISM_SETUP_SNIPPET }}}
 
     class JtCode extends LitElement {
-        static styles = css`
-            :host {
-                display: block;
-                margin: var(--jt-spacing-md) 0;
-            }
+        static styles = [
+            css`
+                {{{ PRISM_CSS }}}
 
-            .code-container {
-                position: relative;
-                background: var(--jt-bg-secondary);
-                border: 1px solid var(--jt-border-color);
-                border-radius: var(--jt-border-radius);
-                overflow: hidden;
-            }
+                :host {
+                    display: block;
+                    margin: var(--jt-spacing-md) 0;
+                    position: relative;
+                }
 
-            .code-content {
-                padding: var(--jt-spacing-md);
-                font-family: var(--jt-font-family-mono);
-                font-size: var(--jt-font-size-sm);
-                white-space: pre-wrap;
-                word-wrap: break-word;
-                color: var(--jt-text-primary);
-                cursor: text;
-                user-select: text;
-                transition: background-color var(--jt-transition-fast);
-                min-height: 2em;
-            }
+                :host([width="content"]) {
+                    width: auto;
+                    display: inline-block;
+                }
 
+                :host([height="stretch"]) {
+                    height: 100%;
 
-            .copy-button {
-                position: absolute;
-                top: var(--jt-spacing-sm);
-                right: var(--jt-spacing-sm);
-                background: var(--jt-bg-primary);
-                border: 1px solid var(--jt-border-color);
-                border-radius: var(--jt-border-radius-sm);
-                padding: var(--jt-spacing-xs);
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background-color var(--jt-transition-fast), color var(--jt-transition-fast);
-                opacity: 0.7;
-            }
+                    .code-container {
+                        height: 100%;
+                    }
 
-            .copy-button:hover {
-                background: var(--jt-bg-tertiary);
-                opacity: 1;
-            }
+                }
 
-            .copy-icon {
-                font-family: 'Material Symbols Rounded';
-                font-size: var(--jt-font-size-base);
-                color: var(--jt-text-secondary);
-            }
+                :host([width]:not([width="stretch"]):not([width="content"])) {
+                    width: var(--code-width);
+                    max-width: 100%;
+                }
 
-            .copy-button:hover .copy-icon {
-                color: var(--jt-text-primary);
-            }
+                :host([height]:not([height="content"]):not([height="stretch"])) {
+                    height: var(--code-height);
 
-            .toast {
-                position: absolute;
-                bottom: var(--jt-spacing-md);
-                left: 50%;
-                transform: translateX(-50%) translateY(10px);
-                background: var(--jt-success-color);
-                color: var(--jt-text-white);
-                padding: var(--jt-spacing-sm) var(--jt-spacing-lg);
-                border-radius: var(--jt-border-radius);
-                font-family: var(--jt-font-family);
-                font-size: var(--jt-font-size-sm);
-                font-weight: var(--jt-font-weight-medium);
-                box-shadow: var(--jt-shadow-lg);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity var(--jt-transition-fast), transform var(--jt-transition-fast);
-                z-index: 999999;
-                display: flex;
-                align-items: center;
-                gap: var(--jt-spacing-xs);
-            }
+                    .code-container {
+                        height: 100%;
+                        overflow: auto;
+                    }
+                }
 
-            .toast.show {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+                .code-container {
+                    position: relative;
+                    border-radius: var(--jt-border-radius-lg);
+                    overflow: scroll;
+                    background: #f5f2f0;
+                    border: 1px solid var(--jt-border-color);
+                }
 
-            .toast-icon {
-                font-family: 'Material Symbols Rounded';
-                font-size: var(--jt-font-size-base);
-            }
-        `;
+                .copy-button {
+                    position: absolute;
+                    top: var(--jt-spacing-sm);
+                    right: var(--jt-spacing-sm);
+                    background: var(--jt-bg-primary);
+                    border: 1px solid var(--jt-border-color);
+                    border-radius: var(--jt-border-radius);
+                    padding: var(--jt-spacing-xs);
+                    cursor: pointer;
+                    opacity: 0;
+                    transition: opacity var(--jt-transition-fast);
+                    font-family: 'Material Symbols Rounded', sans-serif;
+                    font-size: var(--jt-font-size-sm);
+                    color: var(--jt-text-secondary);
+                    z-index: 2;
+                }
+
+                :host(:hover) .copy-button {
+                    opacity: 1;
+                }
+
+                .copy-button:hover {
+                    background: var(--jt-bg-secondary);
+                    color: var(--jt-text-primary);
+                }
+
+                .copy-button:active {
+                    transform: scale(0.95);
+                }
+
+                :host([wrap-lines]) pre {
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
+
+                :host([wrap-lines]) code {
+                    white-space: pre-wrap;
+                }
+            `];
 
         static properties = {
-            content: { type: String },
-            copyable: { type: Boolean }
+            body: {type: String},
+            language: {type: String},
+            lineNumbers: {type: Boolean, attribute: 'line-numbers'},
+            wrapLines: {type: Boolean, attribute: 'wrap-lines'},
+            height: {type: String, reflect: true},
+            width: {type: String, reflect: true}
         };
 
         constructor() {
             super();
-            this.content = '';
-            this.copyable = true;
+            this.body = '';
+            this.lineNumbers = false;
+            this.wrapLines = false;
         }
 
-        handleCopy() {
-            const text = this.content || '';
-            navigator.clipboard.writeText(text).then(() => {
-                this.showToast('Copied!');
-            }).catch((error) => {
-                console.error('Failed to copy to clipboard:', error);
-                this.showToast('Copy failed');
-            });
-        }
+        updated(changedProperties) {
 
-        showToast(message = 'Copied!') {
-            const toast = this.shadowRoot.querySelector('.toast');
-            if (toast) {
-                const textSpan = toast.querySelector('span:last-child');
-                if (textSpan) {
-                    textSpan.textContent = message;
+            // Set height CSS variable if height is specified and is a pixel value
+            if (changedProperties.has('height')) {
+                if (this.height && /^\d+$/.test(this.height)) {
+                    this.style.setProperty('--code-height', `${this.height}px`);
+                } else {
+                    this.style.removeProperty('--code-height');
                 }
-                toast.classList.add('show');
+            }
+
+            // Set width CSS variable if width is specified and is a pixel value
+            if (changedProperties.has('width')) {
+                if (this.width && /^\d+$/.test(this.width)) {
+                    this.style.setProperty('--code-width', `${this.width}px`);
+                } else {
+                    this.style.removeProperty('--code-width');
+                }
+            }
+
+            // Trigger Prism highlighting after DOM update
+            if (Prism) {
+                Prism.highlightAllUnder(this.shadowRoot);
+            } else {
+                console.warn("prism not available");
+            }
+        }
+
+        async handleCopy() {
+            try {
+                await navigator.clipboard.writeText(this.body);
+
+                // Brief visual feedback
+                const button = this.shadowRoot.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'check';
+                button.style.color = 'var(--jt-color-success)';
+
                 setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 1100);
+                    button.textContent = originalText;
+                    button.style.color = '';
+                }, 1000);
+
+            } catch (error) {
+                console.warn('Failed to copy code to clipboard:', error);
+
+                // Fallback visual feedback for failure
+                const button = this.shadowRoot.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'error';
+                button.style.color = 'var(--jt-color-danger)';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.color = '';
+                }, 1000);
             }
         }
 
         render() {
+            const languageClass = this.language ? `language-${this.language}` : 'language-none';
+            const preClasses = [
+                this.lineNumbers ? 'line-numbers' : '',
+                this.wrapLines ? 'wrap-lines' : ''
+            ].filter(Boolean).join(' ');
+
             return html`
-                <div class="code-container">
-                    <div class="code-content">${this.content || ''}</div>
-                    ${this.copyable ? html`
-                        <button class="copy-button" @click="${this.handleCopy}" title="Copy to clipboard">
-                            <span class="copy-icon">content_copy</span>
-                        </button>
-                    ` : ''}
-                    <div class="toast">
-                        <span class="toast-icon">check</span>
-                        <span>Copied!</span>
-                    </div>
+                <button class="copy-button" @click="${this.handleCopy}" title="Copy code">
+                    content_copy
+                </button>
+                <div id="code-container" class="code-container">
+                    <pre class="${preClasses}"><code class="${languageClass}">${this.body}</code></pre>
                 </div>
             `;
         }

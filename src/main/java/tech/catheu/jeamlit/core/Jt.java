@@ -46,6 +46,7 @@ import tech.catheu.jeamlit.components.multipage.JtPage;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 import tech.catheu.jeamlit.components.multipage.PageLinkComponent;
 import tech.catheu.jeamlit.components.status.ErrorComponent;
+import tech.catheu.jeamlit.components.text.CodeComponent;
 import tech.catheu.jeamlit.components.text.HtmlComponent;
 import tech.catheu.jeamlit.components.text.MarkdownComponent;
 import tech.catheu.jeamlit.components.text.TextComponent;
@@ -135,6 +136,10 @@ public final class Jt {
 
     public static HtmlComponent.Builder html(final @Nonnull Path filePath) {
         return new HtmlComponent.Builder(filePath);
+    }
+
+    public static CodeComponent.Builder code(final @Nonnull String body) {
+        return new CodeComponent.Builder(body);
     }
 
     public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {

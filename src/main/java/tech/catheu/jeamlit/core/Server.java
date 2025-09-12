@@ -172,19 +172,21 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public void start() {
-        HttpHandler app = new PathHandler().addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()))
-                                           .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
-                                           .addPrefixPath("/_/static",
-                                                          new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(),
-                                                                                                           "static")))
-                                           .addPrefixPath("/", new IndexHandler());
+        HttpHandler app = new PathHandler()
+                .addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()))
+                .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
+                .addPrefixPath("/_/static",
+                               new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(), "static")))
+                .addPrefixPath("/", new IndexHandler());
         app = new XsrfValidationHandler(app);
         // attach a BROWSER session cookie - this is not the same as app state "session" used downstream
         app = new SessionAttachmentHandler(app,
                                            new InMemorySessionManager("jeamlit_session"),
-                                           new SessionCookieConfig().setCookieName("jeamlit-session-id")
-                                                                    .setHttpOnly(true).setMaxAge(86400 * 7)// 7 days
-                                                                    .setPath("/")
+                                           new SessionCookieConfig()
+                                                   .setCookieName("jeamlit-session-id")
+                                                   .setHttpOnly(true)
+                                                   .setMaxAge(86400 * 7)// 7 days
+                                                   .setPath("/")
                                            //make below configurable
                                            //.setSecure()
                                            //.setDomain()
@@ -252,8 +254,9 @@ public final class Server implements StateManager.RenderServer {
 
         @Override
         public void handleRequest(HttpServerExchange exchange) throws Exception {
-            final boolean requiresXsrfValidation = Set.of("POST", "PUT", "PATCH", "DELETE")
-                                                      .contains(exchange.getRequestMethod().toString());
+            final boolean requiresXsrfValidation = Set
+                    .of("POST", "PUT", "PATCH", "DELETE")
+                    .contains(exchange.getRequestMethod().toString());
             final Session currentSession = Sessions.getOrCreateSession(exchange);
             if (requiresXsrfValidation) {
                 // validate Xsrf Token
@@ -266,8 +269,11 @@ public final class Server implements StateManager.RenderServer {
                 }
                 // perform XSRF validation
                 final String providedToken = exchange.getRequestHeaders().getFirst("X-XSRF-TOKEN");
-                final String cookieProvidedToken = optional(exchange.getRequestCookie(XSRF_COOKIE_KEY)).map(Cookie::getValue).orElse(null);
-                if (providedToken == null || !providedToken.equals(cookieProvidedToken) || !providedToken.equals(expectedToken)) {
+                final String cookieProvidedToken = optional(exchange.getRequestCookie(XSRF_COOKIE_KEY))
+                        .map(Cookie::getValue)
+                        .orElse(null);
+                if (providedToken == null || !providedToken.equals(cookieProvidedToken) || !providedToken.equals(
+                        expectedToken)) {
                     exchange.setStatusCode(StatusCodes.FORBIDDEN);
                     exchange.getResponseSender().send("Invalid XSRF token");
                     return;
@@ -291,10 +297,11 @@ public final class Server implements StateManager.RenderServer {
                 if (!currentSession.getAttributeNames().contains(SESSION_XSRF_ATTRIBUTE)) {
                     final String xsrfToken = generateSecureXsrfToken();
                     currentSession.setAttribute(SESSION_XSRF_ATTRIBUTE, xsrfToken);
-                    exchange.setResponseCookie(new CookieImpl(XSRF_COOKIE_KEY, xsrfToken).setHttpOnly(false)
-                                                                                         .setSameSite(true)
-                                                                                         .setPath("/")
-                                                                                         .setMaxAge(86400 * 7));
+                    exchange.setResponseCookie(new CookieImpl(XSRF_COOKIE_KEY, xsrfToken)
+                                                       .setHttpOnly(false)
+                                                       .setSameSite(true)
+                                                       .setPath("/")
+                                                       .setMaxAge(86400 * 7));
                 }
             }
 
@@ -359,7 +366,11 @@ public final class Server implements StateManager.RenderServer {
                 // TODO NEED TO GET THE SESSION ID PROPERLY
                 final String sessionId = exchange.getRequestHeaders().getFirst("X-Session-ID");
                 final String componentKey = exchange.getRequestHeaders().getFirst("X-Component-Key");
-                FrontendMessage componentUpdate = new FrontendMessage("component_update", componentKey, uploadedFiles, null, null);
+                FrontendMessage componentUpdate = new FrontendMessage("component_update",
+                                                                      componentKey,
+                                                                      uploadedFiles,
+                                                                      null,
+                                                                      null);
                 handleMessage(sessionId, componentUpdate);
                 exchange.setStatusCode(StatusCodes.OK);
             } catch (Exception e) {
@@ -437,9 +448,7 @@ public final class Server implements StateManager.RenderServer {
                                    // for component_update message
                                    @Nullable String componentKey, @Nullable Object value,
                                    // for path_update message
-                                   @Nullable String path,
-                                   @Nullable Map<String, List<String>> queryParameters
-    ) {
+                                   @Nullable String path, @Nullable Map<String, List<String>> queryParameters) {
     }
 
     private void handleMessage(final String sessionId, final FrontendMessage frontendMessage) {
@@ -452,9 +461,11 @@ public final class Server implements StateManager.RenderServer {
             }
             case "reload" -> doRerun = true;
             case "path_update" -> {
-                final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(
-                        optional(frontendMessage.path()).orElse(""),
-                        optional(frontendMessage.queryParameters()).orElse(Map.of()));
+                final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(optional(
+                        frontendMessage.path()).orElse(""),
+                                                                                                       optional(
+                                                                                                               frontendMessage.queryParameters()).orElse(
+                                                                                                               Map.of()));
                 StateManager.setUrlContext(sessionId, urlContext);
                 // Trigger app execution with new URL context
                 doRerun = true;
@@ -472,18 +483,24 @@ public final class Server implements StateManager.RenderServer {
     }
 
     @Override
-    public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
+    public void send(final @Nonnull String sessionId,
+                     final @Nullable JtComponent<?> component,
+                     @NotNull JtContainer container,
+                     final @Nullable Integer index,
+                     final boolean clearBefore) {
         // Handle component registration
-        final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(
-                sessionId,
-                k -> new HashSet<>());
+        final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(sessionId,
+                                                                                               k -> new HashSet<>());
         final List<String> registrations = new ArrayList<>();
 
         if (component != null) {
             // note: hot reload does not work for changes in the register() method
             final String componentType = component.getClass().getName();
             if (!componentsAlreadyRegistered.contains(componentType)) {
-                registrations.add(component.register());
+                final @Nullable String registerCode = component.register();
+                if (registerCode != null) {
+                    registrations.add(registerCode);
+                }
                 componentsAlreadyRegistered.add(componentType);
             }
         }
@@ -556,7 +573,11 @@ public final class Server implements StateManager.RenderServer {
                                      "port",
                                      port,
                                      "XSRF_TOKEN",
-                                     xsrfToken));
+                                     xsrfToken,
+                                     "PRISM_SETUP_SNIPPET",
+                                     JtComponent.PRISM_SETUP_SNIPPET,
+                                     "PRISM_CSS",
+                                     JtComponent.PRISM_CSS));
         return writer.toString();
     }
 
@@ -593,8 +614,7 @@ public final class Server implements StateManager.RenderServer {
             }
             return content;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile),
-                                       e);
+            throw new RuntimeException("Failed to read headers file from %s.".formatted(headersFile), e);
         }
     }
 
@@ -626,7 +646,9 @@ public final class Server implements StateManager.RenderServer {
                 final Path changedFile = event.path();
                 // Only respond to changes to .java files in the source tree and pom.xml files
                 // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-                if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile.getFileName().toString())) {
+                if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile
+                                                                                                       .getFileName()
+                                                                                                       .toString())) {
                     switch (event.eventType()) {
                         case MODIFY -> {
                             LOG.info("File changed: {}. Rebuilding...", changedFile);
@@ -641,25 +663,24 @@ public final class Server implements StateManager.RenderServer {
                                 LOG.warn(
                                         "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
                                         watchedFile);
-                                session2WsChannel.keySet().forEach(id -> sendCompilationError(id,
-                                                                                              "App file was deleted."));
+                                session2WsChannel
+                                        .keySet()
+                                        .forEach(id -> sendCompilationError(id, "App file was deleted."));
                             }
                         }
                         case CREATE -> {
                             if (changedFile.equals(watchedFile)) {
-                                LOG.warn(
-                                        "App file {} recreated. Attempting to reload from the new file.",
-                                        watchedFile);
+                                LOG.warn("App file {} recreated. Attempting to reload from the new file.", watchedFile);
                                 notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                             }
                         }
                         case OVERFLOW -> {
-                            LOG.warn("Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
+                            LOG.warn(
+                                    "Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
                         }
-                        case null, default ->
-                                LOG.warn("File changed: {} but event type is not managed: {}.",
-                                         changedFile,
-                                         event.eventType());
+                        case null, default -> LOG.warn("File changed: {} but event type is not managed: {}.",
+                                                       changedFile,
+                                                       event.eventType());
                     }
                 }
             }).build();

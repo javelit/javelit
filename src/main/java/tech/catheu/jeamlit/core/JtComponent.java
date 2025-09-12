@@ -43,6 +43,30 @@ public abstract class JtComponent<T> {
     // not esm on purpose - use default if possible - esm has some hard to fix gotchas
     protected static final String ECHARTS_DEPENDENCY = "https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js";
     protected static final String DOM_PURIFY_DEPENDENCY = "https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js";
+    // prism resources
+    // inject in template by simply putting:
+    // {{{ PRISM_SETUP_SNIPPET }}}
+    // then inject the css, see below
+    protected static final @Language("javascript") String PRISM_SETUP_SNIPPET = """
+                                                                                import Prism from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/+esm';
+                                                                                import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js/+esm';
+                                                                                import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.js/+esm';
+                                                                                Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/'; 
+                                                                                """;
+    // Note:
+    // css should be imported with the following:
+    // import prismTheme from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css' with {type: 'css'};
+    // import prismLineNumbers from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.css' with {type: 'css'};
+    // then in lit static styles, add prismTheme and prismLineNumbers to the array
+    // BUT AS OF TODAY THIS IS ONLY COMPATIBLE WITHE CHROMIUM
+    // workaround is to use this CSS directly and inject it in the css via mustache templating
+    // value below from https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.css
+    private static final String PRISM_LINE_NUMBERS_CSS = "pre[class*=language-].line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}pre[class*=language-].line-numbers>code{position:relative;white-space:inherit}.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:0;font-size:100%;left:-3.8em;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.line-numbers-rows>span{display:block;counter-increment:linenumber}.line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}";
+    // value below from https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css
+    private static final String PRISM_MAIN_CSS = "code[class*=language-],pre[class*=language-]{color:#000;background:0 0;text-shadow:0 1px #fff;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}code[class*=language-] ::-moz-selection,code[class*=language-]::-moz-selection,pre[class*=language-] ::-moz-selection,pre[class*=language-]::-moz-selection{text-shadow:none;background:#b3d4fc}code[class*=language-] ::selection,code[class*=language-]::selection,pre[class*=language-] ::selection,pre[class*=language-]::selection{text-shadow:none;background:#b3d4fc}@media print{code[class*=language-],pre[class*=language-]{text-shadow:none}}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#f5f2f0}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#708090}.token.punctuation{color:#999}.token.namespace{opacity:.7}.token.boolean,.token.constant,.token.deleted,.token.number,.token.property,.token.symbol,.token.tag{color:#905}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#690}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url{color:#9a6e3a;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.class-name,.token.function{color:#dd4a68}.token.important,.token.regex,.token.variable{color:#e90}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}";
+    ///  the prism css, if injected in a css text with mustache, use triple brackets
+    protected static final String PRISM_CSS = PRISM_LINE_NUMBERS_CSS + "\n" + PRISM_MAIN_CSS;
+
 
     private final String key;
     protected T currentValue;
@@ -79,8 +103,9 @@ public abstract class JtComponent<T> {
     /**
      * Component definition - called once per component type.
      * This should return HTML/JS/CSS that defines the component.
+     * Return null if there is nothing to do.
      */
-    protected abstract String register();
+    protected abstract @Nullable String register();
 
     /**
      * Component instance rendering - called for each render.
