@@ -35,17 +35,17 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
 
     private static final Logger LOG = LoggerFactory.getLogger(NumberInputComponent.class);
 
-    protected final @Nonnull String label;
-    protected final @Nullable T minValue;
-    protected final @Nullable T maxValue;
-    protected final T step;
-    protected final @Nullable String format;
-    protected final @Nullable String help;
-    protected final @Nullable String placeholder;
-    protected final boolean disabled;
-    protected final LabelVisibility labelVisibility;
-    protected final @Nullable String icon;
-    protected final String width;
+    final @Nonnull String label;
+    final @Nullable T minValue;
+    final @Nullable T maxValue;
+    final T step;
+    final @Nullable String format;
+    final @Nullable String help;
+    final @Nullable String placeholder;
+    final boolean disabled;
+    final LabelVisibility labelVisibility;
+    final @Nullable String icon;
+    final String width;
     private final Class<T> valueType;
 
     private static final Mustache registerTemplate;

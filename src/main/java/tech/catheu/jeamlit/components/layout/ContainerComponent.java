@@ -31,8 +31,8 @@ import tech.catheu.jeamlit.core.JtContainer;
 /// implements both the Container component and the Empty component via the inPlace flag.
 public final class ContainerComponent extends JtComponent<JtContainer> {
 
-    protected final Integer height;
-    protected final Boolean border;
+    final Integer height;
+    final Boolean border;
     private final boolean inPlace;
 
     private static final Mustache registerTemplate;

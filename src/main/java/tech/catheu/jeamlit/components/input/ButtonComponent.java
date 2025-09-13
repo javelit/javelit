@@ -33,12 +33,12 @@ import static tech.catheu.jeamlit.core.utils.Preconditions.checkArgument;
 
 public final class ButtonComponent extends JtComponent<Boolean> {
   // the following fields are protected to be visible to the template engine - see render function
-  protected final @Nonnull String label;
-  protected final String type;
-  protected final String icon;
-  protected final String help;
-  protected final boolean disabled;
-  protected final boolean useContainerWidth;
+  final @Nonnull String label;
+  final String type;
+  final String icon;
+  final String help;
+  final boolean disabled;
+  final boolean useContainerWidth;
 
   private static final Mustache registerTemplate;
   private static final Mustache renderTemplate;

@@ -30,9 +30,9 @@ import tech.catheu.jeamlit.core.JtContainer;
 
 public final class ExpanderComponent extends JtComponent<JtContainer> {
 
-    protected final @Nonnull String label;
-    protected final boolean expanded;
-    protected final @Nullable String width;
+    final @Nonnull String label;
+    final boolean expanded;
+    final @Nullable String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

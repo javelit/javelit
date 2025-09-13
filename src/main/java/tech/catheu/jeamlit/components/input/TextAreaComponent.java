@@ -29,15 +29,15 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 public final class TextAreaComponent extends JtComponent<String> {
-    protected final @Nonnull String label;
-    protected final String value;
-    protected final @Nullable String height;
-    protected final @Nullable Integer maxChars;
-    protected final @Nullable String help;
-    protected final @Nullable String placeholder;
-    protected final boolean disabled;
-    protected final LabelVisibility labelVisibility;
-    protected final String width;
+    final @Nonnull String label;
+    final String value;
+    final @Nullable String height;
+    final @Nullable Integer maxChars;
+    final @Nullable String help;
+    final @Nullable String placeholder;
+    final boolean disabled;
+    final LabelVisibility labelVisibility;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

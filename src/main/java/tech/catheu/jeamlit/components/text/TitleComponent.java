@@ -30,10 +30,10 @@ import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 public final class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
-    protected final @Nonnull String body;
-    protected final String anchor;
-    protected final String help;
-    protected final String width;
+    final @Nonnull String body;
+    final String anchor;
+    final String help;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

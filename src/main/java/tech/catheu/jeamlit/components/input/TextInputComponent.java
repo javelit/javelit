@@ -29,17 +29,17 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 public final class TextInputComponent extends JtComponent<String> {
-    protected final @Nonnull String label;
-    protected final String value;
-    protected final @Nullable Integer maxChars;
-    protected final String type;
-    protected final @Nullable String help;
-    protected final @Nullable String autocomplete;
-    protected final @Nullable String placeholder;
-    protected final boolean disabled;
-    protected final LabelVisibility labelVisibility;
-    protected final @Nullable String icon;
-    protected final String width;
+    final @Nonnull String label;
+    final String value;
+    final @Nullable Integer maxChars;
+    final String type;
+    final @Nullable String help;
+    final @Nullable String autocomplete;
+    final @Nullable String placeholder;
+    final boolean disabled;
+    final LabelVisibility labelVisibility;
+    final @Nullable String icon;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

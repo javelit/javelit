@@ -30,10 +30,10 @@ import tech.catheu.jeamlit.core.JtContainer;
 
 public final class PopoverComponent extends JtComponent<JtContainer> {
 
-    protected final @Nonnull String label;
-    protected final @Nullable String help;
-    protected final boolean disabled;
-    protected final boolean useContainerWidth;
+    final @Nonnull String label;
+    final @Nullable String help;
+    final boolean disabled;
+    final boolean useContainerWidth;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

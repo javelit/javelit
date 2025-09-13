@@ -28,10 +28,10 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 public final class TextComponent extends JtComponent<JtComponent.NONE> {
-    // protected to be visible to the template engine
-    protected final String body;
-    protected final String help;
-    protected final String width;
+    // visible to the template engine
+    final String body;
+    final String help;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

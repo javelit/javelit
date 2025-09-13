@@ -30,11 +30,11 @@ import tech.catheu.jeamlit.core.JtContainer;
 
 public final class FormComponent extends JtComponent<JtContainer> {
 
-    protected final boolean clearOnSubmit;
-    protected final boolean enterToSubmit;
-    protected final boolean border;
-    protected final @Nullable String width;
-    protected final @Nullable String height;
+    final boolean clearOnSubmit;
+    final boolean enterToSubmit;
+    final boolean border;
+    final @Nullable String width;
+    final @Nullable String height;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

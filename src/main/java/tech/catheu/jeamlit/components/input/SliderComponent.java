@@ -29,16 +29,16 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 
 public final class SliderComponent extends JtComponent<Double> {
-    protected final @NotNull String label;
-    protected final double min;
-    protected final double max;
-    protected final double value;
-    protected final double step;
-    protected final @Nullable String format;
-    protected final @Nullable String help;
-    protected final boolean disabled;
-    protected final LabelVisibility labelVisibility;
-    protected final String width;
+    final @NotNull String label;
+    final double min;
+    final double max;
+    final double value;
+    final double step;
+    final @Nullable String format;
+    final @Nullable String help;
+    final boolean disabled;
+    final LabelVisibility labelVisibility;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

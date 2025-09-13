@@ -35,15 +35,15 @@ import tech.catheu.jeamlit.core.JtLayout;
 
 public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns> {
 
-    protected final int numColumns;
-    protected final @Nullable List<@NotNull Double> widths;
+    final int numColumns;
+    final @Nullable List<@NotNull Double> widths;
 
     public enum Gap {
         SMALL, MEDIUM, LARGE, NONE
     }
 
-    protected final Gap gap;
-    protected final VerticalAlignment verticalAlignment;
+    final Gap gap;
+    final VerticalAlignment verticalAlignment;
 
     public enum VerticalAlignment {
         TOP, CENTER, BOTTOM
