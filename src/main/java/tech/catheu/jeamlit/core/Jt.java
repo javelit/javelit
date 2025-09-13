@@ -34,6 +34,7 @@ import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
 import tech.catheu.jeamlit.components.input.TextAreaComponent;
 import tech.catheu.jeamlit.components.input.TextInputComponent;
+import tech.catheu.jeamlit.components.input.ToggleComponent;
 import tech.catheu.jeamlit.components.layout.ColumnsComponent;
 import tech.catheu.jeamlit.components.layout.ContainerComponent;
 import tech.catheu.jeamlit.components.layout.ExpanderComponent;
@@ -126,6 +127,14 @@ public final class Jt {
         return new MarkdownComponent.Builder(body);
     }
 
+    public static void divider() {
+        markdown("---").use();
+    }
+
+    public static void divider(final int width) {
+        markdown("---").width(width).use();
+    }
+
     public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
         return new ErrorComponent.Builder(body);
     }
@@ -144,6 +153,10 @@ public final class Jt {
 
     public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {
         return new ButtonComponent.Builder(label);
+    }
+
+    public static ToggleComponent.Builder toggle(@Language("markdown") final @Nonnull String label) {
+        return new ToggleComponent.Builder(label);
     }
 
     public static SliderComponent.Builder slider(@Language("markdown") final @Nonnull String label) {
