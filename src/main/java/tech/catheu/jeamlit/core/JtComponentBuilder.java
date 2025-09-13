@@ -16,7 +16,9 @@
 package tech.catheu.jeamlit.core;
 
 import java.lang.reflect.Field;
-import java.util.StringJoiner;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -52,18 +54,17 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
             // 2. Fallback: build a key from class name + fields
             final String baseName = clazz.getName().toLowerCase().replace("$builder", "");
             final Field[] fields = clazz.getDeclaredFields();
-            final StringJoiner joiner = new StringJoiner("_", baseName + "_", "");
+            Arrays.sort(fields, Comparator.comparing(Field::getName));
+            final Object[] values = new Object[fields.length];
             // fixme cyril think of a size limit - this could get crazy big and slow - or hash but keep things understandable for the user
-            for (final Field field : fields) {
+            for (int i = 0; i < fields.length; i++) {
+                final Field field = fields[i];
                 field.setAccessible(true);
                 final Object value = field.get(this);
-                if (value != null) {
-                    joiner.add(value.toString());
-                }
+                values[i] = value;
             }
 
-            // fixme cyril think of a size limit - this could get crazy big - or hash but keep things understandable for the user
-            return joiner.toString();
+            return baseName + "_" + Objects.hash(values);
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);
