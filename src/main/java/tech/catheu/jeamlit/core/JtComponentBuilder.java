@@ -44,6 +44,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
      * If set, the key field is used instead.
      * <p>
      * Note: pretty slow and hacky.
+     * See streamlit implementation for reference: https://github.com/streamlit/streamlit/blob/4cc8cbccf529f351a29af88c15685a8a90153dd9/lib/streamlit/elements/lib/utils.py#L153
      **/
     public String generateKeyForInteractive() {
         if (key != null && !key.isBlank()) {
