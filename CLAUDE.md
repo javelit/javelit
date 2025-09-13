@@ -91,33 +91,27 @@ public Builder width(final int widthPixels) {
 ### Writing tests
 #### E2E tests
 1. Rule 1:
-A test method using playwright should look like the following:
+A test method using playwright should use the PlaywrightUtils.runInSharedBrowser.
+Here is an example: 
 ```
+    @Test
+    void testBasicCodeDisplay() {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
             public class TestApp {
                 public static void main(String[] args) {
-                    <THE APP TO TEST>
+                    Jt.code("some code").use();
                 }
             }
             """;
-        
-        final Path appFile = JeamlitTestHelper.writeTestApp(app);
-        Server server = null;
 
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-             server = JeamlitTestHelper.startServer(appFile);
-             page.navigate("http://localhost:" + server.port);
-             
-             <PERFORM ASSERTIONS HERE>
-             
-        } finally {
-            JeamlitTestHelper.stopServer(server);
-            JeamlitTestHelper.cleanupTempDir(appFile.getParent());
-        }
+        PlaywrightUtils.runInSharedBrowser(app, page -> {
+            // Verify code component is rendered (filter by content to find the right one)
+            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
+            // other tests
+        });
+    }
 ```
 
 2. Rule 2:
