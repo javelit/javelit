@@ -77,6 +77,7 @@ src/main/resources/         # Application resources
     - Main containers (:host in lit css) should always be in display block
     - Then :host([use-container-width]) .[REPLACE_BY_SOME_INTERNAL_CLASS] { width: 100%; }
 - Main containers (:host in lit css) should always be in display block
+- **IMPORTANT**:  in the render template, do not use triple brackets `{{{` to inject values, always use double brackets `{{`
 - **Width method pattern**: Whenever a ComponentBuilder has a `width(String)` method, it must also include a `width(int)` overload for pixel values:
 ```java
 public Builder width(final int widthPixels) {
