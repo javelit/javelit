@@ -142,7 +142,7 @@ public abstract class JtComponent<T> {
      * Update the component's value from frontend.
      * Uses Jackson for type-safe deserialization.
      */
-    protected void updateValue(final Object valueUpdate) {
+    protected final void updateValue(final Object valueUpdate) {
         this.currentValue = validate((T) valueUpdate);
     }
 
