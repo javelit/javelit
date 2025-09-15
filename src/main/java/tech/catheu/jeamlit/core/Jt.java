@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import tech.catheu.jeamlit.components.chart.EchartsComponent;
 import tech.catheu.jeamlit.components.data.TableComponent;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
+import tech.catheu.jeamlit.components.input.CheckboxComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
 import tech.catheu.jeamlit.components.input.TextAreaComponent;
@@ -127,12 +128,8 @@ public final class Jt {
         return new MarkdownComponent.Builder(body);
     }
 
-    public static void divider() {
-        markdown("---").use();
-    }
-
-    public static void divider(final int width) {
-        markdown("---").width(width).use();
+    public static MarkdownComponent.Builder divider() {
+        return new MarkdownComponent.Builder("---");
     }
 
     public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
@@ -153,6 +150,10 @@ public final class Jt {
 
     public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {
         return new ButtonComponent.Builder(label);
+    }
+
+    public static CheckboxComponent.Builder checkbox(@Language("markdown") final @Nonnull String label) {
+        return new CheckboxComponent.Builder(label);
     }
 
     public static ToggleComponent.Builder toggle(@Language("markdown") final @Nonnull String label) {
