@@ -1,4 +1,4 @@
-name: test.yml
+name: Tests
 on:
   push:
     branches: [main]
