@@ -1,0 +1,48 @@
+we will now implement the SelectBoxComponent
+I already implemented the backend.
+
+here is the spec:
+label: from the backend component, it's an html string because it's converted from
+markdown to html. In the frontend, use the same logic to inject the html as in
+ButtonComponent.
+
+options: Labels for the select options. Use optionsJson, it will be a json list of strings. options can include markdown.
+So consider each values is a html snippet, same as for label above.
+
+index: The index of the preselected option on first render. If null, initialize with no pre-selected option.
+
+help: A tooltip that gets displayed next to the widget label. Jeamlit only displays
+the tooltip when label_visibility="visible". If this is None (default), no tooltip is
+displayed. The help string  is NOT markdown. In the frontend, use the same
+implementation as in the ButtonComponent.
+
+placeholder: A string to display when no options are selected. If this is null (default), the widget displays placeholder text based on the widget's configuration:
+    - "Choose an option" is displayed when options are available and accept_new_options is False.
+    - "Choose or add an option" is displayed when options are available and accept_new_options is True.
+    - "Add an option" is displayed when no options are available and accept_new_options=True.
+    - "No options to select" is displayed when no options are available and accept_new_options=False. The widget is also disabled in this case.
+
+disabled: boolean: An optional boolean that disables the toggle if set to True. The
+default is False.
+
+label_visibility: The visibility of the label. The default is "visible". If this is
+"hidden", jeamlit displays an empty spacer instead of the label, which can help keep
+the widget aligned with other widgets. If this is "collapsed", jeamlit displays no
+label or spacer.  the same implementation as in the TextAreaComponent
+
+accept_new_options: boolean: Whether the user can add a selection that isn't included in options.
+If this is False, the user can only select from the items in options. If this is True, the user can enter a new item that doesn't exist in options.
+
+width: String: "content", "stretch" or an int string. Use the same implementation as
+in the CodeComponent in the frontend.
+
+make sure to use optionsJson in the render template. they will contain lists that are properly json formatted. Use double brackets to inject them in the render template.
+
+
+IMPORTANT: when the user interacts and the frontend sends an update to the backend: for the value, just send the index of
+the value selected. The backend will take care of converting this to the actual value. So just send an integer.
+If the user enters a new value (possible when accept_new_options is true), send the value as a String.
+The backend will take care of managing these 2 cases internally.
+
+
+prepare for this implementation

@@ -1,0 +1,44 @@
+we will now implement the RadioComponent
+I already implemented the backend.
+
+here is the spec:
+label: from the backend component, it's an html string because it's converted from
+markdown to html. In the frontend, use the same logic to inject the html as in
+ButtonComponent.
+
+options: Labels for the select options. Use optionsJson, it will be a json list of strings. options can include markdown.
+So consider each values is a html snippet, same as for label above.
+
+index: The index of the preselected option on first render. If null, initialize with no pre-selected option.
+
+help: A tooltip that gets displayed next to the widget label. Jeamlit only displays
+the tooltip when label_visibility="visible". If this is None (default), no tooltip is
+displayed. The help string  is NOT markdown. In the frontend, use the same
+implementation as in the ButtonComponent.
+
+disabled: boolean: An optional boolean that disables the toggle if set to True. The
+default is False.
+
+horizontal: if true, the radio group is oriented horizontally. If false, it's vertical.
+
+captions: A list of captions to show below each radio button. If null, no captions are shown.
+
+label_visibility: The visibility of the label. The default is "visible". If this is
+"hidden", jeamlit displays an empty spacer instead of the label, which can help keep
+the widget aligned with other widgets. If this is "collapsed", jeamlit displays no
+label or spacer.  the same implementation as in the TextAreaComponent
+
+width: String: "content", "stretch" or an int string. Use the same implementation as
+in the CodeComponent in the frontend.
+
+make sure to use optionsJson and captionsJson in the render template. they will contain lists that are properly json
+formatted.
+
+
+here is a screenshot:
+[Image #1]
+
+IMPORTANT: when the user interacts and the frontend sends an update to the backend: for the value, just send the index of
+the radio button selected. The backend will take care of converting this to the actual value. So just send an integer.
+
+prepare for this implementation

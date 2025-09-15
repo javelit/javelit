@@ -33,6 +33,7 @@ import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.CheckboxComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.RadioComponent;
+import tech.catheu.jeamlit.components.input.SelectBoxComponent;
 import tech.catheu.jeamlit.components.input.SliderComponent;
 import tech.catheu.jeamlit.components.input.TextAreaComponent;
 import tech.catheu.jeamlit.components.input.TextInputComponent;
@@ -215,6 +216,10 @@ public final class Jt {
 
     public static <T> RadioComponent.Builder<T> radio(@Language("markdown") final @Nonnull String label, final @Nonnull List<T> options) {
         return new RadioComponent.Builder<>(label, options);
+    }
+
+    public static <T> SelectBoxComponent.Builder<T> selectBox(@Language("markdown") final @Nonnull String label, final @Nonnull List<T> options) {
+        return new SelectBoxComponent.Builder<>(label, options);
     }
 
     public static JtPage.Builder page(final @Nonnull Class<?> pageApp) {
