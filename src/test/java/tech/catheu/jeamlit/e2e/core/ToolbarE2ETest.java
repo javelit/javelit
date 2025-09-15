@@ -18,7 +18,6 @@ package tech.catheu.jeamlit.e2e.core;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
@@ -31,7 +30,6 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class ToolbarE2ETest {
     
     @Test
-    @Disabled
     void testToolbarLoadingAndMenuFunctionality() {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
