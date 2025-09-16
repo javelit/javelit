@@ -61,11 +61,73 @@ public abstract class JtComponent<T> {
     // BUT AS OF TODAY THIS IS ONLY COMPATIBLE WITHE CHROMIUM
     // workaround is to use this CSS directly and inject it in the css via mustache templating
     // value below from https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.css
-    private static final String PRISM_LINE_NUMBERS_CSS = "pre[class*=language-].line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}pre[class*=language-].line-numbers>code{position:relative;white-space:inherit}.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:0;font-size:100%;left:-3.8em;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.line-numbers-rows>span{display:block;counter-increment:linenumber}.line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}";
+    private static final @Language("css") String PRISM_LINE_NUMBERS_CSS = "pre[class*=language-].line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}pre[class*=language-].line-numbers>code{position:relative;white-space:inherit}.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:0;font-size:100%;left:-3.8em;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.line-numbers-rows>span{display:block;counter-increment:linenumber}.line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}";
     // value below from https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css
-    private static final String PRISM_MAIN_CSS = "code[class*=language-],pre[class*=language-]{color:#000;background:0 0;text-shadow:0 1px #fff;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}code[class*=language-] ::-moz-selection,code[class*=language-]::-moz-selection,pre[class*=language-] ::-moz-selection,pre[class*=language-]::-moz-selection{text-shadow:none;background:#b3d4fc}code[class*=language-] ::selection,code[class*=language-]::selection,pre[class*=language-] ::selection,pre[class*=language-]::selection{text-shadow:none;background:#b3d4fc}@media print{code[class*=language-],pre[class*=language-]{text-shadow:none}}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#f5f2f0}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#708090}.token.punctuation{color:#999}.token.namespace{opacity:.7}.token.boolean,.token.constant,.token.deleted,.token.number,.token.property,.token.symbol,.token.tag{color:#905}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#690}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url{color:#9a6e3a;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.class-name,.token.function{color:#dd4a68}.token.important,.token.regex,.token.variable{color:#e90}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}";
+    private static final @Language("css") String PRISM_MAIN_CSS = "code[class*=language-],pre[class*=language-]{color:#000;background:0 0;text-shadow:0 1px #fff;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}code[class*=language-] ::-moz-selection,code[class*=language-]::-moz-selection,pre[class*=language-] ::-moz-selection,pre[class*=language-]::-moz-selection{text-shadow:none;background:#b3d4fc}code[class*=language-] ::selection,code[class*=language-]::selection,pre[class*=language-] ::selection,pre[class*=language-]::selection{text-shadow:none;background:#b3d4fc}@media print{code[class*=language-],pre[class*=language-]{text-shadow:none}}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#f5f2f0}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#708090}.token.punctuation{color:#999}.token.namespace{opacity:.7}.token.boolean,.token.constant,.token.deleted,.token.number,.token.property,.token.symbol,.token.tag{color:#905}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#690}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url{color:#9a6e3a;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.class-name,.token.function{color:#dd4a68}.token.important,.token.regex,.token.variable{color:#e90}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}";
     ///  the prism css, if injected in a css text with mustache, use triple brackets
     protected static final String PRISM_CSS = PRISM_LINE_NUMBERS_CSS + "\n" + PRISM_MAIN_CSS;
+    protected static final @Language("css") String MARKDOWN_CSS = """
+            .markdown-content strong {
+                font-weight: var(--jt-font-weight-bold);
+            }
+            
+            .markdown-content em {
+                font-style: italic;
+            }
+            
+            /* inline code is styled here - code block should be styled with prism */
+            .markdown-content :not(pre) > code {
+                background-color: var(--jt-bg-tertiary);
+                padding: 0.1em 0.25em;
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family-mono);
+                font-size: 0.9em;
+            }
+            
+            .markdown-content h1,
+            .markdown-content h2,
+            .markdown-content h3,
+            .markdown-content h4,
+            .markdown-content h5,
+            .markdown-content h6 {
+                margin: var(--jt-spacing-lg) 0 var(--jt-spacing-md) 0;
+                font-weight: var(--jt-font-weight-bold);
+            }
+            
+            .markdown-content p {
+                margin: var(--jt-spacing-md) 0;
+            }
+            
+            .markdown-content ul,
+            .markdown-content ol {
+                margin: var(--jt-spacing-md) 0;
+                padding-left: var(--jt-spacing-xl);
+            }
+            
+            .markdown-content li {
+                margin: var(--jt-spacing-xs) 0;
+            }
+            
+            .markdown-content a {
+                color: var(--jt-theme-color);
+                text-decoration: none;
+            }
+            
+            .markdown-content a:hover {
+                text-decoration: underline;
+            }
+            
+            .markdown-content del {
+                text-decoration: line-through;
+            }
+            
+            .markdown-content blockquote {
+                margin: var(--jt-spacing-md) 0;
+                padding-left: var(--jt-spacing-md);
+                border-left: 4px solid var(--jt-border-color);
+                color: var(--jt-text-secondary);
+            }
+            """;
 
 
     private final String key;
