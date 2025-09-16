@@ -39,3 +39,6 @@ build/
 
 # this app is used for dev debugging
 examples/TestApp.java
+
+# when debugging, the playwright output of the github workflow may be copy pasted here
+playwright-recordings/

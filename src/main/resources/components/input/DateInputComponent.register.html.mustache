@@ -281,6 +281,10 @@
             this.currentDate = null;
             this.viewMonth = null;
             this.viewYear = null;
+            // Initialize locale once
+            this.rawLocale = navigator.language || 'en-US';
+            this.sanitizedLocale = this.sanitizeLocale(this.rawLocale);
+            this.firstDayOfWeek = this.getFirstDayOfWeek();
         }
 
         connectedCallback() {
@@ -408,20 +412,32 @@
             return new Date(year, month, 1).getDay();
         }
 
+        sanitizeLocale(locale) {
+            // Remove POSIX suffixes like @posix, @euro, etc. and encoding suffixes like .UTF-8
+            // Keep only the BCP 47 part (language-region)
+            return locale.split('@')[0].split('.')[0];
+        }
+
+        getFirstDayOfWeek() {
+            try {
+                return new Intl.Locale(this.sanitizedLocale).weekInfo?.firstDay || 0;
+            } catch (e) {
+                return 0; // Sunday fallback
+            }
+        }
+
         getWeekdayNames() {
-            const locale = navigator.language || 'en-US';
             const baseDate = new Date(2024, 0, 7); // Sunday
             const weekdays = [];
 
             for (let i = 0; i < 7; i++) {
                 const date = new Date(baseDate);
                 date.setDate(baseDate.getDate() + i);
-                weekdays.push(date.toLocaleDateString(locale, { weekday: 'short' }).substring(0, 2));
+                weekdays.push(date.toLocaleDateString(this.rawLocale, { weekday: 'short' }).substring(0, 2));
             }
 
             // Reorder based on locale's first day of week
-            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
-            if (firstDayOfWeek === 1) {
+            if (this.firstDayOfWeek === 1) {
                 // Monday first
                 weekdays.push(weekdays.shift());
             }
@@ -431,7 +447,7 @@
 
         getMonthName(month) {
             const date = new Date(2024, month, 1);
-            return date.toLocaleDateString(navigator.language || 'en-US', { month: 'long' });
+            return date.toLocaleDateString(this.rawLocale, { month: 'long' });
         }
 
         renderCalendarDays() {
@@ -445,9 +461,7 @@
             const maxDate = this.maxValue ? this.parseDate(this.maxValue) : null;
 
             // Adjust for locale's first day of week
-            const locale = navigator.language || 'en-US';
-            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
-            let adjustedFirstDay = firstDay - firstDayOfWeek;
+            let adjustedFirstDay = firstDay - this.firstDayOfWeek;
             if (adjustedFirstDay < 0) adjustedFirstDay += 7;
 
             // Previous month days

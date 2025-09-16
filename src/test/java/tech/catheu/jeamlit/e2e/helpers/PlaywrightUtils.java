@@ -74,14 +74,7 @@ public final class PlaywrightUtils {
         Server server = null;
         BrowserContext context = null;
         try {
-            // Create context with video recording enabled
-            Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setViewportSize(1280, 720)
-                    .setRecordVideoDir(Paths.get("target/playwright-videos"))
-                    .setRecordVideoSize(1280, 720);
-
-            context = browser.newContext(contextOptions);
-
+            context = browser.newContext();
             // Enable tracing for screenshots and snapshots
             context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
 
@@ -96,7 +89,7 @@ public final class PlaywrightUtils {
                     final String sanitizedTestName = testMethodName.replaceAll("[^a-zA-Z0-9._-]", "_");
                     context
                             .tracing()
-                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + "-" + System.currentTimeMillis() + ".zip")));
+                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + ".zip")));
                 } catch (Exception e) {
                     // Ignore trace save errors
                 }
@@ -115,14 +108,7 @@ public final class PlaywrightUtils {
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
-            // Create context with video recording enabled
-            Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setViewportSize(1280, 720)
-                    .setRecordVideoDir(Paths.get("target/playwright-videos"))
-                    .setRecordVideoSize(1280, 720);
-
-            context = browser.newContext(contextOptions);
-
+            context = browser.newContext();
             // Enable tracing for screenshots and snapshots
             context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
 
@@ -136,7 +122,7 @@ public final class PlaywrightUtils {
                     final String sanitizedTestName = testMethodName.replaceAll("[^a-zA-Z0-9._-]", "_");
                     context
                             .tracing()
-                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + "-" + System.currentTimeMillis() + ".zip")));
+                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + ".zip")));
                 } catch (Exception e) {
                     // Ignore trace save errors
                 }
