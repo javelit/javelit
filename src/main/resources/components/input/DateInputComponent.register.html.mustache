@@ -1,0 +1,606 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+
+    class JtDateInput extends LitElement {
+        static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--input-width);
+                max-width: 100%;
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .label-row {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .label {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-primary);
+                margin: 0;
+            }
+
+            .label.spacer {
+                visibility: hidden;
+            }
+
+            .date-input-wrapper {
+                position: relative;
+                width: 100%;
+            }
+
+            .date-input-field {
+                width: 100%;
+                box-sizing: border-box;
+                padding: var(--jt-spacing-sm) var(--jt-spacing-md);
+                background-color: var(--jt-bg-input);
+                border: 1px solid transparent;
+                border-radius: var(--jt-border-radius-lg);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                color: var(--jt-text-primary);
+                cursor: pointer;
+                transition: border-color var(--jt-transition-fast),
+                           box-shadow var(--jt-transition-fast);
+                outline: none;
+                height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .date-input-field:hover:not(.disabled) {
+                border-color: var(--jt-border-color);
+            }
+
+            .date-input-field:focus,
+            .date-input-field.open {
+                box-shadow: 0 0 0 1px var(--jt-theme-color);
+            }
+
+            .date-input-field.disabled {
+                background-color: var(--jt-bg-secondary);
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+
+            .date-value {
+                flex: 1;
+            }
+
+            .date-value.placeholder {
+                color: var(--jt-text-secondary);
+            }
+
+            .calendar-icon {
+                color: var(--jt-text-secondary);
+                font-size: 18px;
+            }
+
+            /* Calendar Popup */
+            .calendar-popup {
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                background: var(--jt-bg-primary);
+                border-radius: var(--jt-border-radius-lg);
+                box-shadow: var(--jt-shadow-popover);
+                z-index: 1000;
+                padding: var(--jt-spacing-md);
+                min-width: 280px;
+            }
+
+            .calendar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: var(--jt-spacing-md);
+                gap: var(--jt-spacing-sm);
+            }
+
+            .calendar-nav {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .calendar-nav-button {
+                background: none;
+                border: none;
+                padding: var(--jt-spacing-xs);
+                cursor: pointer;
+                color: var(--jt-text-secondary);
+                border-radius: var(--jt-border-radius-sm);
+                transition: background-color var(--jt-transition-fast);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                font-size: 1.3em;
+            }
+
+            .calendar-nav-button:hover {
+                background-color: var(--jt-bg-tertiary);
+            }
+
+            .calendar-nav-button:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+
+            .calendar-month-year {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-primary);
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .calendar-month-select,
+            .calendar-year-select {
+                background: var(--jt-bg-input);
+                border: 1px solid transparent;
+                border-radius: var(--jt-border-radius-sm);
+                padding: 2px 8px;
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                color: var(--jt-text-primary);
+                cursor: pointer;
+                outline: none;
+            }
+
+            .calendar-month-select:hover,
+            .calendar-year-select:hover {
+                border-color: var(--jt-border-color);
+            }
+
+            .calendar-weekdays {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 2px;
+                margin-bottom: var(--jt-spacing-xs);
+            }
+
+            .calendar-weekday {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-muted);
+                text-align: center;
+                padding: var(--jt-spacing-xs) 0;
+            }
+
+            .calendar-days {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 2px;
+            }
+
+            .calendar-day {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                color: var(--jt-text-primary);
+                background: none;
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: background-color var(--jt-transition-fast);
+                position: relative;
+            }
+
+            .calendar-day:hover:not(:disabled):not(.selected) {
+                background-color: var(--jt-bg-tertiary);
+            }
+
+            .calendar-day.selected {
+                background-color: var(--jt-theme-color);
+                color: white;
+            }
+
+            .calendar-day.today:not(.selected) {
+                font-weight: var(--jt-font-weight-bold);
+            }
+
+            .calendar-day.today:not(.selected)::after {
+                content: '';
+                position: absolute;
+                bottom: 2px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 4px;
+                height: 4px;
+                background-color: var(--jt-theme-color);
+                border-radius: 50%;
+            }
+
+            .calendar-day.other-month {
+                color: var(--jt-text-muted);
+                font-style: italic;
+            }
+
+            .calendar-day:disabled {
+                color: var(--jt-text-muted);
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+        `;
+
+        static properties = {
+            label: { type: String },
+            currentValue: { type: String, attribute: 'current-value' },
+            minValue: { type: String, attribute: 'min-value' },
+            maxValue: { type: String, attribute: 'max-value' },
+            format: { type: String },
+            help: { type: String },
+            disabled: { type: Boolean },
+            labelVisibility: { type: String, attribute: 'label-visibility' },
+            width: { type: String },
+            componentKey: { type: String, attribute: 'component-key' }
+        };
+
+        constructor() {
+            super();
+            this.isOpen = false;
+            this.currentDate = null;
+            this.viewMonth = null;
+            this.viewYear = null;
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+            this.initializeDates();
+            this.updateWidth();
+            document.addEventListener('click', this.handleDocumentClick.bind(this));
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            document.removeEventListener('click', this.handleDocumentClick.bind(this));
+        }
+
+        updated(changedProperties) {
+            super.updated(changedProperties);
+            if (changedProperties.has('currentValue')) {
+                this.initializeDates();
+            }
+            if (changedProperties.has('width')) {
+                this.updateWidth();
+            }
+        }
+
+        initializeDates() {
+            if (this.currentValue) {
+                this.currentDate = this.parseDate(this.currentValue);
+                this.viewMonth = this.currentDate.getMonth();
+                this.viewYear = this.currentDate.getFullYear();
+            } else {
+                this.currentDate = null;
+                const today = new Date();
+                this.viewMonth = today.getMonth();
+                this.viewYear = today.getFullYear();
+            }
+        }
+
+        updateWidth() {
+            if (this.width && this.width !== 'stretch') {
+                if (this.width.match(/^\\d+$/)) {
+                    this.style.setProperty('--input-width', `${this.width}px`);
+                }
+            } else {
+                this.style.removeProperty('--input-width');
+            }
+        }
+
+        parseDate(dateString) {
+            if (!dateString) return null;
+            const [year, month, day] = dateString.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        formatDate(date) {
+            if (!date) return '';
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            let formatted = this.format;
+            formatted = formatted.replace(/YYYY/g, year);
+            formatted = formatted.replace(/MM/g, month);
+            formatted = formatted.replace(/DD/g, day);
+
+            return formatted;
+        }
+
+        getDateString(date) {
+            if (!date) return null;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        toggleCalendar() {
+            if (this.disabled) return;
+            this.isOpen = !this.isOpen;
+            this.requestUpdate();
+        }
+
+        handleDocumentClick(e) {
+            if (!this.contains(e.target)) {
+                this.isOpen = false;
+                this.requestUpdate();
+            }
+        }
+
+        selectDate(date) {
+            if (this.disabled) return;
+
+            const minDate = this.minValue ? this.parseDate(this.minValue) : null;
+            const maxDate = this.maxValue ? this.parseDate(this.maxValue) : null;
+
+            if (minDate && date < minDate) return;
+            if (maxDate && date > maxDate) return;
+
+            this.currentDate = date;
+            this.isOpen = false;
+
+            const dateString = this.getDateString(date);
+            window.jeamlit.sendComponentUpdate(this.componentKey, dateString);
+
+            this.requestUpdate();
+        }
+
+        changeMonth(delta) {
+            this.viewMonth += delta;
+            if (this.viewMonth < 0) {
+                this.viewMonth = 11;
+                this.viewYear--;
+            } else if (this.viewMonth > 11) {
+                this.viewMonth = 0;
+                this.viewYear++;
+            }
+            this.requestUpdate();
+        }
+
+        getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        getFirstDayOfMonth(year, month) {
+            return new Date(year, month, 1).getDay();
+        }
+
+        getWeekdayNames() {
+            const locale = navigator.language || 'en-US';
+            const baseDate = new Date(2024, 0, 7); // Sunday
+            const weekdays = [];
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(baseDate);
+                date.setDate(baseDate.getDate() + i);
+                weekdays.push(date.toLocaleDateString(locale, { weekday: 'short' }).substring(0, 2));
+            }
+
+            // Reorder based on locale's first day of week
+            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
+            if (firstDayOfWeek === 1) {
+                // Monday first
+                weekdays.push(weekdays.shift());
+            }
+
+            return weekdays;
+        }
+
+        getMonthName(month) {
+            const date = new Date(2024, month, 1);
+            return date.toLocaleDateString(navigator.language || 'en-US', { month: 'long' });
+        }
+
+        renderCalendarDays() {
+            const year = this.viewYear;
+            const month = this.viewMonth;
+            const daysInMonth = this.getDaysInMonth(year, month);
+            const firstDay = this.getFirstDayOfMonth(year, month);
+            const days = [];
+            const today = new Date();
+            const minDate = this.minValue ? this.parseDate(this.minValue) : null;
+            const maxDate = this.maxValue ? this.parseDate(this.maxValue) : null;
+
+            // Adjust for locale's first day of week
+            const locale = navigator.language || 'en-US';
+            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
+            let adjustedFirstDay = firstDay - firstDayOfWeek;
+            if (adjustedFirstDay < 0) adjustedFirstDay += 7;
+
+            // Previous month days
+            const prevMonth = month === 0 ? 11 : month - 1;
+            const prevYear = month === 0 ? year - 1 : year;
+            const daysInPrevMonth = this.getDaysInMonth(prevYear, prevMonth);
+
+            for (let i = adjustedFirstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const date = new Date(prevYear, prevMonth, day);
+                const isDisabled = (minDate && date < minDate) || (maxDate && date > maxDate);
+
+                days.push(html`
+                    <button class="calendar-day other-month"
+                            ?disabled="${isDisabled}"
+                            @click="${() => {
+                                this.viewMonth = prevMonth;
+                                this.viewYear = prevYear;
+                                this.selectDate(date);
+                            }}">
+                        ${day}
+                    </button>
+                `);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isSelected = this.currentDate &&
+                                   date.getDate() === this.currentDate.getDate() &&
+                                   date.getMonth() === this.currentDate.getMonth() &&
+                                   date.getFullYear() === this.currentDate.getFullYear();
+                const isToday = date.getDate() === today.getDate() &&
+                                date.getMonth() === today.getMonth() &&
+                                date.getFullYear() === today.getFullYear();
+                const isDisabled = (minDate && date < minDate) || (maxDate && date > maxDate);
+
+                days.push(html`
+                    <button class="calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}"
+                            ?disabled="${isDisabled}"
+                            @click="${() => this.selectDate(date)}">
+                        ${day}
+                    </button>
+                `);
+            }
+
+            // Next month days
+            const remainingCells = 42 - days.length;
+            const nextMonth = month === 11 ? 0 : month + 1;
+            const nextYear = month === 11 ? year + 1 : year;
+
+            for (let day = 1; day <= remainingCells; day++) {
+                const date = new Date(nextYear, nextMonth, day);
+                const isDisabled = (minDate && date < minDate) || (maxDate && date > maxDate);
+
+                days.push(html`
+                    <button class="calendar-day other-month"
+                            ?disabled="${isDisabled}"
+                            @click="${() => {
+                                this.viewMonth = nextMonth;
+                                this.viewYear = nextYear;
+                                this.selectDate(date);
+                            }}">
+                        ${day}
+                    </button>
+                `);
+            }
+
+            return days;
+        }
+
+        renderMonthYearSelectors() {
+            const currentYear = new Date().getFullYear();
+            const minYear = this.minValue ? this.parseDate(this.minValue).getFullYear() : currentYear - 100;
+            const maxYear = this.maxValue ? this.parseDate(this.maxValue).getFullYear() : currentYear + 100;
+
+            const years = [];
+            for (let year = minYear; year <= maxYear; year++) {
+                years.push(year);
+            }
+
+            return html`
+                <select class="calendar-month-select"
+                        @change="${(e) => { this.viewMonth = parseInt(e.target.value); this.requestUpdate(); }}">
+                    ${Array.from({ length: 12 }, (_, i) => html`
+                        <option value="${i}" ?selected="${i === this.viewMonth}">
+                            ${this.getMonthName(i)}
+                        </option>
+                    `)}
+                </select>
+                <select class="calendar-year-select"
+                        @change="${(e) => { this.viewYear = parseInt(e.target.value); this.requestUpdate(); }}">
+                    ${years.map(year => html`
+                        <option value="${year}" ?selected="${year === this.viewYear}">
+                            ${year}
+                        </option>
+                    `)}
+                </select>
+            `;
+        }
+
+        render() {
+            const formattedDate = this.currentDate ? this.formatDate(this.currentDate) : '';
+            const weekdays = this.getWeekdayNames();
+
+            return html`
+                <div class="input-container">
+                    ${this.labelVisibility !== 'collapsed' ? html`
+                        <div class="label-row">
+                            <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
+                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
+                            </div>
+                            ${this.help && this.labelVisibility === 'visible' ? html`
+                                <jt-tooltip text="${this.help}"></jt-tooltip>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="date-input-wrapper">
+                        <div class="date-input-field ${this.isOpen ? 'open' : ''} ${this.disabled ? 'disabled' : ''}"
+                             @click="${this.toggleCalendar}">
+                            <div class="date-value ${formattedDate ? '' : 'placeholder'}">
+                                ${formattedDate || 'Select date'}
+                            </div>
+                            <div class="calendar-icon">📅</div>
+                        </div>
+
+                        ${this.isOpen && !this.disabled ? html`
+                            <div class="calendar-popup" @click="${(e) => e.stopPropagation()}">
+                                <div class="calendar-header">
+                                    <button class="calendar-nav-button" @click="${() => this.changeMonth(-1)}">❮</button>
+                                    <div class="calendar-month-year">
+                                        ${this.renderMonthYearSelectors()}
+                                    </div>
+                                    <button class="calendar-nav-button" @click="${() => this.changeMonth(1)}">❯</button>
+                                </div>
+
+                                <div class="calendar-weekdays">
+                                    ${weekdays.map(day => html`
+                                        <div class="calendar-weekday">${day}</div>
+                                    `)}
+                                </div>
+
+                                <div class="calendar-days">
+                                    ${this.renderCalendarDays()}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-date-input', JtDateInput);
+</script>

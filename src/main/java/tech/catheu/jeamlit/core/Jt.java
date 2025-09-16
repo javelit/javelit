@@ -31,6 +31,7 @@ import tech.catheu.jeamlit.components.chart.EchartsComponent;
 import tech.catheu.jeamlit.components.data.TableComponent;
 import tech.catheu.jeamlit.components.input.ButtonComponent;
 import tech.catheu.jeamlit.components.input.CheckboxComponent;
+import tech.catheu.jeamlit.components.input.DateInputComponent;
 import tech.catheu.jeamlit.components.input.NumberInputComponent;
 import tech.catheu.jeamlit.components.input.RadioComponent;
 import tech.catheu.jeamlit.components.input.SelectBoxComponent;
@@ -204,6 +205,10 @@ public final class Jt {
 
     public static TextAreaComponent.Builder textArea(@Language("markdown") final @Nonnull String label) {
         return new TextAreaComponent.Builder(label);
+    }
+
+    public static DateInputComponent.Builder dateInput(@Language("markdown") final @Nonnull String label) {
+        return new DateInputComponent.Builder(label);
     }
 
     public static NumberInputComponent.Builder<Number> numberInput(@Language("markdown") final @Nonnull String label) {
