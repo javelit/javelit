@@ -433,7 +433,7 @@
             for (let i = 0; i < 7; i++) {
                 const date = new Date(baseDate);
                 date.setDate(baseDate.getDate() + i);
-                weekdays.push(date.toLocaleDateString(this.rawLocale, { weekday: 'short' }).substring(0, 2));
+                weekdays.push(date.toLocaleDateString(this.sanitizedLocale, { weekday: 'short' }).substring(0, 2));
             }
 
             // Reorder based on locale's first day of week
