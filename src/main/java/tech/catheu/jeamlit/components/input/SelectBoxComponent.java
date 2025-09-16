@@ -201,7 +201,7 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
             index = i.intValue();
         } else if (rawValue instanceof String s && this.acceptNewOptions) {
             int foundIndex = -1;
-            for (int i =0; i < this.options.size(); i++) {
+            for (int i = 0; i < this.options.size(); i++) {
                 if (s.equalsIgnoreCase(this.formatFunction.apply(this.options.get(i)))) {
                     foundIndex = i;
                     break;

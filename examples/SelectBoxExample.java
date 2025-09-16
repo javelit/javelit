@@ -1,6 +1,7 @@
-import tech.catheu.jeamlit.core.Jt;
+
+
+import java.util.List;import tech.catheu.jeamlit.core.Jt;
 import tech.catheu.jeamlit.core.JtComponent;
-import java.util.List;
 
 public class SelectBoxExample {
 
@@ -35,7 +36,7 @@ public class SelectBoxExample {
         Jt.markdown("## SelectBox with Default Selection").use();
         String priorityChoice = Jt.selectBox("Select priority level",
                 List.of("Low", "Medium", "High", "Critical"))
-                .index(1) // Pre-select "Medium" (index 1)
+                .index(1)// Pre-select "Medium" (index 1)
                 .help("Choose the priority for this task")
                 .use();
         if (priorityChoice != null) {
@@ -45,7 +46,7 @@ public class SelectBoxExample {
         Jt.markdown("## SelectBox with No Default Selection").use();
         String regionChoice = Jt.selectBox("Select region",
                 List.of("North America", "Europe", "Asia", "South America", "Africa", "Oceania"))
-                .index(null) // Explicitly no pre-selection
+                .index(null)// Explicitly no pre-selection
                 .help("Choose your target region")
                 .use();
         if (regionChoice != null) {
@@ -171,7 +172,7 @@ public class SelectBoxExample {
 
         Jt.markdown("## Empty Options with Accept New Options").use();
         String newTagChoice = Jt.selectBox("Add a new tag",
-                                           List.<String>of()) // Empty options list
+                                           List.<String>of())// Empty options list
                 .acceptNewOptions(true)
                 .help("Type a new tag name")
                 .use();
@@ -181,8 +182,8 @@ public class SelectBoxExample {
 
         Jt.markdown("## Empty Options without Accept New Options (Disabled)").use();
         Jt.selectBox("No options available",
-                List.of()) // Empty options list
-                .acceptNewOptions(false) // This makes it disabled
+                List.of())// Empty options list
+                .acceptNewOptions(false)// This makes it disabled
                 .help("This selectbox is disabled because no options are available")
                 .use();
         Jt.text("This selectbox is automatically disabled").use();
@@ -192,22 +193,54 @@ public class SelectBoxExample {
         Jt.markdown("### Summary").use();
 
         int selectedCount = 0;
-        if (basicChoice != null) selectedCount++;
-        if (frameworkChoice != null) selectedCount++;
-        if (priorityChoice != null) selectedCount++;
-        if (regionChoice != null) selectedCount++;
-        if (cityChoice != null) selectedCount++;
-        if (skillChoice != null) selectedCount++;
-        if (visibleChoice != null) selectedCount++;
-        if (hiddenChoice != null) selectedCount++;
-        if (collapsedChoice != null) selectedCount++;
-        if (contentWidth != null) selectedCount++;
-        if (stretchWidth != null) selectedCount++;
-        if (fixedWidth != null) selectedCount++;
-        if (markdownChoice != null) selectedCount++;
-        if (status != null) selectedCount++;
-        if (selectedProduct != null) selectedCount++;
-        if (newTagChoice != null) selectedCount++;
+        if (basicChoice != null) {
+            selectedCount++;
+        }
+        if (frameworkChoice != null) {
+            selectedCount++;
+        }
+        if (priorityChoice != null) {
+            selectedCount++;
+        }
+        if (regionChoice != null) {
+            selectedCount++;
+        }
+        if (cityChoice != null) {
+            selectedCount++;
+        }
+        if (skillChoice != null) {
+            selectedCount++;
+        }
+        if (visibleChoice != null) {
+            selectedCount++;
+        }
+        if (hiddenChoice != null) {
+            selectedCount++;
+        }
+        if (collapsedChoice != null) {
+            selectedCount++;
+        }
+        if (contentWidth != null) {
+            selectedCount++;
+        }
+        if (stretchWidth != null) {
+            selectedCount++;
+        }
+        if (fixedWidth != null) {
+            selectedCount++;
+        }
+        if (markdownChoice != null) {
+            selectedCount++;
+        }
+        if (status != null) {
+            selectedCount++;
+        }
+        if (selectedProduct != null) {
+            selectedCount++;
+        }
+        if (newTagChoice != null) {
+            selectedCount++;
+        }
 
         Jt.text("Total select boxes with selections: **" + selectedCount + "**").use();
     }
