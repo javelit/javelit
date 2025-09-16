@@ -53,7 +53,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Default value should be today's date
             final LocalDate today = LocalDate.now();
@@ -94,7 +94,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Should show the default value
             assertThat(page.getByText("Birth date: 1990-06-15")).isVisible(WAIT_1_SEC_MAX);
@@ -135,7 +135,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Should show no date selected initially
             assertThat(page.getByText("No date selected")).isVisible(WAIT_1_SEC_MAX);
@@ -175,7 +175,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             LocalDate today = LocalDate.now();
             assertThat(page.getByText("Appointment: " + today)).isVisible(WAIT_1_SEC_MAX);
@@ -236,7 +236,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // All DateInput components should exist
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Check that each format displays correctly in the input field
             // US format: MM/DD/YYYY
@@ -277,7 +277,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Should show the date value
             assertThat(page.getByText("Locked date: 2024-01-01")).isVisible(WAIT_1_SEC_MAX);
@@ -314,7 +314,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Open calendar
             page.locator("jt-date-input .date-input-field").click(WAIT_1_SEC_MAX_CLICK);
@@ -367,7 +367,7 @@ public class DateInputComponentE2ETest {
 
         PlaywrightUtils.runInSharedBrowser(app, page -> {
             // DateInput component exists
-            assertThat(page.locator("jt-date-input").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Open calendar
             page.locator("jt-date-input .date-input-field").click(WAIT_1_SEC_MAX_CLICK);
