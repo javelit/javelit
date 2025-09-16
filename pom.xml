@@ -52,6 +52,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <undertow.version>2.3.18.Final</undertow.version>
         <flexmark.version>0.64.8</flexmark.version>
+        <jackson.version>2.19.1</jackson.version>
         <sonatype.url>https://ossrh-staging-api.central.sonatype.com</sonatype.url>
     </properties>
 
@@ -118,7 +119,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.19.1</version>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- System utils -->
