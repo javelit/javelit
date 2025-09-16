@@ -22,6 +22,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -36,7 +37,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEX
 public class DateInputComponentE2ETest {
 
     @Test
-    void testBasicDateInput() {
+    void testBasicDateInput(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -51,7 +52,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -75,7 +76,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputWithDefaultValue() {
+    void testDateInputWithDefaultValue(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -92,7 +93,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -114,7 +115,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputWithNullValue() {
+    void testDateInputWithNullValue(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -133,7 +134,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -153,7 +154,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputWithMinMaxConstraints() {
+    void testDateInputWithMinMaxConstraints(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -173,7 +174,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -205,7 +206,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputWithDifferentFormats() {
+    void testDateInputWithDifferentFormats(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -234,7 +235,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // All DateInput components should exist
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -259,7 +260,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDisabledDateInput() {
+    void testDisabledDateInput(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -275,7 +276,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -295,7 +296,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputCalendarNavigation() {
+    void testDateInputCalendarNavigation(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -312,7 +313,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -346,7 +347,7 @@ public class DateInputComponentE2ETest {
     }
 
     @Test
-    void testDateInputWithYearMonthSelectors() {
+    void testDateInputWithYearMonthSelectors(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.time.LocalDate;
@@ -365,7 +366,7 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 

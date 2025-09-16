@@ -21,6 +21,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -33,7 +34,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class PageLinkComponentE2ETest {
 
     @Test
-    void testBasicFunctionality() {
+    void testBasicFunctionality(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -73,7 +74,7 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify page links are visible
             assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -102,7 +103,7 @@ public class PageLinkComponentE2ETest {
     }
 
     @Test
-    void testActiveStateDetection() {
+    void testActiveStateDetection(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -131,7 +132,7 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Start on home page
             assertThat(page).hasURL(Pattern.compile(".*/Home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

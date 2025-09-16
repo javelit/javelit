@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.input;
 import com.microsoft.playwright.Locator;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -29,7 +30,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class SliderComponentE2ETest {
 
     @Test
-    void testSliderDrag() {
+    void testSliderDrag(TestInfo testInfo) {
         final @Language("java") String app = """
                 import tech.catheu.jeamlit.core.Jt;
                 
@@ -45,7 +46,7 @@ public class SliderComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // slider exists
             assertThat(page.locator("jt-slider")).isVisible(WAIT_1_SEC_MAX);
             // intial value is 50

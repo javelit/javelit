@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -33,11 +34,11 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class MultiFileE2ETest {
 
     @Test
-    void testMultiFileCompilationWithSubdirectoryDependencies() throws IOException {
+    void testMultiFileCompilationWithSubdirectoryDependencies(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multifile-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
-        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
             // Verify that Car.BLUE is rendered (from model/Car.java)
             assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
             // Verify that Owner.BOSS is rendered (from model/Owner.java)
@@ -46,12 +47,12 @@ public class MultiFileE2ETest {
     }
     
     @Test
-    void testMultiFileHotReloadWithMainFileChange() throws IOException {
+    void testMultiFileHotReloadWithMainFileChange(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multifile-reload-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
         
-        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
@@ -67,13 +68,13 @@ public class MultiFileE2ETest {
     }
     
     @Test
-    void testMultiFileHotReloadWithDependencyFileChange() throws IOException {
+    void testMultiFileHotReloadWithDependencyFileChange(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multifile-dependency-reload-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
         final Path carFile = tempDir.resolve("model/Car.java");
         
-        PlaywrightUtils.runInSharedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);

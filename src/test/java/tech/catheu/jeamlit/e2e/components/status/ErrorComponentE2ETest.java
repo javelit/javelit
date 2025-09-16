@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.components.status;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -25,7 +26,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class ErrorComponentE2ETest {
 
     @Test
-    void testErrorDisplayOnException() {
+    void testErrorDisplayOnException(TestInfo testInfo) {
         final @Language("java") String app = """
                 import tech.catheu.jeamlit.core.Jt;
                 
@@ -36,12 +37,12 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page ->
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page ->
             assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX));
     }
 
     @Test
-    void testErrorDisplay() {
+    void testErrorDisplay(TestInfo testInfo) {
         final @Language("java") String app = """
                 import tech.catheu.jeamlit.core.Jt;
                 
@@ -52,7 +53,7 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page ->
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page ->
             assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX));
     }
 }

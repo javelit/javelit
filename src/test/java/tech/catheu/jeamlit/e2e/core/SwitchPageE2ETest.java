@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.core;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -28,7 +29,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLI
 class SwitchPageE2ETest {
 
     @Test
-    void testProgrammaticPageSwitching() {
+    void testProgrammaticPageSwitching(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -79,7 +80,7 @@ class SwitchPageE2ETest {
             }
             """;
         
-        PlaywrightUtils.runInDedicatedBrowser(app, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, app, page -> {
             // Wait for app to load and verify we're on HomePage
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

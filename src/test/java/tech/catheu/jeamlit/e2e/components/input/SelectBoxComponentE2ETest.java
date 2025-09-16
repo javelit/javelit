@@ -19,6 +19,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -31,7 +32,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLI
 public class SelectBoxComponentE2ETest {
 
     @Test
-    void testBasicSelectBoxWithStrings() {
+    void testBasicSelectBoxWithStrings(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -48,7 +49,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option is selected by default (index 0)
@@ -64,7 +65,7 @@ public class SelectBoxComponentE2ETest {
     }
 
     @Test
-    void testSelectBoxWithSecondValueSelected() {
+    void testSelectBoxWithSecondValueSelected(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -81,7 +82,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // Second option (Medium) is selected by default
@@ -97,7 +98,7 @@ public class SelectBoxComponentE2ETest {
     }
 
     @Test
-    void testSelectBoxWithNullIndex() {
+    void testSelectBoxWithNullIndex(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -116,7 +117,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // No option selected initially
@@ -132,7 +133,7 @@ public class SelectBoxComponentE2ETest {
     }
 
     @Test
-    void testSelectBoxWithObjectsAndFormatFunction() {
+    void testSelectBoxWithObjectsAndFormatFunction(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -158,7 +159,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option (Alice) is selected by default
@@ -177,7 +178,7 @@ public class SelectBoxComponentE2ETest {
     }
 
     @Test
-    void testSelectBoxWithAcceptNewOptionsAndExistingList() {
+    void testSelectBoxWithAcceptNewOptionsAndExistingList(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -194,7 +195,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option (Java) is selected by default
@@ -217,7 +218,7 @@ public class SelectBoxComponentE2ETest {
     }
 
     @Test
-    void testSelectBoxWithEmptyListAndAcceptNewOptions() {
+    void testSelectBoxWithEmptyListAndAcceptNewOptions(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -236,7 +237,7 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // No tag selected initially

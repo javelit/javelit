@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.text;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -29,7 +30,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class TextComponentE2ETest {
     
     @Test
-    void testTextDisplay() {
+    void testTextDisplay(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -41,7 +42,7 @@ public class TextComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for text components to be visible
             assertThat(page.locator("jt-text")).hasCount(2, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             assertThat(page.getByText("A first text")).isVisible(WAIT_1_SEC_MAX);

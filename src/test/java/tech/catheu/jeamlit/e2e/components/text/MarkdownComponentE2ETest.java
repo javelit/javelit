@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.text;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -31,10 +32,10 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEX
 public class MarkdownComponentE2ETest {
 
     @Test
-    void testMarkdown_SimpleMarkdown() {
+    void testMarkdown_SimpleMarkdown(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.markdown("# Hello Markdown\\n\\nThis is **bold** and *italic* text.\\n\\n- List item 1\\n- List item 2").use();
@@ -42,7 +43,7 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
             
@@ -57,10 +58,10 @@ public class MarkdownComponentE2ETest {
     }
 
     @Test
-    void testMarkdown_WithWidth() {
+    void testMarkdown_WithWidth(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.markdown("## Markdown with width").width(500).use();
@@ -68,7 +69,7 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
             
@@ -81,10 +82,10 @@ public class MarkdownComponentE2ETest {
     }
 
     @Test
-    void testMarkdown_WithHelp() {
+    void testMarkdown_WithHelp(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.markdown("Some content").help("This is help text").use();
@@ -92,7 +93,7 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
             
@@ -102,32 +103,32 @@ public class MarkdownComponentE2ETest {
     }
 
     @Test
-    void testMarkdown_ComplexMarkdown() {
+    void testMarkdown_ComplexMarkdown(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.markdown(\"\"\"
                         # Main Title
-                        
+
                         This is a paragraph with [a link](https://example.com).
-                        
+
                         ## Code Example
-                        
+
                         Here's some `inline code` and a code block:
-                        
+
                         ```java
                         System.out.println("Hello World");
                         ```
-                        
+
                         > This is a blockquote
                         \"\"\").use();
                 }
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
             

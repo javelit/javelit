@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -39,12 +40,12 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 public class MultiPageE2ETest {
 
     @Test
-    void testDirectUrlNavigation() throws IOException {
+    void testDirectUrlNavigation(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multipage-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -98,12 +99,12 @@ public class MultiPageE2ETest {
     }
     
     @Test
-    void testSidebarNavigationClicks() throws IOException {
+    void testSidebarNavigationClicks(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multipage-navigation-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -146,12 +147,12 @@ public class MultiPageE2ETest {
     }
     
     @Test
-    void testPersistentElementsAfterNavigation() throws IOException {
+    void testPersistentElementsAfterNavigation(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-multipage-persistent-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
         
-        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
             // Verify footer is visible on home page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar is visible
@@ -188,12 +189,12 @@ public class MultiPageE2ETest {
     }
     
     @Test
-    void testHiddenNavigation() throws IOException {
+    void testHiddenNavigation(TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("jeamlit-hidden-nav-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("HiddenNavApp.java");
         
-        PlaywrightUtils.runInDedicatedBrowser(mainFile, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
             // Verify home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

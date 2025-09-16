@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.components.input;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 public class ButtonComponentE2ETest {
     
     @Test
-    void testButtonClick() {
+    void testButtonClick(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -43,7 +44,7 @@ public class ButtonComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // button exists
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             // button text is correct

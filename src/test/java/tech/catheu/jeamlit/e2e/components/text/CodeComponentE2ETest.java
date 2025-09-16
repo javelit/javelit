@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.components.text;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -29,10 +30,10 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class CodeComponentE2ETest {
 
     @Test
-    void testBasicCodeDisplay() {
+    void testBasicCodeDisplay(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code(\"\"\"
@@ -46,7 +47,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content to find the right one)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify code content is present
@@ -55,10 +56,10 @@ public class CodeComponentE2ETest {
     }
 
     @Test
-    void testLanguageNull() {
+    void testLanguageNull(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code("function example() { return 'no highlighting'; }")
@@ -68,7 +69,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify language-none class is applied to code element in our specific component
@@ -79,10 +80,10 @@ public class CodeComponentE2ETest {
     }
 
     @Test
-    void testLanguageJson() {
+    void testLanguageJson(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code("{\\"name\\": \\"test\\", \\"value\\": 123}")
@@ -92,7 +93,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify language-json class is applied to code element in our specific component
@@ -103,10 +104,10 @@ public class CodeComponentE2ETest {
     }
 
     @Test
-    void testLineNumbersEnabled() {
+    void testLineNumbersEnabled(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code("line 1\\nline 2\\nline 3")
@@ -116,7 +117,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify line-numbers attribute is present on the jt-internal-code element
@@ -127,10 +128,10 @@ public class CodeComponentE2ETest {
     }
 
     @Test
-    void testWrapLinesEnabled() {
+    void testWrapLinesEnabled(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code("This is a very long line that should wrap when wrap lines is enabled and demonstrates the line wrapping functionality")
@@ -140,7 +141,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify wrap-lines attribute is present on the jt-internal-code element
@@ -151,10 +152,10 @@ public class CodeComponentE2ETest {
     }
 
     @Test
-    void testCustomDimensions() {
+    void testCustomDimensions(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.code("console.log('Custom dimensions test');")
@@ -165,7 +166,7 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Find the code component by content
             var theCodeComponent = page.locator("#app jt-internal-code");
             // Verify code component is rendered

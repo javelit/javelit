@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.components.chart;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -28,7 +29,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class EchartsComponentE2ETest {
 
     @Test
-    void testEcharts_SimpleBarChart() {
+    void testEcharts_SimpleBarChart(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import org.icepear.echarts.Bar;
@@ -45,7 +46,7 @@ public class EchartsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for ECharts component to be visible
             assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
             

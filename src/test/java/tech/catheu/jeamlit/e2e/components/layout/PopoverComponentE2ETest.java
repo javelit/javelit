@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.layout;
 import com.microsoft.playwright.Locator;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 public class PopoverComponentE2ETest {
     
     @Test
-    void testPopoverToggle() {
+    void testPopoverToggle(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.core.JtContainer;
@@ -46,7 +47,7 @@ public class PopoverComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for popover to be visible
             assertThat(page.locator("jt-popover")).isVisible(WAIT_1_SEC_MAX);
             // Check popover trigger is visible

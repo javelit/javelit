@@ -19,6 +19,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class ColumnsComponentE2ETest {
     
     @Test
-    void testColumnsLayout() {
+    void testColumnsLayout(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.components.layout.ColumnsComponent;
@@ -50,7 +51,7 @@ public class ColumnsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for columns component to be visible
             assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
             // there are 2 columns

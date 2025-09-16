@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.data;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -29,11 +30,11 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class TableComponentE2ETest {
 
     @Test
-    void testTable_WithObjectList() {
+    void testTable_WithObjectList(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.Arrays;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.table(Arrays.asList(
@@ -41,12 +42,12 @@ public class TableComponentE2ETest {
                         new Person("Bob", "Designer")
                     )).use();
                 }
-                
+
                 public record Person(String name, String role){}
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -64,10 +65,10 @@ public class TableComponentE2ETest {
     }
 
     @Test
-    void testTable_WithObjectArray() {
+    void testTable_WithObjectArray(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.table(new Person[] {
@@ -75,12 +76,12 @@ public class TableComponentE2ETest {
                         new Person("Bob", null)
                     }).use();
                 }
-                
+
                 public record Person(String name, String role){}
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -100,12 +101,12 @@ public class TableComponentE2ETest {
     }
 
     @Test
-    void testTableFromArrayColumns() {
+    void testTableFromArrayColumns(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.HashMap;
             import java.util.Map;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Map<String, Object[]> columns = new HashMap<>();
@@ -116,7 +117,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             
@@ -134,13 +135,13 @@ public class TableComponentE2ETest {
     }
 
     @Test
-    void testTableFromListColumns() {
+    void testTableFromListColumns(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.Arrays;
             import java.util.HashMap;
             import java.util.Map;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Map<String, java.util.List<Object>> columns = new HashMap<>();
@@ -151,7 +152,7 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
             

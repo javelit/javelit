@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.layout;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 public class ContainerComponentE2ETest {
     
     @Test
-    void testContainerContent() {
+    void testContainerContent(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.components.layout.ContainerComponent;import tech.catheu.jeamlit.core.JtContainer;
@@ -48,7 +49,7 @@ public class ContainerComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for container to be visible
             assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
             // Check content before container

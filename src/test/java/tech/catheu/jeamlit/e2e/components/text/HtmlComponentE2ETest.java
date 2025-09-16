@@ -17,6 +17,7 @@ package tech.catheu.jeamlit.e2e.components.text;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -29,10 +30,10 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEX
 public class HtmlComponentE2ETest {
 
     @Test
-    void testHtml_SimpleHtmlString() {
+    void testHtml_SimpleHtmlString(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.html("<h2>Hello HTML</h2><p>This is a <strong>test</strong>!</p>").use();
@@ -40,7 +41,7 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
             
@@ -53,10 +54,10 @@ public class HtmlComponentE2ETest {
     }
 
     @Test
-    void testHtml_WithWidth() {
+    void testHtml_WithWidth(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.html("<div>Content with width</div>").width(400).use();
@@ -64,7 +65,7 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
             
@@ -74,10 +75,10 @@ public class HtmlComponentE2ETest {
     }
 
     @Test
-    void testHtml_ScriptSanitization() {
+    void testHtml_ScriptSanitization(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
-            
+
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.html("<p>Safe content</p><script>alert('dangerous');</script>").use();
@@ -85,7 +86,7 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
             

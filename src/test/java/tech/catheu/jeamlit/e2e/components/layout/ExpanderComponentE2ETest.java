@@ -19,6 +19,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -31,7 +32,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 public class ExpanderComponentE2ETest {
     
     @Test
-    void testExpanderToggle() {
+    void testExpanderToggle(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.components.layout.ExpanderComponent;import tech.catheu.jeamlit.core.JtContainer;
@@ -45,7 +46,7 @@ public class ExpanderComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for expander to be visible
             final Locator expanderLocator = page.locator("jt-expander");
             assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);

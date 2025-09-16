@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.input;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -31,7 +32,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEX
 public class RadioComponentE2ETest {
 
     @Test
-    void testBasicRadioWithStrings() {
+    void testBasicRadioWithStrings(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -46,7 +47,7 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // First option is selected by default (index 0)
@@ -59,7 +60,7 @@ public class RadioComponentE2ETest {
     }
 
     @Test
-    void testRadioWithSecondValueSelected() {
+    void testRadioWithSecondValueSelected(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -76,7 +77,7 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Second option (Medium) is selected by default
@@ -89,7 +90,7 @@ public class RadioComponentE2ETest {
     }
 
     @Test
-    void testRadioWithNullIndex() {
+    void testRadioWithNullIndex(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -108,7 +109,7 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // No option selected initially
@@ -121,7 +122,7 @@ public class RadioComponentE2ETest {
     }
 
     @Test
-    void testRadioWithObjectsAndFormatFunction() {
+    void testRadioWithObjectsAndFormatFunction(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -147,7 +148,7 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Verify formatted options are displayed
@@ -163,7 +164,7 @@ public class RadioComponentE2ETest {
     }
 
     @Test
-    void testRadioWithCaptions() {
+    void testRadioWithCaptions(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import java.util.List;
@@ -180,7 +181,7 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Verify captions are displayed

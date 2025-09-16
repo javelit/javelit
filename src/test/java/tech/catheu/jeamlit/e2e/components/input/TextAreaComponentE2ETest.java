@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.input;
 import com.microsoft.playwright.Locator;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.OsUtils;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class TextAreaComponentE2ETest {
     
     @Test
-    void testTextAreaInput() {
+    void testTextAreaInput(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.components.input.TextAreaComponent;
@@ -47,7 +48,7 @@ public class TextAreaComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // text area input is visible
             assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
             // current message is empty

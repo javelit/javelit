@@ -19,6 +19,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -30,7 +31,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class TextInputComponentE2ETest {
     
     @Test
-    void testTextEntry() {
+    void testTextEntry(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             
@@ -42,7 +43,7 @@ public class TextInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // text input is visible
             page.waitForSelector("jt-text-input", new Page.WaitForSelectorOptions().setTimeout(5000));
             // greating has an empty name

@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import com.microsoft.playwright.FileChooser;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -34,7 +35,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class FileUploaderE2ETest {
 
     @Test
-    void testCSVFileUpload() throws IOException {
+    void testCSVFileUpload(TestInfo testInfo) throws IOException {
         // Create a CSV file with known content
         final String csvContent = "name,age,city\nAlice,30,New York\nBob,25,Los Angeles\nCharlie,35,Chicago";
         final Path tempDir = Files.createTempDirectory("fileuploader-test");
@@ -59,7 +60,7 @@ public class FileUploaderE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInDedicatedBrowser(app, page -> {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, app, page -> {
             try {
                 // Wait for the file uploader component to be visible
                 assertThat(page.locator("jt-file-uploader")).isVisible(WAIT_1_SEC_MAX);

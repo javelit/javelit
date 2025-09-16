@@ -21,6 +21,7 @@ import java.nio.file.Path;
 
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.JeamlitTestHelper;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
@@ -34,7 +35,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class CompilationErrorE2ETest {
 
     @Test
-    void testCompilationErrorModalAppears() throws IOException, InterruptedException {
+    void testCompilationErrorModalAppears(TestInfo testInfo) throws IOException, InterruptedException {
         // App with compilation error (missing semicolon)
         final @Language("java") String invalidApp = """
                 import tech.catheu.jeamlit.core.Jt;
@@ -47,13 +48,13 @@ public class CompilationErrorE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(invalidApp, page ->
+        PlaywrightUtils.runInSharedBrowser(testInfo, invalidApp, page ->
                 // Verify app loads correctly first
                 assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
     }
 
     @Test
-    void testFileDeletionErrorMessage() {
+    void testFileDeletionErrorMessage(TestInfo testInfo) {
         // Create a valid app
         final @Language("java") String validApp = """
                 import tech.catheu.jeamlit.core.Jt;
@@ -68,7 +69,7 @@ public class CompilationErrorE2ETest {
 
         final Path appFile = JeamlitTestHelper.writeTestApp(validApp);
 
-        PlaywrightUtils.runInSharedBrowser(appFile, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
             // Verify app loads correctly first
             assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This app is running.")).isVisible();

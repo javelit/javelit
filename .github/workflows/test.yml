@@ -20,4 +20,14 @@ jobs:
           cache: 'maven'
       - name: Build and run tests
         run: |
-          ./mvnw clean test  
+          ./mvnw clean test
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-recordings
+          path: |
+            target/playwright-videos/
+            target/playwright-traces/
+            target/surefire-reports/
+          retention-days: 1  

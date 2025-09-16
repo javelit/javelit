@@ -18,6 +18,7 @@ package tech.catheu.jeamlit.e2e.components.layout;
 import com.microsoft.playwright.Locator;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -31,7 +32,7 @@ import static tech.catheu.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class TabsComponentE2ETest {
     
     @Test
-    void testTabSwitching() {
+    void testTabSwitching(TestInfo testInfo) {
         final @Language("java") String app = """
             import tech.catheu.jeamlit.core.Jt;
             import tech.catheu.jeamlit.components.layout.TabsComponent;
@@ -56,7 +57,7 @@ public class TabsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(app, page -> {
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             
             // Wait for tabs to be visible
             assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
