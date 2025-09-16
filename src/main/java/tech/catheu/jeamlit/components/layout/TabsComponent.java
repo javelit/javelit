@@ -34,8 +34,8 @@ import tech.catheu.jeamlit.core.JtLayout;
 
 public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
-    protected final @Nonnull List<@NotNull String> tabs;
-    protected final String width;
+    final @Nonnull List<@NotNull String> tabs;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
