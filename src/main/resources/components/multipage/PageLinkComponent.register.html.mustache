@@ -18,6 +18,8 @@
 
     class JtPageLink extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-sm) 0;
@@ -120,21 +122,9 @@
                 font-size: var(--jt-font-size-base);
             }
 
-            /* Markdown formatting in link text */
-            .pagelink em {
-                font-style: italic;
-            }
-
-            .pagelink strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
+            /* PageLink-specific markdown overrides */
             .pagelink code {
                 background-color: rgba(0, 0, 0, 0.1);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
             }
 
             .pagelink.active code {
@@ -144,10 +134,6 @@
             .pagelink a {
                 color: inherit;
                 text-decoration: underline;
-            }
-
-            .pagelink del {
-                text-decoration: line-through;
             }
         `;
 
@@ -249,7 +235,7 @@
 
             const linkContent = html`
                 ${iconContent}
-                <span class="markdown-content">${unsafeHTML(this.label)}</span>
+                <div class="markdown-content">${unsafeHTML(this.label)}</div>
             `;
 
             return html`

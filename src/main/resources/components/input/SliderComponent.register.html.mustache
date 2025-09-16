@@ -18,6 +18,8 @@
 
     class JtSlider extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-lg) 0;
@@ -51,36 +53,6 @@
 
             .label.spacer {
                 visibility: hidden;
-            }
-
-            /* Markdown formatting in label */
-            .label em {
-                font-style: italic;
-            }
-
-            .label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-
-            .label a {
-                color: var(--jt-theme-color);
-                text-decoration: none;
-            }
-
-            .label a:hover {
-                text-decoration: underline;
-            }
-
-            .label del {
-                text-decoration: line-through;
             }
 
             .slider-track-container {
@@ -318,7 +290,7 @@
                     <div class="slider-content">
                         ${this.labelVisibility !== 'collapsed' ? html`
                             <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
-                                ${this.labelVisibility === 'hidden' ? '' : html`<span class="markdown-content">${unsafeHTML(this.label)}</span>`}
+                                ${this.labelVisibility === 'hidden' ? '' : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
                             </div>
                         ` : ''}
 

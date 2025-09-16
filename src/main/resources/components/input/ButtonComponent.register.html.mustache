@@ -18,6 +18,8 @@
 
     class JtButton extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -161,22 +163,9 @@
                 height: 200px;
             }
 
-            /* Markdown formatting in button text */
-
-            .button em {
-                font-style: italic;
-            }
-
-            .button strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
+            /* Button-specific markdown overrides */
             .button code {
                 background-color: rgba(255, 255, 255, 0.2);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
             }
 
             .button.primary code {
@@ -190,10 +179,6 @@
             .button a {
                 color: inherit;
                 text-decoration: underline;
-            }
-
-            .button del {
-                text-decoration: line-through;
             }
         `;
 
@@ -279,12 +264,12 @@
                 </style>
                 <div class="button-container">
                     <button
-                            class="button ${this.type}"
+                            class="button markdown-content ${this.type}"
                             ?disabled="${this.disabled}"
                             @click="${this.handleClick}"
                             type="button">
                         ${iconContent}
-                        <span class="markdown-content">${unsafeHTML(this.label)}</span>
+                        ${unsafeHTML(this.label)}
                     </button>
                     ${this.help ? html`
                         <jt-tooltip text="${this.help}"></jt-tooltip>

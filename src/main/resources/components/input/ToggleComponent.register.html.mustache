@@ -18,6 +18,8 @@
 
     class JtToggle extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-lg) 0;
@@ -67,22 +69,6 @@
                 visibility: hidden;
             }
 
-            /* Markdown formatting in label */
-            .label em {
-                font-style: italic;
-            }
-
-            .label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
 
             .label a {
                 color: var(--jt-theme-color);
@@ -223,7 +209,7 @@
                             <div class="toggle-control">
                                 <div class="label-section">
                                     <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
-                                        ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<span class="markdown-content">${unsafeHTML(this.label)}</span>`}
+                                        ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
                                     </div>
                                     ${this.help && this.labelVisibility === 'visible' ? html`
                                         <jt-tooltip text="${this.help}"></jt-tooltip>

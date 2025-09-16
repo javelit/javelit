@@ -18,6 +18,7 @@
     
     class JtPopover extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -120,31 +121,6 @@
                 display: block;
             }
             
-            /* Markdown formatting in label */
-            .label em {
-                font-style: italic;
-            }
-            
-            .label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-            
-            .label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-            
-            .label a {
-                color: var(--jt-theme-color);
-                text-decoration: none;
-            }
-            
-            .label a:hover {
-                text-decoration: underline;
-            }
             
             ::slotted(*) {
                 display: block;
@@ -224,7 +200,7 @@
                         ?disabled="${this.disabled}"
                         @click="${this.handleButtonClick}"
                         type="button">
-                        <div class="label" .innerHTML="${formattedLabel}"></div>
+                        <div class="label markdown-content" .innerHTML="${formattedLabel}"></div>
                         <span class="chevron ${this.isOpen ? 'open' : ''}">expand_more</span>
                     </button>
                     ${this.help ? html`

@@ -18,6 +18,8 @@
 
     class JtRadio extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -45,35 +47,6 @@
 
             .label.spacer {
                 visibility: hidden;
-            }
-
-            .label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .label em {
-                font-style: italic;
-            }
-
-            .label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-
-            .label a {
-                color: var(--jt-theme-color);
-                text-decoration: none;
-            }
-
-            .label a:hover {
-                text-decoration: underline;
-            }
-
-            .label del {
-                text-decoration: line-through;
             }
 
             /* Radio Group Styles */
@@ -180,34 +153,6 @@
                 cursor: not-allowed;
             }
 
-            .radio-option-label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .radio-option-label em {
-                font-style: italic;
-            }
-
-            .radio-option-label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-
-            .radio-option-label a {
-                color: var(--jt-theme-color);
-                text-decoration: none;
-            }
-
-            .radio-option-label a:hover {
-                text-decoration: underline;
-            }
-
-            .radio-option-label del {
-                text-decoration: line-through;
-            }
 
             .caption {
                 font-family: var(--jt-font-family);
@@ -299,7 +244,7 @@
                     ${this.labelVisibility !== 'collapsed' ? html`
                         <div class="label-row">
                             <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
-                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<span class="markdown-content">${unsafeHTML(this.label)}</span>`}
+                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
                             </div>
                             ${this.help && this.labelVisibility === 'visible' ? html`
                                 <jt-tooltip text="${this.help}"></jt-tooltip>
@@ -324,7 +269,7 @@
                                         <span class="radio-visual"></span>
                                     </div>
                                     <div class="radio-option-label ${this.disabled ? 'disabled' : ''}">
-                                        <span class="markdown-content">${unsafeHTML(option)}</span>
+                                        <div class="markdown-content">${unsafeHTML(option)}</div>
                                     </div>
                                 </label>
                                 ${this.captions && this.captions[i] ? html`

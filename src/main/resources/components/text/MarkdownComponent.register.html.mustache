@@ -51,55 +51,7 @@
                 box-sizing: border-box;
             }
 
-            /* Markdown-specific styles */
-            .markdown-content h1, 
-            .markdown-content h2, 
-            .markdown-content h3, 
-            .markdown-content h4, 
-            .markdown-content h5, 
-            .markdown-content h6 {
-                margin: var(--jt-spacing-lg) 0 var(--jt-spacing-md) 0;
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .markdown-content p {
-                margin: var(--jt-spacing-md) 0;
-            }
-
-            .markdown-content ul, 
-            .markdown-content ol {
-                margin: var(--jt-spacing-md) 0;
-                padding-left: var(--jt-spacing-xl);
-            }
-
-            .markdown-content li {
-                margin: var(--jt-spacing-xs) 0;
-            }
-
-            .markdown-content a {
-                color: var(--jt-theme-color);
-                text-decoration: none;
-            }
-
-            .markdown-content a:hover {
-                text-decoration: underline;
-            }
-
-            {{! inline code is styled manually, code blocks are styled with prism }}
-            .markdown-content :not(pre) > code {
-                background: var(--jt-bg-tertiary);
-                padding: 2px 4px;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-
-            .markdown-content blockquote {
-                margin: var(--jt-spacing-md) 0;
-                padding-left: var(--jt-spacing-md);
-                border-left: 4px solid var(--jt-border-color);
-                color: var(--jt-text-secondary);
-            }
+            {{{ MARKDOWN_CSS }}}
 
             .tooltip {
                 position: absolute;

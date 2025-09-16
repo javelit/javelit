@@ -18,6 +18,8 @@
 
     class JtTitle extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-lg) 0;
@@ -72,21 +74,9 @@
                 color: var(--jt-primary-color);
             }
 
-            /* Markdown-style formatting */
-
-            .title em {
-                font-style: italic;
-            }
-
-            .title strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
+            /* Title-specific markdown overrides */
             .title code {
-                background-color: var(--jt-bg-tertiary);
                 padding: 0.2em 0.4em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
                 font-size: 0.9em;
             }
         `;
@@ -161,10 +151,10 @@
 
             return html`
                 <div class="title-container">
-                    <h1 class="title ${widthClass}"
+                    <h1 class="title markdown-content ${widthClass}"
                         id="${anchorId}"
                         style="${widthStyle}">
-                        <span class="markdown-content">${unsafeHTML(this.body)}</span>
+                        ${unsafeHTML(this.body)}
                         ${showAnchorLink ? html`
                             <a href="#${anchorId}" class="anchor-link"
                                title="Link to this section">

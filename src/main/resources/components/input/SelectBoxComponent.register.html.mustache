@@ -18,6 +18,8 @@
 
     class JtSelectBox extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -46,20 +48,6 @@
                 visibility: hidden;
             }
 
-            .label strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .label em {
-                font-style: italic;
-            }
-
-            .label code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-            }
 
             .label a {
                 color: var(--jt-theme-color);
@@ -131,20 +119,6 @@
                 font-style: normal;
             }
 
-            .selectbox-value strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .selectbox-value em {
-                font-style: italic;
-            }
-
-            .selectbox-value code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-            }
 
             .selectbox-arrow {
                 margin-left: var(--jt-spacing-sm);
@@ -195,19 +169,8 @@
                 color: white;
             }
 
-            .selectbox-option strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .selectbox-option em {
-                font-style: italic;
-            }
-
-            .selectbox-option code {
+            .selectbox-option.selected .markdown-content code {
                 background-color: rgba(255, 255, 255, 0.2);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
             }
 
             /* Search input for accept new options */
@@ -406,7 +369,7 @@
                     ${this.labelVisibility !== 'collapsed' ? html`
                         <div class="label-row">
                             <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
-                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<span class="markdown-content">${unsafeHTML(this.label)}</span>`}
+                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
                             </div>
                             ${this.help && this.labelVisibility === 'visible' ? html`
                                 <jt-tooltip text="${this.help}"></jt-tooltip>
@@ -429,7 +392,7 @@
                                 >
                             ` : html`
                                 <div class="selectbox-value ${selectedText ? '' : 'placeholder'}">
-                                    ${selectedText ? html`<span class="markdown-content">${unsafeHTML(selectedText)}</span>` : placeholderText}
+                                    ${selectedText ? html`<div class="markdown-content">${unsafeHTML(selectedText)}</div>` : placeholderText}
                                 </div>
                             `}
                             <div class="selectbox-arrow">▼</div>
@@ -440,7 +403,7 @@
                                 ${filteredOptions.map(({option, index}) => html`
                                     <div class="selectbox-option ${this.selectedIndex === index ? 'selected' : ''}"
                                          @click="${() => this.handleOptionClick(index)}">
-                                        <span class="markdown-content">${unsafeHTML(option)}</span>
+                                        <div class="markdown-content">${unsafeHTML(option)}</div>
                                     </div>
                                 `)}
                                 ${showAddOption ? html`

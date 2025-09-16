@@ -18,6 +18,8 @@
     
     class JtTabs extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -88,31 +90,6 @@
                 transform-origin: left;
             }
             
-            /* Markdown formatting in tab names */
-            .tab em {
-                font-style: italic;
-            }
-            
-            .tab strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-            
-            .tab code {
-                background-color: var(--jt-bg-tertiary);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
-            }
-            
-            .tab a {
-                color: inherit;
-                text-decoration: none;
-            }
-            
-            .tab a:hover {
-                text-decoration: underline;
-            }
             
             .tabs-content {
                 width: 100%;
@@ -219,7 +196,7 @@
                     <div class="tabs-header">
                         ${this.tabs.map((tab, index) => html`
                             <button
-                                class="tab ${index === this.activeTab ? 'active' : ''}"
+                                class="tab markdown-content ${index === this.activeTab ? 'active' : ''}"
                                 @click="${() => this.handleTabClick(index)}"
                                 .innerHTML="${this.formatText(tab)}"
                             >

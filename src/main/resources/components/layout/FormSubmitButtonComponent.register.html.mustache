@@ -18,6 +18,7 @@
 
     class JtFormSubmitButton extends LitElement {
         static styles = css`
+            {{{ MARKDOWN_CSS }}}
             :host {
                 display: block;
                 margin: var(--jt-spacing-md) 0;
@@ -161,39 +162,23 @@
                 height: 200px;
             }
 
-            /* Markdown formatting in button text */
-
-            .button em {
-                font-style: italic;
-            }
-
-            .button strong {
-                font-weight: var(--jt-font-weight-bold);
-            }
-
-            .button code {
+            /* Button-specific overrides for markdown content */
+            .button .markdown-content code {
                 background-color: rgba(255, 255, 255, 0.2);
-                padding: 0.1em 0.3em;
-                border-radius: var(--jt-border-radius-sm);
-                font-family: var(--jt-font-family-mono);
-                font-size: 0.9em;
             }
 
-            .button.primary code {
+            .button.primary .markdown-content code {
                 background-color: rgba(255, 255, 255, 0.3);
             }
 
-            .button.secondary code, .button.tertiary code {
+            .button.secondary .markdown-content code,
+            .button.tertiary .markdown-content code {
                 background-color: rgba(0, 0, 0, 0.1);
             }
 
-            .button a {
+            .button .markdown-content a {
                 color: inherit;
                 text-decoration: underline;
-            }
-
-            .button del {
-                text-decoration: line-through;
             }
         `;
 
@@ -300,12 +285,11 @@
                 </style>
                 <div class="button-container">
                     <button
-                            class="button ${this.type}"
+                            class="button markdown-content ${this.type}"
                             ?disabled="${this.disabled}"
                             @click="${this.handleClick}"
-                            type="button">
-                        ${iconContent}
-                        <span .innerHTML="${formattedLabel}"></span>
+                            type="button"
+                            .innerHTML="${iconContent}${formattedLabel}">
                     </button>
                     ${this.help ? html`
                         <jt-tooltip text="${this.help}"></jt-tooltip>
