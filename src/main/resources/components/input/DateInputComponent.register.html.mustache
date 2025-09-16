@@ -281,9 +281,7 @@
             this.currentDate = null;
             this.viewMonth = null;
             this.viewYear = null;
-            // Initialize locale once
-            this.rawLocale = navigator.language || 'en-US';
-            this.sanitizedLocale = this.sanitizeLocale(this.rawLocale);
+            this.sanitizedLocale = this.sanitizeLocale(navigator.language || 'en-US');
             this.firstDayOfWeek = this.getFirstDayOfWeek();
         }
 
@@ -447,7 +445,7 @@
 
         getMonthName(month) {
             const date = new Date(2024, month, 1);
-            return date.toLocaleDateString(this.rawLocale, { month: 'long' });
+            return date.toLocaleDateString(this.sanitizedLocale, { month: 'long' });
         }
 
         renderCalendarDays() {
