@@ -23,6 +23,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
@@ -47,19 +48,19 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
     private PopoverComponent(final Builder builder) {
         // the currentValue is set when use() is called
         super(builder.generateKeyForInteractive(), null, null);
-        this.label = builder.label;
+        this.label = markdownToHtml(builder.label, true);
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.useContainerWidth = builder.useContainerWidth;
     }
 
     public static class Builder extends JtComponentBuilder<JtContainer, PopoverComponent, Builder> {
-        private final @Nonnull String label;
+        @Language("markdown") private final @Nonnull String label;
         private @Nullable String help;
         private boolean disabled;
         private boolean useContainerWidth;
 
-        public Builder(final @Nonnull String key, final @Nonnull String label) {
+        public Builder(final @Nonnull String key, @Language("markdown") final @Nonnull String label) {
             this.key = key;
             this.label = label;
         }

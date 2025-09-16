@@ -186,7 +186,7 @@ public final class Jt {
         return new ExpanderComponent.Builder(key, label);
     }
 
-    public static PopoverComponent.Builder popover(final @Nonnull String key, @Nonnull String label) {
+    public static PopoverComponent.Builder popover(final @Nonnull String key, @Language("markdown") @Nonnull String label) {
         return new PopoverComponent.Builder(key, label);
     }
 
