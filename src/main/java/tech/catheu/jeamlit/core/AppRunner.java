@@ -58,9 +58,7 @@ class AppRunner {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
                     LOG.info("Compiling the app for the first time.");
-                    mainMethod.set(
-                            reloader.reload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS)
-                    );
+                    reload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
                     LOG.info("First time compilation successful.");
                 }
             } catch (Exception e) {
@@ -77,9 +75,9 @@ class AppRunner {
 
     /// @throws CompilationException if it is called for the first time, the files have never been compiled and the compilation failed
     protected void runApp(final String sessionId) {
-        StateManager.beginExecution(sessionId);
         // if necessary: load the app for the first time
         if (mainMethod.get() == null) {
+            StateManager.beginExecution(sessionId);
             try {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
@@ -97,9 +95,11 @@ class AppRunner {
                 throw e;
             } finally {
                 reloadAvailable.release();
+                StateManager.endExecution();
             }
         }
 
+        StateManager.beginExecution(sessionId);
         boolean doRerun = false;
         Consumer<String> runAfterBreak = null;
         try {
