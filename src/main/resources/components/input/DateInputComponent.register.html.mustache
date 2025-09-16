@@ -420,7 +420,28 @@
             }
 
             // Reorder based on locale's first day of week
-            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
+            let firstDayOfWeek = 0; // Default Sunday
+            try {
+                // Only use Intl.Locale.weekInfo if available (not supported in older browsers)
+                if (typeof Intl !== 'undefined' && Intl.Locale) {
+                    const localeObj = new Intl.Locale(locale);
+                    // Check if weekInfo is available (Chrome 99+, Firefox 93+, Safari 15.4+)
+                    if (localeObj.weekInfo) {
+                        firstDayOfWeek = localeObj.weekInfo.firstDay || 0;
+                    }
+                }
+            } catch (e) {
+                // Fallback for browsers without weekInfo support
+                // Use simple locale-based guess
+                const region = locale.split('-')[1] || locale;
+                // Most of world uses Monday as first day, US/Canada/Japan use Sunday
+                if (['US', 'CA', 'JP', 'en-US', 'en-CA', 'ja'].includes(region)) {
+                    firstDayOfWeek = 0; // Sunday
+                } else {
+                    firstDayOfWeek = 1; // Monday
+                }
+            }
+
             if (firstDayOfWeek === 1) {
                 // Monday first
                 weekdays.push(weekdays.shift());
@@ -446,7 +467,27 @@
 
             // Adjust for locale's first day of week
             const locale = navigator.language || 'en-US';
-            const firstDayOfWeek = new Intl.Locale(locale).weekInfo?.firstDay || 0;
+            let firstDayOfWeek = 0; // Default Sunday
+            try {
+                // Only use Intl.Locale.weekInfo if available (not supported in older browsers)
+                if (typeof Intl !== 'undefined' && Intl.Locale) {
+                    const localeObj = new Intl.Locale(locale);
+                    // Check if weekInfo is available (Chrome 99+, Firefox 93+, Safari 15.4+)
+                    if (localeObj.weekInfo) {
+                        firstDayOfWeek = localeObj.weekInfo.firstDay || 0;
+                    }
+                }
+            } catch (e) {
+                // Fallback for browsers without weekInfo support
+                // Use simple locale-based guess
+                const region = locale.split('-')[1] || locale;
+                // Most of world uses Monday as first day, US/Canada/Japan use Sunday
+                if (['US', 'CA', 'JP', 'en-US', 'en-CA', 'ja'].includes(region)) {
+                    firstDayOfWeek = 0; // Sunday
+                } else {
+                    firstDayOfWeek = 1; // Monday
+                }
+            }
             let adjustedFirstDay = firstDay - firstDayOfWeek;
             if (adjustedFirstDay < 0) adjustedFirstDay += 7;
 
