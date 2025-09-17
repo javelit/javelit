@@ -37,6 +37,8 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ParamTree;
 import com.sun.source.doctree.ReturnTree;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
@@ -129,18 +131,18 @@ public class JsonDoclet implements Doclet {
      * Process a single class and extract its documentation
      */
     private void processClass(TypeElement clazz, Map<String, Object> documentation, DocletEnvironment environment) {
-        String className = clazz.getQualifiedName().toString();
+        final String className = clazz.getQualifiedName().toString();
 
         // Get all public methods
-        List<ExecutableElement> methods = ElementFilter.methodsIn(clazz.getEnclosedElements())
+        final List<ExecutableElement> methods = ElementFilter.methodsIn(clazz.getEnclosedElements())
                 .stream()
                 .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
-                .collect(Collectors.toList());
+                .toList();
 
-        for (ExecutableElement method : methods) {
-            String methodKey = generateMethodKey(className, method);
-            Map<String, Object> methodDoc = processMethod(method, environment);
-            if (methodDoc != null) {
+        for (final ExecutableElement method : methods) {
+            final String methodKey = generateMethodKey(className, method);
+            if (methodKey != null) {
+                final Map<String, Object> methodDoc = processMethod(method, environment);
                 documentation.put(methodKey, methodDoc);
             }
         }
@@ -149,21 +151,19 @@ public class JsonDoclet implements Doclet {
     /**
      * Generate a unique key for a method (similar to streamlit.json format)
      */
-    private String generateMethodKey(String className, ExecutableElement method) {
+    private @Nullable String generateMethodKey(String className, ExecutableElement method) {
         // For Jt class, use format like "tech.catheu.jeamlit.core.Jt.text"
         // For components, use format like "ButtonComponent.onClick"
         if ("tech.catheu.jeamlit.core.Jt".equals(className)) {
             return "Jt." +  method.getSimpleName();
-        } else {
-            String simpleName = className.substring(className.lastIndexOf('.') + 1);
-            return simpleName + "." + method.getSimpleName();
         }
+        return null;
     }
 
     /**
      * Process a single method and extract its documentation
      */
-    private Map<String, Object> processMethod(ExecutableElement method, DocletEnvironment environment) {
+    private @Nonnull Map<String, Object> processMethod(ExecutableElement method, DocletEnvironment environment) {
         Map<String, Object> methodDoc = new HashMap<>();
 
         // Basic method information
