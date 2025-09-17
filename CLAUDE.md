@@ -40,6 +40,33 @@ java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
 **IMPORTANT**: NEVER launch a server with java -jar jeamlit.jar run TestApp.java
 **IMPORTANT**: Instead, write E2E tests
 
+### Generate JSON Documentation
+
+To generate the `jeamlit.json` file with API documentation:
+
+```bash
+./mvnw clean package -Prelease -DskipTests
+```
+
+This command:
+- Cleans the project
+- Builds the project with the release profile
+- Skips tests
+- Triggers the JsonDoclet execution which generates `jeamlit.json`
+
+The JSON file will be created in the project root directory and contains documentation for:
+- All public methods in the `Jt` class
+- All public methods in component classes (components package)
+- Return types are extracted from the component's `JtComponent<T>` generic parameter where applicable
+
+## JsonDoclet
+
+The custom JsonDoclet implementation:
+- Processes only `tech.catheu.jeamlit.core.Jt` and `tech.catheu.jeamlit.components.*` classes
+- For methods in the `Jt` class that return component builders, extracts the actual component return type from the component's `JtComponent<T>` generic parameter
+- Uses Jackson for JSON serialization
+- Outputs in streamlit.json compatible format
+
 ## Project Structure
 
 ```
