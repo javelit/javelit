@@ -178,15 +178,25 @@ public class JsonDoclet implements Doclet {
 
         // Process parameters
         List<Map<String, Object>> args = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        Map<String, String> paramDescriptions = (Map<String, String>) methodDoc.get("paramDescriptions");
+        if (paramDescriptions == null) {
+            paramDescriptions = new HashMap<>();
+        }
+
         for (VariableElement param : method.getParameters()) {
             Map<String, Object> paramDoc = new HashMap<>();
-            paramDoc.put("name", param.getSimpleName().toString());
+            String paramName = param.getSimpleName().toString();
+            paramDoc.put("name", paramName);
             paramDoc.put("type_name", getTypeName(param.asType()));
             paramDoc.put("is_optional", false); // Java doesn't have optional params like Python
-            paramDoc.put("description", ""); // Will be filled from @param tags
+            paramDoc.put("description", paramDescriptions.getOrDefault(paramName, ""));
             paramDoc.put("default", null);
             args.add(paramDoc);
         }
+
+        // Remove the temporary paramDescriptions from methodDoc
+        methodDoc.remove("paramDescriptions");
         methodDoc.put("args", args);
 
         // Process return type
@@ -228,14 +238,25 @@ public class JsonDoclet implements Doclet {
 
         methodDoc.put("description", description);
 
+        // Extract parameter descriptions from @param tags
+        final Map<String, String> paramDescriptions = new HashMap<>();
+
         // Process block tags (@param, @return, etc.)
         for (DocTree blockTag : docComment.getBlockTags()) {
             if (blockTag instanceof ParamTree paramTree) {
-                // TODO: Match @param with actual parameters and update their descriptions
+                String paramName = paramTree.getName().toString();
+                String paramDescription = paramTree.getDescription().stream()
+                        .map(DocTree::toString)
+                        .collect(Collectors.joining(" "))
+                        .trim();
+                paramDescriptions.put(paramName, paramDescription);
             } else if (blockTag instanceof ReturnTree returnTree) {
                 // TODO: Update return description
             }
         }
+
+        // Store parameter descriptions for later use
+        methodDoc.put("paramDescriptions", paramDescriptions);
     }
 
     /**
