@@ -177,12 +177,10 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
             return this;
         }
 
-        /**
-         * Convenience method for setting width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
+        /// Convenience method for setting width as integer pixels.
+        ///
+        /// @param widthPixels Width in pixels (must be non-negative)
+        /// @return this builder
         public Builder<T> width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);

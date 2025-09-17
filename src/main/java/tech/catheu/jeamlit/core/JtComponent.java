@@ -26,11 +26,9 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 
-/**
- * Base class for all Jeamlit components.
- *
- * @param <T> The type of value this component returns
- */
+/// Base class for all Jeamlit components.
+///
+/// @param <T> The type of value this component returns
 public abstract class JtComponent<T> {
 
     protected static final String UNIQUE_NAVIGATION_COMPONENT_KEY = "THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT";
@@ -162,17 +160,13 @@ public abstract class JtComponent<T> {
         return key;
     }
 
-    /**
-     * Component definition - called once per component type.
-     * This should return HTML/JS/CSS that defines the component.
-     * Return null if there is nothing to do.
-     */
+    /// Component definition - called once per component type.
+    /// This should return HTML/JS/CSS that defines the component.
+    /// Return null if there is nothing to do.
     protected abstract @Nullable String register();
 
-    /**
-     * Component instance rendering - called for each render.
-     * This should return the HTML for this specific instance.
-     */
+    /// Component instance rendering - called for each render.
+    /// This should return the HTML for this specific instance.
     protected abstract String render();
 
     protected void executeCallback() {
@@ -181,11 +175,9 @@ public abstract class JtComponent<T> {
         }
     }
 
-    /**
-     * Get the current value and optionally reset state.
-     * Button components reset to false after reading.
-     * Input components keep their value.
-     */
+    /// Get the current value and optionally reset state.
+    /// Button components reset to false after reading.
+    /// Input components keep their value.
     protected final T returnValue() {
         return currentValue;
     }
@@ -200,10 +192,8 @@ public abstract class JtComponent<T> {
         currentValue = initialValue;
     }
 
-    /**
-     * Update the component's value from frontend.
-     * Uses Jackson for type-safe deserialization.
-     */
+    /// Update the component's value from frontend.
+    /// Uses Jackson for type-safe deserialization.
     protected final void updateValue(final Object valueUpdate) {
         this.currentValue = validate((T) valueUpdate);
     }
@@ -230,31 +220,23 @@ public abstract class JtComponent<T> {
         return value;
     }
 
-    /**
-     * Get the TypeReference for Jackson deserialization.
-     * Subclasses must implement this to specify their type.
-     */
+    /// Get the TypeReference for Jackson deserialization.
+    /// Subclasses must implement this to specify their type.
     protected abstract TypeReference<T> getTypeReference();
 
-    /**
-     * Reset component state if needed after returnValue().
-     * Default implementation does nothing.
-     * See example in ButtonComponent
-     */
+    /// Reset component state if needed after returnValue().
+    /// Default implementation does nothing.
+    /// See example in ButtonComponent
     protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior
     }
 
-    /**
-     * Add the component to the app in the main container and return its value.
-     */
+    /// Add the component to the app in the main container and return its value.
     public final T use() {
         return use(defaultContainer);
     }
 
-    /**
-     * Add the component to the app in the provided container and return its value.
-     */
+    /// Add the component to the app in the provided container and return its value.
     public final T use(final @Nonnull JtContainer container) {
         beforeUse(container);
         StateManager.addComponent(this, container);
@@ -279,9 +261,7 @@ public abstract class JtComponent<T> {
 
     }
 
-    /**
-     * Label visibility options for components
-     */
+    /// Label visibility options for components
     public enum LabelVisibility {
         VISIBLE,
         HIDDEN,
