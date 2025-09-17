@@ -51,7 +51,8 @@ class AppRunner {
         } else if (builder.appClass != null) {
             this.reloader = new ClassReloader(builder);
         } else {
-            throw new IllegalArgumentException("Either appPath or appClass should be provided. Please reach out to support.");
+            throw new IllegalArgumentException(
+                    "Either appPath or appClass should be provided. Please reach out to support.");
         }
         new Thread(() -> {
             try {
@@ -62,7 +63,9 @@ class AppRunner {
                     LOG.info("First time compilation successful.");
                 }
             } catch (Exception e) {
-                LOG.warn("First compilation failed. Will re-attempt compilation when user connects and return the error to the user.", e);
+                LOG.warn(
+                        "First compilation failed. Will re-attempt compilation when user connects and return the error to the user.",
+                        e);
             } finally {
                 reloadAvailable.release();
             }
@@ -73,7 +76,9 @@ class AppRunner {
         mainMethod.set(reloader.reload(reloadStrategy));
     }
 
-    /// @throws CompilationException if it is called for the first time, the files have never been compiled and the compilation failed
+    /**
+     * @throws CompilationException if it is called for the first time, the files have never been compiled and the compilation failed
+     */
     protected void runApp(final String sessionId) {
         // if necessary: load the app for the first time
         if (mainMethod.get() == null) {
@@ -112,7 +117,7 @@ class AppRunner {
                 runAfterBreak = u.runAfterBreak;
                 doRerun = true;
             } else if (e.getCause() != null && e.getCause()
-                    .getCause() instanceof BreakAndReloadAppException u) {
+                                                .getCause() instanceof BreakAndReloadAppException u) {
                 runAfterBreak = u.runAfterBreak;
                 doRerun = true;
             } else {
@@ -166,7 +171,8 @@ class AppRunner {
                               chatGptLink);
     }
 
-    @Nonnull BuildSystem getBuildSystem() {
+    @Nonnull
+    BuildSystem getBuildSystem() {
         return buildSystem;
     }
 }

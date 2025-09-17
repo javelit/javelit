@@ -69,8 +69,10 @@ final class StateManager {
     // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
 
-    /// A NoOpRenderServer to catch issues without breaking.
-    /// This value is supposed to be changed to a proper rendering server with [#setRenderServer(RenderServer)]
+    /**
+     * A NoOpRenderServer to catch issues without breaking.
+     * This value is supposed to be changed to a proper rendering server with [#setRenderServer(RenderServer)]
+     */
     private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
     protected enum ExecutionStatus {
@@ -81,7 +83,11 @@ final class StateManager {
 
     protected interface RenderServer {
         // component can be null to trigger a full cleanup
-        void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, @Nonnull JtContainer container, final @Nullable Integer index, final boolean clearBefore);
+        void send(final @Nonnull String sessionId,
+                  final @Nullable JtComponent<?> component,
+                  @Nonnull JtContainer container,
+                  final @Nullable Integer index,
+                  final boolean clearBefore);
 
         void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus);
     }
@@ -105,16 +111,21 @@ final class StateManager {
     protected static void clearSession(String sessionId) {
         SESSIONS.remove(sessionId);
     }
-    
+
     /**
      * Handles component updates and returns true if app should be re-run
      */
-    protected static boolean handleComponentUpdate(final String sessionId, final String componentKey, final Object updatedValue) {
+    protected static boolean handleComponentUpdate(final String sessionId,
+                                                   final String componentKey,
+                                                   final Object updatedValue) {
         // find the component and its container
         final InternalSessionState session = SESSIONS.get(sessionId);
         checkState(session != null, "No session with id %s. Implementation error ?", sessionId);
         final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
-        checkState(lastExecution != null, "Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.", componentKey, sessionId);
+        checkState(lastExecution != null,
+                   "Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.",
+                   componentKey,
+                   sessionId);
         JtComponent<?> component = null;
         JtContainer componentContainer = null;
         for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> entry : lastExecution.containerToComponents.entrySet()) {
@@ -124,7 +135,9 @@ final class StateManager {
                 break;
             }
         }
-        checkState(component != null, "Received update for unknown component %s. Try to refresh the page.", componentKey);
+        checkState(component != null,
+                   "Received update for unknown component %s. Try to refresh the page.",
+                   componentKey);
         checkState(componentContainer != null, "Implementation error. Please reach out to support.");
         final String parentFormComponentKey = componentContainer.getParentFormComponentKey();
 
@@ -133,16 +146,20 @@ final class StateManager {
         boolean rerun = true;
         if (component instanceof FormSubmitButtonComponent && Boolean.TRUE.equals(updatedValue)) {
             checkState(parentFormComponentKey != null, "FormSubmitButton must be inside a form container");
-            final Map<String, Object> pendingInFormComponentStates = session.pendingInFormComponentsState().get(parentFormComponentKey);
+            final Map<String, Object> pendingInFormComponentStates = session
+                    .pendingInFormComponentsState()
+                    .get(parentFormComponentKey);
             if (pendingInFormComponentStates != null) {
                 session.getComponentsState().putAll(pendingInFormComponentStates);
 
                 // check if the form has clearOnSubmit enabled and act accordingly - Note: data struct manipulation is a bit heavy but won't optimize for the moment
                 final FormComponent formComponent = lastExecution.containerToComponents.values().stream()
-                        .filter(m -> m.containsKey(parentFormComponentKey))
-                        .map(m -> m.get(parentFormComponentKey))
-                        .map(FormComponent.class::cast)
-                        .findFirst().orElse(null);
+                                                                                       .filter(m -> m.containsKey(
+                                                                                               parentFormComponentKey))
+                                                                                       .map(m -> m.get(
+                                                                                               parentFormComponentKey))
+                                                                                       .map(FormComponent.class::cast)
+                                                                                       .findFirst().orElse(null);
                 checkState(formComponent != null, "Form component not found for key %s", parentFormComponentKey);
                 if (formComponent.isClearOnSubmit()) {
                     session.formComponentsToReset().addAll(pendingInFormComponentStates.keySet());
@@ -158,8 +175,8 @@ final class StateManager {
         if (parentFormComponentKey != null) {
             if (component.returnValueIsAState()) {
                 session.pendingInFormComponentsState()
-                        .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
-                        .put(componentKey, component.convert(updatedValue));
+                       .computeIfAbsent(parentFormComponentKey, e -> new LinkedHashMap<>())
+                       .put(componentKey, component.convert(updatedValue));
             }
             return false;
         }
@@ -177,18 +194,21 @@ final class StateManager {
         SESSIONS.get(sessionId).setCallbackComponentKey(componentKey);
     }
 
-    /// Usage:
-    /// - beginExecution
-    /// - run the user app - it will call addComponent (done via Jt methods)
-    /// - endExecution
+    /**
+     * Usage:
+     * - beginExecution
+     * - run the user app - it will call addComponent (done via Jt methods)
+     * - endExecution
+     */
     protected static void beginExecution(final String sessionId) {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
-                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
+                   "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
         renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN);
 
         // run callback before everything else
-        final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
+        final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId,
+                                                                                   k -> new InternalSessionState());
         final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
         if (callbackComponentKey != null) {
             final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId)
@@ -207,16 +227,21 @@ final class StateManager {
         }
     }
 
-    /// Usage:
-    /// - beginExecution
-    /// - run the user app - it will call addComponent (done via Jt methods)
-    /// - endExecution
-    /// Return if the component was added successfully. Else throw.
+    /**
+     * Usage:
+     * - beginExecution
+     * - run the user app - it will call addComponent (done via Jt methods)
+     * - endExecution
+     * Return if the component was added successfully. Else throw.
+     */
     protected static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer container) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         checkState(currentExecution != null, "No active execution context. Please reach out to support.");
 
-        if (currentExecution.containerToComponents.values().stream().anyMatch(components -> components.containsKey(component.getKey()))) {
+        if (currentExecution.containerToComponents
+                .values()
+                .stream()
+                .anyMatch(components -> components.containsKey(component.getKey()))) {
             // a component with the same id was already registered while running the app top to bottom
             throw DuplicateWidgetIDException.of(component);
         }
@@ -259,15 +284,17 @@ final class StateManager {
         }
 
         final boolean lookForDifference = !currentExecution.containerToFoundDifference.get(container)
-                                    && lastExecution != null
-                                    && lastExecution.containerToComponents.containsKey(container)
-                                    && currentExecution.containerToCurrentIndex.get(container) < lastExecution.containerToComponents.get(
-                container).size();
+                                          && lastExecution != null
+                                          && lastExecution.containerToComponents.containsKey(container)
+                                          && currentExecution.containerToCurrentIndex.get(container) < lastExecution.containerToComponents
+                .get(
+                        container)
+                .size();
         if (lookForDifference) {
             // Get previous component at the same position
             final JtComponent<?>[] previousComponents = lastExecution.containerToComponents.get(
-                            container).values()
-                    .toArray(new JtComponent<?>[0]);
+                                                                             container).values()
+                                                                                           .toArray(new JtComponent<?>[0]);
             final JtComponent<?> previousAtIndex = previousComponents[currentExecution.containerToCurrentIndex.get(
                     container)];
             if (componentsEqual(previousAtIndex, component)) {
@@ -287,8 +314,10 @@ final class StateManager {
                           component,
                           container,
                           // not necessary to pass the index if a difference has been found and the clear message has been sent already
-                          currentExecution.containerToFoundDifference.get(container) && !clearBefore ? null : currentExecution.containerToCurrentIndex.get(
-                                  container),
+                          currentExecution.containerToFoundDifference.get(container) && !clearBefore ?
+                                  null :
+                                  currentExecution.containerToCurrentIndex.get(
+                                          container),
                           clearBefore);
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
         if (component.returnValue() instanceof JtContainer) {
@@ -311,10 +340,12 @@ final class StateManager {
         return prev.render().equals(curr.render());
     }
 
-    /// Usage:
-    /// - beginExecution
-    /// - run the user app - it will call addComponent (done via Jt methods)
-    /// - endExecution
+    /**
+     * Usage:
+     * - beginExecution
+     * - run the user app - it will call addComponent (done via Jt methods)
+     * - endExecution
+     */
     static void endExecution() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         checkState(currentExecution != null, "No active execution context. Please reach out to support.");
@@ -375,11 +406,15 @@ final class StateManager {
         if (previousExecution != null) {
             // remove component states of component that are not in the app anymore
             final Set<String> componentsInUseKeys = new HashSet<>();
-            for (final Map<String, JtComponent<?>> m: currentExecution.containerToComponents.values()) {
+            for (final Map<String, JtComponent<?>> m : currentExecution.containerToComponents.values()) {
                 componentsInUseKeys.addAll(m.keySet());
             }
-            for (final Map<String, JtComponent<?>> m: previousExecution.containerToComponents.values()) {
-                m.keySet().stream().filter(k -> !componentsInUseKeys.contains(k)).forEach(k -> session.getComponentsState().remove(k));
+            for (final Map<String, JtComponent<?>> m : previousExecution.containerToComponents.values()) {
+                m
+                        .keySet()
+                        .stream()
+                        .filter(k -> !componentsInUseKeys.contains(k))
+                        .forEach(k -> session.getComponentsState().remove(k));
             }
         }
 
@@ -388,7 +423,8 @@ final class StateManager {
         CURRENT_EXECUTION_IN_THREAD.remove();
     }
 
-    static void setUrlContext(final @Nonnull String sessionId, final @Nonnull InternalSessionState.UrlContext urlContext) {
+    static void setUrlContext(final @Nonnull String sessionId,
+                              final @Nonnull InternalSessionState.UrlContext urlContext) {
         final InternalSessionState session = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
         session.setUrlContext(urlContext);
         session.getComponentsState().remove(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
@@ -404,7 +440,11 @@ final class StateManager {
 
     private static class NoOpRenderServer implements RenderServer {
         @Override
-        public void send(final @Nonnull String sessionId, final @Nullable JtComponent<?> component, final @NotNull JtContainer container, final @Nullable Integer index, final boolean clearBefore) {
+        public void send(final @Nonnull String sessionId,
+                         final @Nullable JtComponent<?> component,
+                         final @NotNull JtContainer container,
+                         final @Nullable Integer index,
+                         final boolean clearBefore) {
             LOG.error(
                     "Cannot send indexed delta for component {} in container {} at index {} to session {}. No render server is registered.",
                     component != null ? component.getKey() : null,
@@ -415,17 +455,19 @@ final class StateManager {
 
         @Override
         public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
-            LOG.error("Cannot send run status {} to session {}. No render server is registered", executionStatus, sessionId);
+            LOG.error("Cannot send run status {} to session {}. No render server is registered",
+                      executionStatus,
+                      sessionId);
         }
     }
 
     static @Nullable NavigationComponent getNavigationComponent() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         return (NavigationComponent) optional(currentExecution.containerToComponents.values().stream()
-                .filter(components -> components
-                        .containsKey(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY))
-                .findFirst()
-                         .orElse(null))
+                                                                                    .filter(components -> components
+                                                                                            .containsKey(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY))
+                                                                                    .findFirst()
+                                                                                    .orElse(null))
                 .map(m -> m.get(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY)).orElse(null);
 
     }

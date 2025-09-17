@@ -63,7 +63,7 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             return this;
         }
 
-        ///  make the page the default homepage
+        /**  make the page the default homepage */
         public Builder home() {
             this.isHome = true;
             return this;

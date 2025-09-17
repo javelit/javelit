@@ -26,9 +26,11 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import tech.catheu.jeamlit.components.multipage.NavigationComponent;
 
-/// Base class for all Jeamlit components.
-///
-/// @param <T> The type of value this component returns
+/**
+ * Base class for all Jeamlit components.
+ *
+ * @param <T> The type of value this component returns
+ */
 public abstract class JtComponent<T> {
 
     protected static final String UNIQUE_NAVIGATION_COMPONENT_KEY = "THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT";
@@ -46,11 +48,11 @@ public abstract class JtComponent<T> {
     // {{{ PRISM_SETUP_SNIPPET }}}
     // then inject the css, see below
     protected static final @Language("javascript") String PRISM_SETUP_SNIPPET = """
-                                                                                import Prism from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/+esm';
-                                                                                import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js/+esm';
-                                                                                import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.js/+esm';
-                                                                                Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/'; 
-                                                                                """;
+            import Prism from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/+esm';
+            import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js/+esm';
+            import 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/line-numbers/prism-line-numbers.min.js/+esm';
+            Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/'; 
+            """;
     // Note:
     // css should be imported with the following:
     // import prismTheme from 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css' with {type: 'css'};
@@ -62,7 +64,9 @@ public abstract class JtComponent<T> {
     private static final @Language("css") String PRISM_LINE_NUMBERS_CSS = "pre[class*=language-].line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}pre[class*=language-].line-numbers>code{position:relative;white-space:inherit}.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:0;font-size:100%;left:-3.8em;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.line-numbers-rows>span{display:block;counter-increment:linenumber}.line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}";
     // value below from https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css
     private static final @Language("css") String PRISM_MAIN_CSS = "code[class*=language-],pre[class*=language-]{color:#000;background:0 0;text-shadow:0 1px #fff;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}code[class*=language-] ::-moz-selection,code[class*=language-]::-moz-selection,pre[class*=language-] ::-moz-selection,pre[class*=language-]::-moz-selection{text-shadow:none;background:#b3d4fc}code[class*=language-] ::selection,code[class*=language-]::selection,pre[class*=language-] ::selection,pre[class*=language-]::selection{text-shadow:none;background:#b3d4fc}@media print{code[class*=language-],pre[class*=language-]{text-shadow:none}}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#f5f2f0}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#708090}.token.punctuation{color:#999}.token.namespace{opacity:.7}.token.boolean,.token.constant,.token.deleted,.token.number,.token.property,.token.symbol,.token.tag{color:#905}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#690}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url{color:#9a6e3a;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.class-name,.token.function{color:#dd4a68}.token.important,.token.regex,.token.variable{color:#e90}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}";
-    ///  the prism css, if injected in a css text with mustache, use triple brackets
+    /**
+     * the prism css, if injected in a css text with mustache, use triple brackets
+     */
     protected static final String PRISM_CSS = PRISM_LINE_NUMBERS_CSS + "\n" + PRISM_MAIN_CSS;
     protected static final @Language("css") String MARKDOWN_CSS = """
             .markdown-content strong {
@@ -134,7 +138,10 @@ public abstract class JtComponent<T> {
     protected @Nullable Consumer<T> callback;
     private final JtContainer defaultContainer;
 
-    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback, final @Nonnull JtContainer defaultContainer) {
+    protected JtComponent(final @Nonnull String key,
+                          final T currentValue,
+                          final @Nullable Consumer<T> callback,
+                          final @Nonnull JtContainer defaultContainer) {
         this.key = key;
         this.currentValue = currentValue;
         if (returnValueIsAState() && currentValue != null && !(currentValue instanceof Number) && !(currentValue instanceof String)) {
@@ -160,13 +167,17 @@ public abstract class JtComponent<T> {
         return key;
     }
 
-    /// Component definition - called once per component type.
-    /// This should return HTML/JS/CSS that defines the component.
-    /// Return null if there is nothing to do.
+    /**
+     * Component definition - called once per component type.
+     * This should return HTML/JS/CSS that defines the component.
+     * Return null if there is nothing to do.
+     */
     protected abstract @Nullable String register();
 
-    /// Component instance rendering - called for each render.
-    /// This should return the HTML for this specific instance.
+    /**
+     * Component instance rendering - called for each render.
+     * This should return the HTML for this specific instance.
+     */
     protected abstract String render();
 
     protected void executeCallback() {
@@ -175,9 +186,11 @@ public abstract class JtComponent<T> {
         }
     }
 
-    /// Get the current value and optionally reset state.
-    /// Button components reset to false after reading.
-    /// Input components keep their value.
+    /**
+     * Get the current value and optionally reset state.
+     * Button components reset to false after reading.
+     * Input components keep their value.
+     */
     protected final T returnValue() {
         return currentValue;
     }
@@ -192,8 +205,10 @@ public abstract class JtComponent<T> {
         currentValue = initialValue;
     }
 
-    /// Update the component's value from frontend.
-    /// Uses Jackson for type-safe deserialization.
+    /**
+     * Update the component's value from frontend.
+     * Uses Jackson for type-safe deserialization.
+     */
     protected final void updateValue(final Object valueUpdate) {
         this.currentValue = validate((T) valueUpdate);
     }
@@ -220,23 +235,31 @@ public abstract class JtComponent<T> {
         return value;
     }
 
-    /// Get the TypeReference for Jackson deserialization.
-    /// Subclasses must implement this to specify their type.
+    /**
+     * Get the TypeReference for Jackson deserialization.
+     * Subclasses must implement this to specify their type.
+     */
     protected abstract TypeReference<T> getTypeReference();
 
-    /// Reset component state if needed after returnValue().
-    /// Default implementation does nothing.
-    /// See example in ButtonComponent
+    /**
+     * Reset component state if needed after returnValue().
+     * Default implementation does nothing.
+     * See example in ButtonComponent
+     */
     protected void resetIfNeeded() {
         // Override in subclasses that need reset behavior
     }
 
-    /// Add the component to the app in the main container and return its value.
+    /**
+     * Add the component to the app in the main container and return its value.
+     */
     public final T use() {
         return use(defaultContainer);
     }
 
-    /// Add the component to the app in the provided container and return its value.
+    /**
+     * Add the component to the app in the provided container and return its value.
+     */
     public final T use(final @Nonnull JtContainer container) {
         beforeUse(container);
         StateManager.addComponent(this, container);
@@ -254,14 +277,18 @@ public abstract class JtComponent<T> {
         // subclasses are not allowed to use StateManager hence using this template pattern
     }
 
-    /// identifies a T type of a JtComponent as not to be stored in the session state
-    /// anything that is not a state should implement this interface
-    /// see also [NONE]
+    /**
+     * identifies a T type of a JtComponent as not to be stored in the session state
+     * anything that is not a state should implement this interface
+     * see also [NONE]
+     */
     public interface NotAState {
 
     }
 
-    /// Label visibility options for components
+    /**
+     * Label visibility options for components
+     */
     public enum LabelVisibility {
         VISIBLE,
         HIDDEN,
@@ -286,27 +313,29 @@ public abstract class JtComponent<T> {
         }
     }
 
-    protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown, final boolean removeWrap) {
+    protected static String markdownToHtml(final @Language("markdown") @Nullable String markdown,
+                                           final boolean removeWrap) {
         return MarkdownUtils.markdownToHtml(markdown, removeWrap);
     }
 
 
-    //// StateManager wrappers
-    // the methods below are simply wrapping StateManager methods
-    // this is because the JtComponent class is part of the component developer API, and we will try to not break it
+    /**
+     * StateManager wrappers
+     * the methods below are simply wrapping StateManager methods
+     * this is because the JtComponent class is part of the component developer API, and we will try to not break it
+     */
     // StateManager is not part of the developer API and may get broken
-
     protected static @Nonnull String getCurrentPath() {
         return StateManager.getUrlContext().currentPath();
     }
 
-    protected static  @Nonnull Map<String, List<String>> getCurrentQueryParameters() {
+    protected static @Nonnull Map<String, List<String>> getCurrentQueryParameters() {
         return StateManager.getUrlContext().queryParameters();
     }
 
-    protected static @Nullable NavigationComponent  getNavigationComponent() {
+    protected static @Nullable NavigationComponent getNavigationComponent() {
         return StateManager.getNavigationComponent();
     }
 
-    //// end of StateManager wrappers
+    /** end of StateManager wrappers */
 }

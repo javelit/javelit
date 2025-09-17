@@ -23,8 +23,10 @@ import jakarta.annotation.Nonnull;
 abstract class Reloader {
 
     enum ReloadStrategy {
-        /// only reload the classes previous classpath will be used if it exists
-        /// no maven/gradle build
+        /**
+         * only reload the classes previous classpath will be used if it exists
+         * no maven/gradle build
+         */
         CLASS,
         BUILD_CLASSPATH_AND_CLASS
     }

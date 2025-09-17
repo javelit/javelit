@@ -28,7 +28,7 @@ import tech.catheu.jeamlit.core.JtComponent;
 import tech.catheu.jeamlit.core.JtComponentBuilder;
 import tech.catheu.jeamlit.core.JtContainer;
 
-/// implements both the Container component and the Empty component via the inPlace flag.
+/** implements both the Container component and the Empty component via the inPlace flag. */
 public final class ContainerComponent extends JtComponent<JtContainer> {
 
     final Integer height;
@@ -111,8 +111,10 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
         };
     }
 
-    /// Add the component to the app in the provided [JtContainer] and return this component's [JtContainer].
-    /// for instance, if the container is "main", returns a container \["main", $key\]
+    /**
+     * Add the component to the app in the provided [JtContainer] and return this component's [JtContainer].
+     * for instance, if the container is "main", returns a container \["main", $key\]
+     */
     @Override
     protected void beforeUse(final @NotNull JtContainer container) {
         if (inPlace) {

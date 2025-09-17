@@ -38,7 +38,10 @@ public final class JtContainer implements JtComponent.NotAState {
     private final boolean inPlace;
     private final boolean formContainer;
 
-    private JtContainer(final @NotNull String key, @Nullable JtContainer parent, final boolean inPlace, final boolean formContainer) {
+    private JtContainer(final @NotNull String key,
+                        @Nullable JtContainer parent,
+                        final boolean inPlace,
+                        final boolean formContainer) {
         if (key.contains(",")) {
             throw new IllegalArgumentException(
                     "Container path cannot contain a comma. Please remove the comma from your key or container path.");
@@ -91,9 +94,11 @@ public final class JtContainer implements JtComponent.NotAState {
         return parent;
     }
 
-    /// Find the parent form component key by traversing up the container hierarchy
-    /// If the Container is a form, returns its own key.
-    /// Return null if there is no form in the parents.
+    /**
+     * Find the parent form component key by traversing up the container hierarchy
+     * If the Container is a form, returns its own key.
+     * Return null if there is no form in the parents.
+     */
     @Nullable
     public String getParentFormComponentKey() {
         JtContainer current = this;

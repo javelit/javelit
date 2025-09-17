@@ -77,8 +77,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
     @SuppressWarnings("unused")
     public static class Builder<T extends Number> extends JtComponentBuilder<T, NumberInputComponent<T>, Builder<T>> {
 
-        @Language("markdown")
-        private final @Nonnull String label;
+        @Language("markdown") private final @Nonnull String label;
         private Class<T> valueType;
         private @Nullable T value = null;
         private @Nullable T minValue = null;
@@ -170,17 +169,18 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
 
         public Builder<T> width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;
         }
 
-        /// Convenience method for setting width as integer pixels.
-        ///
-        /// @param widthPixels Width in pixels (must be non-negative)
-        /// @return this builder
+        /**
+         * Convenience method for setting width as integer pixels.
+         *
+         * @param widthPixels Width in pixels (must be non-negative)
+         * @return this builder
+         */
         public Builder<T> width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
@@ -223,8 +223,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                 }
             } else {
                 if (!(valueType == null || valueType == Double.class)) {
-                    LOG.warn("Unknown value type: {}. Assuming it can be manipulated like a Double.",
-                             valueType);
+                    LOG.warn("Unknown value type: {}. Assuming it can be manipulated like a Double.", valueType);
                 }
                 valueType = (Class<T>) Double.class;
                 if (step == null) {

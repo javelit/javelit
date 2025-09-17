@@ -35,10 +35,12 @@ public final class JeamlitTestHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeamlitTestHelper.class);
 
-    /// Write a test app to a temporary file.
-    ///
-    /// @param appCode The Java source code for the test app
-    /// @return Path to the created file
+    /**
+     * Write a test app to a temporary file.
+     *
+     * @param appCode The Java source code for the test app
+     * @return Path to the created file
+     */
     public static Path writeTestApp(final String appCode) {
         try {
             final Path tempDir = Files.createTempDirectory("jeamlit-test-");
@@ -59,7 +61,7 @@ public final class JeamlitTestHelper {
     public static Server startServer(final Path appFile) {
         final int port = PortAllocator.getNextAvailablePort();
         final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME)
-                .build();
+                                    .build();
         return startServer(server);
     }
 
@@ -144,13 +146,13 @@ public final class JeamlitTestHelper {
         if (dir != null && Files.exists(dir)) {
             try (final var paths = Files.walk(dir)) {
                 paths.sorted(Comparator.reverseOrder())// Delete files before directories
-                        .forEach(path -> {
-                            try {
-                                Files.delete(path);
-                            } catch (IOException e) {
-                                System.err.println("Failed to delete: " + path);
-                            }
-                        });
+                     .forEach(path -> {
+                         try {
+                             Files.delete(path);
+                         } catch (IOException e) {
+                             System.err.println("Failed to delete: " + path);
+                         }
+                     });
             } catch (IOException e) {
                 System.err.println("Failed to cleanup temp dir: " + e.getMessage());
             }

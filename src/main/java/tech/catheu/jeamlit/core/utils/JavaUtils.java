@@ -24,12 +24,16 @@ import jakarta.annotation.Nullable;
 
 public final class JavaUtils {
 
-    /// same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Jeamlit removed
+    /**
+     * same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Jeamlit removed
+     */
     public static @Nonnull String stackTraceString(final @Nonnull Throwable throwable) {
         return stackTraceString(throwable, "jdk.internal.reflect.DirectMethodHandleAccessor");
     }
 
-    /// return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
+    /**
+     * return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
+     */
     private static @Nonnull String stackTraceString(final @Nonnull Throwable t, final @Nonnull String filterPrefix) {
         filterInPlace(t, filterPrefix);
         StringWriter sw = new StringWriter();

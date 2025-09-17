@@ -52,21 +52,39 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
             this.body = body;
         }
 
+
+        /**
+         * The string to display.
+         */
         public Builder body(final @Nullable @Language("Markdown") String body) {
             this.body = body;
             return this;
         }
 
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         * The tooltip can optionally contain Markdown, including the Markdown directives, see [tech.catheu.jeamlit.core.Jt#markdown] for details.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
 
+        /**
+         * The width of the text element. This can be one of the following:
+         * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
+        // FIXME input checks
         public Builder width(final @Nonnull String width) {
             this.width = width;
             return this;
         }
 
+        /**
+         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
@@ -104,6 +122,7 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
 
     @Override
     protected TypeReference<NONE> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 }

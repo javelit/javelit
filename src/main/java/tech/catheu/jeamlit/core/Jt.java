@@ -117,8 +117,12 @@ public final class Jt {
         }
     }
 
-    // syntactic sugar for all components - 1 method per component
-    // Example: Jt.use(Jt.text("my text")); is equivalent to Jt.use(new TextComponent.Builder("my text"));
+    /**
+     * Write text without Markdown or HTML parsing.
+     * For monospace text, use [Jt#code]
+     *
+     * @param body The string to display.
+     */
     public static TextComponent.Builder text(final @Nonnull @Language("Markdown") String body) {
         return new TextComponent.Builder(body);
     }
@@ -187,7 +191,8 @@ public final class Jt {
         return new ExpanderComponent.Builder(key, label);
     }
 
-    public static PopoverComponent.Builder popover(final @Nonnull String key, @Language("markdown") @Nonnull String label) {
+    public static PopoverComponent.Builder popover(final @Nonnull String key,
+                                                   @Language("markdown") @Nonnull String label) {
         return new PopoverComponent.Builder(key, label);
     }
 
@@ -215,15 +220,18 @@ public final class Jt {
         return new NumberInputComponent.Builder<>(label);
     }
 
-    public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label, final Class<T> valueClass) {
+    public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label,
+                                                                                 final Class<T> valueClass) {
         return new NumberInputComponent.Builder<>(label, valueClass);
     }
 
-    public static <T> RadioComponent.Builder<T> radio(@Language("markdown") final @Nonnull String label, final @Nonnull List<T> options) {
+    public static <T> RadioComponent.Builder<T> radio(@Language("markdown") final @Nonnull String label,
+                                                      final @Nonnull List<T> options) {
         return new RadioComponent.Builder<>(label, options);
     }
 
-    public static <T> SelectBoxComponent.Builder<T> selectBox(@Language("markdown") final @Nonnull String label, final @Nonnull List<T> options) {
+    public static <T> SelectBoxComponent.Builder<T> selectBox(@Language("markdown") final @Nonnull String label,
+                                                              final @Nonnull List<T> options) {
         return new SelectBoxComponent.Builder<>(label, options);
     }
 
@@ -239,7 +247,8 @@ public final class Jt {
         return new PageLinkComponent.Builder(pageClass);
     }
 
-    public static PageLinkComponent.Builder pageLink(final @Nonnull String url, final @Language("markdown") @Nonnull String label) {
+    public static PageLinkComponent.Builder pageLink(final @Nonnull String url,
+                                                     final @Language("markdown") @Nonnull String label) {
         return new PageLinkComponent.Builder(url, label);
     }
 
@@ -271,16 +280,20 @@ public final class Jt {
         return TableComponent.Builder.ofColumnsArrays(cols);
     }
 
-    public static <Values extends @NotNull SequencedCollection<@Nullable Object>> TableComponent.Builder tableFromListColumns(final @Nonnull Map<@NotNull String, Values> cols) {
+    public static <Values extends @NotNull SequencedCollection<@Nullable Object>> TableComponent.Builder tableFromListColumns(
+            final @Nonnull Map<@NotNull String, Values> cols) {
         return TableComponent.Builder.ofColumnsLists(cols);
     }
 
     public static void switchPage(final @Nonnull Class<?> pageApp) {
         // note: the design here is pretty hacky
         final NavigationComponent nav = StateManager.getNavigationComponent();
-        checkState(nav != null, "No navigation component found in app. switchPage only works with multipage app. Make sure switchPage is called after Jt.navigation().[...].use().");
+        checkState(nav != null,
+                   "No navigation component found in app. switchPage only works with multipage app. Make sure switchPage is called after Jt.navigation().[...].use().");
         final JtPage newPage = nav.getPageFor(pageApp);
-        checkArgument(newPage != null, "Invalid page %s. This page is not registered in Jt.navigation().", pageApp.getName());
+        checkArgument(newPage != null,
+                      "Invalid page %s. This page is not registered in Jt.navigation().",
+                      pageApp.getName());
         final InternalSessionState.UrlContext urlContext = new InternalSessionState
                 .UrlContext(newPage.urlPath(), Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
