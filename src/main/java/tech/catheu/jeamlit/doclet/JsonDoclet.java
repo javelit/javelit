@@ -280,7 +280,8 @@ public class JsonDoclet implements Doclet {
         for (VariableElement param : method.getParameters()) {
             String paramString = param.getSimpleName().toString();
             // Add annotations and type information for clarity
-            String annotations = formatAnnotations(param);
+            // annotations not written for the moment - it was making the doc less readable
+            String annotations = ""; // formatAnnotations(param);
             paramString = annotations + getTypeNameWithGenerics(param.asType()) + " " + paramString;
             paramStrings.add(paramString);
         }
@@ -364,7 +365,8 @@ public class JsonDoclet implements Doclet {
     private String getTypeNameWithGenerics(TypeMirror type) {
         return type.toString()
                    .replace("java.lang.", "")
-                   .replace("java.util.", "");
+                   .replace("java.util.", "")
+                   .replace("tech.catheu.", "");
     }
 
     /**
@@ -483,6 +485,53 @@ public class JsonDoclet implements Doclet {
     }
 
     /**
+     * Get all builder methods including inherited ones from JtComponentBuilder
+     */
+    private List<ExecutableElement> getAllBuilderMethods(TypeElement builderClass, DocletEnvironment environment) {
+        final List<ExecutableElement> allMethods = new ArrayList<>();
+        final Set<String> methodsToIgnore = Set.of("generateKeyForInteractive", "ensureIsValidIcon", "build");
+
+        // Start with the concrete builder class
+        TypeElement currentClass = builderClass;
+
+        while (currentClass != null) {
+            // Get methods declared in this class
+            List<ExecutableElement> classMethods = ElementFilter.methodsIn(currentClass.getEnclosedElements());
+            allMethods.addAll(classMethods);
+
+            // Move to superclass
+            TypeMirror superclass = currentClass.getSuperclass();
+            if (superclass instanceof DeclaredType) {
+                DeclaredType declaredSuperclass = (DeclaredType) superclass;
+                Element superElement = declaredSuperclass.asElement();
+                if (superElement instanceof TypeElement) {
+                    currentClass = (TypeElement) superElement;
+
+                    // Stop if we've reached JtComponentBuilder or Object
+                    String superClassName = currentClass.getQualifiedName().toString();
+                    if ("tech.catheu.jeamlit.core.JtComponentBuilder".equals(superClassName)) {
+                        // Include JtComponentBuilder methods but filter out internal ones
+                        List<ExecutableElement> parentMethods = ElementFilter.methodsIn(currentClass.getEnclosedElements())
+                                .stream()
+                                .filter(method -> !methodsToIgnore.contains(method.getSimpleName().toString()))
+                                .toList();
+                        allMethods.addAll(parentMethods);
+                        break;
+                    } else if ("java.lang.Object".equals(superClassName)) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        return allMethods;
+    }
+
+    /**
      * Extract builder methods for Jt class methods that return component builders
      */
     private List<Map<String, Object>> extractBuilderMethods(Element classElement,
@@ -516,7 +565,7 @@ public class JsonDoclet implements Doclet {
 
         // Extract builder methods
         List<Map<String, Object>> builderMethods = new ArrayList<>();
-        List<ExecutableElement> methods = ElementFilter.methodsIn(returnTypeElement.getEnclosedElements())
+        List<ExecutableElement> methods = getAllBuilderMethods(returnTypeElement, environment)
                                                        .stream()
                                                        .filter(method -> method
                                                                .getModifiers()
