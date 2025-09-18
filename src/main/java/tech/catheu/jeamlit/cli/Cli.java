@@ -31,8 +31,12 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import tech.catheu.jeamlit.core.Server;
 
+import static tech.catheu.jeamlit.core.utils.LangUtils.optional;
 
-@Command(name = "jeamlit", mixinStandardHelpOptions = true, version = "1.0.0", description = "Streamlit-like framework for Java")
+
+@Command(name = "jeamlit", mixinStandardHelpOptions = true,
+        versionProvider = Cli.JeamlitVersionProvider.class,
+        description = "Jeamlit, a Streamlit-like framework for Java")
 public class Cli implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(Cli.class);
@@ -164,5 +168,18 @@ public class Cli implements Callable<Integer> {
     public static void setLoggingLevel(Level level) {
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         root.setLevel(level);
+    }
+
+    public static class JeamlitVersionProvider implements CommandLine.IVersionProvider {
+        @Override
+        public String[] getVersion() throws Exception {
+            return new String[]{
+                    optional(Cli.class.getPackage())
+                            .map(Package::getImplementationTitle)
+                            .orElse("unknown project name") + " "
+                    + optional(Cli.class.getPackage())
+                    .map(Package::getImplementationVersion)
+                    .orElse("unknown version"),};
+        }
     }
 }

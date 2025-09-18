@@ -323,6 +323,33 @@
                 </configuration>
             </plugin>
 
+            <!-- Create test jar with E2E utilities -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <testClassesDirectory>${project.build.testOutputDirectory}</testClassesDirectory>
+                            <includes>
+                                <include>tech/catheu/jeamlit/e2e/helpers/*.class</include>
+                            </includes>
+                            <excludes>
+                                <exclude>tech/catheu/jeamlit/e2e/core/**</exclude>
+                                <exclude>tech/catheu/jeamlit/e2e/components/**</exclude>
+                                <exclude>tech/catheu/jeamlit/core/**</exclude>
+                                <exclude>multifile-test/**</exclude>
+                                <exclude>multipage-test/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Main executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -341,6 +368,10 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>tech.catheu.jeamlit.cli.Cli</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -478,6 +509,17 @@
                                 </goals>
                                 <configuration>
                                     <includePom>true</includePom>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>attach-test-sources</id>
+                                <goals>
+                                    <goal>test-jar-no-fork</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>tech/catheu/jeamlit/e2e/helpers/**</include>
+                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>
