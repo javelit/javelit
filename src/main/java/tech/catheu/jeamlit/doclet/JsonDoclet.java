@@ -78,14 +78,14 @@ public class JsonDoclet implements Doclet {
 
             // Process all type elements (classes, interfaces)
             Set<TypeElement> allClasses = ElementFilter.typesIn(environment.getIncludedElements())
-                    .stream()
-                    .collect(Collectors.toSet());
+                                                       .stream()
+                                                       .collect(Collectors.toSet());
 
             reporter.print(Diagnostic.Kind.NOTE, "Total classes found: " + allClasses.size());
 
             Set<TypeElement> classes = allClasses.stream()
-                    .filter(this::shouldProcessClass)
-                    .collect(Collectors.toSet());
+                                                 .filter(this::shouldProcessClass)
+                                                 .collect(Collectors.toSet());
 
             reporter.print(Diagnostic.Kind.NOTE, "Classes to process: " + classes.size());
             for (TypeElement clazz : classes) {
@@ -99,7 +99,8 @@ public class JsonDoclet implements Doclet {
             // Write JSON output
             writeJsonOutput(documentation);
 
-            reporter.print(Diagnostic.Kind.NOTE, "JsonDoclet generated documentation for " + documentation.size() + " API methods");
+            reporter.print(Diagnostic.Kind.NOTE,
+                           "JsonDoclet generated documentation for " + documentation.size() + " API methods");
             return true;
         } catch (Exception e) {
             reporter.print(Diagnostic.Kind.ERROR, "Error generating JSON documentation: " + e.getMessage());
@@ -135,9 +136,11 @@ public class JsonDoclet implements Doclet {
 
         // Get all public methods
         final List<ExecutableElement> methods = ElementFilter.methodsIn(clazz.getEnclosedElements())
-                .stream()
-                .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
-                .toList();
+                                                             .stream()
+                                                             .filter(method -> method
+                                                                     .getModifiers()
+                                                                     .contains(Modifier.PUBLIC))
+                                                             .toList();
 
         for (final ExecutableElement method : methods) {
             final String methodKey = generateMethodKey(className, method);
@@ -155,7 +158,7 @@ public class JsonDoclet implements Doclet {
         // For Jt class, use format like "tech.catheu.jeamlit.core.Jt.text"
         // For components, use format like "ButtonComponent.onClick"
         if ("tech.catheu.jeamlit.core.Jt".equals(className)) {
-            return "Jt." +  method.getSimpleName();
+            return "Jt." + method.getSimpleName();
         }
         return null;
     }
@@ -204,7 +207,9 @@ public class JsonDoclet implements Doclet {
         TypeMirror returnType = method.getReturnType();
         if (!"void".equals(returnType.toString())) {
             Map<String, Object> returnDoc = new HashMap<>();
-            String componentReturnType = extractComponentReturnType(method.getEnclosingElement(), returnType, environment);
+            String componentReturnType = extractComponentReturnType(method.getEnclosingElement(),
+                                                                    returnType,
+                                                                    environment);
             returnDoc.put("type_name", componentReturnType != null ? componentReturnType : getTypeName(returnType));
             returnDoc.put("is_generator", false);
             returnDoc.put("description", ""); // Will be filled from @return tag
@@ -214,7 +219,9 @@ public class JsonDoclet implements Doclet {
         methodDoc.put("returns", returns);
 
         // Process builder methods for Jt class methods that return builders
-        List<Map<String, Object>> builderMethods = extractBuilderMethods(method.getEnclosingElement(), returnType, environment);
+        List<Map<String, Object>> builderMethods = extractBuilderMethods(method.getEnclosingElement(),
+                                                                         returnType,
+                                                                         environment);
         if (builderMethods != null && !builderMethods.isEmpty()) {
             methodDoc.put("builderMethods", builderMethods);
         }
@@ -232,9 +239,9 @@ public class JsonDoclet implements Doclet {
         // Get full body description
         List<? extends DocTree> fullBody = docComment.getFullBody();
         String description = fullBody.stream()
-                .map(DocTree::toString)
-                .collect(Collectors.joining(" "))
-                .trim();
+                                     .map(DocTree::toString)
+                                     .collect(Collectors.joining(" "))
+                                     .trim();
 
         methodDoc.put("description", description);
 
@@ -246,9 +253,9 @@ public class JsonDoclet implements Doclet {
             if (blockTag instanceof ParamTree paramTree) {
                 String paramName = paramTree.getName().toString();
                 String paramDescription = paramTree.getDescription().stream()
-                        .map(DocTree::toString)
-                        .collect(Collectors.joining(" "))
-                        .trim();
+                                                   .map(DocTree::toString)
+                                                   .collect(Collectors.joining(" "))
+                                                   .trim();
                 paramDescriptions.put(paramName, paramDescription);
             } else if (blockTag instanceof ReturnTree returnTree) {
                 // TODO: Update return description
@@ -264,13 +271,17 @@ public class JsonDoclet implements Doclet {
      */
     private String generateSignature(ExecutableElement method) {
         StringBuilder sig = new StringBuilder();
+        if ("Jt".equals(method.getEnclosingElement().getSimpleName().toString())) {
+            sig.append("Jt.");
+        }
         sig.append(method.getSimpleName()).append("(");
 
         List<String> paramStrings = new ArrayList<>();
         for (VariableElement param : method.getParameters()) {
             String paramString = param.getSimpleName().toString();
-            // Add type information for clarity
-            paramString = getSimpleTypeName(param.asType()) + " " + paramString;
+            // Add annotations and type information for clarity
+            String annotations = formatAnnotations(param);
+            paramString = annotations + getTypeNameWithGenerics(param.asType()) + " " + paramString;
             paramStrings.add(paramString);
         }
 
@@ -281,10 +292,55 @@ public class JsonDoclet implements Doclet {
     }
 
     /**
+     * Format annotations for a parameter into a readable string
+     */
+    private String formatAnnotations(VariableElement param) {
+        StringBuilder annotations = new StringBuilder();
+
+        for (AnnotationMirror annotation : param.getAnnotationMirrors()) {
+            String annotationName = annotation.getAnnotationType().asElement().getSimpleName().toString();
+
+            // Include relevant annotations
+            if (isRelevantAnnotation(annotationName)) {
+                annotations.append("@").append(annotationName);
+
+                // Handle annotation values (e.g., @Language("Markdown"))
+                if (!annotation.getElementValues().isEmpty()) {
+                    annotations.append("(");
+                    List<String> values = new ArrayList<>();
+                    annotation.getElementValues().forEach((key, value) -> {
+                        String valueStr = value.toString();
+                        // Keep the value as-is since it already contains proper formatting
+                        values.add(valueStr);
+                    });
+                    annotations.append(String.join(", ", values));
+                    annotations.append(")");
+                }
+
+                annotations.append(" ");
+            }
+        }
+
+        return annotations.toString();
+    }
+
+    /**
+     * Check if an annotation should be included in the signature
+     */
+    private boolean isRelevantAnnotation(String annotationName) {
+        return "Nonnull".equals(annotationName)
+               || "Nullable".equals(annotationName)
+               || "Language".equals(annotationName)
+               || "NotNull".equals(annotationName);
+    }
+
+    /**
      * Get type name for documentation
      */
     private String getTypeName(TypeMirror type) {
-        return type.toString();
+        return type.toString()
+                   .replace("java.lang.", "")
+                   .replace("java.util.", "");
     }
 
     /**
@@ -303,9 +359,20 @@ public class JsonDoclet implements Doclet {
     }
 
     /**
+     * Get type name with generics, simplifying package names
+     */
+    private String getTypeNameWithGenerics(TypeMirror type) {
+        return type.toString()
+                   .replace("java.lang.", "")
+                   .replace("java.util.", "");
+    }
+
+    /**
      * Extract the component return type (the T in JtComponent<T>) for methods from the Jt class
      */
-    private String extractComponentReturnType(Element classElement, TypeMirror returnType, DocletEnvironment environment) {
+    private String extractComponentReturnType(Element classElement,
+                                              TypeMirror returnType,
+                                              DocletEnvironment environment) {
         if (!(classElement instanceof TypeElement)) {
             return null;
         }
@@ -337,13 +404,16 @@ public class JsonDoclet implements Doclet {
 
         // Find the component class
         Set<TypeElement> allClasses = ElementFilter.typesIn(environment.getIncludedElements())
-                .stream()
-                .collect(Collectors.toSet());
+                                                   .stream()
+                                                   .collect(Collectors.toSet());
 
         TypeElement componentClass = allClasses.stream()
-                .filter(clazz -> clazz.getQualifiedName().toString().equals(componentClassName))
-                .findFirst()
-                .orElse(null);
+                                               .filter(clazz -> clazz
+                                                       .getQualifiedName()
+                                                       .toString()
+                                                       .equals(componentClassName))
+                                               .findFirst()
+                                               .orElse(null);
 
         if (componentClass == null) {
             return null;
@@ -415,7 +485,9 @@ public class JsonDoclet implements Doclet {
     /**
      * Extract builder methods for Jt class methods that return component builders
      */
-    private List<Map<String, Object>> extractBuilderMethods(Element classElement, TypeMirror returnType, DocletEnvironment environment) {
+    private List<Map<String, Object>> extractBuilderMethods(Element classElement,
+                                                            TypeMirror returnType,
+                                                            DocletEnvironment environment) {
         if (!(classElement instanceof TypeElement)) {
             return null;
         }
@@ -445,10 +517,17 @@ public class JsonDoclet implements Doclet {
         // Extract builder methods
         List<Map<String, Object>> builderMethods = new ArrayList<>();
         List<ExecutableElement> methods = ElementFilter.methodsIn(returnTypeElement.getEnclosedElements())
-                .stream()
-                .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
-                .filter(method -> !"<init>".equals(method.getSimpleName().toString()))// Exclude constructors
-                .collect(Collectors.toList());
+                                                       .stream()
+                                                       .filter(method -> method
+                                                               .getModifiers()
+                                                               .contains(Modifier.PUBLIC))
+                                                       .filter(method -> !"<init>".equals(method
+                                                                                                  .getSimpleName()
+                                                                                                  .toString()))// Exclude constructors
+                                                       .filter(method -> !"build".equals(method
+                                                                                                 .getSimpleName()
+                                                                                                 .toString()))// Exclude build method
+                                                       .collect(Collectors.toList());
 
         for (ExecutableElement builderMethod : methods) {
             Map<String, Object> builderMethodDoc = new HashMap<>();
