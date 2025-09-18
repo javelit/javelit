@@ -1,4 +1,4 @@
-# Jeamlit
+# Jeamlit <span style="transform: scale(-1,1); display:inline-block;">🚡</span>
 
 A Streamlit-like framework for building interactive data applications in Java.
 
