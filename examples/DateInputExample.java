@@ -1,8 +1,8 @@
 
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtComponent;
+import java.time.temporal.ChronoUnit;import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtComponent;
 
 public class DateInputExample {
     public static void main(String[] args) {

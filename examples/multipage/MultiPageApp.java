@@ -1,12 +1,12 @@
 
 
-import pages.DashboardPage;
+
+
+import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtContainer;import pages.DashboardPage;
 import pages.SettingsPage;
 import pages.TestQueryPage;
 import pages.UsersPage;
-import tech.catheu.jeamlit.components.multipage.*;
-import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtContainer;
 
 public class MultiPageApp {
     public static void main(String[] args) throws InterruptedException {

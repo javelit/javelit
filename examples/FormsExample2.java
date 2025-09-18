@@ -1,6 +1,6 @@
-package tech.catheu.jeamlit.examples;
+package io.jeamlit.examples;
 
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class FormsExample2 {
 

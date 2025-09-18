@@ -9,7 +9,7 @@ This file provides guidance to Claude Code when working with this repository.
 - **Type**: Java application
 - **Build System**: Maven
 - **Java Version**: 21 (configured in pom.xml, runs on Java 21+)
-- **Package Structure**: `tech.catheu`
+- **Package Structure**: `io.jeamlit`
 - **Design Decisions**: See DESIGN_DECISIONS.md
 
 ## Build Commands
@@ -62,7 +62,7 @@ The JSON file will be created in the project root directory and contains documen
 ## JsonDoclet
 
 The custom JsonDoclet implementation:
-- Processes only `tech.catheu.jeamlit.core.Jt` and `tech.catheu.jeamlit.components.*` classes
+- Processes only `io.jeamlit.core.Jt` and `io.jeamlit.components.*` classes
 - For methods in the `Jt` class that return component builders, extracts the actual component return type from the component's `JtComponent<T>` generic parameter
 - Uses Jackson for JSON serialization
 - Outputs in streamlit.json compatible format
@@ -70,7 +70,7 @@ The custom JsonDoclet implementation:
 ## Project Structure
 
 ```
-src/main/java/tech/catheu/  # Main application code
+src/main/java/io/jeamlit  # Main application code
 src/test/java/              # Unit tests
 src/main/resources/         # Application resources
 ```
@@ -78,7 +78,7 @@ src/main/resources/         # Application resources
 ## Configuration
 
 **pom.xml** - Maven configuration
-- Group ID: `tech.catheu`
+- Group ID: `io.jeamlit`
 - Artifact ID: `jeamlit`
 - Version: `1.0-SNAPSHOT`
 
@@ -125,7 +125,7 @@ Here is an example:
     @Test
     void testBasicCodeDisplay() {
         final @Language("java") String app = """
-            import tech.catheu.jeamlit.core.Jt;
+            import core.io.jeamlit.Jt;
             
             public class TestApp {
                 public static void main(String[] args) {

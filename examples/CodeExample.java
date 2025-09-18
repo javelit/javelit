@@ -1,6 +1,6 @@
 
 
-import tech.catheu.jeamlit.components.layout.*;import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.components.layout.*;import io.jeamlit.core.Jt;
 
 public class CodeExample {
     public static void main(String[] args) {
@@ -263,7 +263,7 @@ public class CodeExample {
                     },
                     "logging": {
                       "level": {
-                        "tech.catheu.jeamlit": "DEBUG",
+                        "io.jeamlit": "DEBUG",
                         "org.springframework": "INFO"
                       }
                     }

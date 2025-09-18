@@ -1,4 +1,4 @@
-package tech.catheu.jeamlit.core;
+package io.jeamlit.core;
 
 public class Sleeping {
     public static void main(String[] args) throws InterruptedException {

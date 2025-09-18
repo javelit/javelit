@@ -1,6 +1,6 @@
 
 
-import java.util.List;import tech.catheu.jeamlit.core.Jt;
+import java.util.List;import io.jeamlit.core.Jt;
 
 public class MarkdownStylesExample {
     public static void main(String[] args) {

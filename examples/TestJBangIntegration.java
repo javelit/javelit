@@ -2,7 +2,7 @@
 
 
 
-import com.google.common.collect.Lists;import tech.catheu.jeamlit.core.Jt;
+import com.google.common.collect.Lists;import io.jeamlit.core.Jt;
 
 public class TestJBangIntegration {
     public static void main(String[] args) {

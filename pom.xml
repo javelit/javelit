@@ -19,14 +19,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>tech.catheu</groupId>
+    <groupId>io.jeamlit</groupId>
     <artifactId>jeamlit</artifactId>
     <version>0.16.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Jeamlit</name>
     <description>A Streamlit-like framework for building data apps in Java</description>
-    <url>https://github.com/cyrilou242/jeamlit</url>
+    <url>https://github.com/jeamlit/jeamlit</url>
     <inceptionYear>2025</inceptionYear>
 
     <licenses>
@@ -38,6 +38,12 @@
     </licenses>
 
     <developers>
+        <developer>
+            <id>Jeamlit</id>
+            <name>jeamlit</name>
+            <email>cdecatheu@hey.com</email>
+            <url>https://github.com/jeamlit</url>
+        </developer>
         <developer>
             <id>cyrilou242</id>
             <name>Cyril de Catheu</name>
@@ -57,7 +63,7 @@
     </properties>
 
     <scm>
-        <url>https://github.com/cyrilou242/jeamlit.git</url>
+        <url>https://github.com/jeamlit/jeamlit.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <tag>HEAD</tag>
@@ -336,12 +342,12 @@
                         <configuration>
                             <testClassesDirectory>${project.build.testOutputDirectory}</testClassesDirectory>
                             <includes>
-                                <include>tech/catheu/jeamlit/e2e/helpers/*.class</include>
+                                <include>io/jeamlit/e2e/helpers/*.class</include>
                             </includes>
                             <excludes>
-                                <exclude>tech/catheu/jeamlit/e2e/core/**</exclude>
-                                <exclude>tech/catheu/jeamlit/e2e/components/**</exclude>
-                                <exclude>tech/catheu/jeamlit/core/**</exclude>
+                                <exclude>io/jeamlit/e2e/core/**</exclude>
+                                <exclude>io/jeamlit/e2e/components/**</exclude>
+                                <exclude>io/jeamlit/core/**</exclude>
                                 <exclude>multifile-test/**</exclude>
                                 <exclude>multipage-test/**</exclude>
                             </excludes>
@@ -367,7 +373,7 @@
                             <shadedClassifierName>all</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>tech.catheu.jeamlit.cli.Cli</mainClass>
+                                    <mainClass>io.jeamlit.cli.Cli</mainClass>
                                     <manifestEntries>
                                         <Implementation-Version>${project.version}</Implementation-Version>
                                         <Implementation-Title>${project.name}</Implementation-Title>
@@ -518,7 +524,7 @@
                                 </goals>
                                 <configuration>
                                     <includes>
-                                        <include>tech/catheu/jeamlit/e2e/helpers/**</include>
+                                        <include>io/jeamlit/e2e/helpers/**</include>
                                     </includes>
                                 </configuration>
                             </execution>
@@ -566,11 +572,11 @@
                                     <goal>javadoc-no-fork</goal>
                                 </goals>
                                 <configuration>
-                                    <doclet>tech.catheu.jeamlit.doclet.JsonDoclet</doclet>
+                                    <doclet>io.jeamlit.doclet.JsonDoclet</doclet>
                                     <docletPath>${project.build.outputDirectory}:${doclet.classpath}</docletPath>
                                     <useStandardDocletOptions>false</useStandardDocletOptions>
                                     <sourcepath>${project.build.sourceDirectory}</sourcepath>
-                                    <subpackages>tech.catheu.jeamlit.core:tech.catheu.jeamlit.components</subpackages>
+                                    <subpackages>io.jeamlit.core:io.jeamlit.components</subpackages>
                                     <quiet>true</quiet>
                                 </configuration>
                             </execution>

@@ -1,5 +1,5 @@
-import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtComponent;
+import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtComponent;
 
 public class ToggleExample {
     public static void main(String[] args) {

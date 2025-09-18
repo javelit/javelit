@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class AboutPage {
     public static void main(String[] args) {

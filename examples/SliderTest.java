@@ -1,4 +1,4 @@
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class SliderTest {
     public static void main(String[] args) {

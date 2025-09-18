@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import tech.catheu.jeamlit.components.media.FileUploaderComponent;import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtUploadedFile;
+import io.jeamlit.components.media.FileUploaderComponent;import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtUploadedFile;
 
 public class FileUploaderExample {
     public static void main(String[] args) {

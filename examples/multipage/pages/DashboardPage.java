@@ -2,7 +2,7 @@ package pages;
 
 import java.time.LocalTime;
 
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class DashboardPage {
     public static void main(String[] args) {

@@ -2,8 +2,8 @@
 
 
 
-import java.util.List;import tech.catheu.jeamlit.components.layout.ColumnsComponent;import tech.catheu.jeamlit.core.Jt;
-import tech.catheu.jeamlit.core.JtComponent;
+import java.util.List;import io.jeamlit.components.layout.ColumnsComponent;import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtComponent;
 
 public class TextInputExample {
 

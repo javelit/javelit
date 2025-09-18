@@ -2,7 +2,7 @@
 
 
 
-import java.util.List;import tech.catheu.jeamlit.components.layout.ColumnsComponent;import tech.catheu.jeamlit.core.Jt;
+import java.util.List;import io.jeamlit.components.layout.ColumnsComponent;import io.jeamlit.core.Jt;
 
 public class ExpanderExample {
 

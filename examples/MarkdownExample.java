@@ -1,4 +1,4 @@
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class MarkdownExample {
     public static void main(String[] args) {
@@ -59,7 +59,7 @@ public class MarkdownExample {
             Here are some example links:
             
             - Visit [the example website](https://example.com) for a great example
-            - Check out [GitHub](https://github.com/cyrilou242/jeamlit) for the code repository of this project
+            - Check out [GitHub](https://github.com/jeamlit/jeamlit) for the code repository of this project
             - Learn more about [Markdown](https://www.markdownguide.org/basic-syntax/)
             """).use();
 

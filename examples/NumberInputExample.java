@@ -1,6 +1,6 @@
-package tech.catheu.jeamlit.components.input;
+package io.jeamlit.components.input;
 
-import tech.catheu.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class NumberInputExample {
     public static void main(String[] args) {

@@ -3,8 +3,8 @@
 
 
 
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;import tech.catheu.jeamlit.core.Jt;
+import com.google.common.collect.Lists;import io.jeamlit.core.Jt;
+import org.apache.commons.lang3.StringUtils;
 
 public class MyAppWithDeps {
     public static void main(String[] args) {

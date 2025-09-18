@@ -1,6 +1,8 @@
 
 
-import org.icepear.echarts.Bar;
+
+
+import io.jeamlit.components.chart.EchartsComponent;import io.jeamlit.core.Jt;import org.icepear.echarts.Bar;
 import org.icepear.echarts.Gauge;
 import org.icepear.echarts.Line;
 import org.icepear.echarts.charts.bar.BarSeries;
@@ -11,7 +13,6 @@ import org.icepear.echarts.charts.gauge.GaugeSeries;
 import org.icepear.echarts.charts.line.LineAreaStyle;
 import org.icepear.echarts.charts.line.LineSeries;
 import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
-import tech.catheu.jeamlit.components.chart.EchartsComponent;import tech.catheu.jeamlit.core.Jt;
 
 public class EchartsExample {
     public static void main(String[] args) throws Exception {

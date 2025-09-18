@@ -37,24 +37,25 @@ cd jeamlit
 ### Running Your First App
 
 1. Create a simple Java file (e.g., `MyApp.java`):
+
 ```java
-import tech.catheu.jeamlit.core.Jt;
+import core.io.jeamlit.Jt;
 
 public class MyApp {
     public static void main(String[] args) {
         Jt.title("My First Jeamlit App");
-        
+
         Jt.text("Welcome to Jeamlit - Streamlit for Java!");
-        
+
         int age = Jt.slider("Select your age", 0, 100, 25);
         Jt.write("You selected age: " + age);
-        
+
         if (Jt.button("Click me!")) {
             Jt.write("Button was clicked!");
-            
+
             var state = Jt.sessionState();
             int clickCount = state.computeInt("clicks", (k, v) -> v == null ? 1 : v + 1);
-            
+
             Jt.write("Button clicked " + clickCount + " times");
         }
     }
