@@ -44,11 +44,11 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
 
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, TextComponent, Builder> {
-        private @Language("Markdown") String body;
+        private String body;
         private String help;
         private String width = "content";
 
-        public Builder(final @Nonnull @Language("Markdown") String body) {
+        public Builder(final @Nonnull String body) {
             this.body = body;
         }
 

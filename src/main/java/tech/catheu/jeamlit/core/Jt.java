@@ -123,7 +123,7 @@ public final class Jt {
      *
      * @param body The string to display.
      */
-    public static TextComponent.Builder text(final @Nonnull @Language("Markdown") String body) {
+    public static TextComponent.Builder text(final @Nonnull String body) {
         return new TextComponent.Builder(body);
     }
 
