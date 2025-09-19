@@ -39,7 +39,7 @@ cd jeamlit
 1. Create a simple Java file (e.g., `MyApp.java`):
 
 ```java
-import core.io.jeamlit.Jt;
+import io.jeamlit.core.Jt;
 
 public class MyApp {
     public static void main(String[] args) {

@@ -63,7 +63,7 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
 
         /**
          * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
-         * The tooltip can optionally contain Markdown, including the Markdown directives, see [core.io.jeamlit.Jt#markdown] for details.
+         * The tooltip can optionally contain Markdown, including the Markdown directives, see [io.jeamlit.core.Jt#markdown] for details.
          */
         public Builder help(final @Nullable String help) {
             this.help = help;

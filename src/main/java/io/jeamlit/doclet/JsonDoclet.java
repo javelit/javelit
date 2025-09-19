@@ -116,7 +116,7 @@ public class JsonDoclet implements Doclet {
         String qualifiedName = clazz.getQualifiedName().toString();
 
         // Process Jt class
-        if ("core.io.jeamlit.Jt".equals(qualifiedName)) {
+        if ("io.jeamlit.core.Jt".equals(qualifiedName)) {
             return true;
         }
 
@@ -155,9 +155,9 @@ public class JsonDoclet implements Doclet {
      * Generate a unique key for a method (similar to streamlit.json format)
      */
     private @Nullable String generateMethodKey(String className, ExecutableElement method) {
-        // For Jt class, use format like "core.io.jeamlit.Jt.text"
+        // For Jt class, use format like "io.jeamlit.core.Jt.text"
         // For components, use format like "ButtonComponent.onClick"
-        if ("core.io.jeamlit.Jt".equals(className)) {
+        if ("io.jeamlit.core.Jt".equals(className)) {
             return "Jt." + method.getSimpleName();
         }
         return null;
@@ -384,7 +384,7 @@ public class JsonDoclet implements Doclet {
         String className = typeElement.getQualifiedName().toString();
 
         // Only process methods from the Jt class
-        if (!"core.io.jeamlit.Jt".equals(className)) {
+        if (!"io.jeamlit.core.Jt".equals(className)) {
             return null;
         }
 
@@ -430,7 +430,7 @@ public class JsonDoclet implements Doclet {
                 TypeElement superElement = (TypeElement) declaredType.asElement();
 
                 // Check if this is JtComponent
-                if ("core.io.jeamlit.JtComponent".equals(superElement.getQualifiedName().toString())) {
+                if ("io.jeamlit.core.JtComponent".equals(superElement.getQualifiedName().toString())) {
                     // Extract the generic type parameter T
                     List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
                     if (!typeArguments.isEmpty()) {
@@ -510,7 +510,7 @@ public class JsonDoclet implements Doclet {
 
                     // Stop if we've reached JtComponentBuilder or Object
                     String superClassName = currentClass.getQualifiedName().toString();
-                    if ("core.io.jeamlit.JtComponentBuilder".equals(superClassName)) {
+                    if ("io.jeamlit.core.JtComponentBuilder".equals(superClassName)) {
                         // Include JtComponentBuilder methods but filter out internal ones
                         List<ExecutableElement> parentMethods = ElementFilter.methodsIn(currentClass.getEnclosedElements())
                                 .stream()
@@ -546,7 +546,7 @@ public class JsonDoclet implements Doclet {
         String className = typeElement.getQualifiedName().toString();
 
         // Only process methods from the Jt class
-        if (!"core.io.jeamlit.Jt".equals(className)) {
+        if (!"io.jeamlit.core.Jt".equals(className)) {
             return null;
         }
 

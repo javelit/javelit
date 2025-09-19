@@ -125,7 +125,7 @@ Here is an example:
     @Test
     void testBasicCodeDisplay() {
         final @Language("java") String app = """
-            import core.io.jeamlit.Jt;
+            import io.jeamlit.core.Jt;
             
             public class TestApp {
                 public static void main(String[] args) {
