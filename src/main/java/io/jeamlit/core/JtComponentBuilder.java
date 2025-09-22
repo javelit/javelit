@@ -30,6 +30,11 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
     protected @Nullable String key;
 
+    /**
+     * A string to use as the unique key for the widget.
+     * If this is omitted, a key will be generated for the widget based on its content.
+     * No two widgets may have the same key.
+     */
     @SuppressWarnings("unchecked")
     public SELF key(final String key) {
         this.key = key;
@@ -73,7 +78,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     }
 
     /**
-     * Shorthand for build().use()
+     * Put the widget in the app, in the MAIN container.
      */
     public B use() {
         final T component = build();
@@ -81,7 +86,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     }
 
     /**
-     * Shorthand for build().use(Container)
+     * Put the widget in the app, in the provided container.
      */
     public B use(final @Nonnull JtContainer container) {
         final T component = build();

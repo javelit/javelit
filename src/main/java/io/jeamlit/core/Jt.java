@@ -127,6 +127,12 @@ public final class Jt {
         return new TextComponent.Builder(body);
     }
 
+    /**
+     * Display text in title formatting.
+     * Each document should have a single st.title(), although this is not enforced.
+     *
+     * @param body  The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
+     */
     public static TitleComponent.Builder title(@Language("markdown") final @Nonnull String body) {
         return new TitleComponent.Builder(body);
     }

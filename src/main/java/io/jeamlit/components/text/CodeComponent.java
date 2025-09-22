@@ -27,7 +27,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public final class CodeComponent extends JtComponent<JtComponent.NONE> {
-    
+
     final String body;
     final @Nullable String language;
     final boolean lineNumbers;
@@ -96,6 +96,12 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        /**
+         * The width of the text element. This can be one of the following:
+         * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final @Nullable String width) {
             if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
@@ -105,6 +111,9 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        /**
+         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
@@ -133,6 +142,7 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
 
     @Override
     protected TypeReference<NONE> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 }

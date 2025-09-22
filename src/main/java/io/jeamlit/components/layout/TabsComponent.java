@@ -85,6 +85,9 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
             return this;
         }
 
+        /**
+         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
