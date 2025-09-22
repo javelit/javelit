@@ -61,22 +61,45 @@ import io.jeamlit.datastructure.TypedMap;
 import static io.jeamlit.core.utils.Preconditions.checkArgument;
 import static io.jeamlit.core.utils.Preconditions.checkState;
 
-// main interface for developers - should only contain functions of the public API.
-
 /**
  * The main entrypoint for app creators.
  * Add elements with Jt.title(...).use(), Jt.button(...).use(), etc...
+ *
+ * <pre>{@code
+ * public class MyApp {
+ *     public static void main(String[] args) {
+ *         Jt.title("Welcome").use();
+ *         String name = Jt.textInput("Enter your name").use();
+ *         if (Jt.button("Submit").use()) {
+ *             Jt.text("Hello, " + name).use();
+ *         }
+ *     }
+ * }
+ * }</pre>
+ * <p>
  * Get the session state with Jt.sessionState().
  * Get the app cache Jt.cache().
- * Perform a deep copy with Jt.deepCopy(someObject).
  */
 public final class Jt {
 
+    /**
+     * Return the session state Map of the session. A session corresponds to an opened tab of the app.
+     * <p>
+     * The session state is maintained across re-runs.
+     * Values can be stored and persisted in this map.
+     */
     public static TypedMap sessionState() {
         final InternalSessionState session = StateManager.getCurrentSession();
         return new TypedMap(session.getUserState());
     }
 
+    /**
+     * Return the components state of the session. A session corresponds to an opened tab of the app.
+     * <p>
+     * The current value of any component can be obtained from this map.
+     * When putting a component in the app, us the {@code .key()} method to define a specific key that will be easy
+     * to access from this map.
+     */
     public static TypedMap componentsState() {
         final InternalSessionState session = StateManager.getCurrentSession();
         // NOTE: best would be to have a deep-copy-on-read map
@@ -85,30 +108,48 @@ public final class Jt {
     }
 
     /**
-     * Returns the app cache.
-     * See https://docs.streamlit.io/get-started/fundamentals/advanced-concepts#caching
+     * Return the app cache. The app cache is shared across all sessions.
+     * Put values in this map that are meant to be shared across all users.
+     * For instance: database long-lived connections, ML models loaded weights, etc...
+     * <p>
+     * See https://docs.jeamlit.io/get-started/fundamentals/advanced-concepts#caching
      */
     public static TypedMap cache() {
         return StateManager.getCache();
     }
 
+
+    /**
+     * Return the current url path.
+     * <p>
+     * May be used for multipage apps.
+     * In a single page app, will always return {@code "/"}.
+     */
     public static String urlPath() {
         return StateManager.getUrlContext().currentPath();
     }
 
-    // TODO consider adding a TypedMap interface + getOne to unwrap the list
+    /**
+     * Return the current query parameters as a map.
+     * <p>
+     * For instance: {@code ?key1=foo&key2=bar&key2=fizz} will return
+     * {"key1": ["foo"], "key2": ["bar", "fizz"]}
+     */
+    // TODO consider adding a TypedMap interface with list unwrap
     public static Map<String, List<String>> urlQueryParameters() {
         return StateManager.getUrlContext().queryParameters();
     }
 
     /**
-     * Slow deep copy utility: serialize then deserialize json.
-     * Made available to be able to implement the behaviour of st.cache_data that does a copy on read.
-     * https://docs.streamlit.io/get-started/fundamentals/advanced-concepts#caching
+     * Return a deep copy of the provied object.
+     * <p>
+     * Utility that may be useful in combination with the cache, to implement a copy on read behavior.
+     * For instance, you can get a value that is expensive to
+     * instantiate from the cache, but perform a deep copy to prevent mutations and side effects across sessions.
      *
      * @return a deep copy of the provided object.
-     * TODO add example usage for typeRef
      */
+    // TODO add example usage for typeRef
     public static <T> T deepCopy(final T original, final TypeReference<T> typeRef) {
         try {
             return Shared.OBJECT_MAPPER.readValue(Shared.OBJECT_MAPPER.writeValueAsBytes(original), typeRef);
@@ -631,6 +672,14 @@ public final class Jt {
         return TableComponent.Builder.ofColumnsLists(cols);
     }
 
+
+    /**
+     * Programmatically switch the current page in a multipage app.
+     * <p>
+     * When {@code Jt.switchPage} is called, the current page execution stops and the specified page runs as if the
+     * user clicked on it in the sidebar navigation. The specified page must be recognized by Jeamlit's multipage
+     * architecture (your main app class or an app class in the available pages).
+     */
     public static void switchPage(final @Nonnull Class<?> pageApp) {
         // note: the design here is pretty hacky
         final NavigationComponent nav = StateManager.getNavigationComponent();
