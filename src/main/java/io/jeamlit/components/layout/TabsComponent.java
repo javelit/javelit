@@ -71,8 +71,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
             for (int i = 0; i < tabs.size(); i++) {
                 if (tabs.get(i).trim().isEmpty()) {
                     throw new IllegalArgumentException(
-                            "Tab name at index %s is null or empty. Please use a non-empty string.".formatted(
-                                    i));
+                            "Tab name at index %s is null or empty. Please use a non-empty string.".formatted(i));
                 }
             }
             this.tabs = List.copyOf(tabs);
@@ -80,8 +79,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
         public Builder width(final String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;
@@ -140,7 +138,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     }
 
     // Helper method for Mustache template to render widths as JSON array
-    protected String getTabsJson() {
+    String getTabsJson() {
         return toJson(tabs);
     }
 
@@ -174,7 +172,8 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         public JtContainer tab(final String tabName) {
             final int idx = tabNames.indexOf(tabName);
             if (idx == -1) {
-                throw new IllegalArgumentException("Unknown tab name %s. Valid tab names: %s".formatted(tabName, backing.toString()));
+                throw new IllegalArgumentException("Unknown tab name %s. Valid tab names: %s".formatted(tabName,
+                                                                                                        backing.toString()));
             }
             return backing.get(idx);
         }

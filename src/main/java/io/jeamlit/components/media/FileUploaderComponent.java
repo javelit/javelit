@@ -84,8 +84,7 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
 
     public static class Builder extends JtComponentBuilder<List<JtUploadedFile>, FileUploaderComponent, Builder> {
 
-        @Language("markdown")
-        private final @NotNull String label;
+        @Language("markdown") private final @NotNull String label;
         private @Nullable Consumer<List<JtUploadedFile>> onChange;
         private List<String> types;
         private @Nonnull MultipleFiles acceptMultipleFiles = MultipleFiles.FALSE;
@@ -103,10 +102,9 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             if (types != null) {
                 checkArgument(!types.isEmpty(),
                               "FileUploader types cannot be an empty list. Use null to allow all types.");
-                types.forEach(t -> checkArgument(
-                        t.startsWith(".") || t.contains("/"),
-                        "Types must be file extension (.pdf) or MIME type (image/png): %s", t
-                ));
+                types.forEach(t -> checkArgument(t.startsWith(".") || t.contains("/"),
+                                                 "Types must be file extension (.pdf) or MIME type (image/png): %s",
+                                                 t));
             }
 
             this.types = types;
@@ -118,6 +116,9 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             return this;
         }
 
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
@@ -220,9 +221,10 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
         if (currentValue == null || currentValue.isEmpty()) {
             return "[]";
         }
-        final List<Map<String, Object>> frontendData = currentValue.stream()
-                                                                   .map(FileUploaderComponent::toFrontendValue)
-                                                                   .toList();
+        final List<Map<String, Object>> frontendData = currentValue
+                .stream()
+                .map(FileUploaderComponent::toFrontendValue)
+                .toList();
         try {
             return Shared.OBJECT_MAPPER.writeValueAsString(frontendData);
         } catch (JsonProcessingException e) {
@@ -244,10 +246,11 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
     }
 
     public static Map<String, Object> toFrontendValue(final @Nonnull JtUploadedFile file) {
-        return Map.of(
-                FRONTEND_FILENAME_KEY, file.filename(),
-                "contentType", file.contentType() != null ? file.contentType() : "",
-                "size", file.content().length
-        );
+        return Map.of(FRONTEND_FILENAME_KEY,
+                      file.filename(),
+                      "contentType",
+                      file.contentType() != null ? file.contentType() : "",
+                      "size",
+                      file.content().length);
     }
 }

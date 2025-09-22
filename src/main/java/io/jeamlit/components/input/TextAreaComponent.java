@@ -47,7 +47,7 @@ public final class TextAreaComponent extends JtComponent<String> {
         registerTemplate = mf.compile("components/input/TextAreaComponent.register.html.mustache");
         renderTemplate = mf.compile("components/input/TextAreaComponent.render.html.mustache");
     }
-    
+
     private TextAreaComponent(Builder builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
@@ -61,11 +61,10 @@ public final class TextAreaComponent extends JtComponent<String> {
         this.labelVisibility = builder.labelVisibility;
         this.width = builder.width;
     }
-    
+
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<String, TextAreaComponent, Builder> {
-        @Language("markdown")
-        private final @Nonnull String label;
+        @Language("markdown") private final @Nonnull String label;
         private String value = "";
         private @Nullable String height; // null means default (3 lines)
         private @Nullable Integer maxChars;
@@ -75,19 +74,19 @@ public final class TextAreaComponent extends JtComponent<String> {
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private String width = "stretch";
         private @Nullable Consumer<String> onChange;
-        
+
         public Builder(@Language("markdown") @Nonnull String label) {
             if (label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Label cannot be null or empty");
             }
             this.label = label;
         }
-        
+
         public Builder value(@Nullable String value) {
             this.value = value != null ? value : "";
             return this;
         }
-        
+
         public Builder height(@Nullable String height) {
             if (height != null) {
                 // Validate height values
@@ -95,7 +94,7 @@ public final class TextAreaComponent extends JtComponent<String> {
                     throw new IllegalArgumentException(
                             "height must be 'content', 'stretch', or a pixel value (integer). Got: " + height);
                 }
-                
+
                 // Validate minimum heights for pixel values
                 if (height.matches("\\d+")) {
                     int pixels = Integer.parseInt(height);
@@ -110,13 +109,12 @@ public final class TextAreaComponent extends JtComponent<String> {
             // Note: We check labelVisibility at build time, not here, since it might change
             // Minimum validation will be done in build()
             if (heightInPixels < 68) {
-                throw new IllegalArgumentException(
-                        "height must be at least 68 pixels (minimum allowed). Got: " + heightInPixels);
+                throw new IllegalArgumentException("height must be at least 68 pixels (minimum allowed). Got: " + heightInPixels);
             }
             this.height = String.valueOf(heightInPixels);
             return this;
         }
-        
+
         public Builder maxChars(@Nullable Integer maxChars) {
             if (maxChars != null && maxChars <= 0) {
                 throw new IllegalArgumentException("max_chars must be positive if specified");
@@ -124,31 +122,33 @@ public final class TextAreaComponent extends JtComponent<String> {
             this.maxChars = maxChars;
             return this;
         }
-        
-        public Builder help(@Nullable String help) {
+
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
-        
+
         public Builder placeholder(@Nullable String placeholder) {
             this.placeholder = placeholder;
             return this;
         }
-        
+
         public Builder disabled(boolean disabled) {
             this.disabled = disabled;
             return this;
         }
-        
+
         public Builder labelVisibility(@Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
-        
+
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;
@@ -167,35 +167,30 @@ public final class TextAreaComponent extends JtComponent<String> {
             this.width = String.valueOf(widthPixels);
             return this;
         }
-        
+
         public Builder onChange(@Nullable Consumer<String> onChange) {
             this.onChange = onChange;
             return this;
         }
-        
+
         @Override
         public TextAreaComponent build() {
             // Note: args/kwargs equivalent (varargs and Map parameters) not implemented
-            
+
             // Validate minimum height based on labelVisibility
             if (height != null && height.matches("\\d+")) {
                 int pixels = Integer.parseInt(height);
                 int minHeight = labelVisibility == LabelVisibility.COLLAPSED ? 68 : 98;
                 if (pixels < minHeight) {
-                    throw new IllegalArgumentException(
-                            "height must be at least " + minHeight + " pixels when label_visibility='" 
-                            + labelVisibility + "'. Got: " + pixels);
+                    throw new IllegalArgumentException("height must be at least " + minHeight + " pixels when label_visibility='" + labelVisibility + "'. Got: " + pixels);
                 }
             }
-            
+
             // Validate maxChars vs value length
             if (maxChars != null && value != null && value.length() > maxChars) {
-                throw new IllegalArgumentException(
-                        "maxChars is " + maxChars + ". Length of default value '" + value 
-                        + "' is " + value.length() + ". You must provide a default value with length "
-                        + "smaller or equal to max_chars");
+                throw new IllegalArgumentException("maxChars is " + maxChars + ". Length of default value '" + value + "' is " + value.length() + ". You must provide a default value with length " + "smaller or equal to max_chars");
             }
-            
+
             return new TextAreaComponent(this);
         }
     }
@@ -206,7 +201,7 @@ public final class TextAreaComponent extends JtComponent<String> {
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
-    
+
     @Override
     protected String render() {
         final StringWriter writer = new StringWriter();
@@ -216,7 +211,8 @@ public final class TextAreaComponent extends JtComponent<String> {
 
     @Override
     protected TypeReference<String> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 
     @Override

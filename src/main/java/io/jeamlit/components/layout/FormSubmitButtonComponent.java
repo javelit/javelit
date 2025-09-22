@@ -48,7 +48,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
         registerTemplate = mf.compile("components/layout/FormSubmitButtonComponent.register.html.mustache");
         renderTemplate = mf.compile("components/layout/FormSubmitButtonComponent.render.html.mustache");
     }
-    
+
     private FormSubmitButtonComponent(final Builder builder) {
         super(builder.generateKeyForInteractive(), false, builder.onClick);
 
@@ -59,7 +59,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
         this.disabled = builder.disabled;
         this.useContainerWidth = builder.useContainerWidth;
     }
-    
+
     public static class Builder extends JtComponentBuilder<Boolean, FormSubmitButtonComponent, Builder> {
         private final String label;
         private String type = "secondary";
@@ -75,7 +75,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
             }
             this.label = label;
         }
-        
+
         public Builder type(final @Nonnull String type) {
             if (!"primary".equals(type) && !"secondary".equals(type) && !"tertiary".equals(type)) {
                 throw new IllegalArgumentException("Button type must be 'primary', 'secondary', or 'tertiary'. Got: " + type);
@@ -83,22 +83,25 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
             this.type = type;
             return this;
         }
-        
+
         public Builder icon(final String icon) {
             this.icon = icon;
             return this;
         }
-        
-        public Builder help(final String help) {
+
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
-        
+
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
-        
+
         public Builder useContainerWidth(final boolean useContainerWidth) {
             this.useContainerWidth = useContainerWidth;
             return this;
@@ -108,30 +111,31 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
             this.onClick = onClick;
             return this;
         }
-        
+
         @Override
         public FormSubmitButtonComponent build() {
             return new FormSubmitButtonComponent(this);
         }
     }
-    
+
     @Override
     protected String register() {
         final StringWriter writer = new StringWriter();
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
-    
+
     @Override
     protected String render() {
         final StringWriter writer = new StringWriter();
         renderTemplate.execute(writer, this);
         return writer.toString();
     }
-    
+
     @Override
     protected TypeReference<Boolean> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 
     @Override
@@ -143,6 +147,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
     @Override
     protected void beforeUse(@NotNull JtContainer container) {
         final @Nullable String formParentKey = container.getParentFormComponentKey();
-        checkState(formParentKey != null, "FormSubmitButton must be inside a form container. Please pass a valid container that is a form or in a form.");
+        checkState(formParentKey != null,
+                   "FormSubmitButton must be inside a form container. Please pass a valid container that is a form or in a form.");
     }
 }

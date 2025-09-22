@@ -69,7 +69,10 @@ public final class ToggleComponent extends JtComponent<@NotNull Boolean> {
             return this;
         }
 
-        public Builder help(final @Language("markdown") @Nullable String help) {
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }

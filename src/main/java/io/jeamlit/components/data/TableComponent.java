@@ -114,7 +114,8 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
                                       "Columns must have the same size. %s has size %s, %s has size %s.",
                                       columns.getFirst(),
                                       valueCount,
-                                      colName, colLength);
+                                      colName,
+                                      colLength);
                     });
 
                     this.values = new String[valueCount][];

@@ -58,7 +58,10 @@ public final class MarkdownComponent extends JtComponent<JtComponent.NONE> {
             this.body = body;
         }
 
-        public Builder help(final @Nullable @Language("markdown") String help) {
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
@@ -105,5 +108,5 @@ public final class MarkdownComponent extends JtComponent<JtComponent.NONE> {
         return new TypeReference<>() {
         };
     }
-    
+
 }

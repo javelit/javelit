@@ -39,14 +39,19 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
     final @Nullable List<@NotNull Double> widths;
 
     public enum Gap {
-        SMALL, MEDIUM, LARGE, NONE
+        SMALL,
+        MEDIUM,
+        LARGE,
+        NONE
     }
 
     final Gap gap;
     final VerticalAlignment verticalAlignment;
 
     public enum VerticalAlignment {
-        TOP, CENTER, BOTTOM
+        TOP,
+        CENTER,
+        BOTTOM
     }
 
     protected final boolean border;

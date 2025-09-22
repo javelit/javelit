@@ -31,7 +31,7 @@ import org.icepear.echarts.serializer.EChartsSerializer;
 import org.intellij.lang.annotations.Language;
 
 public class EchartsComponent extends JtComponent<JtComponent.NONE> {
-    
+
     public enum Theme {
         DEFAULT("default"),
         CHALK("chalk"),
@@ -59,7 +59,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
             return this.name;
         }
     }
-    
+
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -87,7 +87,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
         } else if (builder.optionJson != null) {
             this.echartOption = builder.optionJson;
         } else {
-            throw  new IllegalArgumentException("One of chart, option, json must be set. Please reach out to support.");
+            throw new IllegalArgumentException("One of chart, option, json must be set. Please reach out to support.");
         }
         this.height = builder.height;
         this.width = builder.width;
@@ -162,6 +162,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
 
     @Override
     protected TypeReference<NONE> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 }

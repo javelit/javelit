@@ -32,15 +32,15 @@ import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
 
-    protected final @Nonnull String label;
-    protected final @Nonnull String url;
-    protected final boolean isExternal;
-    protected final String icon;
-    protected final String help;
-    protected final boolean disabled;
-    protected final String width;
-    protected final boolean isActive;
-    protected final boolean isHomePage;
+    final @Nonnull String label;
+    final @Nonnull String url;
+    final boolean isExternal;
+    final String icon;
+    final String help;
+    final boolean disabled;
+    final String width;
+    final boolean isActive;
+    final boolean isHomePage;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -126,7 +126,10 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
-        public Builder help(final String help) {
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }

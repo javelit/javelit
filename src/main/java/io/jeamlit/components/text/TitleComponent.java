@@ -43,7 +43,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         registerTemplate = mf.compile("components/TitleComponent.register.html.mustache");
         renderTemplate = mf.compile("components/TitleComponent.render.html.mustache");
     }
-    
+
     private TitleComponent(final Builder builder) {
         super(builder.generateKeyForInteractive(), NONE.NONE, null);
         this.body = markdownToHtml(builder.body, true);
@@ -51,34 +51,56 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         this.help = builder.help;
         this.width = builder.width;
     }
-    
+
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
-        @Language("markdown")
-        private final @Nonnull String body;
+        @Language("markdown") private final @Nonnull String body;
         private String anchor;
         private String help;
         private String width = "stretch";
-        
+
+        /**
+         * The text to display. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+         */
         public Builder(final @Language("markdown") @NotNull String body) {
             this.body = body;
         }
-        
+
+        /**
+         * The anchor name of the header that can be accessed with #anchor in the URL.
+         * If omitted, it generates an anchor using the body. If False, the anchor is not shown in the UI.
+         */
         public Builder anchor(final @Nullable String anchor) {
             this.anchor = anchor;
             return this;
         }
-        
+
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
-        
-        public Builder width(final @Nonnull String width) {
+
+        /**
+         * The width of the text element. This can be one of the following:
+         * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
+        public Builder width(final @Nullable String width) {
+            if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
+                throw new IllegalArgumentException(
+                        "width must be 'stretch', 'content', or a pixel value (integer). Got: " + width);
+            }
             this.width = width;
             return this;
         }
 
+        /**
+         * The width of the text element as an integer, specifying the width in pixels.
+         */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
@@ -86,7 +108,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
             this.width = String.valueOf(widthPixels);
             return this;
         }
-        
+
         @Override
         public TitleComponent build() {
             return new TitleComponent(this);
@@ -106,7 +128,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         renderTemplate.execute(writer, this);
         return writer.toString();
     }
-    
+
     @Override
     protected TypeReference<NONE> getTypeReference() {
         return new TypeReference<>() {

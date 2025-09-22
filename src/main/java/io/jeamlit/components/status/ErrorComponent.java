@@ -28,10 +28,10 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 
 public final class ErrorComponent extends JtComponent<JtComponent.NONE> {
-    // protected to be visible to the template engine
-    protected final String body;
-    protected final String icon;
-    protected final String width;
+    // visible to the template engine
+    final String body;
+    final String icon;
+    final String width;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;

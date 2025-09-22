@@ -28,7 +28,9 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
-/** implements both the Container component and the Empty component via the inPlace flag. */
+/**
+ * implements both the Container component and the Empty component via the inPlace flag.
+ */
 public final class ContainerComponent extends JtComponent<JtContainer> {
 
     final Integer height;

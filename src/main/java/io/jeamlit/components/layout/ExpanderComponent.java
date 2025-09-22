@@ -68,8 +68,7 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
 
         public Builder width(final @Nullable String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;

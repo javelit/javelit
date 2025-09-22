@@ -101,6 +101,9 @@ public class DateInputComponent extends JtComponent<LocalDate> {
             return this;
         }
 
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
@@ -128,8 +131,7 @@ public class DateInputComponent extends JtComponent<LocalDate> {
 
         public Builder width(final @Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;

@@ -48,7 +48,7 @@ public final class SliderComponent extends JtComponent<Double> {
         registerTemplate = mf.compile("components/input/SliderComponent.register.html.mustache");
         renderTemplate = mf.compile("components/input/SliderComponent.render.html.mustache");
     }
-    
+
     private SliderComponent(Builder builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
 
@@ -64,11 +64,10 @@ public final class SliderComponent extends JtComponent<Double> {
         this.labelVisibility = builder.labelVisibility;
         this.width = builder.width;
     }
-    
+
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<Double, SliderComponent, Builder> {
-        @Language("markdown")
-        private final @NotNull String label;
+        @Language("markdown") private final @NotNull String label;
         private double min = 0.0;
         private double max = 100.0;
         private @Nullable Double value; // Will be set to min if not specified
@@ -79,56 +78,59 @@ public final class SliderComponent extends JtComponent<Double> {
         private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
         private @Nullable Consumer<Double> onChange;
         private String width = "stretch";
-        
+
         public Builder(@Language("markdown") @NotNull String label) {
             this.label = label;
         }
-        
+
         public Builder min(final double min) {
             this.min = min;
             return this;
         }
-        
+
         public Builder max(final double max) {
             this.max = max;
             return this;
         }
-        
+
         public Builder value(final double value) {
             this.value = value;
             return this;
         }
-        
+
         public Builder step(final double step) {
             this.step = step;
             return this;
         }
-        
+
         public Builder format(final @Nullable String format) {
             this.format = format;
             return this;
         }
-        
+
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
-        
+
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
-        
+
         public Builder labelVisibility(final LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
-        
+
         public Builder onChange(final @Nullable Consumer<Double> onChange) {
             this.onChange = onChange;
             return this;
         }
-        
+
         public Builder width(final String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -150,17 +152,17 @@ public final class SliderComponent extends JtComponent<Double> {
             this.width = String.valueOf(widthPixels);
             return this;
         }
-        
+
         @Override
         public SliderComponent build() {
             // Add comment about args/kwargs not being implemented
             // Note: args/kwargs equivalent (varargs and Map parameters) not implemented
-            
+
             // Set value to min if not explicitly set (matching Streamlit behavior)
             if (this.value == null) {
                 this.value = this.min;
             }
-            
+
             // Validate parameters
             if (this.label == null || this.label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Label cannot be null or empty");
@@ -174,7 +176,7 @@ public final class SliderComponent extends JtComponent<Double> {
             if (this.value < this.min || this.value > this.max) {
                 throw new IllegalArgumentException("value must be between min_value and max_value");
             }
-            
+
             return new SliderComponent(this);
         }
     }
@@ -185,7 +187,7 @@ public final class SliderComponent extends JtComponent<Double> {
         registerTemplate.execute(writer, this);
         return writer.toString();
     }
-    
+
     @Override
     protected String render() {
         final StringWriter writer = new StringWriter();
@@ -195,7 +197,8 @@ public final class SliderComponent extends JtComponent<Double> {
 
     @Override
     protected TypeReference<Double> getTypeReference() {
-        return new TypeReference<>() {};
+        return new TypeReference<>() {
+        };
     }
 
     @Override

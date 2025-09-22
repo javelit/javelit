@@ -63,7 +63,6 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
 
         /**
          * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
-         * The tooltip can optionally contain Markdown, including the Markdown directives, see [io.jeamlit.core.Jt#markdown] for details.
          */
         public Builder help(final @Nullable String help) {
             this.help = help;
@@ -76,8 +75,11 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
          * - "stretch": The width of the element matches the width of the parent container.
          * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
-        // FIXME input checks
-        public Builder width(final @Nonnull String width) {
+        public Builder width(final @Nullable String width) {
+            if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
+                throw new IllegalArgumentException(
+                        "width must be 'stretch', 'content', or a pixel value (integer). Got: " + width);
+            }
             this.width = width;
             return this;
         }

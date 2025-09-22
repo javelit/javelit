@@ -68,8 +68,7 @@ public final class TextInputComponent extends JtComponent<String> {
 
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<String, TextInputComponent, Builder> {
-        @Language("markdown")
-        private final @Nonnull String label;
+        @Language("markdown") private final @Nonnull String label;
         private String value = "";
         private @Nullable Integer maxChars;
         private String type = "default";
@@ -110,7 +109,10 @@ public final class TextInputComponent extends JtComponent<String> {
             return this;
         }
 
-        public Builder help(@Nullable String help) {
+        /**
+         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         */
+        public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
@@ -143,8 +145,7 @@ public final class TextInputComponent extends JtComponent<String> {
 
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch' or a pixel value (integer). Got: " + width);
+                throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;
             return this;

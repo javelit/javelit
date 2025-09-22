@@ -46,9 +46,9 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
 
-    protected final List<JtPage> pages;
-    protected final JtPage home;
-    protected NavigationPosition position;
+    final List<JtPage> pages;
+    final JtPage home;
+    NavigationPosition position;
 
     private final Map<String, Class<?>> classNameToClass = new HashMap<>();
 
@@ -60,34 +60,26 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile(
-                "components/multipage/NavigationComponent.register.html.mustache");
+        registerTemplate = mf.compile("components/multipage/NavigationComponent.register.html.mustache");
         renderTemplate = mf.compile("components/multipage/NavigationComponent.render.html.mustache");
     }
 
     private NavigationComponent(final Builder builder) {
-        super(UNIQUE_NAVIGATION_COMPONENT_KEY,
-              null, // set later in this constructor
-              null,
-              builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
-        final List<JtPage.Builder> homePages = builder.pageBuilders.stream()
-                .filter(JtPage.Builder::isHome)
-                .toList();
+        super(UNIQUE_NAVIGATION_COMPONENT_KEY, null, // set later in this constructor
+              null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
+        final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
         if (homePages.isEmpty()) {
             builder.pageBuilders.getFirst().home();
         } else if (homePages.size() > 1) {
             throw new IllegalArgumentException(
-                    "Multiple pages are defined as home: %s. Only one page should be defined as home."
-                            .formatted(String.join(", ",
-                                                   homePages.stream()
-                                                           .map(e -> e.page().getSimpleName())
-                                                           .toList())));
+                    "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
+                            ", ",
+                            homePages.stream().map(e -> e.page().getSimpleName()).toList())));
 
         }
         this.home = homePages.getFirst().build();
         builder.pageBuilders.forEach(e -> classNameToClass.put(e.page().getName(), e.page()));
-        this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build)
-                .collect(Collectors.toList());
+        this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
         this.position = builder.position;
 
         // Set initial page based on current URL, not always home

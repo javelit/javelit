@@ -79,7 +79,7 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
         private boolean acceptNewOptions;
         private String width = "content";
 
-        public Builder(final @Language("markdown") @NotNull String label, final @Nonnull List<T>  options) {
+        public Builder(final @Language("markdown") @NotNull String label, final @Nonnull List<T> options) {
             this.label = label;
             this.options = options;
         }
@@ -87,7 +87,10 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
         public Builder<T> index(final @jakarta.annotation.Nullable Integer index) {
             if (index != null) {
                 checkArgument(index >= 0, "Index is %s. Index must be a positive integer.", index);
-                checkArgument(index < options.size(), "Index is %s. Index must be strictly smaller than the options list size: %s", index, options.size());
+                checkArgument(index < options.size(),
+                              "Index is %s. Index must be strictly smaller than the options list size: %s",
+                              index,
+                              options.size());
             }
             this.index = index;
             return this;
@@ -143,8 +146,9 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
 
         public Builder<T> acceptNewOptions(final boolean acceptNewOptions) {
             if (acceptNewOptions) {
-                final boolean allStrings = this.options.stream().allMatch(e -> e instanceof  String);
-                checkArgument(allStrings, "To enable acceptNewOptions, the options values must all be of type String. Update the options or do not enable acceptNewOptions.");
+                final boolean allStrings = this.options.stream().allMatch(e -> e instanceof String);
+                checkArgument(allStrings,
+                              "To enable acceptNewOptions, the options values must all be of type String. Update the options or do not enable acceptNewOptions.");
             }
             this.acceptNewOptions = acceptNewOptions;
             return this;
@@ -158,7 +162,9 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
 
 
     private SelectBoxComponent(final Builder<T> builder) {
-        super(builder.generateKeyForInteractive(), builder.index == null || builder.options.isEmpty() ? null : builder.options.get(builder.index), builder.onChange);
+        super(builder.generateKeyForInteractive(),
+              builder.index == null || builder.options.isEmpty() ? null : builder.options.get(builder.index),
+              builder.onChange);
         this.label = markdownToHtml(builder.label, true);
         this.options = builder.options;
         this.index = builder.index;
@@ -188,16 +194,18 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
 
     @Override
     protected TypeReference<T> getTypeReference() {
-        return new TypeReference<T>() {};
+        return new TypeReference<T>() {
+        };
     }
 
     @Override
     protected @Nullable T convert(Object rawValue) {
         final int index;
-        if (rawValue instanceof Integer i ) {
+        if (rawValue instanceof Integer i) {
             index = i;
         } else if (rawValue instanceof Long i) {
-            checkState(i < Integer.MAX_VALUE, "index integer returned by radio component is bigger than maximum integer. Please reach out to support.");
+            checkState(i < Integer.MAX_VALUE,
+                       "index integer returned by radio component is bigger than maximum integer. Please reach out to support.");
             index = i.intValue();
         } else if (rawValue instanceof String s && this.acceptNewOptions) {
             int foundIndex = -1;
@@ -216,8 +224,13 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
         } else {
             throw new RuntimeException("Unsupported value type send by radio component frontend: " + rawValue.getClass());
         }
-        checkState(index >= 0, "Index is %s. Index must be a positive integer. Invalid value sent by the radio component frontend. Please reach out to support.", index);
-        checkState(index < options.size(), "Index is %s. Index must be strictly smaller than the options list size %s. Invalid value sent by the radio component frontend. Please reach out to support.", index, options.size());
+        checkState(index >= 0,
+                   "Index is %s. Index must be a positive integer. Invalid value sent by the radio component frontend. Please reach out to support.",
+                   index);
+        checkState(index < options.size(),
+                   "Index is %s. Index must be strictly smaller than the options list size %s. Invalid value sent by the radio component frontend. Please reach out to support.",
+                   index,
+                   options.size());
 
         return options.get(index);
     }
