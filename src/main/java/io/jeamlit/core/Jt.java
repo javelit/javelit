@@ -119,7 +119,7 @@ public final class Jt {
 
     /**
      * Write text without Markdown or HTML parsing.
-     * For monospace text, use [Jt#code]
+     * For monospace text, use {@link Jt#code}
      *
      * @param body The string to display.
      */
@@ -131,12 +131,25 @@ public final class Jt {
      * Display text in title formatting.
      * Each document should have a single st.title(), although this is not enforced.
      *
-     * @param body  The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
+     * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
      */
     public static TitleComponent.Builder title(@Language("markdown") final @Nonnull String body) {
         return new TitleComponent.Builder(body);
     }
 
+    /**
+     * Display string formatted as Markdown.
+     * <p>
+     * Supported :
+     * <ul>
+     *     <li>Emoji shortcodes, such as :+1: and :sunglasses:. For a list of all supported codes, see <a href="https://www.webfx.com/tools/emoji-cheat-sheet/">https://www.webfx.com/tools/emoji-cheat-sheet/</a>.</li>
+     *     <li>Tables</li>
+     *     <li>Strikethrough</li>
+     *     <li>Autolink: turns plain links such as URLs and email addresses into links</li>
+     * </ul>
+     *
+     * @param body The text to display as Markdown.
+     */
     public static MarkdownComponent.Builder markdown(final @Nonnull @Language("markdown") String body) {
         return new MarkdownComponent.Builder(body);
     }
@@ -149,10 +162,32 @@ public final class Jt {
         return new ErrorComponent.Builder(body);
     }
 
+    /**
+     * Insert HTML into your app.
+     * <p>
+     * Adding custom HTML to your app impacts safety, styling, and maintainability.
+     * We sanitize HTML with <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>, but inserting HTML remains a developer risk.
+     * Passing untrusted code to Jt.html or dynamically loading external code can increase the risk of vulnerabilities in your app.
+     * <p>
+     * {@code Jt.html} content is not iframed. Executing JavaScript is not supported.
+     *
+     * @param body  The HTML code to insert.
+     */
     public static HtmlComponent.Builder html(final @Nonnull @Language("HTML") String body) {
         return new HtmlComponent.Builder(body);
     }
 
+    /**
+     * Insert HTML into your app.
+     * <p>
+     * Adding custom HTML to your app impacts safety, styling, and maintainability.
+     * We sanitize HTML with <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>, but inserting HTML remains a developer risk.
+     * Passing untrusted code to Jt.html or dynamically loading external code can increase the risk of vulnerabilities in your app.
+     * <p>
+     * {@code Jt.html} content is not iframed. Executing JavaScript is not supported.
+     *
+     * @param filePath The path of the file containing the HTML code to insert.
+     */
     public static HtmlComponent.Builder html(final @Nonnull Path filePath) {
         return new HtmlComponent.Builder(filePath);
     }
@@ -300,8 +335,8 @@ public final class Jt {
         checkArgument(newPage != null,
                       "Invalid page %s. This page is not registered in Jt.navigation().",
                       pageApp.getName());
-        final InternalSessionState.UrlContext urlContext = new InternalSessionState
-                .UrlContext(newPage.urlPath(), Map.of());
+        final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(newPage.urlPath(),
+                                                                                               Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
     }
 

@@ -146,7 +146,40 @@ public class JsonDoclet implements Doclet {
             final String methodKey = generateMethodKey(className, method);
             if (methodKey != null) {
                 final Map<String, Object> methodDoc = processMethod(method, environment);
-                documentation.put(methodKey, methodDoc);
+
+                // Check if this method name already exists (overload)
+                if (documentation.containsKey(methodKey)) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> existingMethod = (Map<String, Object>) documentation.get(methodKey);
+
+                    // Get overloads array (should always exist since we create it)
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> overloads = (List<Map<String, Object>>) existingMethod.get("overloads");
+                    if (overloads == null) {
+                        throw new IllegalStateException("Overloads array should always exist for method: " + methodKey);
+                    }
+
+                    // Add new overload
+                    Map<String, Object> newOverload = new HashMap<>();
+                    newOverload.put("args", methodDoc.get("args"));
+                    newOverload.put("signature", methodDoc.get("signature"));
+                    overloads.add(newOverload);
+
+                } else {
+                    // First occurrence of this method name
+                    // Store in new format with overloads array
+                    List<Map<String, Object>> overloads = new ArrayList<>();
+                    Map<String, Object> firstOverload = new HashMap<>();
+                    firstOverload.put("args", methodDoc.get("args"));
+                    firstOverload.put("signature", methodDoc.get("signature"));
+                    overloads.add(firstOverload);
+
+                    methodDoc.put("overloads", overloads);
+                    methodDoc.remove("args");
+                    methodDoc.remove("signature");
+
+                    documentation.put(methodKey, methodDoc);
+                }
             }
         }
     }
