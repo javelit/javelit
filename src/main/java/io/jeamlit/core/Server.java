@@ -191,7 +191,7 @@ public final class Server implements StateManager.RenderServer {
                                            //.setSecure()
                                            //.setDomain()
         );
-        server = Undertow.builder().setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 10 * 1024 * 1024L)// 10Mb
+        server = Undertow.builder().setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 200 * 1024 * 1024L)// 200Mb
                          .addHttpListener(port, "0.0.0.0").setHandler(app).build();
 
         server.start();
