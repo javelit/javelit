@@ -64,21 +64,43 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
             this.body = body;
         }
 
+        /**
+         * The language that the code is written in, for syntax highlighting. This defaults to {@code java}.
+         * If this is {@code null}, the code will be plain, monospace text.
+         * <p>
+         * For a list of available language values, see list on <a href="https://prismjs.com/#supported-languages">prismjs documentation</a>.
+         */
         public Builder language(final @Nullable String language) {
             this.language = language;
             return this;
         }
 
+        /**
+         * An optional boolean indicating whether to show line numbers to the left of the code block. This defaults to {@code false}.
+         */
         public Builder lineNumbers(final boolean lineNumbers) {
             this.lineNumbers = lineNumbers;
             return this;
         }
 
+        /**
+         * An optional boolean indicating whether to wrap lines. This defaults to {@code false}.
+         */
         public Builder wrapLines(final boolean wrapLines) {
             this.wrapLines = wrapLines;
             return this;
         }
 
+
+        /**
+         * The height of the code block element. This can be one of the following:
+         * <p>
+         * <ul>
+         *  <li>{@code content} (default): The height of the element matches the height of its content.</li>
+         *  <li>{@code stretch}: The height of the element matches the height of its content or the height of the parent container, whichever is larger. If the element is not in a parent container, the height of the element matches the height of its content.</li>
+         *  <li>An integer specifying the height in pixels: The element has a fixed height. If the content is larger than the specified height, scrolling is enabled.</li>
+         * </ul>
+         */
         public Builder height(final @Nullable String height) {
             if (height != null && !"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {
                 throw new IllegalArgumentException(
@@ -88,6 +110,9 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        /**
+         * The height of the element in pixels. The element will have a fixed height. If the content is larger than the specified height, scrolling is enabled.
+         */
         public Builder height(final int heightPixels) {
             if (heightPixels < 0) {
                 throw new IllegalArgumentException("Height in pixels must be non-negative. Got: " + heightPixels);
@@ -97,7 +122,7 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the text element. This can be one of the following:
+         * The width of the element. This can be one of the following:
          * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
          * - "stretch": The width of the element matches the width of the parent container.
          * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
@@ -112,7 +137,7 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

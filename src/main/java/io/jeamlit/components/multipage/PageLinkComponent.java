@@ -115,7 +115,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The text to display for the link. Supports markdown formatting.
+         * The text to display for the link. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
          */
         public Builder label(final @Nonnull String label) {
             checkArgument(!label.isBlank(), "Label cannot be empty");
@@ -124,7 +124,12 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * An icon to display next to the link text. Can be an emoji or a Material Symbols icon name.
+         * An icon to display with the error message. The following values are valid:
+         * <ul>
+         *     <li>A single-character emoji. For example: {@code 🔥}. Emoji short codes are not supported.</li>
+         *     <li>An icon from the Material Symbols library (rounded style) in the format ":icon_name:" where "icon_name" is the name of the icon in snake case. For example: {@code :search:}. See full list of icons <a href="https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:search:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f" target="_blank">here</a>.</li>
+         * </ul>
+         * If null (default), no icon is displayed.
          */
         public Builder icon(final @Nullable String icon) {
             ensureIsValidIcon(icon);
@@ -141,7 +146,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * Whether the link is disabled. Disabled links are not clickable and appear visually dimmed.
+         * Disable the link if set to true.
          */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
@@ -159,7 +164,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

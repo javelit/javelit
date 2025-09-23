@@ -73,11 +73,18 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
             return this;
         }
 
+        /**
+         * Disables the popover button if set to True. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * Controls the button width. If True, the button width matches the parent container width. If False (default), the button width matches its content width. This parameter is deprecated - use width() instead.
+         */
+        @Deprecated // to be replaced by width
         public Builder useContainerWidth(final boolean useContainerWidth) {
             this.useContainerWidth = useContainerWidth;
             return this;

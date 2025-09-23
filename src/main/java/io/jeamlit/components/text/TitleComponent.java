@@ -84,7 +84,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the text element. This can be one of the following:
+         * The width of the element. This can be one of the following:
          * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
          * - "stretch": The width of the element matches the width of the parent container.
          * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
@@ -99,7 +99,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

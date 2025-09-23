@@ -77,6 +77,11 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
             this.tabs = List.copyOf(tabs);
         }
 
+        /**
+         * The width of the element. This can be one of the following:
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -86,7 +91,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

@@ -98,6 +98,9 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             this.label = label;
         }
 
+        /**
+         * The allowed file extensions or MIME types. If {@code null}, all file types are allowed. Use file extensions like {@code ".pdf"} or MIME types like {@code "image/png"}.
+         */
         public Builder type(final @Nullable List<String> types) {
             if (types != null) {
                 checkArgument(!types.isEmpty(),
@@ -111,6 +114,14 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             return this;
         }
 
+        /**
+         * Whether to accept more than one file in a submission. This can be one of the following values:
+         * <ul>
+         *     <li>{@code MultipleFiles.FALSE} (default): The user can only submit one file at a time.</li>
+         *     <li>{@code MultipleFiles.TRUE}: The user can upload multiple files at the same time.</li>
+         *     <li>{@code MultipleFiles.DIRECTORY}: The user can select a directory to upload all files in the directory and its subdirectories. If {@code type} is set, only files matching those type(s) will be uploaded.</li>
+         * </ul>
+         */
         public Builder acceptMultipleFiles(final MultipleFiles acceptMultipleFiles) {
             this.acceptMultipleFiles = acceptMultipleFiles;
             return this;
@@ -124,22 +135,38 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             return this;
         }
 
+        /**
+         * Disable the file uploader if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * An optional callback invoked when the file uploader's value changes.
+         */
         public Builder onChange(final @Nullable Consumer<List<JtUploadedFile>> onChange) {
             this.onChange = onChange;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(final LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
-        public Builder width(final String width) {
+        /**
+         * The width of the element. This can be one of the following:
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
+        public Builder width(final @Nonnull String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
@@ -147,12 +174,6 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             return this;
         }
 
-        /**
-         * Convenience method for setting width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
         /**
          * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
