@@ -33,6 +33,7 @@ import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.JtContainer;
+import io.jeamlit.core.JtPage;
 import io.jeamlit.core.PageRunException;
 import io.jeamlit.core.Shared;
 import jakarta.annotation.Nonnull;
@@ -124,11 +125,18 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             Collections.addAll(this.pageBuilders, pages);
         }
 
+        /**
+         * Adds a page to the navigation. Pages can be added individually using this method or passed in the constructor.
+         */
         public Builder addPage(final @Nonnull JtPage.Builder page) {
             pageBuilders.add(page);
             return this;
         }
 
+        /**
+         * Hides the navigation menu from the user interface. The pages will still be accessible programmatically,
+         * but no navigation UI will be displayed. Useful for programmatic navigation or single-page apps.
+         */
         public Builder hidden() {
             position = NavigationPosition.HIDDEN;
             return this;

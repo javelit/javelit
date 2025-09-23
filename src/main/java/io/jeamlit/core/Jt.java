@@ -41,7 +41,6 @@ import io.jeamlit.components.layout.FormSubmitButtonComponent;
 import io.jeamlit.components.layout.PopoverComponent;
 import io.jeamlit.components.layout.TabsComponent;
 import io.jeamlit.components.media.FileUploaderComponent;
-import io.jeamlit.components.multipage.JtPage;
 import io.jeamlit.components.multipage.NavigationComponent;
 import io.jeamlit.components.multipage.PageLinkComponent;
 import io.jeamlit.components.status.ErrorComponent;
@@ -416,7 +415,7 @@ public final class Jt {
      * See examples below.
      *
      * @param key   A unique string used to identify this popover
-     * @param label The label for the popover button
+     * @param label The label for the popover button. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
      */
     public static PopoverComponent.Builder popover(final @Nonnull String key,
                                                    @Language("markdown") @Nonnull String label) {
@@ -588,7 +587,7 @@ public final class Jt {
      * The current script run will continue if not complete.
      *
      * @param url   The URL to link to
-     * @param label The text to display for the link
+     * @param label The text to display for the link. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
      */
     public static PageLinkComponent.Builder pageLink(final @Nonnull String url,
                                                      final @Language("markdown") @Nonnull String label) {
@@ -598,7 +597,7 @@ public final class Jt {
     /**
      * Display a file uploader widget.
      *
-     * @param label A short label explaining to the user what this file uploader is for
+     * @param label A short label explaining to the user what this file uploader is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
      */
     public static FileUploaderComponent.Builder fileUploader(@Language("markdown") final @Nonnull String label) {
         return new FileUploaderComponent.Builder(label);

@@ -24,6 +24,7 @@ import com.github.mustachejava.MustacheFactory;
 import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
+import io.jeamlit.core.JtPage;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
@@ -114,13 +115,19 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
             this.isHomePage = false;
         }
 
+        /**
+         * The text to display for the link. Supports markdown formatting.
+         */
         public Builder label(final @Nonnull String label) {
             checkArgument(!label.isBlank(), "Label cannot be empty");
             this.label = label;
             return this;
         }
 
-        public Builder icon(final String icon) {
+        /**
+         * An icon to display next to the link text. Can be an emoji or a Material Symbols icon name.
+         */
+        public Builder icon(final @Nullable String icon) {
             ensureIsValidIcon(icon);
             this.icon = icon;
             return this;
@@ -134,11 +141,17 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        /**
+         * Whether the link is disabled. Disabled links are not clickable and appear visually dimmed.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The width of the link element. Use "content" to fit content, "stretch" to fill container, or a pixel value.
+         */
         public Builder width(final @Nonnull String width) {
             checkArgument("content".equals(width) || "stretch".equals(width) || width.matches("\\d+"),
                           "Width must be 'content', 'stretch', or a pixel value (integer)");
@@ -146,12 +159,6 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
-        /**
-         * Set width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
         /**
          * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
