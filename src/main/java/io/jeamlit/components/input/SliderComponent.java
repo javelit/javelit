@@ -187,10 +187,7 @@ public final class SliderComponent extends JtComponent<Double> {
 
         @Override
         public SliderComponent build() {
-            // Add comment about args/kwargs not being implemented
-            // Note: args/kwargs equivalent (varargs and Map parameters) not implemented
-
-            // Set value to min if not explicitly set (matching Streamlit behavior)
+            // Set value to min if not explicitly set
             if (this.value == null) {
                 this.value = this.min;
             }
