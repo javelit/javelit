@@ -125,6 +125,7 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
         return writer.toString();
     }
 
+    @Override
     protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };

@@ -114,6 +114,7 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
         return writer.toString();
     }
 
+    @Override
     protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };

@@ -92,14 +92,14 @@ final class StateManager {
         void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus);
     }
 
-    protected static void setRenderServer(final @Nonnull RenderServer sender) {
+    static void setRenderServer(final @Nonnull RenderServer sender) {
         renderServer = sender;
     }
 
     private StateManager() {
     }
 
-    protected static InternalSessionState getCurrentSession() {
+    static InternalSessionState getCurrentSession() {
         final String currentSessionId = CURRENT_EXECUTION_IN_THREAD.get().sessionId;
         if (currentSessionId == null) {
             throw new IllegalStateException(
@@ -108,14 +108,14 @@ final class StateManager {
         return SESSIONS.get(currentSessionId);
     }
 
-    protected static void clearSession(String sessionId) {
+    static void clearSession(String sessionId) {
         SESSIONS.remove(sessionId);
     }
 
     /**
      * Handles component updates and returns true if app should be re-run
      */
-    protected static boolean handleComponentUpdate(final String sessionId,
+    static boolean handleComponentUpdate(final String sessionId,
                                                    final String componentKey,
                                                    final Object updatedValue) {
         // find the component and its container
@@ -186,11 +186,11 @@ final class StateManager {
         return rerun;
     }
 
-    protected static TypedMap getCache() {
+    static TypedMap getCache() {
         return CACHE;
     }
 
-    protected static void registerCallback(final String sessionId, final String componentKey) {
+    static void registerCallback(final String sessionId, final String componentKey) {
         SESSIONS.get(sessionId).setCallbackComponentKey(componentKey);
     }
 
@@ -200,7 +200,7 @@ final class StateManager {
      * - run the user app - it will call addComponent (done via Jt methods)
      * - endExecution
      */
-    protected static void beginExecution(final String sessionId) {
+    static void beginExecution(final String sessionId) {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
@@ -234,7 +234,7 @@ final class StateManager {
      * - endExecution
      * Return if the component was added successfully. Else throw.
      */
-    protected static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer container) {
+    static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer container) {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         checkState(currentExecution != null, "No active execution context. Please reach out to support.");
 

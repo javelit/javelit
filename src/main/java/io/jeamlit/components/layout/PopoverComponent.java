@@ -124,6 +124,7 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
         return writer.toString();
     }
 
+    @Override
     protected TypeReference<JtContainer> getTypeReference() {
         return new TypeReference<>() {
         };

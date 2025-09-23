@@ -212,7 +212,11 @@ class FileReloader extends Reloader {
         }
     }
 
-    private static URL[] createClassPathUrls(final String classpath) {
+    @SuppressWarnings("StringSplitter") // see https://errorprone.info/bugpattern/StringSplitter - checking for blank string should be enough here
+    private static URL[] createClassPathUrls(final @Nonnull String classpath) {
+        if (classpath.isBlank()) {
+            return new URL[0];
+        }
         final String[] paths = classpath.split(File.pathSeparator);
         final URL[] urls = new URL[paths.length];
         for (int i = 0; i < paths.length; i++) {
