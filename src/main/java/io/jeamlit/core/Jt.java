@@ -41,6 +41,7 @@ import io.jeamlit.components.layout.FormSubmitButtonComponent;
 import io.jeamlit.components.layout.PopoverComponent;
 import io.jeamlit.components.layout.TabsComponent;
 import io.jeamlit.components.media.FileUploaderComponent;
+import io.jeamlit.components.multipage.JtPage;
 import io.jeamlit.components.multipage.NavigationComponent;
 import io.jeamlit.components.multipage.PageLinkComponent;
 import io.jeamlit.components.status.ErrorComponent;

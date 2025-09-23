@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
+import io.jeamlit.core.utils.EmojiUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 

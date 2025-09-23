@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jeamlit.core;
+package io.jeamlit.core.utils;
 
 import net.fellbaum.jemoji.EmojiManager;
+import org.jetbrains.annotations.Nullable;
 
 public final class EmojiUtils {
 
-    static void ensureIsValidIcon(@org.jetbrains.annotations.Nullable String icon) {
+    public static void ensureIsValidIcon(@Nullable String icon) {
         if (icon != null && !icon.isEmpty()) {
             // Validate icon format: single emoji or :icon_name:
             boolean isEmoji = EmojiManager.isEmoji(icon);
@@ -30,5 +31,8 @@ public final class EmojiUtils {
                         "icon must be a single emoji or Material Symbols in format ':icon_name:'. Got: " + icon);
             }
         }
+    }
+
+    private EmojiUtils() {
     }
 }

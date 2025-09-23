@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jeamlit.core;
+package io.jeamlit.components.multipage;
 
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import static io.jeamlit.core.EmojiUtils.ensureIsValidIcon;
+import static io.jeamlit.core.utils.EmojiUtils.ensureIsValidIcon;
 
 public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, @Nonnull String icon,
                      @Nonnull String urlPath, boolean isHome,
