@@ -162,7 +162,7 @@ public class DateInputComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    LocalDate today = LocalDate.now(ZoneId.systemDefault());
+                    LocalDate today = LocalDate.now();
                     LocalDate date = Jt.dateInput("Appointment date")
                             .value(today)
                             .minValue(today)
