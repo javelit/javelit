@@ -78,6 +78,9 @@ public final class ButtonComponent extends JtComponent<Boolean> {
             this.label = label;
         }
 
+        /**
+         * The button appearance type. Can be "primary", "secondary" (default), or "tertiary".
+         */
         public Builder type(final @Nonnull String type) {
             if (!"primary".equals(type) && !"secondary".equals(type) && !"tertiary".equals(type)) {
                 throw new IllegalArgumentException("Button type must be 'primary', 'secondary', or 'tertiary'. Got: " + type);
@@ -86,28 +89,50 @@ public final class ButtonComponent extends JtComponent<Boolean> {
             return this;
         }
 
-        public Builder icon(final String icon) {
+        /**
+         * An icon to display with the error message. The following values are valid:
+         * <ul>
+         *     <li>A single-character emoji. For example: {@code 🔥}. Emoji short codes are not supported.</li>
+         *     <li>An icon from the Material Symbols library (rounded style) in the format ":icon_name:" where "icon_name" is the name of the icon in snake case. For example: {@code :search:}. See full list of icons <a href="https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:search:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f" target="_blank">here</a>.</li>
+         * </ul>
+         * If null (default), no icon is displayed.
+         */
+        public Builder icon(final @Nullable String icon) {
             ensureIsValidIcon(icon);
             this.icon = icon;
             return this;
         }
 
+        /**
+         * A tooltip that gets displayed when the button is hovered over.
+         */
         public Builder help(final @Nullable String help) {
             this.help = help;
             return this;
         }
 
+        /**
+         * Disable the button if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * Makes the button fill the width of its container if set to true.
+         */
         // FIXME CYRIL - DEPRECATED - implement width instead
+        @Deprecated
         public Builder useContainerWidth(final boolean useContainerWidth) {
             this.useContainerWidth = useContainerWidth;
             return this;
         }
 
+        /**
+         * An optional callback invoked when this button is clicked.
+         * The value passed to the callback is the previous value of the component.
+         */
         public Builder onClick(final Consumer<Boolean> onClick) {
             this.onClick = onClick;
             return this;

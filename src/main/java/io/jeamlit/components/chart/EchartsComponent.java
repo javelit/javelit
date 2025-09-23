@@ -120,20 +120,32 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
             this.optionJson = optionJson;
         }
 
+        /**
+         * The height of the chart in pixels.
+         */
         public Builder height(final int height) {
             this.height = height;
             return this;
         }
 
+        /**
+         * The width of the chart in pixels. If null, the chart will use its default width.
+         */
         public Builder width(final @Nullable Integer width) {
             this.width = width;
             return this;
         }
 
+        /**
+         * The chart theme using a predefined theme from the Theme enum.
+         */
         public Builder theme(final @Nonnull Theme theme) {
             return theme(theme.toString());
         }
 
+        /**
+         * The chart theme using a custom theme name. Custom themes can be loaded through custom headers.
+         */
         public Builder theme(final @Nonnull String theme) {
             // no checks - custom headers may import some custom theme - custom themes are not supported any other way for the moment
             this.theme = theme;

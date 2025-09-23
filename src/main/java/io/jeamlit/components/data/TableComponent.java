@@ -75,18 +75,34 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
             this.arrayOfObjs = objsArray;
         }
 
+        /**
+         * Creates a table from a map where each key is a column name and each value is a list of column data.
+         * All columns must have the same number of elements.
+         */
         public static <Values extends @NotNull SequencedCollection<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
             return new Builder((Map<String, SequencedCollection<Object>>) col2List, null, null, null);
         }
 
+        /**
+         * Creates a table from a map where each key is a column name and each value is an array of column data.
+         * All columns must have the same number of elements.
+         */
         public static Builder ofColumnsArrays(@Nonnull Map<@NotNull String, @NotNull Object[]> col2Array) {
             return new Builder(null, col2Array, null, null);
         }
 
+        /**
+         * Creates a table from a list of objects, where each object represents a row and object properties become columns.
+         * Objects are serialized to extract their fields as table columns.
+         */
         public static Builder ofObjsList(@Nonnull SequencedCollection<Object> objsList) {
             return new Builder(null, null, objsList, null);
         }
 
+        /**
+         * Creates a table from an array of objects, where each object represents a row and object properties become columns.
+         * Objects are serialized to extract their fields as table columns.
+         */
         public static Builder ofObjsArray(@Nonnull Object[] objsArray) {
             return new Builder(null, null, null, objsArray);
         }

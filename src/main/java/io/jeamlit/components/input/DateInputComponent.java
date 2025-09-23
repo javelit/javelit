@@ -17,6 +17,7 @@ package io.jeamlit.components.input;
 
 import java.io.StringWriter;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -34,6 +35,7 @@ import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class DateInputComponent extends JtComponent<LocalDate> {
 
+    private static final Set<Object> VALID_FRONTEND_FORMATS = Set.of("YYYY/MM/DD", "DD/MM/YYYY", "MM/DD/YYYY");
     final @Nonnull String label;
     final @Nonnull LocalDate minValue;
     final @Nonnull LocalDate maxValue;
@@ -83,6 +85,9 @@ public class DateInputComponent extends JtComponent<LocalDate> {
             this.label = label;
         }
 
+        /**
+         * The value of this widget when it first renders. Can be a specific date or {@code null} for no initial value.
+         */
         public Builder value(final @Nullable LocalDate value) {
             if (value == null) {
                 withDefaultValue = false;
@@ -91,11 +96,17 @@ public class DateInputComponent extends JtComponent<LocalDate> {
             return this;
         }
 
+        /**
+         * The minimum selectable date. If {@code null}, defaults to ten years before the initial value.
+         */
         public Builder minValue(final @Nullable LocalDate minValue) {
             this.minValue = minValue;
             return this;
         }
 
+        /**
+         * The maximum selectable date. If {@code null}, defaults to ten years after the initial value.
+         */
         public Builder maxValue(final @Nullable LocalDate maxValue) {
             this.maxValue = maxValue;
             return this;
@@ -109,26 +120,46 @@ public class DateInputComponent extends JtComponent<LocalDate> {
             return this;
         }
 
+        /**
+         * An optional callback invoked when the date input's value changes.
+         * The value passed to the callback is the previous value of the component.
+         */
         public Builder onChange(final @Nullable Consumer<@org.jetbrains.annotations.Nullable LocalDate> onChange) {
             this.onChange = onChange;
             return this;
         }
 
+        /**
+         * Controls how dates are displayed in the interface. Supported formats: "YYYY/MM/DD", "DD/MM/YYYY", "MM/DD/YYYY".
+         */
         public Builder format(final @Nonnull String format) {
+            checkArgument(VALID_FRONTEND_FORMATS.contains(format), "Invalid format: %s. Valid formats: %s",
+                          format, VALID_FRONTEND_FORMATS);
             this.format = format;
             return this;
         }
 
+        /**
+         * Disable the date input if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(final @Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
+        /**
+         * Controls the widget's width. Can be "stretch" to match parent container or a pixel value as string.
+         */
         public Builder width(final @Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -138,7 +169,7 @@ public class DateInputComponent extends JtComponent<LocalDate> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
