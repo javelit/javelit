@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import dev.jbang.dependencies.DependencyResolver;
@@ -203,7 +204,7 @@ public enum BuildSystem {
                                                               this,
                                                               cmdResult.exitCode,
                                                               this,
-                                                              cmd,
+                                                              Arrays.toString(cmd),
                                                               String.join("\n",
                                                                           cmdResult.outputLines())));
         }
@@ -235,7 +236,7 @@ public enum BuildSystem {
                                                                 this,
                                                                 cmdResult.exitCode,
                                                                 this,
-                                                                cmd,
+                                                                Arrays.toString(cmd),
                                                                 String.join("\n",
                                                                             cmdResult.outputLines())));
         }

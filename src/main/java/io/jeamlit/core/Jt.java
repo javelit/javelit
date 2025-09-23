@@ -21,12 +21,6 @@ import java.util.Map;
 import java.util.SequencedCollection;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import jakarta.annotation.Nonnull;
-import org.icepear.echarts.Chart;
-import org.icepear.echarts.Option;
-import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import io.jeamlit.components.chart.EchartsComponent;
 import io.jeamlit.components.data.TableComponent;
 import io.jeamlit.components.input.ButtonComponent;
@@ -57,6 +51,12 @@ import io.jeamlit.components.text.MarkdownComponent;
 import io.jeamlit.components.text.TextComponent;
 import io.jeamlit.components.text.TitleComponent;
 import io.jeamlit.datastructure.TypedMap;
+import jakarta.annotation.Nonnull;
+import org.icepear.echarts.Chart;
+import org.icepear.echarts.Option;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static io.jeamlit.core.utils.Preconditions.checkArgument;
 import static io.jeamlit.core.utils.Preconditions.checkState;
