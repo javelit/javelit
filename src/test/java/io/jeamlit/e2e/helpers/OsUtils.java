@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public final class OsUtils {
     }
 
     public static OS getOS() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         if (os.contains("mac")) {
             return OS.MAC;
         } else if (os.contains("win")) {

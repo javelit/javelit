@@ -17,6 +17,7 @@ package io.jeamlit.doclet;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -409,11 +410,10 @@ public class JsonDoclet implements Doclet {
     private String extractComponentReturnType(Element classElement,
                                               TypeMirror returnType,
                                               DocletEnvironment environment) {
-        if (!(classElement instanceof TypeElement)) {
+        if (!(classElement instanceof TypeElement typeElement)) {
             return null;
         }
 
-        TypeElement typeElement = (TypeElement) classElement;
         String className = typeElement.getQualifiedName().toString();
 
         // Only process methods from the Jt class
@@ -422,11 +422,10 @@ public class JsonDoclet implements Doclet {
         }
 
         // Check if the return type is a component builder
-        if (!(returnType instanceof DeclaredType)) {
+        if (!(returnType instanceof DeclaredType declaredReturnType)) {
             return null;
         }
 
-        DeclaredType declaredReturnType = (DeclaredType) returnType;
         TypeElement returnTypeElement = (TypeElement) declaredReturnType.asElement();
         String returnClassName = returnTypeElement.getQualifiedName().toString();
 
@@ -458,8 +457,7 @@ public class JsonDoclet implements Doclet {
         // Look for JtComponent<T> in the component's superclass hierarchy
         TypeMirror superclass = componentClass.getSuperclass();
         while (superclass != null && !"java.lang.Object".equals(superclass.toString())) {
-            if (superclass instanceof DeclaredType) {
-                DeclaredType declaredType = (DeclaredType) superclass;
+            if (superclass instanceof DeclaredType declaredType) {
                 TypeElement superElement = (TypeElement) declaredType.asElement();
 
                 // Check if this is JtComponent
@@ -535,8 +533,7 @@ public class JsonDoclet implements Doclet {
 
             // Move to superclass
             TypeMirror superclass = currentClass.getSuperclass();
-            if (superclass instanceof DeclaredType) {
-                DeclaredType declaredSuperclass = (DeclaredType) superclass;
+            if (superclass instanceof DeclaredType declaredSuperclass) {
                 Element superElement = declaredSuperclass.asElement();
                 if (superElement instanceof TypeElement) {
                     currentClass = (TypeElement) superElement;
@@ -571,11 +568,10 @@ public class JsonDoclet implements Doclet {
     private List<Map<String, Object>> extractBuilderMethods(Element classElement,
                                                             TypeMirror returnType,
                                                             DocletEnvironment environment) {
-        if (!(classElement instanceof TypeElement)) {
+        if (!(classElement instanceof TypeElement typeElement)) {
             return null;
         }
 
-        TypeElement typeElement = (TypeElement) classElement;
         String className = typeElement.getQualifiedName().toString();
 
         // Only process methods from the Jt class
@@ -584,11 +580,10 @@ public class JsonDoclet implements Doclet {
         }
 
         // Check if the return type is a component builder
-        if (!(returnType instanceof DeclaredType)) {
+        if (!(returnType instanceof DeclaredType declaredReturnType)) {
             return null;
         }
 
-        DeclaredType declaredReturnType = (DeclaredType) returnType;
         TypeElement returnTypeElement = (TypeElement) declaredReturnType.asElement();
         String returnClassName = returnTypeElement.getQualifiedName().toString();
 
@@ -610,7 +605,7 @@ public class JsonDoclet implements Doclet {
                                                        .filter(method -> !"build".equals(method
                                                                                                  .getSimpleName()
                                                                                                  .toString()))// Exclude build method
-                                                       .collect(Collectors.toList());
+                                                       .toList();
 
         for (ExecutableElement builderMethod : methods) {
             Map<String, Object> builderMethodDoc = new HashMap<>();
@@ -668,7 +663,7 @@ public class JsonDoclet implements Doclet {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-        try (FileWriter writer = new FileWriter("jeamlit.json")) {
+        try (FileWriter writer = new FileWriter("jeamlit.json", StandardCharsets.UTF_8)) {
             objectMapper.writeValue(writer, documentation);
         }
     }

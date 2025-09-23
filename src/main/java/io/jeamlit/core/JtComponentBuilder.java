@@ -18,6 +18,7 @@ package io.jeamlit.core;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 
 import io.jeamlit.core.utils.EmojiUtils;
@@ -58,7 +59,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
         try {
             final Class<?> clazz = this.getClass();
             // 2. Fallback: build a key from class name + fields
-            final String baseName = clazz.getName().toLowerCase().replace("$builder", "");
+            final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
             final Field[] fields = clazz.getDeclaredFields();
             Arrays.sort(fields, Comparator.comparing(Field::getName));
             final Object[] values = new Object[fields.length];

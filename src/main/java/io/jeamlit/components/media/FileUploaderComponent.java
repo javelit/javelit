@@ -225,7 +225,7 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
             // update is coming from the frontend - it is a remove operation - need to convert frontend data to backend value
             final Set<String> filesToKeep = new HashSet<>(files.size());
             for (final Object file : files) {
-                if (!(file instanceof Map<?, ?> m)) {
+                if (!(file instanceof Map<?, ?>)) {
                     throw new RuntimeException(
                             "Failed to parse input widget value coming from the app. UploadedFile element is not a map.");
                 }

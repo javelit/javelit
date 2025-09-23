@@ -43,7 +43,7 @@ public final class CodeComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private CodeComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
         this.body = builder.body;
         this.language = builder.language;
         this.lineNumbers = builder.lineNumbers;

@@ -43,7 +43,7 @@ public final class MarkdownComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private MarkdownComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
         this.body = markdownToHtml(builder.body, false);
         this.help = builder.help;
         this.width = builder.width;

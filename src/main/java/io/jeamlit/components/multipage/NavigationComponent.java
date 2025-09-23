@@ -176,9 +176,9 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             return;
         }
 
-        if (container == JtContainer.SIDEBAR) {
+        if (container.equals(JtContainer.SIDEBAR) ) {
             position = NavigationPosition.SIDEBAR;
-        } else if (container == JtContainer.MAIN) {
+        } else if (container.equals(JtContainer.MAIN)) {
             position = NavigationPosition.TOP;
             throw new UnsupportedOperationException(
                     "Navigation component in the main container is not supported yet. Please reach out to support for more information.");

@@ -80,17 +80,17 @@ public final class JtContainer implements JtComponent.NotAState {
         return new JtContainer(key, this, false, true);
     }
 
-    protected @Nonnull List<@NotNull String> path() {
+    @Nonnull List<@NotNull String> path() {
         return path;
     }
 
 
-    protected boolean isInPlace() {
+    boolean isInPlace() {
         return inPlace;
     }
 
     // returns null if the Container has no parent (if main or sidebar)
-    protected final @Nullable JtContainer parent() {
+    @Nullable JtContainer parent() {
         return parent;
     }
 

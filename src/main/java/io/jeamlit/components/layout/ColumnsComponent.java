@@ -54,7 +54,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
         BOTTOM
     }
 
-    protected final boolean border;
+    final boolean border;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -182,6 +182,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
         return writer.toString();
     }
 
+    @Override
     protected TypeReference<Columns> getTypeReference() {
         return new TypeReference<>() {
         };
@@ -227,7 +228,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
         }
 
         // helper for mustache templates
-        public LinkedHashMap<Integer, JtContainer> indexedColumns() {
+        public Map<Integer, JtContainer> indexedColumns() {
             return indexedColumns;
         }
 

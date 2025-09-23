@@ -134,6 +134,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         return writer.toString();
     }
 
+    @Override
     protected TypeReference<Tabs> getTypeReference() {
         return new TypeReference<>() {
         };
@@ -187,7 +188,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         }
 
         // helper for mustache templates
-        public LinkedHashMap<Integer, JtContainer> indexedTabs() {
+        public Map<Integer, JtContainer> indexedTabs() {
             return indexedTabs;
         }
 

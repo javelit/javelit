@@ -48,7 +48,7 @@ public class Preconditions {
      */
     public static void checkArgument(boolean expression, @Nullable Object errorMessage) {
         if (!expression) {
-            throw new IllegalArgumentException(String.valueOf((errorMessage)));
+            throw new IllegalArgumentException(String.valueOf(errorMessage));
         }
     }
 

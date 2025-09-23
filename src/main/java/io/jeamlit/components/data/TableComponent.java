@@ -50,7 +50,7 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
     final @Nonnull String[][] values;
 
     private TableComponent(final @Nonnull Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
         this.columns = builder.columns;
         this.values = builder.values;
     }

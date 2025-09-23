@@ -105,7 +105,7 @@ public final class ErrorComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private ErrorComponent(Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
         this.body = markdownToHtml(builder.body, false);
         this.icon = builder.icon;
         this.width = builder.width;

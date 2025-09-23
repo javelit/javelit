@@ -16,6 +16,7 @@
 package io.jeamlit.core;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -296,13 +297,13 @@ public abstract class JtComponent<T> {
 
         @Override
         public String toString() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 
     // use this type to signify a component is not interactive and does not return anything
     public enum NONE implements NotAState {
-        NONE
+        NONE_VALUE
     }
 
     protected static String toJson(final Object objs) {

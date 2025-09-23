@@ -53,7 +53,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private PageLinkComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
 
         this.label = markdownToHtml(builder.label, true);
         this.url = builder.url;

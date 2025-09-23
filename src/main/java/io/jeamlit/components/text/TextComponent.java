@@ -102,7 +102,7 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private TextComponent(Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE, null);
+        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
         this.body = builder.body;
         this.help = builder.help;
         this.width = builder.width;

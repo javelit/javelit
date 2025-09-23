@@ -17,6 +17,7 @@ package io.jeamlit.components.input;
 
 import java.io.StringWriter;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -186,10 +187,10 @@ public class DateInputComponent extends JtComponent<LocalDate> {
         @Override
         public DateInputComponent build() {
             if (this.value == null && withDefaultValue) {
-                this.value = LocalDate.now();
+                this.value = LocalDate.now(ZoneId.systemDefault());
             }
             if (this.minValue == null) {
-                this.minValue = optional(this.value).orElse(LocalDate.now()).minusYears(10);
+                this.minValue = optional(this.value).orElse(LocalDate.now(ZoneId.systemDefault())).minusYears(10);
             } else if (this.value != null) {
                 checkArgument(this.minValue.isBefore(this.value) || this.minValue.isEqual(this.value),
                               "minValue %s must be before default value %s",
@@ -197,7 +198,7 @@ public class DateInputComponent extends JtComponent<LocalDate> {
                               this.value);
             }
             if (this.maxValue == null) {
-                this.maxValue = optional(this.value).orElse(LocalDate.now()).plusYears(10);
+                this.maxValue = optional(this.value).orElse(LocalDate.now(ZoneId.systemDefault())).plusYears(10);
             } else if (this.value != null) {
                 checkArgument(this.maxValue.isAfter(this.value) || this.maxValue.isEqual(this.value),
                               "maxValue %s must be after default  value %s",
