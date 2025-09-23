@@ -36,16 +36,12 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
 
     public static String FRONTEND_FILENAME_KEY = "filename";
-
-    private static final Logger LOG = LoggerFactory.getLogger(FileUploaderComponent.class);
 
     public enum MultipleFiles {
         FALSE,

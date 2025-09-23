@@ -56,7 +56,7 @@ final class StateManager {
         private final Set<JtContainer> clearedContainers = new HashSet<>();
         private final Set<JtContainer> clearedLayoutContainers = new HashSet<>();
 
-        public AppExecution(final String sessionId) {
+        private AppExecution(final String sessionId) {
             this.sessionId = sessionId;
         }
     }

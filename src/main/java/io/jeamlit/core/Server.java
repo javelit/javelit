@@ -314,7 +314,7 @@ public final class Server implements StateManager.RenderServer {
 
         private final FormParserFactory formParserFactory;
 
-        public UploadHandler() {
+        private UploadHandler() {
             final FormParserFactory.Builder parserBuilder = FormParserFactory.builder();
             parserBuilder.setDefaultCharset(StandardCharsets.UTF_8.name());
             this.formParserFactory = parserBuilder.build();
@@ -426,11 +426,12 @@ public final class Server implements StateManager.RenderServer {
             channel.resumeReceives();
         }
 
+        @SuppressWarnings("StringSplitter") // see https://errorprone.info/bugpattern/StringSplitter - checking for blank string should be enough here
         private @Nullable Session getHttpSessionFromWebSocket(WebSocketHttpExchange exchange) {
             final String cookieHeader = exchange.getRequestHeader("Cookie");
             if (cookieHeader != null) {
                 // Parse jeamlit-session-id cookie
-                final String[] cookies = cookieHeader.split(";");
+                final String[] cookies = cookieHeader.isBlank() ? new String[]{} : cookieHeader.split(";");
                 for (String cookie : cookies) {
                     cookie = cookie.trim();
                     if (cookie.startsWith("jeamlit-session-id=")) {

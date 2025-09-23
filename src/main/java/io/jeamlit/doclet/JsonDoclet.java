@@ -329,6 +329,7 @@ public class JsonDoclet implements Doclet {
     /**
      * Format annotations for a parameter into a readable string
      */
+    @SuppressWarnings("unused") // currently tested
     private String formatAnnotations(VariableElement param) {
         StringBuilder annotations = new StringBuilder();
 

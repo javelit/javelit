@@ -40,7 +40,8 @@ import org.slf4j.LoggerFactory;
 import static io.jeamlit.core.utils.LangUtils.optional;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 
-public enum BuildSystem {
+@SuppressWarnings("ImmutableEnumChecker") // ignore the array field in this enum - see https://errorprone.info/bugpattern/ImmutableEnumChecker - this one is internal only - just ensure compileCmdArgs is not mutated
+enum BuildSystem {
     GRADLE("build.gradle",
            IS_OS_WINDOWS ? "gradlew.bat" : "gradlew",
            "gradle",
@@ -54,8 +55,8 @@ public enum BuildSystem {
     MAVEN("pom.xml",
           IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw",
           "mvn",
-          IS_OS_WINDOWS
-                  ? new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
+          IS_OS_WINDOWS ?
+                  new String[]{"-q", "exec:exec", "-Dexec^.executable=cmd", "-Dexec^.args=\"/c echo %classpath\""} :
                   new String[]{"-q", "exec:exec", "-Dexec.executable=echo", "-Dexec.args=\"%classpath\""},
           new String[]{"compile"}) {
         @Override
@@ -69,8 +70,7 @@ public enum BuildSystem {
 
         static {
             try {
-                DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod(
-                        "collectBinaryDependencies");
+                DEPENDENCY_COLLECT_REFLECTION = Source.class.getDeclaredMethod("collectBinaryDependencies");
                 DEPENDENCY_COLLECT_REFLECTION.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
@@ -80,8 +80,11 @@ public enum BuildSystem {
 
         @Override
         boolean isUsed() {
-            final String jeamlitLocation = BuildSystem.class.getProtectionDomain().getCodeSource()
-                    .getLocation().getPath();
+            final String jeamlitLocation = BuildSystem.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .getPath();
             // Decode URL encoding (e.g., %20 for spaces)
             final String decodedPath = URLDecoder.decode(jeamlitLocation, StandardCharsets.UTF_8);
             return decodedPath.endsWith("-all.jar");
@@ -90,11 +93,13 @@ public enum BuildSystem {
         @Override
         @Nonnull
         String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) {
-            final String jeamlitLocation = BuildSystem.class.getProtectionDomain().getCodeSource()
-                    .getLocation().getPath();
+            final String jeamlitLocation = BuildSystem.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .getPath();
             // Decode URL encoding (e.g., %20 for spaces)
-            final StringBuilder cp = new StringBuilder(URLDecoder.decode(jeamlitLocation,
-                                                                         StandardCharsets.UTF_8));
+            final StringBuilder cp = new StringBuilder(URLDecoder.decode(jeamlitLocation, StandardCharsets.UTF_8));
 
             // add jbang style deps
             final Project jbangProject = Project.builder().build(javaFilePath);
@@ -153,7 +158,11 @@ public enum BuildSystem {
 
     private @Nullable String executable;
 
-    BuildSystem(@Nonnull String buildSystemFile, @Nonnull String wrapperFile, @Nonnull String baseExecutable, @Nonnull String[] classpathCmdArgs, @Nonnull String[] compileCmdArgs) {
+    BuildSystem(@Nonnull String buildSystemFile,
+                @Nonnull String wrapperFile,
+                @Nonnull String baseExecutable,
+                @Nonnull String[] classpathCmdArgs,
+                @Nonnull String[] compileCmdArgs) {
         this.buildSystemFile = buildSystemFile;
         this.baseExecutable = baseExecutable;
         this.wrapperFile = wrapperFile;
@@ -189,24 +198,24 @@ public enum BuildSystem {
 
     // NOTE: javaFilePath may be required by some build system, even if most won't use it
     @Nonnull
-    String obtainClasspath(@Nonnull Path javaFilePath, final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
+    String obtainClasspath(@Nonnull Path javaFilePath,
+                           final @Nullable String[] customClasspathCmdArgs) throws IOException, InterruptedException {
         final String[] cmd = ArrayUtils.addAll(new String[]{this.getExecutable()},
-                                               customClasspathCmdArgs != null
-                                                       ? customClasspathCmdArgs :
+                                               customClasspathCmdArgs != null ?
+                                                       customClasspathCmdArgs :
                                                        this.classpathCmdArgs);
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
             throw new RuntimeException("""
-                                       Failed to obtain %s classpath.
-                                       %s command finished with exit code %s.
-                                       %s command: %s.
-                                       Error: %s""".formatted(this,
-                                                              this,
-                                                              cmdResult.exitCode,
-                                                              this,
-                                                              Arrays.toString(cmd),
-                                                              String.join("\n",
-                                                                          cmdResult.outputLines())));
+                                               Failed to obtain %s classpath.
+                                               %s command finished with exit code %s.
+                                               %s command: %s.
+                                               Error: %s""".formatted(this,
+                                                                      this,
+                                                                      cmdResult.exitCode,
+                                                                      this,
+                                                                      Arrays.toString(cmd),
+                                                                      String.join("\n", cmdResult.outputLines())));
         }
         if (cmdResult.outputLines().isEmpty()) {
             LOG.warn("{} dependencies command ran successfully, but classpath is empty", this);
@@ -229,23 +238,24 @@ public enum BuildSystem {
         final CmdRunResult cmdResult = runCmd(cmd);
         if (cmdResult.exitCode() != 0) {
             throw new RuntimeException("""
-                                        Failed to compile with %s toolchain.
-                                        %s command finished with exit code %s.
-                                        %s command: %s.
-                                        Error: %s""".formatted(this,
-                                                                this,
-                                                                cmdResult.exitCode,
-                                                                this,
-                                                                Arrays.toString(cmd),
-                                                                String.join("\n",
-                                                                            cmdResult.outputLines())));
+                                               Failed to compile with %s toolchain.
+                                               %s command finished with exit code %s.
+                                               %s command: %s.
+                                               Error: %s""".formatted(this,
+                                                                      this,
+                                                                      cmdResult.exitCode,
+                                                                      this,
+                                                                      Arrays.toString(cmd),
+                                                                      String.join("\n", cmdResult.outputLines())));
         }
     }
 
     /**
      * Look for a file. If not found, look into the parent.
      */
-    private static File lookForFile(final @Nonnull String filename, final @Nonnull File startDirectory, final int depthLimit) {
+    private static File lookForFile(final @Nonnull String filename,
+                                    final @Nonnull File startDirectory,
+                                    final int depthLimit) {
         final File absoluteDirectory = startDirectory.getAbsoluteFile();
         if (new File(absoluteDirectory, filename).exists()) {
             return new File(absoluteDirectory, filename);
@@ -266,7 +276,8 @@ public enum BuildSystem {
         final Runtime run = Runtime.getRuntime();
         final Process pr = run.exec(cmd);
         final int exitCode = pr.waitFor();
-        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream()))) {
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(pr.getInputStream(),
+                                                                                    StandardCharsets.UTF_8))) {
             final List<String> outputLines = reader.lines().toList();
             return new CmdRunResult(exitCode, outputLines);
         }

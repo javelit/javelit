@@ -85,7 +85,7 @@ class FileReloader extends Reloader {
     @Override
     Method reload(@NotNull Reloader.ReloadStrategy reloadStrategy) {
         switch (reloadStrategy) {
-            case BUILD_CLASSPATH_AND_CLASS:
+            case BUILD_CLASSPATH_AND_CLASS -> {
                 try {
                     buildSystem.compile(customCompileCmdArgs);
                 } catch (Exception e) {
@@ -93,11 +93,10 @@ class FileReloader extends Reloader {
                 }
                 // this will force the recomputation of the classpath
                 compilationOptions = null;
-                break;
-            case CLASS:
-                break;
-            default:
-                throw new RuntimeException("ReloadStrategy not implemented: " + reloadStrategy);
+            }
+            case CLASS -> {
+            }
+            default -> throw new RuntimeException("ReloadStrategy not implemented: " + reloadStrategy);
         }
 
         final @Nonnull List<JavaFileObject> classFiles = compileJavaFile(this.javaFile);

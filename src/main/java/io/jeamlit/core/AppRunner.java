@@ -33,7 +33,7 @@ import static io.jeamlit.core.utils.LangUtils.optional;
 import static io.jeamlit.core.utils.StringUtils.percentEncode;
 
 
-class AppRunner {
+final class AppRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppRunner.class);
 
@@ -44,7 +44,7 @@ class AppRunner {
 
 
     // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
-    protected AppRunner(final @Nonnull Server.Builder builder) {
+    AppRunner(final @Nonnull Server.Builder builder) {
         this.buildSystem = builder.buildSystem;
         if (builder.appPath != null) {
             this.reloader = new FileReloader(builder);
@@ -79,7 +79,7 @@ class AppRunner {
     /**
      * @throws CompilationException if it is called for the first time, the files have never been compiled and the compilation failed
      */
-    protected void runApp(final String sessionId) {
+    void runApp(final String sessionId) {
         // if necessary: load the app for the first time
         if (mainMethod.get() == null) {
             StateManager.beginExecution(sessionId);
