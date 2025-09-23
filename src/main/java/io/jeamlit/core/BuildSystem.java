@@ -41,7 +41,7 @@ import static io.jeamlit.core.utils.LangUtils.optional;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 
 @SuppressWarnings("ImmutableEnumChecker") // ignore the array field in this enum - see https://errorprone.info/bugpattern/ImmutableEnumChecker - this one is internal only - just ensure compileCmdArgs is not mutated
-enum BuildSystem {
+public enum BuildSystem {
     GRADLE("build.gradle",
            IS_OS_WINDOWS ? "gradlew.bat" : "gradlew",
            "gradle",
