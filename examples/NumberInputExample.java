@@ -11,7 +11,6 @@ public class NumberInputExample {
         Number age = Jt.numberInput("Age")
                 .minValue(0L)
                 .maxValue(120L)
-                .valueMin()// Uses min value (0) as default
                 .help("Enter your age in years")
                 .use();
 
