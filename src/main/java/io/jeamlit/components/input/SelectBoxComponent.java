@@ -84,6 +84,10 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
             this.options = options;
         }
 
+        /**
+         * The index of the preselected option on first render. If {@code null}, initializes empty and returns {@code null} until user selection.
+         * Defaults to 0 (the first option).
+         */
         public Builder<T> index(final @jakarta.annotation.Nullable Integer index) {
             if (index != null) {
                 checkArgument(index >= 0, "Index is %s. Index must be a positive integer.", index);
@@ -96,31 +100,56 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
             return this;
         }
 
+        /**
+         * Function to modify the display of the options. The {@code Function} receives the raw option object and returns a String that will be used as display label.
+         * Does not impact the return value of the component.
+         */
         public Builder<T> formatFunction(final @Nonnull Function<@Nullable T, String> formatFunction) {
             this.formatFunction = formatFunction;
             return this;
         }
 
+        /**
+         * A tooltip that gets displayed next to the widget label. If null, no tooltip is displayed.
+         */
         public Builder<T> help(final @jakarta.annotation.Nullable String help) {
             this.help = help;
             return this;
         }
 
+        /**
+         * An optional callback invoked when the selectbox value changes.
+         * The value passed to the callback is the previous value of the component.
+         */
         public Builder<T> onChange(final @jakarta.annotation.Nullable Consumer<@NotNull T> onChange) {
             this.onChange = onChange;
             return this;
         }
 
+        /**
+         * Disables the selectbox if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder<T> disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder<T> labelVisibility(final @Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
+        /**
+         * The width of the element. This can be one of the following:
+         * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder<T> width(final @jakarta.annotation.Nullable String width) {
             if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException(
@@ -130,6 +159,9 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
             return this;
         }
 
+        /**
+         * The width of the selectbox in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder<T> width(final int widthPixels) {
             if (widthPixels < 0) {
                 throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
@@ -138,12 +170,25 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
             return this;
         }
 
+        /**
+         * Text displayed when no option is selected. Default varies based on widget configuration.
+         */
         public Builder<T> placeholder(final @jakarta.annotation.Nullable String placeholder) {
             this.placeholder = placeholder;
-            List.of();
             return this;
         }
 
+        /**
+         * Whether the user can add a selection that isn't included in options.
+         * If this is {@code false} (default), the user can only select from the items in options.
+         * If this is {@code true}, the user can enter a new item that doesn't exist in options.
+         * <p>
+         * When a user enters a new item, it is returned by the widget as a string.
+         * The new item is not added to the widget's drop-down menu. Jeamlit will use a case-insensitive match
+         * from options before adding a new item.
+         * <p>
+         * Only compatible with selectbox of {@code String} values.
+         */
         public Builder<T> acceptNewOptions(final boolean acceptNewOptions) {
             if (acceptNewOptions) {
                 final boolean allStrings = this.options.stream().allMatch(e -> e instanceof String);

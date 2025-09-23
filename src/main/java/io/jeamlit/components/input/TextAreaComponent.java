@@ -82,11 +82,18 @@ public final class TextAreaComponent extends JtComponent<String> {
             this.label = label;
         }
 
+        /**
+         * The initial text value when the widget renders. Defaults to empty string.
+         * If {@code null}, will initialize empty and return {@code null} until the user provides input.
+         */
         public Builder value(@Nullable String value) {
             this.value = value != null ? value : "";
             return this;
         }
 
+        /**
+         * The text area widget height. This can be "content", "stretch", or a pixel value. Minimum height is 2 lines.
+         */
         public Builder height(@Nullable String height) {
             if (height != null) {
                 // Validate height values
@@ -105,6 +112,9 @@ public final class TextAreaComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * The text area widget height in pixels. Minimum height is 2 lines.
+         */
         public Builder height(final int heightInPixels) {
             // Note: We check labelVisibility at build time, not here, since it might change
             // Minimum validation will be done in build()
@@ -115,6 +125,9 @@ public final class TextAreaComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * The maximum number of characters allowed in the text area.
+         */
         public Builder maxChars(@Nullable Integer maxChars) {
             if (maxChars != null && maxChars <= 0) {
                 throw new IllegalArgumentException("max_chars must be positive if specified");
@@ -131,21 +144,35 @@ public final class TextAreaComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * The text displayed when the text area is empty.
+         */
         public Builder placeholder(@Nullable String placeholder) {
             this.placeholder = placeholder;
             return this;
         }
 
+        /**
+         * Disable the text area input if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(@Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
+        /**
+         * The widget width. Can be "stretch" (default) or a pixel value.
+         */
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -155,13 +182,7 @@ public final class TextAreaComponent extends JtComponent<String> {
         }
 
         /**
-         * Convenience method for setting width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
-        /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
@@ -171,6 +192,10 @@ public final class TextAreaComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * An optional callback function that will be called when the text area value changes.
+         * The value passed in the callback is the previous value of the component.
+         */
         public Builder onChange(@Nullable Consumer<String> onChange) {
             this.onChange = onChange;
             return this;

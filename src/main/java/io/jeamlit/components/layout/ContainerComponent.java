@@ -64,11 +64,17 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
             this.key = key;
         }
 
+        /**
+         * The height of the container in pixels. When a fixed height is specified, the container will enable scrolling if content exceeds the specified height. It is recommended to use scrolling containers sparingly and avoid heights that exceed 500 pixels for optimal mobile experience.
+         */
         public Builder height(final Integer height) {
             this.height = height;
             return this;
         }
 
+        /**
+         * Whether to show a border around the container. If not specified (null), the border is automatically shown when the container has a fixed height, and hidden when height adapts to content.
+         */
         public Builder border(final @Nullable Boolean border) {
             this.border = border;
             return this;

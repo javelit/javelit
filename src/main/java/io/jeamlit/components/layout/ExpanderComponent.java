@@ -61,11 +61,20 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
             this.label = label;
         }
 
+        /**
+         * The initial state of the expander. When set to {@code true}, the expander starts in the expanded state. When {@code false} (default), the expander starts collapsed.
+         * Note that all content within the expander is computed and sent to the frontend regardless of the initial state.
+         */
         public Builder expanded(final boolean expanded) {
             this.expanded = expanded;
             return this;
         }
 
+        /**
+         * The width of the element. This can be one of the following:
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final @Nullable String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -75,7 +84,7 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

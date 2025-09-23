@@ -88,11 +88,17 @@ public final class TextInputComponent extends JtComponent<String> {
             this.label = label;
         }
 
+        /**
+         * The text value of this widget when it first renders. Defaults to empty string.
+         */
         public Builder value(@Nullable String value) {
             this.value = value != null ? value : "";
             return this;
         }
 
+        /**
+         * The maximum number of characters allowed in the text input.
+         */
         public Builder maxChars(@Nullable Integer maxChars) {
             if (maxChars != null && maxChars <= 0) {
                 throw new IllegalArgumentException("max_chars must be positive if specified");
@@ -101,6 +107,9 @@ public final class TextInputComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * Can be "default" or "password". Determines if input masks the user's typed value.
+         */
         public Builder type(@Nonnull String type) {
             if (!"default".equals(type) && !"password".equals(type)) {
                 throw new IllegalArgumentException("type must be 'default' or 'password'. Got: " + type);
@@ -117,32 +126,58 @@ public final class TextInputComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * An optional value that will be passed to the <input> element's autocomplete property. If unspecified, this value will be set to "new-password" for "password" inputs, and the empty string for "default" inputs.
+         * For more details, see <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete" target="_blank">https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete</a>.
+         */
         public Builder autocomplete(@Nullable String autocomplete) {
             this.autocomplete = autocomplete;
             return this;
         }
 
+        /**
+         * An optional string displayed when the text input is empty.
+         */
         public Builder placeholder(@Nullable String placeholder) {
             this.placeholder = placeholder;
             return this;
         }
 
+        /**
+         * Disable the text input if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(@Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
-        public Builder icon(@Nullable String icon) {
+        /**
+         * An icon to display with the error message. The following values are valid:
+         * <ul>
+         *     <li>A single-character emoji. For example: {@code 🔥}. Emoji short codes are not supported.</li>
+         *     <li>An icon from the Material Symbols library (rounded style) in the format ":icon_name:" where "icon_name" is the name of the icon in snake case. For example: {@code :search:}. See full list of icons <a href="https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:search:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f" target="_blank">here</a>.</li>
+         * </ul>
+         * If null (default), no icon is displayed.
+         */
+        public Builder icon(final @Nullable String icon) {
             ensureIsValidIcon(icon);
             this.icon = icon;
             return this;
         }
 
+        /**
+         * Controls the widget width. Can be "stretch" (default) or a pixel value.
+         */
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -152,13 +187,7 @@ public final class TextInputComponent extends JtComponent<String> {
         }
 
         /**
-         * Convenience method for setting width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
-        /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
@@ -168,6 +197,10 @@ public final class TextInputComponent extends JtComponent<String> {
             return this;
         }
 
+        /**
+         * An optional callback invoked when the text input's value changes.
+         * The value passed in the callback is the previous value of the component.
+         */
         public Builder onChange(@Nullable Consumer<String> onChange) {
             this.onChange = onChange;
             return this;

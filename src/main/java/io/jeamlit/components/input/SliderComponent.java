@@ -83,26 +83,44 @@ public final class SliderComponent extends JtComponent<Double> {
             this.label = label;
         }
 
+        /**
+         * The minimum permitted value.
+         */
         public Builder min(final double min) {
             this.min = min;
             return this;
         }
 
+        /**
+         * The maximum permitted value.
+         */
         public Builder max(final double max) {
             this.max = max;
             return this;
         }
 
+        /**
+         * The initial slider value. Defaults to the {@code min} value.
+         */
         public Builder value(final double value) {
             this.value = value;
             return this;
         }
 
+        /**
+         * The stepping interval. Default is 1.
+         */
         public Builder step(final double step) {
             this.step = step;
             return this;
         }
 
+        /**
+         * A printf-style format string controlling how the interface should display numbers. This does not impact the return value.
+         * <p>
+         * For information about formatting integers and floats, see <a href="https://github.com/alexei/sprintf.js?tab=readme-ov-file#format-specification" target="_blank">sprintf.js</a>.
+         * For example, format="%0.1f" adjusts the displayed decimal precision to only show one digit after the decimal.
+         */
         public Builder format(final @Nullable String format) {
             this.format = format;
             return this;
@@ -116,21 +134,38 @@ public final class SliderComponent extends JtComponent<Double> {
             return this;
         }
 
+        /**
+         * Disable the slider if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(final LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
+        /**
+         * An optional callback function invoked when the slider value changes.
+         * The value passed to the callback is the previous value of the component.
+         */
         public Builder onChange(final @Nullable Consumer<Double> onChange) {
             this.onChange = onChange;
             return this;
         }
 
+        /**
+         * The width of the element. This can be one of the following:
+         * - "stretch": The width of the element matches the width of the parent container.
+         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         */
         public Builder width(final String width) {
             if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
@@ -140,13 +175,7 @@ public final class SliderComponent extends JtComponent<Double> {
         }
 
         /**
-         * Convenience method for setting width as integer pixels.
-         *
-         * @param widthPixels Width in pixels (must be non-negative)
-         * @return this builder
-         */
-        /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

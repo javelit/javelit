@@ -93,6 +93,10 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
             numColumns(numColumns);
         }
 
+        /**
+         * The number of columns to create. Must be between 2 and 12 inclusive. Each column will have equal width
+         * unless custom widths are specified.
+         */
         public Builder numColumns(final int numColumns) {
             if (numColumns < 2 || numColumns > 12) {
                 throw new IllegalArgumentException("numColumns must be in [2, 12]");
@@ -101,21 +105,37 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
             return this;
         }
 
+        /**
+         * A list of relative column widths. The list size must match the number of columns. For example, [0.7, 0.3]
+         * creates two columns with 70% and 30% width respectively. If not specified, all columns have equal width.
+         */
         public Builder widths(final @Nullable List<@NotNull Double> widths) {
             this.widths = widths;
             return this;
         }
 
+        /**
+         * Controls the space between columns. Options are {@code SMALL} ({@code 1rem} gap, default), {@code MEDIUM} ({@code 2rem} gap),
+         * {@code LARGE} ({@code 4rem} gap), or {@code NONE} (no gap between columns).
+         */
         public Builder gap(final @Nonnull Gap gap) {
             this.gap = gap;
             return this;
         }
 
+        /**
+         * The vertical alignment of the content inside the columns. Options are {@code TOP} (default), {@code CENTER}, or {@code BOTTOM}.
+         */
         public Builder verticalAlignment(final @Nonnull VerticalAlignment verticalAlignment) {
             this.verticalAlignment = verticalAlignment;
             return this;
         }
 
+        /**
+         * Whether to show a border around the column containers.
+         * If this is {@code false} (default), no border is shown. If this is {@code true},
+         * a border is shown around each column.
+         */
         public Builder border(final boolean border) {
             this.border = border;
             return this;
@@ -174,7 +194,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
     }
 
     // Helper method for Mustache template to render widths as JSON array
-    protected String getWidthsJson() {
+    String getWidthsJson() {
         if (widths == null) {
             return null;
         }

@@ -59,11 +59,18 @@ public final class ToggleComponent extends JtComponent<@NotNull Boolean> {
             this.label = label;
         }
 
+        /**
+         * Preselect the toggle when first rendered.
+         */
         public Builder value(final boolean value) {
             this.value = value;
             return this;
         }
 
+        /**
+         * An optional callback function invoked when the toggle value changes.
+         * The value passed in the callback is the previous value of the component.
+         */
         public Builder onChange(final @Nullable Consumer<@NotNull Boolean> onChange) {
             this.onChange = onChange;
             return this;
@@ -77,18 +84,26 @@ public final class ToggleComponent extends JtComponent<@NotNull Boolean> {
             return this;
         }
 
+        /**
+         * Disables the toggle if set to true. When disabled, users cannot interact with the widget.
+         */
         public Builder disabled(final boolean disabled) {
             this.disabled = disabled;
             return this;
         }
 
+        /**
+         * The visibility of the label. The default is {@code VISIBLE}.
+         * If this is {@code HIDDEN}, Jeamlit displays an empty spacer instead of the label, which can help keep the
+         * widget aligned with other widgets. If this is {@code COLLAPSED}, Jeamlit displays no label or spacer.
+         */
         public Builder labelVisibility(final @Nonnull LabelVisibility labelVisibility) {
             this.labelVisibility = labelVisibility;
             return this;
         }
 
         /**
-         * The width of the text element. This can be one of the following:
+         * The width of the element. This can be one of the following:
          * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
          * - "stretch": The width of the element matches the width of the parent container.
          * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
@@ -103,7 +118,7 @@ public final class ToggleComponent extends JtComponent<@NotNull Boolean> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {

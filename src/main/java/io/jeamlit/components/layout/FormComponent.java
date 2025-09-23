@@ -66,23 +66,32 @@ public final class FormComponent extends JtComponent<JtContainer> {
             this.key = key;
         }
 
+        /**
+         * If True, all widgets inside the form will be reset to their default values after the user presses the Submit button.
+         */
         public Builder clearOnSubmit(final boolean clearOnSubmit) {
             this.clearOnSubmit = clearOnSubmit;
             return this;
         }
 
+        /**
+         * If True (default), pressing Enter while in a form widget is like clicking the first form submit button. If False, the user must click the submit button to submit the form.
+         */
         public Builder enterToSubmit(final boolean enterToSubmit) {
             this.enterToSubmit = enterToSubmit;
             return this;
         }
 
+        /**
+         * Whether to show a border around the form. Default is {@code true}. It is recommended to only remove the border if there is another border or the form is small.
+         */
         public Builder border(final boolean border) {
             this.border = border;
             return this;
         }
 
         /**
-         * The width of the text element. This can be one of the following:
+         * The width of the element. This can be one of the following:
          * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
          * - "stretch": The width of the element matches the width of the parent container.
          * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
@@ -97,7 +106,7 @@ public final class FormComponent extends JtComponent<JtContainer> {
         }
 
         /**
-         * The width of the text element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
          */
         public Builder width(final int widthPixels) {
             if (widthPixels < 0) {
@@ -107,6 +116,9 @@ public final class FormComponent extends JtComponent<JtContainer> {
             return this;
         }
 
+        /**
+         * The height of the form container. Can be "content" (default - matches height of content), "stretch" (matches content or parent container height), or a specific pixel value (sets a fixed height, enabling scrolling if content exceeds it).
+         */
         public Builder height(final @Nullable String height) {
             if (height != null && !"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {
                 throw new IllegalArgumentException(
