@@ -24,7 +24,6 @@ import com.github.mustachejava.MustacheFactory;
 import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
-import io.jeamlit.core.JtPage;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
