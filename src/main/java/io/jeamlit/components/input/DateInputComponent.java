@@ -35,7 +35,10 @@ import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class DateInputComponent extends JtComponent<LocalDate> {
 
-    private static final Set<Object> VALID_FRONTEND_FORMATS = Set.of("YYYY/MM/DD", "DD/MM/YYYY", "MM/DD/YYYY");
+    private static final Set<Object> VALID_FRONTEND_FORMATS = Set.of(
+            "YYYY/MM/DD", "DD/MM/YYYY", "MM/DD/YYYY",
+            "YYYY-MM-DD", "DD-MM-YYYY", "MM-DD-YYYY",
+            "YYYY.MM.DD", "DD.MM.YYYY", "MM.DD.YYYY");
     final @Nonnull String label;
     final @Nonnull LocalDate minValue;
     final @Nonnull LocalDate maxValue;
@@ -130,7 +133,8 @@ public class DateInputComponent extends JtComponent<LocalDate> {
         }
 
         /**
-         * Controls how dates are displayed in the interface. Supported formats: "YYYY/MM/DD", "DD/MM/YYYY", "MM/DD/YYYY".
+         * Controls how dates are displayed in the interface. Supported formats: {@code YYYY/MM/DD}, {@code DD/MM/YYYY}, {@code MM/DD/YYYY}.
+         * You may also use a period ({@code .}) or hyphen ({@code -}) as separators.
          */
         public Builder format(final @Nonnull String format) {
             checkArgument(VALID_FRONTEND_FORMATS.contains(format), "Invalid format: %s. Valid formats: %s",
