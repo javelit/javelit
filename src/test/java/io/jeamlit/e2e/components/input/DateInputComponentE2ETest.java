@@ -179,7 +179,7 @@ public class DateInputComponentE2ETest {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
-            LocalDate today = LocalDate.now(ZoneId.systemDefault());
+            final LocalDate today = LocalDate.now(ZoneId.systemDefault());
             assertThat(page.getByText("Appointment: " + today)).isVisible(WAIT_1_SEC_MAX);
 
             // Click to open calendar
@@ -187,8 +187,8 @@ public class DateInputComponentE2ETest {
 
             // Verify that dates before today are disabled
             // Try to click on yesterday (should be disabled)
-            int yesterday = today.minusDays(1).getDayOfMonth();
-            Locator yesterdayButton = page.locator("jt-date-input .calendar-day:not(.other-month)",
+            final int yesterday = today.minusDays(1).getDayOfMonth();
+            final Locator yesterdayButton = page.locator("jt-date-input .calendar-day:not(.other-month)",
                 new Page.LocatorOptions().setHasText(String.valueOf(yesterday))).first();
 
             // Check if it exists and is disabled
@@ -197,7 +197,7 @@ public class DateInputComponentE2ETest {
             }
 
             // Select a date within the valid range (today + 7 days)
-            LocalDate futureDate = today.plusDays(7);
+            final LocalDate futureDate = today.plusDays(7);
             if (futureDate.getMonth() == today.getMonth()) {
                 page.locator("jt-date-input .calendar-day:not(.other-month)",
                     new Page.LocatorOptions().setHasText(String.valueOf(futureDate.getDayOfMonth()))).first().click(WAIT_1_SEC_MAX_CLICK);
