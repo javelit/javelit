@@ -58,7 +58,7 @@ public class DateInputComponentE2ETest {
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Default value should be today's date
-            final LocalDate today = LocalDate.now(ZoneId.systemDefault()));
+            final LocalDate today = LocalDate.now(ZoneId.systemDefault());
             assertThat(page.getByText("Selected: " + today)).isVisible(WAIT_1_SEC_MAX);
 
             // Click to open calendar
@@ -149,7 +149,7 @@ public class DateInputComponentE2ETest {
             page.locator("jt-date-input .calendar-day.today").click(WAIT_1_SEC_MAX_CLICK);
 
             // Verify date is now selected
-            LocalDate today = LocalDate.now(ZoneId.systemDefault()));
+            LocalDate today = LocalDate.now(ZoneId.systemDefault());
             assertThat(page.getByText("Date selected: " + today)).isVisible(WAIT_1_SEC_MAX);
         });
     }
@@ -179,7 +179,7 @@ public class DateInputComponentE2ETest {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
-            LocalDate today = LocalDate.now(ZoneId.systemDefault()));
+            LocalDate today = LocalDate.now(ZoneId.systemDefault());
             assertThat(page.getByText("Appointment: " + today)).isVisible(WAIT_1_SEC_MAX);
 
             // Click to open calendar
