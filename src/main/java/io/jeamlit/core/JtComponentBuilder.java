@@ -79,7 +79,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     }
 
     /**
-     * Put the widget in the app, in the MAIN container.
+     * Put the widget in the app, in the {@code MAIN} container.
      */
     public B use() {
         final T component = build();

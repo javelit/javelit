@@ -104,9 +104,11 @@ public final class ToggleComponent extends JtComponent<@NotNull Boolean> {
 
         /**
          * The width of the element. This can be one of the following:
-         * - "content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.
-         * - "stretch": The width of the element matches the width of the parent container.
-         * - An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+         * <ul>
+         * <li>"content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
+         * <li>"stretch": The width of the element matches the width of the parent container.</li>
+         * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
+         * </ul>
          */
         public Builder width(final @Nullable String width) {
             if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
