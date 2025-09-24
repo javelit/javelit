@@ -79,7 +79,7 @@ public final class ButtonComponent extends JtComponent<Boolean> {
         }
 
         /**
-         * The button appearance type. Can be "primary", "secondary" (default), or "tertiary".
+         * The button appearance type. Can be {@code "primary"}, {@code "secondary"} (default), or {@code "tertiary"}.
          */
         public Builder type(final @Nonnull String type) {
             if (!"primary".equals(type) && !"secondary".equals(type) && !"tertiary".equals(type)) {

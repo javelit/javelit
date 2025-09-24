@@ -119,7 +119,7 @@ public final class SliderComponent extends JtComponent<Double> {
          * A printf-style format string controlling how the interface should display numbers. This does not impact the return value.
          * <p>
          * For information about formatting integers and floats, see <a href="https://github.com/alexei/sprintf.js?tab=readme-ov-file#format-specification" target="_blank">sprintf.js</a>.
-         * For example, format="%0.1f" adjusts the displayed decimal precision to only show one digit after the decimal.
+         * For example, {@code format="%0.1f"} adjusts the displayed decimal precision to only show one digit after the decimal.
          */
         public Builder format(final @Nullable String format) {
             this.format = format;
@@ -164,7 +164,7 @@ public final class SliderComponent extends JtComponent<Double> {
         /**
          * The width of the element. This can be one of the following:
          * <ul>
-         * <li>"stretch": The width of the element matches the width of the parent container.</li>
+         * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
          * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
          * </ul>
          */

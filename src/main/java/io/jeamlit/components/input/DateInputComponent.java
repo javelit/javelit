@@ -163,7 +163,7 @@ public class DateInputComponent extends JtComponent<LocalDate> {
         }
 
         /**
-         * Controls the widget's width. Can be "stretch" to match parent container or a pixel value as string.
+         * Controls the widget's width. Can be {@code "stretch"} to match parent container or a pixel value as string.
          */
         public Builder width(final @Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {

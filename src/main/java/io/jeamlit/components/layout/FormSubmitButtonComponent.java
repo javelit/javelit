@@ -77,7 +77,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
         }
 
         /**
-         * The button type that determines its appearance and emphasis level. Can be "primary", "secondary" (default), or "tertiary".
+         * The button type that determines its appearance and emphasis level. Can be {@code "primary"}, {@code "secondary"} (default), or {@code "tertiary"}.
          */
         public Builder type(final @Nonnull String type) {
             if (!"primary".equals(type) && !"secondary".equals(type) && !"tertiary".equals(type)) {

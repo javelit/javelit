@@ -80,7 +80,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         /**
          * The width of the element. This can be one of the following:
          * <ul>
-         * <li>"stretch": The width of the element matches the width of the parent container.</li>
+         * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
          * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
          * </ul>
          */

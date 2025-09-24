@@ -147,8 +147,8 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
         /**
          * The width of the element. This can be one of the following:
          * <ul>
-         * <li>"content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
-         * <li>"stretch": The width of the element matches the width of the parent container.</li>
+         * <li>{@code content} (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
+         * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
          * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
          * </ul>
          */

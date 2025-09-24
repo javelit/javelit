@@ -93,8 +93,8 @@ public final class FormComponent extends JtComponent<JtContainer> {
         /**
          * The width of the element. This can be one of the following:
          * <ul>
-         * <li>"content" (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
-         * <li>"stretch": The width of the element matches the width of the parent container.</li>
+         * <li>{@code content} (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
+         * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
          * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
          * </ul>
          */
@@ -119,7 +119,7 @@ public final class FormComponent extends JtComponent<JtContainer> {
         }
 
         /**
-         * The height of the form container. Can be "content" (default - matches height of content), "stretch" (matches content or parent container height), or a specific pixel value (sets a fixed height, enabling scrolling if content exceeds it).
+         * The height of the form container. Can be {@code "content"} (default - matches height of content), {@code "stretch"} (matches content or parent container height), or a specific pixel value (sets a fixed height, enabling scrolling if content exceeds it).
          */
         public Builder height(final @Nullable String height) {
             if (height != null && !"content".equals(height) && !"stretch".equals(height) && !height.matches("\\d+")) {

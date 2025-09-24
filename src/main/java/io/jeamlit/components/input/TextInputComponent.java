@@ -108,7 +108,7 @@ public final class TextInputComponent extends JtComponent<String> {
         }
 
         /**
-         * Can be "default" or "password". Determines if input masks the user's typed value.
+         * Can be {@code "default"} or {@code "password"}. Determines if input masks the user's typed value.
          */
         public Builder type(@Nonnull String type) {
             if (!"default".equals(type) && !"password".equals(type)) {
@@ -127,7 +127,7 @@ public final class TextInputComponent extends JtComponent<String> {
         }
 
         /**
-         * An optional value that will be passed to the <input> element's autocomplete property. If unspecified, this value will be set to "new-password" for "password" inputs, and the empty string for "default" inputs.
+         * An optional value that will be passed to the <input> element's autocomplete property. If unspecified, this value will be set to {@code "new-password"} for {@code "password"} inputs, and the empty string for {@code "default"} inputs.
          * For more details, see <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete" target="_blank">https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete</a>.
          */
         public Builder autocomplete(@Nullable String autocomplete) {
@@ -176,7 +176,7 @@ public final class TextInputComponent extends JtComponent<String> {
         }
 
         /**
-         * Controls the widget width. Can be "stretch" (default) or a pixel value.
+         * Controls the widget width. Can be {@code "stretch"} (default) or a pixel value.
          */
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {

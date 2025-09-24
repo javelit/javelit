@@ -566,7 +566,7 @@ public final class Jt {
     /**
      * Display a link to another page in a multipage app or to an external page.
      * <p>
-     * If another page in a multipage app is specified, clicking the {Jt.pageLink} element stops the current page execution
+     * If another page in a multipage app is specified, clicking the {@code Jt.pageLink} element stops the current page execution
      * and runs the specified page as if the user clicked on it in the sidebar navigation.
      * <p>
      * If an external page is specified, clicking the {@code Jt.pageLink} element opens a new tab to the specified page.
@@ -581,7 +581,7 @@ public final class Jt {
     /**
      * Display a link to another page in a multipage app or to an external page.
      * <p>
-     * If another page in a multipage app is specified, clicking the {Jt.pageLink} element stops the current page execution
+     * If another page in a multipage app is specified, clicking the {@code Jt.pageLink} element stops the current page execution
      * and runs the specified page as if the user clicked on it in the sidebar navigation.
      * <p>
      * If an external page is specified, clicking the {@code Jt.pageLink} element opens a new tab to the specified page.

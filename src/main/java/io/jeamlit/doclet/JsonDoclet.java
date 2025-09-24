@@ -649,7 +649,9 @@ public class JsonDoclet implements Doclet {
                 .toString()
                 .replace("java.lang.", "")
                 .replace("java.util.", "")
-                .replace("io.jeamlit.core.", "");
+                .replace("io.jeamlit.core.", "")
+                .replace("io.jeamlit.components.multipage.", "")
+                ;
         typeName = cleanAnnotations(typeName);
         return htmlVisitor.escapeHtml(typeName);
     }

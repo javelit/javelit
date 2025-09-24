@@ -171,7 +171,7 @@ public final class TextAreaComponent extends JtComponent<String> {
         }
 
         /**
-         * The widget width. Can be "stretch" (default) or a pixel value.
+         * The widget width. Can be {@code "stretch"} (default) or a pixel value.
          */
         public Builder width(@Nonnull String width) {
             if (!"stretch".equals(width) && !width.matches("\\d+")) {

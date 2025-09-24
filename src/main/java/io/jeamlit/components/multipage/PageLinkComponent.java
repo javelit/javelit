@@ -151,7 +151,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the link element. Use "content" to fit content, "stretch" to fill container, or a pixel value.
+         * The width of the link element. Use {@code "content"} to fit content, {@code "stretch"} to fill container, or a pixel value.
          */
         public Builder width(final @Nonnull String width) {
             checkArgument("content".equals(width) || "stretch".equals(width) || width.matches("\\d+"),
