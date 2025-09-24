@@ -129,7 +129,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * The width of the chart in pixels. If null, the chart will use its default width.
+         * The width of the chart in pixels. If {@code null}, the chart will use its default width.
          */
         public Builder width(final @Nullable Integer width) {
             this.width = width;

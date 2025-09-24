@@ -162,7 +162,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
         }
 
         /**
-         * A tooltip that gets displayed next to the widget label. If null, no tooltip is displayed.
+         * A tooltip that gets displayed next to the widget label. If {@code null}, no tooltip is displayed.
          */
         public Builder<T> help(@Nullable String help) {
             this.help = help;
@@ -200,9 +200,9 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
          * An icon to display with the error message. The following values are valid:
          * <ul>
          *     <li>A single-character emoji. For example: {@code 🔥}. Emoji short codes are not supported.</li>
-         *     <li>An icon from the Material Symbols library (rounded style) in the format ":icon_name:" where "icon_name" is the name of the icon in snake case. For example: {@code :search:}. See full list of icons <a href="https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:search:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f" target="_blank">here</a>.</li>
+         *     <li>An icon from the Material Symbols library (rounded style) in the format {@code :icon_name:} where {@code icon_name} is the name of the icon in snake case. For example: {@code :search:}. See full list of icons <a href="https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:search:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f" target="_blank">here</a>.</li>
          * </ul>
-         * If null (default), no icon is displayed.
+         * If {@code null} (default), no icon is displayed.
          */
         public Builder<T> icon(final @Nullable String icon) {
             ensureIsValidIcon(icon);

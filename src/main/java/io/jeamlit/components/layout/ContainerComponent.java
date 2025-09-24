@@ -73,7 +73,7 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
         }
 
         /**
-         * Whether to show a border around the container. If not specified (null), the border is automatically shown when the container has a fixed height, and hidden when height adapts to content.
+         * Whether to show a border around the container. If not specified ({@code null}), the border is automatically shown when the container has a fixed height, and hidden when height adapts to content.
          */
         public Builder border(final @Nullable Boolean border) {
             this.border = border;

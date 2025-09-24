@@ -113,7 +113,7 @@ public class RadioComponent<T> extends JtComponent<@Nullable T> {
         }
 
         /**
-         * A tooltip that gets displayed next to the widget label. If null, no tooltip is displayed.
+         * A tooltip that gets displayed next to the widget label. If {@code null}, no tooltip is displayed.
          */
         public Builder<T> help(final @jakarta.annotation.Nullable String help) {
             this.help = help;

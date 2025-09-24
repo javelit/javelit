@@ -171,7 +171,7 @@ public abstract class JtComponent<T> {
     /**
      * Component definition - called once per component type.
      * This should return HTML/JS/CSS that defines the component.
-     * Return null if there is nothing to do.
+     * Return {@code null} if there is nothing to do.
      */
     protected abstract @Nullable String register();
 

@@ -26,7 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -34,15 +39,230 @@ import javax.tools.Diagnostic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
 import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
 import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.doctree.ReturnTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
+
+/**
+ * Visitor to convert DocTree elements to HTML format
+ */
+class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
+
+    @Override
+    public String visitAttribute(AttributeTree node, Void p) {
+        return node.toString(); // Keep attributes as-is
+    }
+
+    @Override
+    public String visitAuthor(AuthorTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitComment(CommentTree node, Void p) {
+        return "<!-- " + node.getBody() + " -->";
+    }
+
+    @Override
+    public String visitDeprecated(DeprecatedTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitDocComment(DocCommentTree node, Void p) {
+        StringBuilder result = new StringBuilder();
+        for (DocTree tree : node.getFullBody()) {
+            result.append(tree.accept(this, p));
+        }
+        return result.toString();
+    }
+
+    @Override
+    public String visitDocRoot(DocRootTree node, Void p) {
+        return ""; // Handle doc root if needed
+    }
+
+    @Override
+    public String visitEndElement(EndElementTree node, Void p) {
+        return "</" + node.getName() + ">";
+    }
+
+    @Override
+    public String visitEntity(EntityTree node, Void p) {
+        return "&" + node.getName() + ";";
+    }
+
+    @Override
+    public String visitErroneous(ErroneousTree node, Void p) {
+        return node.getBody();
+    }
+
+    @Override
+    public String visitIdentifier(IdentifierTree node, Void p) {
+        return node.getName().toString();
+    }
+
+    @Override
+    public String visitInheritDoc(InheritDocTree node, Void p) {
+        return ""; // Handle inherit doc if needed
+    }
+
+    @Override
+    public String visitLink(LinkTree node, Void p) {
+        // Convert {@link Class} to HTML link - simplified for now
+        StringBuilder result = new StringBuilder("<code>");
+        result.append(node.getReference().accept(this, p));
+        if (!node.getLabel().isEmpty()) {
+            result.append(" ");
+            for (DocTree tree : node.getLabel()) {
+                result.append(tree.accept(this, p));
+            }
+        }
+        result.append("</code>");
+        return result.toString();
+    }
+
+    @Override
+    public String visitLiteral(LiteralTree node, Void p) {
+        // Convert {@code text} to <code>text</code>
+        return "<code>" + escapeHtml(node.getBody().getBody()) + "</code>";
+    }
+
+    @Override
+    public String visitParam(ParamTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitReference(ReferenceTree node, Void p) {
+        return node.getSignature();
+    }
+
+    @Override
+    public String visitReturn(ReturnTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSee(SeeTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSerial(SerialTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSerialData(SerialDataTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSerialField(SerialFieldTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSince(SinceTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitStartElement(StartElementTree node, Void p) {
+        StringBuilder result = new StringBuilder("<" + node.getName());
+        for (DocTree attr : node.getAttributes()) {
+            result.append(" ").append(attr.accept(this, p));
+        }
+        if (node.isSelfClosing()) {
+            result.append(" />");
+        } else {
+            result.append(">");
+        }
+        return result.toString();
+    }
+
+    @Override
+    public String visitText(TextTree node, Void p) {
+        return escapeHtml(node.getBody());
+    }
+
+    @Override
+    public String visitThrows(ThrowsTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitValue(ValueTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitVersion(VersionTree node, Void p) {
+        return visitOther(node, p);
+    }
+
+    @Override
+    public String visitOther(DocTree node, Void p) {
+        // Most block tags are handled by their specific visitor methods
+        // Fallback to string representation for unhandled cases
+        return node.toString();
+    }
+
+    /**
+     * Escape HTML special characters
+     */
+    String escapeHtml(String text) {
+        return text
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+}
 
 /**
  * Custom doclet to generate JSON documentation for Jeamlit API
@@ -51,6 +271,7 @@ import jdk.javadoc.doclet.Reporter;
 public class JsonDoclet implements Doclet {
 
     private Reporter reporter;
+    private final HtmlDocTreeVisitor htmlVisitor = new HtmlDocTreeVisitor();
 
     @Override
     public void init(Locale locale, Reporter reporter) {
@@ -78,15 +299,14 @@ public class JsonDoclet implements Doclet {
             Map<String, Object> documentation = new HashMap<>();
 
             // Process all type elements (classes, interfaces)
-            Set<TypeElement> allClasses = ElementFilter.typesIn(environment.getIncludedElements())
-                                                       .stream()
-                                                       .collect(Collectors.toSet());
+            Set<TypeElement> allClasses = ElementFilter
+                    .typesIn(environment.getIncludedElements())
+                    .stream()
+                    .collect(Collectors.toSet());
 
             reporter.print(Diagnostic.Kind.NOTE, "Total classes found: " + allClasses.size());
 
-            Set<TypeElement> classes = allClasses.stream()
-                                                 .filter(this::shouldProcessClass)
-                                                 .collect(Collectors.toSet());
+            Set<TypeElement> classes = allClasses.stream().filter(this::shouldProcessClass).collect(Collectors.toSet());
 
             reporter.print(Diagnostic.Kind.NOTE, "Classes to process: " + classes.size());
             for (TypeElement clazz : classes) {
@@ -136,12 +356,11 @@ public class JsonDoclet implements Doclet {
         final String className = clazz.getQualifiedName().toString();
 
         // Get all public methods
-        final List<ExecutableElement> methods = ElementFilter.methodsIn(clazz.getEnclosedElements())
-                                                             .stream()
-                                                             .filter(method -> method
-                                                                     .getModifiers()
-                                                                     .contains(Modifier.PUBLIC))
-                                                             .toList();
+        final List<ExecutableElement> methods = ElementFilter
+                .methodsIn(clazz.getEnclosedElements())
+                .stream()
+                .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
+                .toList();
 
         for (final ExecutableElement method : methods) {
             final String methodKey = generateMethodKey(className, method);
@@ -150,12 +369,12 @@ public class JsonDoclet implements Doclet {
 
                 // Check if this method name already exists (overload)
                 if (documentation.containsKey(methodKey)) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> existingMethod = (Map<String, Object>) documentation.get(methodKey);
+                    @SuppressWarnings("unchecked") Map<String, Object> existingMethod = (Map<String, Object>) documentation.get(
+                            methodKey);
 
                     // Get overloads array (should always exist since we create it)
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> overloads = (List<Map<String, Object>>) existingMethod.get("overloads");
+                    @SuppressWarnings("unchecked") List<Map<String, Object>> overloads = (List<Map<String, Object>>) existingMethod.get(
+                            "overloads");
                     if (overloads == null) {
                         throw new IllegalStateException("Overloads array should always exist for method: " + methodKey);
                     }
@@ -215,8 +434,8 @@ public class JsonDoclet implements Doclet {
 
         // Process parameters
         List<Map<String, Object>> args = new ArrayList<>();
-        @SuppressWarnings("unchecked")
-        Map<String, String> paramDescriptions = (Map<String, String>) methodDoc.get("paramDescriptions");
+        @SuppressWarnings("unchecked") Map<String, String> paramDescriptions = (Map<String, String>) methodDoc.get(
+                "paramDescriptions");
         if (paramDescriptions == null) {
             paramDescriptions = new HashMap<>();
         }
@@ -270,12 +489,18 @@ public class JsonDoclet implements Doclet {
      * Process JavaDoc comment and extract description, examples, etc.
      */
     private void processDocComment(DocCommentTree docComment, Map<String, Object> methodDoc) {
-        // Get full body description
+        // Get full body description using HTML visitor
         List<? extends DocTree> fullBody = docComment.getFullBody();
-        String description = fullBody.stream()
-                                     .map(DocTree::toString)
-                                     .collect(Collectors.joining(" "))
-                                     .trim();
+        String description = fullBody
+                .stream()
+                .map(tree -> tree.accept(htmlVisitor, null))
+                .collect(Collectors.joining(""))
+                .trim();
+
+        // Wrap description in <p> tag to match Streamlit format
+        if (!description.isEmpty()) {
+            description = "<p>" + description + "</p>";
+        }
 
         methodDoc.put("description", description);
 
@@ -286,10 +511,16 @@ public class JsonDoclet implements Doclet {
         for (DocTree blockTag : docComment.getBlockTags()) {
             if (blockTag instanceof ParamTree paramTree) {
                 String paramName = paramTree.getName().toString();
-                String paramDescription = paramTree.getDescription().stream()
-                                                   .map(DocTree::toString)
-                                                   .collect(Collectors.joining(" "))
-                                                   .trim();
+                String paramDescription = paramTree
+                        .getDescription()
+                        .stream()
+                        .map(tree -> tree.accept(htmlVisitor, null))
+                        .collect(Collectors.joining(""))
+                        .trim();
+                // Wrap parameter description in <p> tag to match Streamlit format
+                if (!paramDescription.isEmpty()) {
+                    paramDescription = "<p>" + paramDescription + "</p>";
+                }
                 paramDescriptions.put(paramName, paramDescription);
             } else if (blockTag instanceof ReturnTree returnTree) {
                 // TODO: Update return description
@@ -364,19 +595,35 @@ public class JsonDoclet implements Doclet {
      * Check if an annotation should be included in the signature
      */
     private boolean isRelevantAnnotation(String annotationName) {
-        return "Nonnull".equals(annotationName)
-               || "Nullable".equals(annotationName)
-               || "Language".equals(annotationName)
-               || "NotNull".equals(annotationName);
+        return "Nonnull".equals(annotationName) || "Nullable".equals(annotationName) || "Language".equals(annotationName) || "NotNull".equals(
+                annotationName);
     }
 
     /**
-     * Get type name for documentation
+     * Clean annotations from type names
+     */
+    private String cleanAnnotations(String typeName) {
+        // Remove annotations with full package names (e.g., @org.jetbrains.annotations.NotNull)
+        typeName = typeName.replaceAll("@[a-zA-Z0-9_.]+\\.[A-Z][a-zA-Z0-9_]*\\s*", "");
+        // Remove simple annotations (e.g., @NotNull, @Nullable)
+        typeName = typeName.replaceAll("@[A-Z][a-zA-Z0-9_]*\\s*", "");
+        // Clean up extra spaces and commas
+        typeName = typeName.replaceAll("\\s*,\\s*", ", ");
+        typeName = typeName.replaceAll("\\s+", " ");
+        return typeName.trim();
+    }
+
+    /**
+     * Get type name for documentation with HTML escaping
      */
     private String getTypeName(TypeMirror type) {
-        return type.toString()
-                   .replace("java.lang.", "")
-                   .replace("java.util.", "");
+        String typeName = type
+                .toString()
+                .replace("java.util.function.", "")
+                .replace("java.lang.", "")
+                .replace("java.util.", "");
+        typeName = cleanAnnotations(typeName);
+        return htmlVisitor.escapeHtml(typeName);
     }
 
     /**
@@ -395,14 +642,16 @@ public class JsonDoclet implements Doclet {
     }
 
     /**
-     * Get type name with generics, simplifying package names
+     * Get type name with generics, simplifying package names and HTML escaping
      */
     private String getTypeNameWithGenerics(TypeMirror type) {
-        return type.toString()
-                   .replace("java.lang.", "")
-                   .replace("java.util.", "")
-                   .replace("io.jeamlit.core.", "")
-                ;
+        String typeName = type
+                .toString()
+                .replace("java.lang.", "")
+                .replace("java.util.", "")
+                .replace("io.jeamlit.core.", "");
+        typeName = cleanAnnotations(typeName);
+        return htmlVisitor.escapeHtml(typeName);
     }
 
     /**
@@ -439,17 +688,16 @@ public class JsonDoclet implements Doclet {
         String componentClassName = returnClassName.substring(0, returnClassName.length() - ".Builder".length());
 
         // Find the component class
-        Set<TypeElement> allClasses = ElementFilter.typesIn(environment.getIncludedElements())
-                                                   .stream()
-                                                   .collect(Collectors.toSet());
+        Set<TypeElement> allClasses = ElementFilter
+                .typesIn(environment.getIncludedElements())
+                .stream()
+                .collect(Collectors.toSet());
 
-        TypeElement componentClass = allClasses.stream()
-                                               .filter(clazz -> clazz
-                                                       .getQualifiedName()
-                                                       .toString()
-                                                       .equals(componentClassName))
-                                               .findFirst()
-                                               .orElse(null);
+        TypeElement componentClass = allClasses
+                .stream()
+                .filter(clazz -> clazz.getQualifiedName().toString().equals(componentClassName))
+                .findFirst()
+                .orElse(null);
 
         if (componentClass == null) {
             return null;
@@ -543,7 +791,8 @@ public class JsonDoclet implements Doclet {
                     String superClassName = currentClass.getQualifiedName().toString();
                     if ("io.jeamlit.core.JtComponentBuilder".equals(superClassName)) {
                         // Include JtComponentBuilder methods but filter out internal ones
-                        List<ExecutableElement> parentMethods = ElementFilter.methodsIn(currentClass.getEnclosedElements())
+                        List<ExecutableElement> parentMethods = ElementFilter
+                                .methodsIn(currentClass.getEnclosedElements())
                                 .stream()
                                 .filter(method -> !methodsToIgnore.contains(method.getSimpleName().toString()))
                                 .toList();
@@ -596,17 +845,11 @@ public class JsonDoclet implements Doclet {
         // Extract builder methods
         List<Map<String, Object>> builderMethods = new ArrayList<>();
         List<ExecutableElement> methods = getAllBuilderMethods(returnTypeElement, environment)
-                                                       .stream()
-                                                       .filter(method -> method
-                                                               .getModifiers()
-                                                               .contains(Modifier.PUBLIC))
-                                                       .filter(method -> !"<init>".equals(method
-                                                                                                  .getSimpleName()
-                                                                                                  .toString()))// Exclude constructors
-                                                       .filter(method -> !"build".equals(method
-                                                                                                 .getSimpleName()
-                                                                                                 .toString()))// Exclude build method
-                                                       .toList();
+                .stream()
+                .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
+                .filter(method -> !"<init>".equals(method.getSimpleName().toString()))// Exclude constructors
+                .filter(method -> !"build".equals(method.getSimpleName().toString()))// Exclude build method
+                .toList();
 
         for (ExecutableElement builderMethod : methods) {
             Map<String, Object> builderMethodDoc = new HashMap<>();

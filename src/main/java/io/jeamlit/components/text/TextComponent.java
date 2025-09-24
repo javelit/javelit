@@ -62,7 +62,7 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
         }
 
         /**
-         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         * A tooltip that gets displayed next to the text. If this is {@code null} (default), no tooltip is displayed.
          */
         public Builder help(final @Nullable String help) {
             this.help = help;

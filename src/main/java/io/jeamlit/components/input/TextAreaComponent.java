@@ -137,7 +137,7 @@ public final class TextAreaComponent extends JtComponent<String> {
         }
 
         /**
-         * A tooltip that gets displayed next to the text. If this is null (default), no tooltip is displayed.
+         * A tooltip that gets displayed next to the text. If this is {@code null} (default), no tooltip is displayed.
          */
         public Builder help(final @Nullable String help) {
             this.help = help;
