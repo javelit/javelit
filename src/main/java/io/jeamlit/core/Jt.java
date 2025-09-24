@@ -183,7 +183,7 @@ public final class Jt {
      * <p>
      * Supported :
      * <ul>
-     *     <li>Emoji shortcodes, such as :+1: and :sunglasses:. For a list of all supported codes, see <a href="https://www.webfx.com/tools/emoji-cheat-sheet/">https://www.webfx.com/tools/emoji-cheat-sheet/</a>.</li>
+     *     <li>Emoji shortcodes, such as {@code :+1:} and {@code :sunglasses:}. For a list of all supported codes, see <a href="https://www.webfx.com/tools/emoji-cheat-sheet/">https://www.webfx.com/tools/emoji-cheat-sheet/</a>.</li>
      *     <li>Tables</li>
      *     <li>Strikethrough</li>
      *     <li>Autolink: turns plain links such as URLs and email addresses into links</li>

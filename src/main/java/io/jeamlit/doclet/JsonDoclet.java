@@ -401,7 +401,7 @@ public class JsonDoclet implements Doclet {
         return type.toString()
                    .replace("java.lang.", "")
                    .replace("java.util.", "")
-                   .replace("io.jeamlit.core", "")
+                   .replace("io.jeamlit.core.", "")
                 ;
     }
 
