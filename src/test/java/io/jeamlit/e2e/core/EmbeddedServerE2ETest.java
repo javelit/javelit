@@ -18,6 +18,7 @@ package io.jeamlit.e2e.core;
 import io.jeamlit.core.Jt;
 import io.jeamlit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_100_MS_MAX_CLICK;
@@ -26,8 +27,8 @@ import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 public class EmbeddedServerE2ETest {
 
     @Test
-    public void testEmbeddedServerE2E() {
-        PlaywrightUtils.runInBrowser(TestApp.class, page -> {
+    public void testEmbeddedServerE2E(final TestInfo testInfo) {
+        PlaywrightUtils.runInDedicatedBrowser(testInfo, TestApp.class, page -> {
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
             assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);

@@ -162,16 +162,35 @@ public final class PlaywrightUtils {
         runInDedicatedBrowser(testInfo, appFile, run);
     }
 
+
     // run an embedded jeamlit server
-    public static void runInBrowser(final @Nonnull Class<?> appClass, final @Nonnull Consumer<Page> run) {
+    public static void runInDedicatedBrowser(final @Nonnull TestInfo testInfo,
+                                             final @Nonnull Class<?> appClass,
+                                             final @Nonnull Consumer<Page> run) {
         Server server = null;
+        BrowserContext context = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
+            context = browser.newContext();
+            // Enable tracing for screenshots and snapshots
+            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             server = JeamlitTestHelper.startEmbeddedServer(appClass);
             page.navigate("http://localhost:" + server.port);
             run.accept(page);
         } finally {
+            if (context != null) {
+                try {
+                    final String testMethodName = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
+                    final String sanitizedTestName = testMethodName.replaceAll("[^a-zA-Z0-9._-]", "_");
+                    context
+                            .tracing()
+                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + ".zip")));
+                } catch (Exception e) {
+                    // Ignore trace save errors
+                }
+                context.close();
+            }
             JeamlitTestHelper.stopServer(server);
         }
     }
