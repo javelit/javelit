@@ -46,7 +46,7 @@
                 color: var(--jt-text-primary);
                 margin: 0;
                 padding: 0;
-                white-space: normal;
+                white-space: pre-wrap;
                 word-wrap: break-word;
                 display: block;
             }
@@ -75,9 +75,7 @@
 
             return html`
                          <div class="text-wrapper">
-                             <div class="text-content">
-                                 ${this.body || ''}
-                             </div>
+                             <div class="text-content">${this.body || ''}</div>
                              ${this.help ? html`
                                  <div class="tooltip">
                                      <jt-tooltip text="${this.help}"></jt-tooltip>
