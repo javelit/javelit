@@ -121,6 +121,23 @@ public class TypedMap implements Map<String, Object> {
                                                                                      (Boolean) v));
     }
 
+    // Typed computeIfAbsent methods
+    public String computeIfAbsentString(String key, Function<String, String> mappingFunction) {
+        return (String) delegate.computeIfAbsent(key, mappingFunction);
+    }
+
+    public Integer computeIfAbsentInt(String key, Function<String, Integer> mappingFunction) {
+        return (Integer) delegate.computeIfAbsent(key, mappingFunction);
+    }
+
+    public Long computeIfAbsentLong(String key, Function<String, Long> mappingFunction) {
+        return (Long) delegate.computeIfAbsent(key, mappingFunction);
+    }
+
+    public Double computeIfAbsentDouble(String key, Function<String, Double> mappingFunction) {
+        return (Double) delegate.computeIfAbsent(key, mappingFunction);
+    }
+
     // Delegate all Map methods
     @Override
     public int size() {
