@@ -69,15 +69,18 @@ public final class NavigationComponent extends JtComponent<JtPage> {
               null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
         final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
         if (homePages.isEmpty()) {
-            builder.pageBuilders.getFirst().home();
-        } else if (homePages.size() > 1) {
+            JtPage.Builder firstPageBuilder = builder.pageBuilders.getFirst();
+            firstPageBuilder.home();
+            this.home =  firstPageBuilder.build();
+        } else if (homePages.size() == 1) {
+            this.home = homePages.getFirst().build();
+        } else {
             throw new IllegalArgumentException(
                     "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
                             ", ",
                             homePages.stream().map(e -> e.page().getSimpleName()).toList())));
 
         }
-        this.home = homePages.getFirst().build();
         builder.pageBuilders.forEach(e -> classNameToClass.put(e.page().getName(), e.page()));
         this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
         this.position = builder.position;
@@ -176,7 +179,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             return;
         }
 
-        if (container.equals(JtContainer.SIDEBAR) ) {
+        if (container.equals(JtContainer.SIDEBAR)) {
             position = NavigationPosition.SIDEBAR;
         } else if (container.equals(JtContainer.MAIN)) {
             position = NavigationPosition.TOP;
