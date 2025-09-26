@@ -93,7 +93,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
         private @Nullable String icon;
         private String width = "stretch";
         private @Nullable Consumer<T> onChange;
-        private boolean valueSetToMin;
+        private boolean valueSetToMin = true;
 
         public Builder(final @Language("markdown") @Nonnull String label, final @Nullable Class<T> valueType) {
             if (label.trim().isEmpty()) {
@@ -251,7 +251,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                 final boolean minValueIsNull = minValue == null;
                 final boolean maxValueIsNull = maxValue == null;
                 if (!minValueIsNull && !maxValueIsNull) {
-                    checkArgument(minValue.doubleValue() > maxValue.doubleValue(),
+                    checkArgument(minValue.doubleValue() < maxValue.doubleValue(),
                                   "minValue must be strictly less than maxValue");
                 }
                 if (minValueIsNull) {
@@ -285,7 +285,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                 final boolean minValueIsNull1 = minValue == null;
                 final boolean maxValueIsNull1 = maxValue == null;
                 if (!minValueIsNull1 && !maxValueIsNull1) {
-                    checkArgument(minValue.doubleValue() > maxValue.doubleValue(),
+                    checkArgument(minValue.doubleValue() < maxValue.doubleValue(),
                                   "minValue must be strictly less than maxValue");
                 }
                 if (minValueIsNull1) {
