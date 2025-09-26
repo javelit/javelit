@@ -86,7 +86,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         this.position = builder.position;
 
         // Set initial page based on current URL, not always home
-        final String currentPath = this.getCurrentPath();
+        final String currentPath = getCurrentPath();
         this.currentValue = getPageFor(currentPath);
     }
 

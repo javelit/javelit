@@ -28,6 +28,8 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import static io.jeamlit.core.utils.Preconditions.checkArgument;
+
 public final class SliderComponent extends JtComponent<Double> {
     final @NotNull String label;
     final double min;
@@ -56,6 +58,7 @@ public final class SliderComponent extends JtComponent<Double> {
         this.min = builder.min;
         this.max = builder.max;
         // builder.value cannot be null - see builder build()
+        //noinspection DataFlowIssue
         this.value = builder.value;
         this.step = builder.step;
         this.format = builder.format;
@@ -195,18 +198,11 @@ public final class SliderComponent extends JtComponent<Double> {
             }
 
             // Validate parameters
-            if (this.label == null || this.label.trim().isEmpty()) {
-                throw new IllegalArgumentException("Label cannot be null or empty");
-            }
-            if (this.min >= this.max) {
-                throw new IllegalArgumentException("min_value must be less than max_value");
-            }
-            if (this.step <= 0) {
-                throw new IllegalArgumentException("step must be positive");
-            }
-            if (this.value < this.min || this.value > this.max) {
-                throw new IllegalArgumentException("value must be between min_value and max_value");
-            }
+            checkArgument(!this.label.trim().isEmpty(), "Label cannot be null or empty");
+            checkArgument(this.min < this.max, "minValue must be strictly smaller than maxValue");
+            checkArgument(this.step > 0, "step must be strictly positive");
+            checkArgument(this.value >= this.min, "value must be greater than minValue");
+            checkArgument(this.value <= this.max, "value must be smaller than maxValue");
 
             return new SliderComponent(this);
         }
@@ -235,10 +231,5 @@ public final class SliderComponent extends JtComponent<Double> {
     @Override
     protected Double validate(Double value) {
         return Math.max(min, Math.min(max, value));
-    }
-
-    @Override
-    protected void resetIfNeeded() {
-        // Slider keeps its value - no reset needed
     }
 }

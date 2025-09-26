@@ -18,12 +18,15 @@ package io.jeamlit.e2e.helpers;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public final class OsUtils {
 
@@ -50,7 +53,7 @@ public final class OsUtils {
         } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
             return OS.LINUX;
         }
-        LOGGER.warn("Unrecognized OS: " + os);
+        LOGGER.warn("Unrecognized OS: {}", os);
         return OS.LINUX;
     }
 
@@ -63,7 +66,9 @@ public final class OsUtils {
      */
     public static void copyResourceDirectory(final String resourcePath, final Path target) throws IOException {
         try {
-            final File resourceDir = new File(OsUtils.class.getClassLoader().getResource(resourcePath).toURI());
+            final URL resource = OsUtils.class.getClassLoader().getResource(resourcePath);
+            checkArgument(resource != null, "Resource not found: " + resourcePath);
+            final File resourceDir = new File(resource.toURI());
             FileUtils.copyDirectory(resourceDir, target.toFile());
         } catch (URISyntaxException e) {
             throw new IOException("Failed to copy resource directory: " + resourcePath, e);

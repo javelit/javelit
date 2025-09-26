@@ -39,11 +39,11 @@ public class ContainerComponentE2ETest {
             public class TestApp {
                 public static void main(String[] args) {
                     Jt.text("Before container").use();
-                    
+            
                     JtContainer container = Jt.container("test-container").use();
                     Jt.text("Inside container").use(container);
                     Jt.button("Container Button").use(container);
-                    
+            
                     Jt.text("After container").use();
                 }
             }

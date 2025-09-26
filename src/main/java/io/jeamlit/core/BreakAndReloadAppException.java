@@ -22,9 +22,9 @@ import jakarta.annotation.Nullable;
 /**
  * Exception used as a control flow.
  * This exception should be thrown to request to break the current app run and restart it from the beginning.
- * A function that takes in input the sessionId can be provided. It will be run after the current run is breaked, after StateManager.endExecution().
+ * A function that takes in input the sessionId can be provided. It will be run after the current run is interrupted, after StateManager.endExecution().
  * This exception should never be surfaced to users.
- *
+ * <p>
  * Note: because this exception is used a control flow, it does not collect a stacktrace.
  * Should not be part of the public API. May be removed for a non-exception-based control flow any time.
  */

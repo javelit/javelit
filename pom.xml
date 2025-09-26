@@ -598,6 +598,7 @@
                                 </goals>
                                 <configuration>
                                     <doclet>io.jeamlit.doclet.JsonDoclet</doclet>
+                                    <!--suppress MavenModelInspection --><!-- the doclet.classpath variable is set dynamically by the plugin above -->
                                     <docletPath>${project.build.outputDirectory}:${doclet.classpath}</docletPath>
                                     <useStandardDocletOptions>false</useStandardDocletOptions>
                                     <sourcepath>${project.build.sourceDirectory}</sourcepath>

@@ -39,12 +39,12 @@ public class ColumnsComponentE2ETest {
             public class TestApp {
                 public static void main(String[] args) {
                     ColumnsComponent.Columns cols = Jt.columns("test-cols", 2).use();
-                    
+            
                     // Add content to first column
                     Jt.text("Column 0 Content").use(cols.col(0));
                     Jt.button("Button 0").use(cols.col(0));
-                    
-                    // Add content to second column  
+            
+                    // Add content to second column
                     Jt.text("Column 1 Content").use(cols.col(1));
                     Jt.button("Button 1").use(cols.col(1));
                 }

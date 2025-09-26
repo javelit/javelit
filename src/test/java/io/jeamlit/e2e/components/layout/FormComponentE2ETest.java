@@ -40,14 +40,14 @@ public class FormComponentE2ETest {
                 public static void main(String[] args) {
                     JtContainer formContainer = Jt.form("test-form").use();
                     Jt.text("used to get out of form").use();
-                    
+            
                     // Add form inputs
                     String name = Jt.textInput("Your Name").value("NOT_SET").use(formContainer);
                     String email = Jt.textInput("Your Email").value("NOT_SET").use(formContainer);
-                    
+            
                     // Add submit button
                     boolean submitted = Jt.formSubmitButton("Submit Form").use(formContainer);
-                    
+            
                     Jt.text("Name: " + name + ", Email: " + email).use();
                 }
             }

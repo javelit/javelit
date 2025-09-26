@@ -79,6 +79,7 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
          * Creates a table from a map where each key is a column name and each value is a list of column data.
          * All columns must have the same number of elements.
          */
+        @SuppressWarnings("unchecked")
         public static <Values extends @NotNull SequencedCollection<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
             return new Builder((Map<String, SequencedCollection<Object>>) col2List, null, null, null);
         }
@@ -187,11 +188,12 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
     }
 
 
-    // used in templates
+    @SuppressWarnings("unused")     // used in templates
     String getColumnsJson() {
         return toJson(columns);
     }
 
+    @SuppressWarnings("unused")     // used in templates
     String getValuesJson() {
         return toJson(values);
     }

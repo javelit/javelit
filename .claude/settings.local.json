@@ -26,7 +26,9 @@
       "WebFetch(domain:echarts.icepear.org)",
       "Bash(cat:*)",
       "Read(//Users/cyril/projects/jeamlit-docs/**)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "mcp__jetbrains__get_file_problems",
+      "mcp__jetbrains__find_files_by_glob"
     ],
     "deny": []
   }

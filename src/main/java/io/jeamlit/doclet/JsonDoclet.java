@@ -229,8 +229,8 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
             content = content.replaceAll("(?m)^\\s*\\*\\s?", "");
             // HTML escape the content
             content = content.replace("&", "&amp;")
-                           .replace("<", "&lt;")
-                           .replace(">", "&gt;");
+                             .replace("<", "&lt;")
+                             .replace(">", "&gt;");
             result.append(content);
         }
 
@@ -266,6 +266,12 @@ public class JsonDoclet implements Doclet {
 
     private Reporter reporter;
     private final HtmlDocTreeVisitor htmlVisitor = new HtmlDocTreeVisitor();
+
+    //method names that should point to another method's documentation
+    private static final Map<String, String> METHOD_ALIASES = Map.of(
+            "Jt.tableFromListColumns", "Jt.table",
+            "Jt.tableFromArrayColumns", "Jt.table"
+    );
 
     @Override
     public void init(Locale locale, Reporter reporter) {
@@ -359,18 +365,34 @@ public class JsonDoclet implements Doclet {
         for (final ExecutableElement method : methods) {
             final String methodKey = generateMethodKey(className, method);
             if (methodKey != null) {
+                // Check if this method is an alias
+                final String targetMethodKey = METHOD_ALIASES.getOrDefault(methodKey, methodKey);
+
                 final Map<String, Object> methodDoc = processMethod(method, environment);
 
                 // Check if this method name already exists (overload)
-                if (documentation.containsKey(methodKey)) {
+                if (documentation.containsKey(targetMethodKey)) {
                     @SuppressWarnings("unchecked") Map<String, Object> existingMethod = (Map<String, Object>) documentation.get(
-                            methodKey);
+                            targetMethodKey);
+
+                    // Combine examples from the new overload if present
+                    String newExamples = (String) methodDoc.get("examples");
+                    if (newExamples != null && !newExamples.isEmpty()) {
+                        String existingExamples = (String) existingMethod.get("examples");
+                        if (existingExamples != null && !existingExamples.isEmpty()) {
+                            // Combine with existing examples, separated by double newline
+                            existingMethod.put("examples", existingExamples + "\n\n" + newExamples);
+                        } else {
+                            // No existing examples, use new ones
+                            existingMethod.put("examples", newExamples);
+                        }
+                    }
 
                     // Get overloads array (should always exist since we create it)
                     @SuppressWarnings("unchecked") List<Map<String, Object>> overloads = (List<Map<String, Object>>) existingMethod.get(
                             "overloads");
                     if (overloads == null) {
-                        throw new IllegalStateException("Overloads array should always exist for method: " + methodKey);
+                        throw new IllegalStateException("Overloads array should always exist for method: " + targetMethodKey);
                     }
 
                     // Add new overload
@@ -392,7 +414,7 @@ public class JsonDoclet implements Doclet {
                     methodDoc.remove("args");
                     methodDoc.remove("signature");
 
-                    documentation.put(methodKey, methodDoc);
+                    documentation.put(targetMethodKey, methodDoc);
                 }
             }
         }
@@ -655,8 +677,7 @@ public class JsonDoclet implements Doclet {
                 .replace("java.lang.", "")
                 .replace("java.util.", "")
                 .replace("io.jeamlit.core.", "")
-                .replace("io.jeamlit.components.multipage.", "")
-                ;
+                .replace("io.jeamlit.components.multipage.", "");
         typeName = cleanAnnotations(typeName);
         return htmlVisitor.escapeHtml(typeName);
     }
@@ -721,7 +742,7 @@ public class JsonDoclet implements Doclet {
                     // Extract the generic type parameter T
                     List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
                     if (!typeArguments.isEmpty()) {
-                        TypeMirror componentType = typeArguments.get(0);
+                        TypeMirror componentType = typeArguments.getFirst();
                         return convertToSimpleType(componentType.toString());
                     }
                 }
@@ -854,6 +875,7 @@ public class JsonDoclet implements Doclet {
         List<ExecutableElement> methods = getAllBuilderMethods(returnTypeElement, environment)
                 .stream()
                 .filter(method -> method.getModifiers().contains(Modifier.PUBLIC))
+                .filter(method -> !method.getModifiers().contains(Modifier.STATIC))// Exclude static methods
                 .filter(method -> !"<init>".equals(method.getSimpleName().toString()))// Exclude constructors
                 .filter(method -> !"build".equals(method.getSimpleName().toString()))// Exclude build method
                 .toList();

@@ -66,6 +66,8 @@ import static io.jeamlit.core.utils.Preconditions.checkState;
  * Add elements with Jt.title(...).use(), Jt.button(...).use(), etc...
  * <p>
  * {@snippet :
+ * import io.jeamlit.core.Jt;
+ *
  * public class MyApp {
  *     public static void main(String[] args) {
  *         Jt.title("Welcome").use();
@@ -91,33 +93,18 @@ public final class Jt {
      * Examples:
      * Basic counter with session state
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
      * public class CounterApp {
      *     public static void main(String[] args) {
-     *         int counter = Jt.sessionState().getInt("counter", 0);
-     *
-     *         Jt.text("Counter: " + counter).use();
+     *         // initialize a counter
+     *         Jt.sessionState().putIfAbsent("counter", 0);
      *
      *         if (Jt.button("Increment").use()) {
-     *             Jt.sessionState().put("counter", counter + 1);
+     *             Jt.sessionState().computeInt("counter", (k, v) -> v + 1);
      *         }
-     *     }
-     * }
-     *}
-     * <p>
-     * Storing user preferences
-     * {@snippet :
-     * public class UserPrefsApp {
-     *     public static void main(String[] args) {
-     *         String name = Jt.sessionState().getString("name", "Guest");
-     *         boolean darkMode = Jt.sessionState().getBoolean("dark_mode", false);
      *
-     *         String newName = Jt.textInput("Your name").value(name).use();
-     *         boolean newDarkMode = Jt.checkbox("Dark mode").value(darkMode).use();
-     *
-     *         Jt.sessionState().put("name", newName);
-     *         Jt.sessionState().put("dark_mode", newDarkMode);
-     *
-     *         Jt.text("Hello, " + newName + "!").use();
+     *         Jt.text("Counter: " + Jt.sessionState().get("counter")).use();
      *     }
      * }
      *}
@@ -137,19 +124,15 @@ public final class Jt {
      * Examples:
      * Accessing component values by key
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
      * public class ComponentsStateApp {
      *     public static void main(String[] args) {
-     *         Jt.textInput("Username").key("username").use();
-     *         Jt.checkbox("Remember me").key("remember").use();
-     *         Jt.slider("Volume").key("volume").min(0).max(100).value(50).use();
+     *         double volumeFromUse = Jt.slider("Volume").key("volume").min(0).max(100).value(50).use();
+     *         double volumeFromState = Jt.componentsState().getDouble("volume");
      *
-     *         String username = Jt.componentsState().getString("username", "");
-     *         boolean remember = Jt.componentsState().getBoolean("remember", false);
-     *         int volume = Jt.componentsState().getInt("volume", 50);
-     *
-     *         Jt.text("Username: " + username).use();
-     *         Jt.text("Remember: " + remember).use();
-     *         Jt.text("Volume: " + volume).use();
+     *         Jt.text("Volume from slider return value: " + volumeFromUse).use();
+     *         Jt.text("Value from components state map: " + volumeFromState).use();
      *     }
      * }
      *}
@@ -166,40 +149,50 @@ public final class Jt {
      * Put values in this map that are meant to be shared across all users.
      * For instance: database long-lived connections, ML models loaded weights, etc...
      * <p>
-     * See https://docs.jeamlit.io/get-started/fundamentals/advanced-concepts#caching
+     * See <a href="https://docs.jeamlit.io/get-started/fundamentals/advanced-concepts#caching">documentation</a>.
      * <p>
      * Examples:
      * Caching expensive computations
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
      * public class CacheApp {
-     *     public static void main(String[] args) {
-     *         String cacheKey = "fibonacci_100";
-     *         Long result = Jt.cache().get(cacheKey, Long.class);
+     *      public static void main(String[] args) {
+     *          String cacheKey = "long_running_operation";
+     *          Long result = Jt.cache().getLong(cacheKey);
      *
-     *         if (result == null) {
-     *             Jt.text("Computing Fibonacci(100)...").use();
-     *             result = computeFibonacci(100);
-     *             Jt.cache().put(cacheKey, result);
-     *         }
+     *          if (result == null) {
+     *              Jt.text("Performing a long running operation. This will take a few seconds").use();
+     *              result = long_running_operation();
+     *              Jt.cache().put(cacheKey, result);
+     *          }
      *
-     *         Jt.text("Fibonacci(100) = " + result).use();
-     *     }
+     *          Jt.text("Result of long operation: " + result).use();
+     *          Jt.text("Refresh or Open the page in another tab: the long running operation result will be cached").use();
+     *      }
      *
-     *     private static long computeFibonacci(int n) {
-     *         // Expensive computation
-     *         return n <= 1 ? n : computeFibonacci(n-1) + computeFibonacci(n-2);
-     *     }
-     * }
+     *      private static long long_running_operation(){
+     *          try {
+     *              Thread.sleep(5000);
+     *          } catch (InterruptedException ignored) {
+     *          }
+     *          return 42;
+     *      }
+     *  }
      *}
      * <p>
      * Sharing data across users
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
      * public class SharedDataApp {
      *     public static void main(String[] args) {
-     *         int totalVisits = Jt.cache().getInt("total_visits", 0);
-     *         Jt.cache().put("total_visits", totalVisits + 1);
+     *         // initialization
+     *         Jt.cache().putIfAbsent("counter", 0);
+     *         // increment visits
+     *         int totalVisits = Jt.cache().computeInt("counter", (k, v) -> v + 1);
      *
-     *         Jt.text("Total app visits: " + (totalVisits + 1)).use();
+     *         Jt.text("Total app visits: " + totalVisits).use();
      *     }
      * }
      *}
@@ -218,27 +211,24 @@ public final class Jt {
      * Examples:
      * Conditional content based on current path
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
      * public class PathApp {
      *     public static void main(String[] args) {
-     *         String currentPath = Jt.urlPath();
+     *         Jt.navigation(Jt.page(HomePage.class), Jt.page(DetailsPage.class)).use();
      *
-     *         switch (currentPath) {
-     *             case "/" -> {
-     *                 Jt.title("Home Page").use();
-     *                 Jt.text("Welcome to the home page!").use();
-     *             }
-     *             case "/about" -> {
-     *                 Jt.title("About Page").use();
-     *                 Jt.text("Learn more about us.").use();
-     *             }
-     *             case "/contact" -> {
-     *                 Jt.title("Contact Page").use();
-     *                 Jt.text("Get in touch with us.").use();
-     *             }
-     *             default -> {
-     *                 Jt.title("Page Not Found").use();
-     *                 Jt.text("Current path: " + currentPath).use();
-     *             }
+     *         Jt.text("The current path is: " + Jt.urlPath()).use();
+     *     }
+     *
+     *     public static class HomePage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Home Page").use();
+     *         }
+     *     }
+     *
+     *     public static class DetailsPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Details Page").use();
      *         }
      *     }
      * }
@@ -257,40 +247,20 @@ public final class Jt {
      * Examples:
      * Using query parameters for app configuration
      * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class QueryParamsApp {
      *     public static void main(String[] args) {
      *         var params = Jt.urlQueryParameters();
      *
-     *         String theme = params.getOrDefault("theme", List.of("light")).get(0);
-     *         String lang = params.getOrDefault("lang", List.of("en")).get(0);
+     *         String name = params.getOrDefault("name", List.of("unknown user")).get(0);
      *
      *         Jt.title("App Settings").use();
-     *         Jt.text("Theme: " + theme).use();
-     *         Jt.text("Language: " + lang).use();
-     *
-     *         // URL: ?theme=dark&lang=fr would show:
-     *         // Theme: dark
-     *         // Language: fr
-     *     }
-     * }
-     *}
-     * <p>
-     * Handling multiple values for same parameter
-     * {@snippet :
-     * public class MultiValueParamsApp {
-     *     public static void main(String[] args) {
-     *         var params = Jt.urlQueryParameters();
-     *         List<String> tags = params.getOrDefault("tags", List.of());
-     *
-     *         Jt.title("Selected Tags").use();
-     *         if (tags.isEmpty()) {
-     *             Jt.text("No tags selected").use();
-     *         } else {
-     *             for (String tag : tags) {
-     *                 Jt.text("- " + tag).use();
-     *             }
-     *         }
-     *         // URL: ?tags=java&tags=web&tags=app would show all three tags
+     *         Jt.text("Hello " + name).use();
+     *         // URL: ?name=Alice would show:
+     *         // Hello Alice
      *     }
      * }
      *}
@@ -310,17 +280,31 @@ public final class Jt {
      * Examples:
      * Safe copying from cache to prevent mutations
      * {@snippet :
+     * import java.util.ArrayList;
+     * import java.util.List;
+     *
+     * import io.jeamlit.core.Jt;
+     *
+     * import com.fasterxml.jackson.core.type.TypeReference;
+     *
      * public class DeepCopyApp {
      *     public static void main(String[] args) {
-     *         // Get shared data from cache
-     *         List<String> sharedList = Jt.cache().get("shared_list", new TypeReference<List<String>>() {});
+     *         // init
+     *         List<String> sharedList = (List<String>) Jt.cache().get("shared_list");
      *         if (sharedList == null) {
-     *             sharedList = List.of("item1", "item2", "item3");
+     *             sharedList = new ArrayList<>();
+     *             sharedList.add("item1");
+     *             sharedList.add("item2");
      *             Jt.cache().put("shared_list", sharedList);
      *         }
      *
      *         // Create a safe copy to avoid mutations affecting other sessions
-     *         List<String> safeCopy = Jt.deepCopy(sharedList, new TypeReference<List<String>>() {});
+     *         List<String> safeCopy = Jt.deepCopy(sharedList, new TypeReference<>() {
+     *         });
+     *
+     *         if (Jt.button("remove elements from user lists").use()) {
+     *             safeCopy.clear();
+     *         }
      *
      *         Jt.text("Original list size: " + sharedList.size()).use();
      *         Jt.text("Safe copy size: " + safeCopy.size()).use();
@@ -351,12 +335,10 @@ public final class Jt {
      *         Jt.text("This is some plain text.").use();
      *
      *         Jt.text("""
-     *             This is preformatted text.
-     *             It preserves    spacing
-     *             and line breaks.
-     *             """).use();
-     *
-     *         Jt.text("Fixed-width font makes this text perfect for code snippets.").use();
+     *                         This is preformatted text.
+     *                         It preserves    spacing
+     *                         and line breaks.
+     *                         """).use();
      *     }
      * }
      *}
@@ -374,13 +356,15 @@ public final class Jt {
      * Examples:
      * Basic title and title with markdown formatting and styling
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class TitleApp {
      *     public static void main(String[] args) {
      *         // Basic title
      *         Jt.title("This is a title").use();
      *
      *         // Title with Markdown and styling
-     *         Jt.title("_Jeamlit_ is :blue[cool] :sunglasses:").use();
+     *         Jt.title("_Jeamlit_ is **cool** :sunglasses:").use();
      *     }
      * }
      *}
@@ -405,16 +389,15 @@ public final class Jt {
      * Examples:
      * Basic markdown formatting and colored text styling
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class MarkdownApp {
      *     public static void main(String[] args) {
      *         // Basic text formatting
      *         Jt.markdown("*Jeamlit* is **really** ***cool***.").use();
      *
-     *         // Colored text and styling
-     *         Jt.markdown("""
-     *             :red[Jeamlit] :orange[can] :green[write] :blue[text] :violet[in]
-     *             :gray[pretty] :rainbow[colors] and :blue-background[highlight] text.
-     *             """).use();
+     *         // Divider
+     *         Jt.markdown("---").use();
      *
      *         // Emoji and line breaks
      *         Jt.markdown("Here's a bouquet — :tulip::cherry_blossom::rose::hibiscus::sunflower::blossom:").use();
@@ -434,6 +417,8 @@ public final class Jt {
      * Examples:
      * Basic section separator
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class DividerApp {
      *     public static void main(String[] args) {
      *         Jt.title("Section 1").use();
@@ -457,6 +442,8 @@ public final class Jt {
      * Examples:
      * Simple error message
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ErrorApp {
      *     public static void main(String[] args) {
      *         String username = Jt.textInput("Username").use();
@@ -472,6 +459,8 @@ public final class Jt {
      * <p>
      * Error with markdown formatting
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class FormattedErrorApp {
      *     public static void main(String[] args) {
      *         Jt.error("**Connection Failed**: Unable to connect to the database. Please check your settings.").use();
@@ -497,31 +486,13 @@ public final class Jt {
      * Examples:
      * Simple HTML content
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class HtmlApp {
      *     public static void main(String[] args) {
      *         Jt.html("<h3>Custom HTML Header</h3>").use();
      *         Jt.html("<p style='color: blue;'>This is blue text</p>").use();
      *         Jt.html("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>").use();
-     *     }
-     * }
-     *}
-     * <p>
-     * HTML table
-     * {@snippet :
-     * public class HtmlTableApp {
-     *     public static void main(String[] args) {
-     *         String htmlTable = """
-     *             <table border="1" style="border-collapse: collapse;">
-     *               <thead>
-     *                 <tr><th>Name</th><th>Age</th><th>City</th></tr>
-     *               </thead>
-     *               <tbody>
-     *                 <tr><td>Alice</td><td>30</td><td>New York</td></tr>
-     *                 <tr><td>Bob</td><td>25</td><td>London</td></tr>
-     *               </tbody>
-     *             </table>
-     *             """;
-     *         Jt.html(htmlTable).use();
      *     }
      * }
      *}
@@ -544,6 +515,10 @@ public final class Jt {
      * Examples:
      * Loading HTML from file
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.nio.file.Path;
+     *
      * public class HtmlFileApp {
      *     public static void main(String[] args) {
      *         // Assumes you have a file "content.html" in your project
@@ -564,6 +539,8 @@ public final class Jt {
      * Examples:
      * Simple code block
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class CodeApp {
      *     public static void main(String[] args) {
      *         Jt.code("public class HelloWorld {}").use();
@@ -573,16 +550,16 @@ public final class Jt {
      * <p>
      * Multi-line code with syntax highlighting
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class MultilineCodeApp {
      *     public static void main(String[] args) {
-     *         String javaCode = """
-     *             public class Calculator {
-     *                 public int add(int a, int b) {
-     *                     return a + b;
-     *                 }
-     *             }
-     *             """;
-     *         Jt.code(javaCode).language("java").use();
+     *         String pythonCode = """
+     *                 import numpy as np
+     *
+     *                 a = np.arange(15).reshape(3, 5)
+     *                 """;
+     *         Jt.code(pythonCode).language("python").use();
      *     }
      * }
      *}
@@ -599,6 +576,8 @@ public final class Jt {
      * Examples:
      * Basic button usage and interaction
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ButtonApp {
      *     public static void main(String[] args) {
      *         if (Jt.button("Say hello").use()) {
@@ -622,6 +601,8 @@ public final class Jt {
      * Examples:
      * Basic checkbox usage
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class CheckboxApp {
      *     public static void main(String[] args) {
      *         boolean agree = Jt.checkbox("I agree").use();
@@ -645,6 +626,8 @@ public final class Jt {
      * Examples:
      * Simple toggle
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ToggleApp {
      *     public static void main(String[] args) {
      *         boolean enabled = Jt.toggle("Enable notifications").use();
@@ -656,6 +639,8 @@ public final class Jt {
      * <p>
      * Toggle with default value
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ToggleDefaultApp {
      *     public static void main(String[] args) {
      *         boolean autoSave = Jt.toggle("Auto-save")
@@ -681,6 +666,8 @@ public final class Jt {
      * Examples:
      * Basic integer slider usage
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class SliderApp {
      *     public static void main(String[] args) {
      *         int age = Jt.slider("How old are you?")
@@ -718,6 +705,8 @@ public final class Jt {
      * Examples:
      * Basic container usage and adding elements out of order
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ContainerApp {
      *     public static void main(String[] args) {
      *         var container = Jt.container("my-container").use();
@@ -753,6 +742,10 @@ public final class Jt {
      * Examples:
      * Dynamic content replacement
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class EmptyApp {
      *     public static void main(String[] args) {
      *         var placeholder = Jt.empty("content").use();
@@ -772,16 +765,19 @@ public final class Jt {
      * }
      *}
      * <p>
-     * Conditional element display
+     * Simple animations
      * {@snippet :
-     * public class ConditionalEmptyApp {
-     *     public static void main(String[] args) {
-     *         var statusContainer = Jt.empty("status").use();
-     *         boolean showStatus = Jt.checkbox("Show status").use();
+     * import io.jeamlit.core.Jt;import tech.catheu.jeamlit.core.Jt;
      *
-     *         if (showStatus) {
-     *             Jt.text("Status: Active").use(statusContainer);
-     *         }
+     * public class AnimationEmptyApp {
+     *     public static void main(String[] args) {
+     *         var emptyContainer = Jt.empty("content").use();
+     *          for (i = 10; i>=1; i--) {
+     *               Jt.text(i + "!").use(emptyContainer);
+     *                Thread.sleep(1000);
+     *           }
+     *           Jt.text("Happy new Year !").use(emptyContainer);
+     *           Jt.button("rerun").use();
      *     }
      * }
      *}
@@ -811,6 +807,8 @@ public final class Jt {
      * Examples:
      * Basic three-column layout with headers and content
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ColumnsApp {
      *     public static void main(String[] args) {
      *         var cols = Jt.columns("main-cols", 3).use();
@@ -850,6 +848,10 @@ public final class Jt {
      * Examples:
      * Basic tabbed interface
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class TabsApp {
      *     public static void main(String[] args) {
      *         var tabs = Jt.tabs("content-tabs", List.of("Overview", "Details", "Settings")).use();
@@ -863,6 +865,8 @@ public final class Jt {
      * <p>
      * Data analysis tabs
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class DataTabsApp {
      *     public static void main(String[] args) {
      *         var tabs = Jt.tabs("analysis", List.of("Sales", "Marketing", "Finance")).use();
@@ -907,15 +911,15 @@ public final class Jt {
      * Examples:
      * Basic expander with explanation content
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ExpanderApp {
      *     public static void main(String[] args) {
      *         var expander = Jt.expander("explanation", "See explanation").use();
      *
      *         Jt.text("""
-     *             The chart above shows some numbers I picked for you.
-     *             I rolled actual dice for these, so they're *guaranteed* to
-     *             be random.
-     *             """).use(expander);
+     *                 [A great explanation on the why and how of life.]
+     *                 """).use(expander);
      *     }
      * }
      *}
@@ -936,17 +940,19 @@ public final class Jt {
      * rerun the app while keeping the popover open. Clicking outside of the popover will close it.
      * <p>
      * To add elements to the returned popover:
-     * <pre>
-     * {@code
+     * {@snippet :
      * var popover = Jt.popover("my-popover", "Advanced configuration").use();
      * Jt.yourElement().use(popover);
-     * }
-     * </pre>
+     *}
      * See examples below.
      * <p>
      * Examples:
      * Settings popover
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class PopoverApp {
      *     public static void main(String[] args) {
      *         var settings = Jt.popover("settings", "⚙️ Settings").use();
@@ -954,12 +960,19 @@ public final class Jt {
      *         Jt.text("Configure your preferences:").use(settings);
      *         boolean notifications = Jt.checkbox("Enable notifications").use(settings);
      *         String theme = Jt.selectBox("Theme", List.of("Light", "Dark")).use(settings);
+     *
+     *         if (notifications) {
+     *             Jt.text("Notifications are enabled").use();
+     *         }
+     *         Jt.text("The selected theme is " + theme).use();
      *     }
      * }
      *}
      * <p>
      * Help popover with information
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class HelpPopoverApp {
      *     public static void main(String[] args) {
      *         Jt.text("Username:").use();
@@ -1009,6 +1022,8 @@ public final class Jt {
      * Examples:
      * User registration form
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class FormApp {
      *     public static void main(String[] args) {
      *         var form = Jt.form("registration").use();
@@ -1028,16 +1043,19 @@ public final class Jt {
      * <p>
      * Survey form
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class SurveyFormApp {
      *     public static void main(String[] args) {
      *         var form = Jt.form("survey").use();
-     *
-     *         int satisfaction = Jt.slider("Satisfaction (1-10)").min(1).max(10).value(5).use(form);
+     *         double satisfaction = Jt.slider("Satisfaction (1-10)").min(1).max(10).value(5).use(form);
      *         String feedback = Jt.textArea("Additional feedback").use(form);
      *         String department = Jt.selectBox("Department",
-     *             List.of("Engineering", "Marketing", "Sales", "Support")).use(form);
+     *                                          List.of("Engineering", "Marketing", "Sales", "Support")).use(form);
      *
-     *         if (Jt.formSubmitButton("Submit Survey").use()) {
+     *         if (Jt.formSubmitButton("Submit Survey").use(form)) {
      *             Jt.text("Thank you for your feedback!").use();
      *             Jt.text("Satisfaction: " + satisfaction + "/10").use();
      *         }
@@ -1061,6 +1079,8 @@ public final class Jt {
      * Examples:
      * Basic form submit button
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class FormSubmitApp {
      *     public static void main(String[] args) {
      *         var form = Jt.form("contact").use();
@@ -1068,7 +1088,7 @@ public final class Jt {
      *         String name = Jt.textInput("Your Name").use(form);
      *         String message = Jt.textArea("Message").use(form);
      *
-     *         if (Jt.formSubmitButton("Send Message").use()) {
+     *         if (Jt.formSubmitButton("Send Message").use(form)) {
      *             Jt.text("Message sent successfully!").use();
      *             Jt.text("From: " + name).use();
      *         }
@@ -1078,6 +1098,8 @@ public final class Jt {
      * <p>
      * Multiple submit buttons in same form
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class MultiSubmitApp {
      *     public static void main(String[] args) {
      *         var form = Jt.form("document").use();
@@ -1085,11 +1107,11 @@ public final class Jt {
      *         String title = Jt.textInput("Document Title").use(form);
      *         String content = Jt.textArea("Content").use(form);
      *
-     *         if (Jt.formSubmitButton("Save Draft").key("save").use()) {
+     *         if (Jt.formSubmitButton("Save Draft").key("save").use(form)) {
      *             Jt.text("Draft saved: " + title).use();
      *         }
      *
-     *         if (Jt.formSubmitButton("Publish").key("publish").use()) {
+     *         if (Jt.formSubmitButton("Publish").key("publish").use(form)) {
      *             Jt.text("Document published: " + title).use();
      *         }
      *     }
@@ -1108,6 +1130,8 @@ public final class Jt {
      * Examples:
      * Simple text input
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class TextInputApp {
      *     public static void main(String[] args) {
      *         String name = Jt.textInput("Your name").use();
@@ -1121,11 +1145,13 @@ public final class Jt {
      * <p>
      * Text input with validation
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ValidatedTextInputApp {
      *     public static void main(String[] args) {
      *         String email = Jt.textInput("Email address")
-     *             .placeholder("Enter your email")
-     *             .use();
+     *                          .placeholder("Enter your email")
+     *                          .use();
      *
      *         if (!email.isEmpty() && !email.contains("@")) {
      *             Jt.error("Please enter a valid email address").use();
@@ -1148,6 +1174,8 @@ public final class Jt {
      * Examples:
      * Simple text area
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class TextAreaApp {
      *     public static void main(String[] args) {
      *         String feedback = Jt.textArea("Your feedback").use();
@@ -1162,12 +1190,14 @@ public final class Jt {
      * <p>
      * Text area for code input
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class CodeTextAreaApp {
      *     public static void main(String[] args) {
      *         String code = Jt.textArea("Enter your Java code")
-     *             .height(200)
-     *             .placeholder("public class MyClass {\n    // Your code here\n}")
-     *             .use();
+     *                         .height(200)
+     *                         .placeholder("public class MyClass {\n    // Your code here\n}")
+     *                         .use();
      *
      *         if (!code.isEmpty()) {
      *             Jt.text("Code preview:").use();
@@ -1189,6 +1219,11 @@ public final class Jt {
      * Examples:
      * Simple date input
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.time.LocalDate;
+     * import java.time.Period;
+     *
      * public class DateInputApp {
      *     public static void main(String[] args) {
      *         LocalDate birthday = Jt.dateInput("Your birthday").use();
@@ -1196,24 +1231,6 @@ public final class Jt {
      *         if (birthday != null) {
      *             int age = Period.between(birthday, LocalDate.now()).getYears();
      *             Jt.text("You are " + age + " years old").use();
-     *         }
-     *     }
-     * }
-     *}
-     * <p>
-     * Date range input
-     * {@snippet :
-     * public class DateRangeInputApp {
-     *     public static void main(String[] args) {
-     *         DateRange range = Jt.dateInput("Select date range")
-     *             .range(true)
-     *             .use();
-     *
-     *         if (range != null && range.start() != null && range.end() != null) {
-     *             long days = ChronoUnit.DAYS.between(range.start(), range.end());
-     *             Jt.text("Selected range: " + days + " days").use();
-     *             Jt.text("From: " + range.start()).use();
-     *             Jt.text("To: " + range.end()).use();
      *         }
      *     }
      * }
@@ -1231,29 +1248,14 @@ public final class Jt {
      * Examples:
      * Simple number input
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class NumberInputApp {
      *     public static void main(String[] args) {
-     *         Number quantity = Jt.numberInput("Quantity").min(1).max(100).use();
+     *         Number quantity = Jt.numberInput("Quantity").minValue(1).maxValue(100).use();
      *
      *         if (quantity != null) {
      *             Jt.text("You selected: " + quantity).use();
-     *         }
-     *     }
-     * }
-     *}
-     * <p>
-     * Price input with validation
-     * {@snippet :
-     * public class PriceInputApp {
-     *     public static void main(String[] args) {
-     *         Double price = Jt.numberInput("Price ($)", Double.class)
-     *             .min(0.01)
-     *             .step(0.01)
-     *             .placeholder("0.00")
-     *             .use();
-     *
-     *         if (price != null && price > 0) {
-     *             Jt.text(String.format("Price: $%.2f", price)).use();
      *         }
      *     }
      * }
@@ -1271,12 +1273,14 @@ public final class Jt {
      * Examples:
      * Integer input with specific type
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class TypedNumberInputApp {
      *     public static void main(String[] args) {
      *         Integer age = Jt.numberInput("Age", Integer.class)
-     *             .min(0)
-     *             .max(150)
-     *             .use();
+     *                         .minValue(0)
+     *                         .maxValue(150)
+     *                         .use();
      *
      *         if (age != null) {
      *             String category = age < 18 ? "Minor" : age < 65 ? "Adult" : "Senior";
@@ -1300,6 +1304,10 @@ public final class Jt {
      * Examples:
      * Simple radio selection
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class RadioApp {
      *     public static void main(String[] args) {
      *         String size = Jt.radio("Select size",
@@ -1314,18 +1322,19 @@ public final class Jt {
      * <p>
      * Radio with custom objects
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ProductRadioApp {
      *     public static void main(String[] args) {
-     *         record Product(String name, double price) {
-     *             @Override public String toString() { return name + " ($" + price + ")"; }
-     *         }
+     *         record Product(String name, double price) {}
      *
-     *         Product selected = Jt.radio("Choose product",
-     *             List.of(
-     *                 new Product("Basic Plan", 9.99),
-     *                 new Product("Pro Plan", 19.99),
-     *                 new Product("Enterprise Plan", 49.99)
-     *             )).use();
+     *         Product selected = Jt
+     *                 .radio("Choose product",
+     *                        List.of(new Product("Basic Plan", 9.99),
+     *                                new Product("Pro Plan", 19.99),
+     *                                new Product("Enterprise Plan", 49.99)))
+     *                 .formatFunction(e -> e.name + " ($" + e.price + ")")
+     *                 .use();
      *
      *         if (selected != null) {
      *             Jt.text("You chose: " + selected.name()).use();
@@ -1349,10 +1358,14 @@ public final class Jt {
      * Examples:
      * Simple dropdown selection
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class SelectBoxApp {
      *     public static void main(String[] args) {
      *         String country = Jt.selectBox("Select your country",
-     *             List.of("United States", "Canada", "United Kingdom", "Germany", "France")).use();
+     *                                       List.of("United States", "Canada", "United Kingdom", "Germany", "France")).use();
      *
      *         if (country != null) {
      *             Jt.text("Selected country: " + country).use();
@@ -1361,25 +1374,17 @@ public final class Jt {
      * }
      *}
      * <p>
-     * Dropdown with default value and processing
+     * Dropdown with default value
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
      * public class ProcessingSelectBoxApp {
      *     public static void main(String[] args) {
      *         String priority = Jt.selectBox("Task priority",
-     *             List.of("Low", "Medium", "High", "Critical"))
-     *             .value("Medium")
-     *             .use();
-     *
-     *         if (priority != null) {
-     *             String color = switch (priority) {
-     *                 case "Low" -> "green";
-     *                 case "Medium" -> "yellow";
-     *                 case "High" -> "orange";
-     *                 case "Critical" -> "red";
-     *                 default -> "gray";
-     *             };
-     *             Jt.text("Priority: " + priority + " (" + color + ")").use();
-     *         }
+     *                                        List.of("Low", "Medium", "High", "Critical"))
+     *                             .index(1)
+     *                             .use();
+     *         Jt.text("Priority: " + priority).use();
      *     }
      * }
      *}
@@ -1399,14 +1404,26 @@ public final class Jt {
      * Examples:
      * Basic page creation with custom title and icon
      * {@snippet :
-     * public class NavigationApp {
-     *     public static void main(String[] args) {
-     *         var page = Jt.navigation(
-     *             Jt.page(FirstPage.class).title("First page").icon("🔥"),
-     *             Jt.page(SecondPage.class).title("Second page").icon(":material/favorite:")
-     *         ).use();
+     * import tech.catheu.jeamlit.core.Jt;
      *
-     *         page.run();
+     * public class NavigationApp {
+     *     public static class FirstPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("First Page").use();
+     *         }
+     *     }
+     *
+     *     public static class SecondPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Second Page").use();
+     *         }
+     *     }
+     *
+     *     public static void main(String[] args) {
+     *         var page = Jt
+     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
+     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .use();
      *     }
      * }
      *}
@@ -1432,16 +1449,26 @@ public final class Jt {
      * Examples:
      * Basic multipage navigation setup
      * {@snippet :
-     * public class MultiPageApp {
-     *     public static void main(String[] args) {
-     *         var currentPage = Jt.navigation(
-     *             Jt.page(CreateAccountPage.class).title("Create your account"),
-     *             Jt.page(ManageAccountPage.class).title("Manage your account"),
-     *             Jt.page(LearnPage.class).title("Learn about us"),
-     *             Jt.page(TrialPage.class).title("Try it out")
-     *         ).use();
+     * import tech.catheu.jeamlit.core.Jt;
      *
-     *         currentPage.run();
+     * public class NavigationApp {
+     *     public static class FirstPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("First Page").use();
+     *         }
+     *     }
+     *
+     *     public static class SecondPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Second Page").use();
+     *         }
+     *     }
+     *
+     *     public static void main(String[] args) {
+     *         var page = Jt
+     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
+     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .use();
      *     }
      * }
      *}
@@ -1460,6 +1487,43 @@ public final class Jt {
      * <p>
      * If an external page is specified, clicking the {@code Jt.pageLink} element opens a new tab to the specified page.
      * The current script run will continue if not complete.
+     * <p>
+     * Examples:
+     * A multipage app with the sidebar hidden.
+     * A footer replaces the sidebar. The footer contains links to all pages of the app and an external link.
+     * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * public class ToDelete {
+     *
+     *     public static class FirstPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("First Page").use();
+     *             Jt.text("first page content").use();
+     *         }
+     *     }
+     *
+     *     public static class SecondPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Second Page").use();
+     *             Jt.text("Second page content").use();
+     *         }
+     *     }
+     *
+     *     public static void main(String[] args) {
+     *         var page = Jt
+     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
+     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .hidden()
+     *                 .use();
+     *
+     *         Jt.divider().use();
+     *         Jt.pageLink(FirstPage.class).use();
+     *         Jt.pageLink(SecondPage.class).use();
+     *         Jt.pageLink("https://github.com/jeamlit/jeamlit", "Github project").icon(":link:").use();
+     *     }
+     * }
+     *}
      *
      * @param pageClass The class of the page to link to in a multipage app.
      */
@@ -1486,6 +1550,30 @@ public final class Jt {
 
     /**
      * Display a file uploader widget.
+     * <p>
+     * Examples:
+     * Basic file upload with processing
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     * import io.jeamlit.core.JtUploadedFile;
+     *
+     * import java.util.List;
+     *
+     * public class FileUploadApp {
+     *     public static void main(String[] args) {
+     *         var uploadedFiles = Jt.fileUploader("Choose a CSV file")
+     *                               .type(List.of(".csv"))
+     *                               .use();
+     *
+     *         if (!uploadedFiles.isEmpty()) {
+     *             JtUploadedFile file = uploadedFiles.getFirst();
+     *             Jt.text("Uploaded file: " + file.filename()).use();
+     *             Jt.text("File size: " + file.content().length + " bytes").use();
+     *             Jt.text("Content type: " + file.contentType()).use();
+     *         }
+     *     }
+     * }
+     *}
      *
      * @param label A short label explaining to the user what this file uploader is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
      */
@@ -1498,17 +1586,24 @@ public final class Jt {
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
      * <p>
      * Examples:
-     * Basic line chart with random data
+     * Plot from a `Chart` (`Bar` extends `Chart`).
      * {@snippet :
-     * public class LineChartApp {
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import org.icepear.echarts.Bar;
+     *
+     * public class BarChartApp {
      *     public static void main(String[] args) {
-     *         // Create sample data (equivalent to pandas DataFrame with random numbers)
-     *         List<Number> data = List.of(1, 5, 2, 6, 2, 1);
+     *         Bar bar = new Bar()
+     *                 .setLegend()
+     *                 .setTooltip("item")
+     *                 .addXAxis(new String[] { "Matcha Latte", "Milk Tea", "Cheese Cocoa", "Walnut Brownie" })
+     *                 .addYAxis()
+     *                 .addSeries("2015", new Number[] { 43.3, 83.1, 86.4, 72.4 })
+     *                 .addSeries("2016", new Number[] { 85.8, 73.4, 65.2, 53.9 })
+     *                 .addSeries("2017", new Number[] { 93.7, 55.1, 82.5, 39.1 });
      *
-     *         var lineChart = new org.icepear.echarts.charts.line.Line()
-     *             .addData(data);
-     *
-     *         Jt.echarts(lineChart).use();
+     *         Jt.echarts(bar).use();
      *     }
      * }
      *}
@@ -1522,6 +1617,39 @@ public final class Jt {
     /**
      * Display a chart using ECharts library.
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
+     * <p>
+     * Examples:
+     * Plot from an `Option`.
+     * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import org.icepear.echarts.Option;
+     * import org.icepear.echarts.charts.bar.BarSeries;
+     * import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
+     * import org.icepear.echarts.components.coord.cartesian.ValueAxis;
+     * import org.icepear.echarts.origin.util.SeriesOption;
+     *
+     * public class OptionChartApp {
+     *     public static void main(String[] args) {
+     *         CategoryAxis xAxis = new CategoryAxis()
+     *                 .setType("category")
+     *                 .setData(new String[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" });
+     *
+     *         ValueAxis yAxis = new ValueAxis().setType("value");
+     *
+     *         BarSeries series = new BarSeries()
+     *                 .setData(new Number[] { 120, 200, 150, 80, 70, 110, 130 })
+     *                 .setType("bar");
+     *
+     *         Option option = new Option()
+     *                 .setXAxis(xAxis)
+     *                 .setYAxis(yAxis)
+     *                 .setSeries(new SeriesOption[] { series });
+     *
+     *         Jt.echarts(option).use();
+     *     }
+     * }
+     *}
      *
      * @param chartOption The ECharts {@code Option} object to display
      */
@@ -1532,6 +1660,42 @@ public final class Jt {
     /**
      * Display a chart using ECharts library.
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
+     * <p>
+     * Examples:
+     * Plot from a Json String
+     * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import org.icepear.echarts.Option;
+     * import org.icepear.echarts.charts.bar.BarSeries;
+     * import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
+     * import org.icepear.echarts.components.coord.cartesian.ValueAxis;
+     * import org.icepear.echarts.origin.util.SeriesOption;
+     *
+     * public class OptionChartApp {
+     *     public static void main(String[] args) {
+     *         String echartsOptionJson = """
+     *                 {
+     *                   "xAxis": {
+     *                     "type": "category",
+     *                     "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+     *                   },
+     *                   "yAxis": {
+     *                     "type": "value"
+     *                   },
+     *                   "series": [
+     *                     {
+     *                       "data": [150, 230, 224, 218, 135, 147, 260],
+     *                       "type": "line"
+     *                     }
+     *                   ]
+     *                 }
+     *                 """;
+     *
+     *         Jt.echarts(echartsOptionJson).use();
+     *     }
+     * }
+     *}
      *
      * @param chartOptionJson The ECharts option as a JSON string
      */
@@ -1545,15 +1709,18 @@ public final class Jt {
      * Examples:
      * Basic table with data objects
      * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     *
      * public class TableApp {
      *     public static void main(String[] args) {
-     *         record Person(String name, int age, String city) {}
+     *         record Person(String name, int age, String city) {
+     *         }
      *
-     *         List<Object> data = List.of(
-     *             new Person("Alice", 25, "New York"),
-     *             new Person("Bob", 30, "San Francisco"),
-     *             new Person("Charlie", 35, "Chicago")
-     *         );
+     *         List<Object> data = List.of(new Person("Alice", 25, "New York"),
+     *                                     new Person("Bob", 30, "San Francisco"),
+     *                                     new Person("Charlie", 35, "Chicago"));
      *
      *         Jt.table(data).use();
      *     }
@@ -1568,6 +1735,26 @@ public final class Jt {
 
     /**
      * Display a static table.
+     * <p>
+     * Examples:
+     * Basic table with array of objects
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * public class TableArrayApp {
+     *     public static void main(String[] args) {
+     *         record Product(String name, double price, boolean inStock) {}
+     *
+     *         Product[] products = {
+     *             new Product("Laptop", 999.99, true),
+     *             new Product("Mouse", 25.50, false),
+     *             new Product("Keyboard", 75.00, true)
+     *         };
+     *
+     *         Jt.table(products).use();
+     *     }
+     * }
+     *}
      *
      * @param rows The array of objects representing table rows
      */
@@ -1577,6 +1764,27 @@ public final class Jt {
 
     /**
      * Display a static table.
+     * <p>
+     * Examples:
+     * Table from column arrays
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * import java.util.Map;
+     *
+     * public class TableColumnsArrayApp {
+     *     public static void main(String[] args) {
+     *         Map<String, Object[]> salesData = Map.of(
+     *                 "Month", new String[]{"Jan", "Feb", "Mar", "Apr"},
+     *                 "Sales", new Integer[]{1200, 1350, 1100, 1450},
+     *                 "Target", new Integer[]{1000, 1300, 1200, 1400},
+     *                 "Achieved", new Boolean[]{true, true, false, true}
+     *         );
+     *
+     *         Jt.tableFromArrayColumns(salesData).use();
+     *     }
+     * }
+     *}
      *
      * @param cols A map where keys are column names and values are arrays of column data
      */
@@ -1586,6 +1794,28 @@ public final class Jt {
 
     /**
      * Display a static table.
+     * <p>
+     * Examples:
+     * Table from column lists
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * import java.util.List;
+     * import java.util.Map;
+     *
+     * public class TableColumnsListApp {
+     *     public static void main(String[] args) {
+     *         Map<String, List<Object>> employeeData = Map.of(
+     *                 "Name", List.of("Alice", "Bob", "Charlie", "Diana"),
+     *                 "Department", List.of("Engineering", "Sales", "Marketing", "Engineering"),
+     *                 "Salary", List.of(95000, 75000, 68000, 102000),
+     *                 "Remote", List.of(true, false, true, true)
+     *         );
+     *
+     *         Jt.tableFromListColumns(employeeData).use();
+     *     }
+     * }
+     *}
      *
      * @param cols     A map where keys are column names and values are collections of column data
      * @param <Values> The type of collection containing the column values
@@ -1602,6 +1832,46 @@ public final class Jt {
      * When {@code Jt.switchPage} is called, the current page execution stops and the specified page runs as if the
      * user clicked on it in the sidebar navigation. The specified page must be recognized by Jeamlit's multipage
      * architecture (your main app class or an app class in the available pages).
+     * <p>
+     * Examples:
+     * Conditional page switching with checkboxes
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * public class SwitchPageApp {
+     *     public static class WelcomePage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Welcome Page").use();
+     *             Jt.text("Please complete the requirements below to proceed:").use();
+     *
+     *             boolean agreedToTerms = Jt.checkbox("I agree with Bob").use();
+     *             boolean confirmedAge = Jt.checkbox("I agree with Alice").use();
+     *
+     *             if (agreedToTerms && confirmedAge) {
+     *                 Jt.text("All requirements met! Redirecting to dashboard...").use();
+     *                 Jt.switchPage(DashboardPage.class);
+     *             } else {
+     *                 Jt.text("Please check both boxes to continue.").use();
+     *             }
+     *         }
+     *     }
+     *
+     *     public static class DashboardPage {
+     *         public static void main(String[] args) {
+     *             Jt.title("Dashboard").use();
+     *             Jt.text("Welcome to your dashboard!").use();
+     *             Jt.text("You have successfully completed the requirements.").use();
+     *         }
+     *     }
+     *
+     *     public static void main(String[] args) {
+     *         Jt.navigation(Jt.page(WelcomePage.class).title("Welcome").icon("👋").home(),
+     *                       Jt.page(DashboardPage.class).title("Dashboard").icon("📊"))
+     *           .hidden()
+     *           .use();
+     *     }
+     * }
+     *}
      */
     public static void switchPage(final @Nonnull Class<?> pageApp) {
         // note: the design here is pretty hacky

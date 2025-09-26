@@ -253,9 +253,4 @@ public final class TextAreaComponent extends JtComponent<String> {
         return value != null ? value : "";
     }
 
-    @Override
-    protected void resetIfNeeded() {
-        // Text area keeps its value - no reset needed
-    }
-
 }

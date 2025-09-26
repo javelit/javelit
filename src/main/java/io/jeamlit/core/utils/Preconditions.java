@@ -176,7 +176,7 @@ public class Preconditions {
                                             .getName() + '@' + Integer.toHexString(System.identityHashCode(
                     o));
             // Logger is created inline with fixed name to avoid forcing Proguard to create another class.
-            LOG.warn("Exception during lenientFormat for " + objectToString, e);
+            LOG.warn("Exception during lenientFormat for {}", objectToString, e);
             return "<" + objectToString + " threw " + e.getClass().getName() + ">";
         }
     }

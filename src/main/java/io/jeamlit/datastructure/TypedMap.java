@@ -20,6 +20,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A Map wrapper that provides typed access methods for session state.
  * Implements the full Map interface while adding type-safe getters and compute methods.
@@ -175,7 +177,7 @@ public class TypedMap implements Map<String, Object> {
     }
 
     @Override
-    public void putAll(Map<? extends String, ? extends Object> m) {
+    public void putAll(@NotNull Map<? extends String, ? extends Object> m) {
         delegate.putAll(m);
     }
 
@@ -185,23 +187,26 @@ public class TypedMap implements Map<String, Object> {
     }
 
     @Override
-    public Set<String> keySet() {
+    public @NotNull Set<String> keySet() {
         return delegate.keySet();
     }
 
     @Override
-    public Collection<Object> values() {
+    public @NotNull Collection<Object> values() {
         return delegate.values();
     }
 
     @Override
-    public Set<Entry<String, Object>> entrySet() {
+    public @NotNull Set<Entry<String, Object>> entrySet() {
         return delegate.entrySet();
     }
 
     @Override
     public boolean equals(Object o) {
-        return delegate.equals(o);
+        if (o instanceof TypedMap otherMap) {
+            return delegate.equals(otherMap.delegate);
+        }
+        return false;
     }
 
     @Override
@@ -251,22 +256,25 @@ public class TypedMap implements Map<String, Object> {
     }
 
     @Override
-    public Object computeIfAbsent(String key, Function<? super String, ? extends Object> mappingFunction) {
+    public Object computeIfAbsent(String key, @NotNull Function<? super String, ? extends Object> mappingFunction) {
         return delegate.computeIfAbsent(key, mappingFunction);
     }
 
     @Override
-    public Object computeIfPresent(String key, BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
+    public Object computeIfPresent(String key,
+                                   @NotNull BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
         return delegate.computeIfPresent(key, remappingFunction);
     }
 
     @Override
-    public Object compute(String key, BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
+    public Object compute(String key, @NotNull BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
         return delegate.compute(key, remappingFunction);
     }
 
     @Override
-    public Object merge(String key, Object value, BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
+    public Object merge(String key,
+                        @NotNull Object value,
+                        @NotNull BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
         return delegate.merge(key, value, remappingFunction);
     }
 }

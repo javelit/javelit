@@ -274,9 +274,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                     } else {
                         value = minValue;
                     }
-                } else {
-                    // value will be null until user interacts with the component
-                }
+                } // else value will be null until user interacts with the component
 
                 return new NumberInputComponent<>(this);
             }
@@ -308,9 +306,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                     } else {
                         value = minValue;
                     }
-                } else {
-                    // value will be null until user interacts with the component
-                }
+                } // else value will be null until user interacts with the component
 
                 return new NumberInputComponent<>(this);
             }
@@ -383,11 +379,6 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
                 return valueType;
             }
         };
-    }
-
-    @Override
-    protected void resetIfNeeded() {
-        // Number input keeps its value - no reset needed
     }
 
 }

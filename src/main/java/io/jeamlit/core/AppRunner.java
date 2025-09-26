@@ -146,14 +146,14 @@ final class AppRunner {
             error = error.getCause();
         }
         final String exceptionSimpleName = error.getClass().getSimpleName();
-        final String errorMesssage = optional(error.getMessage()).orElse("[ no error message ]");
+        final String errorMessage = optional(error.getMessage()).orElse("[ no error message ]");
         final String stackTrace = stackTraceString(error);
         final String googleLink = "https://www.google.com/search?q=" + percentEncode(
-                exceptionSimpleName + " " + errorMesssage);
+                exceptionSimpleName + " " + errorMessage);
         final String chatGptLink = "https://chatgpt.com/?q=" + percentEncode(String.join("\n",
                                                                                          List.of("Help me fix the following issue. I use Java Jeamlit and got:",
                                                                                                  exceptionSimpleName,
-                                                                                                 errorMesssage,
+                                                                                                 errorMessage,
                                                                                                  stackTrace)));
 
         return """
@@ -165,7 +165,7 @@ final class AppRunner {
                 ```
                 [Ask Google](%s) • [Ask ChatGPT](%s)
                 """.formatted(exceptionSimpleName,
-                              errorMesssage,
+                              errorMessage,
                               stackTrace,
                               googleLink,
                               chatGptLink);

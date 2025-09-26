@@ -39,20 +39,20 @@ class SwitchPageE2ETest {
                         Jt.page(HomePage.class).home(),
                         Jt.page(ProductsPage.class).urlPath("/products")
                     ).use();
-                    
+            
                     Jt.text("Footer - always visible").use();
                 }
-                
+            
                 public static class HomePage {
                     public static void main(String[] args) {
                         Jt.title("Home Page").use();
                         Jt.text("Welcome to the home page!").use();
-                        
+            
                         // Test programmatic switch to Products page
                         if (Jt.button("Go to Products").use()) {
                             Jt.switchPage(ProductsPage.class);
                         }
-                        
+            
                         // This should throw since ContactPage is not registered
                         if (Jt.button("Switch to Unregistered Page").use()) {
                             Jt.switchPage(ContactPage.class);
@@ -64,14 +64,14 @@ class SwitchPageE2ETest {
                     public static void main(String[] args) {
                         Jt.title("Products Page").use();
                         Jt.text("Browse our amazing products!").use();
-                        
+            
                         // Test programmatic switch back to Home page
                         if (Jt.button("Back to Home").use()) {
                             Jt.switchPage(HomePage.class);
                         }
                     }
                 }
-                
+            
                 public static class ContactPage {
                     public static void main(String[] args) {
                         Jt.text("This class is not registered in the multipage app.").use();

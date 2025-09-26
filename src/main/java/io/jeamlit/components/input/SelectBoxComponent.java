@@ -241,7 +241,7 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
 
     @Override
     protected TypeReference<T> getTypeReference() {
-        return new TypeReference<T>() {
+        return new TypeReference<>() {
         };
     }
 

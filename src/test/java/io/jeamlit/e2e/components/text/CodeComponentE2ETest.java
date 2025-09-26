@@ -36,13 +36,13 @@ public class CodeComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.code(\"\"\"
+                    Jt.code(\"""
                         public class HelloWorld {
                             public static void main(String[] args) {
                                 System.out.println("Hello, World!");
                             }
                         }
-                        \"\"\").use();
+                        \""").use();
                 }
             }
             """;

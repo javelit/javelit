@@ -41,7 +41,7 @@ import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
 
-    public static String FRONTEND_FILENAME_KEY = "filename";
+    public static final String FRONTEND_FILENAME_KEY = "filename";
 
     public enum MultipleFiles {
         FALSE,
@@ -165,7 +165,7 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
          * </ul>
          */
         public Builder width(final @Nonnull String width) {
-            if (width != null && !"stretch".equals(width) && !width.matches("\\d+")) {
+            if (!"stretch".equals(width) && !width.matches("\\d+")) {
                 throw new IllegalArgumentException("width must be 'stretch' or a pixel value (integer). Got: " + width);
             }
             this.width = width;

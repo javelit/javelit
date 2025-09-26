@@ -40,7 +40,7 @@ public class EchartsComponentE2ETest {
                         .addXAxis(new String[]{"Mon", "Tue", "Wed"})
                         .addYAxis()
                         .addSeries("Sales", new Number[]{120, 200, 150});
-                    
+            
                     Jt.echarts(chart).use();
                 }
             }

@@ -41,7 +41,7 @@ public class PopoverComponentE2ETest {
                     JtContainer popoverContainer = Jt.popover("test-popover", "Click me").use();
                     Jt.text("Content inside popover").use(popoverContainer);
                     Jt.button("Popover Button").use(popoverContainer);
-                    
+            
                     Jt.text("Content outside popover").use();
                 }
             }

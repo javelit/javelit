@@ -124,7 +124,7 @@ public enum BuildSystem {
         }
 
         @Override
-        void compile(@org.jetbrains.annotations.Nullable String[] customCompileCmdArgs) throws IOException, InterruptedException {
+        void compile(@org.jetbrains.annotations.Nullable String[] customCompileCmdArgs) {
             // do nothing
         }
     },

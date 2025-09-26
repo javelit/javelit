@@ -44,27 +44,27 @@ public class PageLinkComponentE2ETest {
                         Jt.page(Home.class).title("Home").home(),
                         Jt.page(About.class).title("About").urlPath("/about")
                     ).use();
-                    
+            
                     Jt.text("Navigation Links:").use();
-                    
+            
                     // Internal page links with various configurations
                     Jt.pageLink(Home.class).icon("🏠").use();
                     Jt.pageLink(About.class).icon("ℹ️").width("stretch").use();
-                    
+            
                     // External link
                     Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
-                    
+            
                     // Disabled link
                     Jt.pageLink(About.class).disabled(true).use();
                 }
-                
+            
                 public static class Home {
                     public static void main(String[] args) {
                         Jt.text("Home page content").use();
                         Jt.pageLink(About.class).use();
                     }
                 }
-                
+            
                 public static class About {
                     public static void main(String[] args) {
                         Jt.text("About page content").use();
@@ -113,17 +113,17 @@ public class PageLinkComponentE2ETest {
                         Jt.page(Home.class).title("Home").home(),
                         Jt.page(About.class).title("About").urlPath("/about")
                     ).use();
-                    
+            
                     Jt.pageLink(Home.class).icon("🏠").use();
                     Jt.pageLink(About.class).icon("ℹ️").use();
                 }
-                
+            
                 public static class Home {
                     public static void main(String[] args) {
                         Jt.text("Home page").use();
                     }
                 }
-                
+            
                 public static class About {
                     public static void main(String[] args) {
                         Jt.text("About page").use();

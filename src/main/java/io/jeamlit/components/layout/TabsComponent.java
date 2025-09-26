@@ -143,7 +143,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     }
 
     @Override
-    protected void beforeUse(final JtContainer container) {
+    protected void beforeUse(final @NotNull JtContainer container) {
         final JtContainer baseContainer = container.child(getKey());
         this.currentValue = new Tabs(baseContainer, this.tabs);
     }

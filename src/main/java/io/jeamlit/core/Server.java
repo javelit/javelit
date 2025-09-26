@@ -233,7 +233,7 @@ public final class Server implements StateManager.RenderServer {
 
     private class IndexHandler implements HttpHandler {
         @Override
-        public void handleRequest(HttpServerExchange exchange) throws Exception {
+        public void handleRequest(HttpServerExchange exchange) {
             // get or create session, then generate and attach XSRF token cookie
             final Session currentSession = Sessions.getOrCreateSession(exchange);
             final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
@@ -321,7 +321,7 @@ public final class Server implements StateManager.RenderServer {
         }
 
         @Override
-        public void handleRequest(HttpServerExchange exchange) throws Exception {
+        public void handleRequest(HttpServerExchange exchange) {
             switch (exchange.getRequestMethod().toString()) {
                 case "PUT" -> {
                     handlePuts(exchange);
@@ -529,6 +529,7 @@ public final class Server implements StateManager.RenderServer {
         sendMessage(sessionId, message);
     }
 
+    @SuppressWarnings("ClassEscapesDefinedScope") // StateManager.ExecutionStatus is not meant to be public but is used as interface method param which must be public
     @Override
     public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
         final Map<String, Object> message = new HashMap<>();

@@ -148,13 +148,13 @@ public class Cli implements Callable<Integer> {
                     logger.warn("Desktop not supported, cannot open browser automatically");
                 }
             } catch (Exception e) {
-                logger.error("Could not open browser. Please open browser manually: " + e.getMessage());
+                logger.error("Could not open browser. Please open browser manually. ", e);
             }
         }
     }
 
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         CommandLine.usage(this, System.out);
         return 0;
     }
@@ -172,7 +172,7 @@ public class Cli implements Callable<Integer> {
 
     public static class JeamlitVersionProvider implements CommandLine.IVersionProvider {
         @Override
-        public String[] getVersion() throws Exception {
+        public String[] getVersion() {
             return new String[]{
                     optional(Cli.class.getPackage())
                             .map(Package::getImplementationTitle)

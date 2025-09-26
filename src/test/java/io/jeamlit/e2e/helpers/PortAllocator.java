@@ -33,7 +33,7 @@ final class PortAllocator {
      * Tries to find an available port starting from BASE_PORT.
      * Times out after 10 seconds if no port can be found.
      */
-    protected static synchronized int getNextAvailablePort() {
+    static synchronized int getNextAvailablePort() {
         final CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 int port = BASE_PORT + portOffset.getAndIncrement();
@@ -42,6 +42,7 @@ final class PortAllocator {
                 }
                 // Small delay to avoid tight loop
                 try {
+                    //noinspection BusyWait
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

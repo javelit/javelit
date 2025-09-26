@@ -63,15 +63,15 @@ public final class JtContainer implements JtComponent.NotAState {
         }
     }
 
-    public final JtContainer child(final @NotNull String key) {
+    public JtContainer child(final @NotNull String key) {
         return new JtContainer(key, this, false, false);
     }
 
-    public final JtContainer inPlaceChild(final @NotNull String key) {
+    public JtContainer inPlaceChild(final @NotNull String key) {
         return new JtContainer(key, this, true, false);
     }
 
-    public final JtContainer formChild(final @NotNull String key) {
+    public JtContainer formChild(final @NotNull String key) {
         final String parentFormComponentKey = this.getParentFormComponentKey();
         checkArgument(parentFormComponentKey == null,
                       "Attempting to create a form with key %s in a form %s. A form cannot be embedded inside another form.",

@@ -18,6 +18,7 @@ package io.jeamlit.components.input;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -61,8 +62,8 @@ public class DateInputComponent extends JtComponent<LocalDate> {
     private DateInputComponent(final @Nonnull Builder builder) {
         super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
         this.label = markdownToHtml(builder.label, true);
-        this.minValue = builder.minValue;
-        this.maxValue = builder.maxValue;
+        this.minValue = Objects.requireNonNull(builder.minValue, "Implementation error. Please reach out to support.");
+        this.maxValue = Objects.requireNonNull(builder.maxValue, "Implementation error. Please reach out to support.");
         this.help = builder.help;
         this.disabled = builder.disabled;
         this.format = builder.format;

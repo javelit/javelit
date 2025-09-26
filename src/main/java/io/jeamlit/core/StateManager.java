@@ -75,13 +75,13 @@ final class StateManager {
      */
     private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
-    protected enum ExecutionStatus {
+    enum ExecutionStatus {
         BEGIN,
         RUNNING, // can be used to provide a hearbeat for very long runs - not used for the moment
         END
     }
 
-    protected interface RenderServer {
+    interface RenderServer {
         // component can be null to trigger a full cleanup
         void send(final @Nonnull String sessionId,
                   final @Nullable JtComponent<?> component,

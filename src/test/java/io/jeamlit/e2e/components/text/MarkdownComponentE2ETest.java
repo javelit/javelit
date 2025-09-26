@@ -109,7 +109,7 @@ public class MarkdownComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.markdown(\"\"\"
+                    Jt.markdown(\"""
                         # Main Title
 
                         This is a paragraph with [a link](https://example.com).
@@ -123,7 +123,7 @@ public class MarkdownComponentE2ETest {
                         ```
 
                         > This is a blockquote
-                        \"\"\").use();
+                        \""").use();
                 }
             }
             """;

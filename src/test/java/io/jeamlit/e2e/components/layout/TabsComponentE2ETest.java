@@ -41,15 +41,15 @@ public class TabsComponentE2ETest {
             public class TestApp {
                 public static void main(String[] args) {
                     TabsComponent.Tabs tabs = Jt.tabs("test-tabs", List.of("Tab 0", "Tab 1", "Tab 2")).use();
-                    
+            
                     // Content for Tab 1
                     Jt.text("Content of Tab 0").use(tabs.tab(0));
                     Jt.button("Button in Tab 0").use(tabs.tab(0));
-                    
+            
                     // Content for Tab 2
                     Jt.text("Content of Tab 1").use(tabs.tab(1));
                     Jt.button("Button in Tab 1").use(tabs.tab(1));
-                    
+            
                     // Content for Tab 3
                     Jt.text("Content of Tab 2").use(tabs.tab(2));
                     Jt.button("Button in Tab 2").use(tabs.tab(2));

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * End-to-end tests for compilation error handling.
@@ -35,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CompilationErrorE2ETest {
 
     @Test
-    void testCompilationErrorModalAppears(TestInfo testInfo) throws IOException, InterruptedException {
+    void testCompilationErrorModalAppears(TestInfo testInfo) {
         // App with compilation error (missing semicolon)
         final @Language("java") String invalidApp = """
                 import io.jeamlit.core.Jt;

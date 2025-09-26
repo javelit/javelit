@@ -258,9 +258,4 @@ public final class TextInputComponent extends JtComponent<String> {
 
         return value != null ? value : "";
     }
-
-    @Override
-    protected void resetIfNeeded() {
-        // Text input keeps its value - no reset needed
-    }
 }

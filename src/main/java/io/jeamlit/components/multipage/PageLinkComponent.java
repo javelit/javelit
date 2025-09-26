@@ -114,7 +114,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         /**
          * The text to display for the link. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
          */
-        public Builder label(final @Nonnull String label) {
+        public Builder label(final @Language("markdown") @Nonnull String label) {
             checkArgument(!label.isBlank(), "Label cannot be empty");
             this.label = label;
             return this;
