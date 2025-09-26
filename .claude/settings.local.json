@@ -24,7 +24,9 @@
       "Bash(open http://localhost:8081/SettingsPage)",
       "Bash(open http://localhost:8081/TestQueryPage)",
       "WebFetch(domain:echarts.icepear.org)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//Users/cyril/projects/jeamlit-docs/**)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

@@ -39,36 +39,7 @@ import javax.tools.Diagnostic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sun.source.doctree.AttributeTree;
-import com.sun.source.doctree.AuthorTree;
-import com.sun.source.doctree.CommentTree;
-import com.sun.source.doctree.DeprecatedTree;
-import com.sun.source.doctree.DocCommentTree;
-import com.sun.source.doctree.DocRootTree;
-import com.sun.source.doctree.DocTree;
-import com.sun.source.doctree.DocTreeVisitor;
-import com.sun.source.doctree.EndElementTree;
-import com.sun.source.doctree.EntityTree;
-import com.sun.source.doctree.ErroneousTree;
-import com.sun.source.doctree.IdentifierTree;
-import com.sun.source.doctree.InheritDocTree;
-import com.sun.source.doctree.LinkTree;
-import com.sun.source.doctree.LiteralTree;
-import com.sun.source.doctree.ParamTree;
-import com.sun.source.doctree.ReferenceTree;
-import com.sun.source.doctree.ReturnTree;
-import com.sun.source.doctree.SeeTree;
-import com.sun.source.doctree.SerialDataTree;
-import com.sun.source.doctree.SerialFieldTree;
-import com.sun.source.doctree.SerialTree;
-import com.sun.source.doctree.SinceTree;
-import com.sun.source.doctree.StartElementTree;
-import com.sun.source.doctree.TextTree;
-import com.sun.source.doctree.ThrowsTree;
-import com.sun.source.doctree.UnknownBlockTagTree;
-import com.sun.source.doctree.UnknownInlineTagTree;
-import com.sun.source.doctree.ValueTree;
-import com.sun.source.doctree.VersionTree;
+import com.sun.source.doctree.*;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jdk.javadoc.doclet.Doclet;
@@ -242,6 +213,29 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
     @Override
     public String visitVersion(VersionTree node, Void p) {
         return visitOther(node, p);
+    }
+
+    @Override
+    public String visitSnippet(SnippetTree node, Void p) {
+        // Convert @snippet tags to <pre><code> HTML blocks
+        StringBuilder result = new StringBuilder();
+        result.append("<pre><code class=\"language-java\">");
+
+        // Get the snippet body - it's a TextTree, not a List
+        TextTree body = node.getBody();
+        if (body != null) {
+            String content = body.getBody();
+            // Remove leading asterisks from JavaDoc formatting and trim
+            content = content.replaceAll("(?m)^\\s*\\*\\s?", "");
+            // HTML escape the content
+            content = content.replace("&", "&amp;")
+                           .replace("<", "&lt;")
+                           .replace(">", "&gt;");
+            result.append(content);
+        }
+
+        result.append("</code></pre>");
+        return result.toString();
     }
 
     @Override
@@ -491,18 +485,29 @@ public class JsonDoclet implements Doclet {
     private void processDocComment(DocCommentTree docComment, Map<String, Object> methodDoc) {
         // Get full body description using HTML visitor
         List<? extends DocTree> fullBody = docComment.getFullBody();
-        String description = fullBody
+        String fullDescription = fullBody
                 .stream()
                 .map(tree -> tree.accept(htmlVisitor, null))
                 .collect(Collectors.joining(""))
                 .trim();
 
-        // Wrap description in <p> tag to match Streamlit format
+        // Split on "Examples:" marker at beginning of line
+        String[] parts = fullDescription.split("\n Examples:");
+
+        // Part before marker goes to "description"
+        String description = parts[0].trim();
         if (!description.isEmpty()) {
             description = "<p>" + description + "</p>";
+            methodDoc.put("description", description);
         }
 
-        methodDoc.put("description", description);
+        // Part after marker goes to "examples"
+        if (parts.length > 1) {
+            String examples = parts[1].trim();
+            if (!examples.isEmpty()) {
+                methodDoc.put("examples", examples);
+            }
+        }
 
         // Extract parameter descriptions from @param tags
         final Map<String, String> paramDescriptions = new HashMap<>();
