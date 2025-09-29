@@ -1662,7 +1662,7 @@ public final class Jt {
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
      * <p>
      * Examples:
-     * Plot from a Json String
+     * Plot from a JSON {@code String}
      * {@snippet :
      * import tech.catheu.jeamlit.core.Jt;
      *
