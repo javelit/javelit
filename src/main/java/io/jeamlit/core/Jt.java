@@ -1586,7 +1586,7 @@ public final class Jt {
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
      * <p>
      * Examples:
-     * Plot from a `Chart` (`Bar` extends `Chart`).
+     * Plot from a {@code Chart} ({@code Bar} extends {@code Chart}).
      * {@snippet :
      * import tech.catheu.jeamlit.core.Jt;
      *
@@ -1619,7 +1619,7 @@ public final class Jt {
      * See <a href="https://echarts.icepear.org/" target="_blank">echarts-java documentation</a> for more info.
      * <p>
      * Examples:
-     * Plot from an `Option`.
+     * Plot from an {@code Option}.
      * {@snippet :
      * import tech.catheu.jeamlit.core.Jt;
      *
