@@ -252,10 +252,10 @@ public final class Jt {
     }
 
     /**
-     * Return the current query parameters as a map.
+     * Return the current URL query parameters as a map.
      * <p>
-     * For instance: {@code ?key1=foo&key2=bar&key2=fizz} will return
-     * {"key1": ["foo"], "key2": ["bar", "fizz"]}
+     * For instance: {@code ?key1=foo&key2=bar&key2=fizz} in the URL will return
+     * {@code {"key1": ["foo"], "key2": ["bar", "fizz"]}}
      * <p>
      * Examples:
      * Using query parameters for app configuration
@@ -364,7 +364,7 @@ public final class Jt {
 
     /**
      * Display text in title formatting.
-     * Each document should have a single title(), although this is not enforced.
+     * Each document should have a single {@code Jt.title()}, although this is not enforced.
      * <p>
      * Examples:
      * Basic title and title with markdown formatting and styling
