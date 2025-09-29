@@ -79,8 +79,8 @@ import static io.jeamlit.core.utils.Preconditions.checkState;
  * }
  *}
  * <p>
- * Get the session state with Jt.sessionState().
- * Get the app cache Jt.cache().
+ * Get the session state with {@link Jt#sessionState}.
+ * Get the app cache with {@link Jt#cache}.
  */
 public final class Jt {
 
@@ -196,6 +196,19 @@ public final class Jt {
      *     }
      * }
      *}
+     * <p>
+     * Deleting values in the cache:
+     * <pre>
+     * {@code
+     * // remove all values
+     * Jt.cache().clear();
+     * // remove a single key
+     * Jt.cache().remove("my_key");
+     * }
+     * </pre>
+     * {@code TypedMap} simply extends the java {@code Map} type with quality-of-life
+     * casting methods like {@code getInt}, {@code getDouble}, {@code getString}, etc...
+     *
      */
     public static TypedMap cache() {
         return StateManager.getCache();

@@ -527,6 +527,7 @@ public class JsonDoclet implements Doclet {
         if (parts.length > 1) {
             String examples = parts[1].trim();
             if (!examples.isEmpty()) {
+                examples = "<p>" + examples + "</p>";
                 methodDoc.put("examples", examples);
             }
         }
