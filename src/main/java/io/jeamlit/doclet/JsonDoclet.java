@@ -479,9 +479,12 @@ public class JsonDoclet implements Doclet {
             String componentReturnType = extractComponentReturnType(method.getEnclosingElement(),
                                                                     returnType,
                                                                     environment);
-            returnDoc.put("type_name", componentReturnType != null ? componentReturnType : getTypeName(returnType));
+            final String typeName = componentReturnType != null ? componentReturnType : getTypeName(returnType);
+            returnDoc.put("type_name", typeName);
             returnDoc.put("is_generator", false);
-            returnDoc.put("description", ""); // Will be filled from @return tag
+            // not filled from the @return tag - it would break the semantic of return tag in the html javadoc
+            // for the moment hardcoded to a good enough value
+            returnDoc.put("description", "The current %s value of the component.".formatted(typeName));
             returnDoc.put("return_name", null);
             returns.add(returnDoc);
         }
@@ -914,7 +917,8 @@ public class JsonDoclet implements Doclet {
             TypeMirror builderReturnType = builderMethod.getReturnType();
             if (!"void".equals(builderReturnType.toString())) {
                 Map<String, Object> returnDoc = new HashMap<>();
-                returnDoc.put("type_name", getTypeName(builderReturnType));
+                final String typeName = getTypeName(builderReturnType);
+                returnDoc.put("type_name", typeName);
                 returnDoc.put("is_generator", false);
                 returnDoc.put("description", "");
                 returnDoc.put("return_name", null);
