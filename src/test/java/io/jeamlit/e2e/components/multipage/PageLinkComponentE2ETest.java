@@ -40,10 +40,12 @@ public class PageLinkComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.navigation(
+                    final var currentPage = Jt.navigation(
                         Jt.page(Home.class).title("Home").home(),
                         Jt.page(About.class).title("About").urlPath("/about")
                     ).use();
+            
+                    currentPage.run();
             
                     Jt.text("Navigation Links:").use();
             
@@ -109,11 +111,12 @@ public class PageLinkComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.navigation(
+                    final var currentPage = Jt.navigation(
                         Jt.page(Home.class).title("Home").home(),
                         Jt.page(About.class).title("About").urlPath("/about")
                     ).use();
             
+                    currentPage.run();
                     Jt.pageLink(Home.class).icon("🏠").use();
                     Jt.pageLink(About.class).icon("ℹ️").use();
                 }

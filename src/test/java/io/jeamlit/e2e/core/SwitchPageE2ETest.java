@@ -35,11 +35,12 @@ class SwitchPageE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.navigation(
+                    var currentPage = Jt.navigation(
                         Jt.page(HomePage.class).home(),
                         Jt.page(ProductsPage.class).urlPath("/products")
                     ).use();
             
+                    currentPage.run();
                     Jt.text("Footer - always visible").use();
                 }
             
