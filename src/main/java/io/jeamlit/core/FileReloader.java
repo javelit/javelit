@@ -58,7 +58,8 @@ class FileReloader extends Reloader {
     final BuildSystem buildSystem;
     private final @Nullable String[] customClasspathCmdArgs;
     private final @Nullable String[] customCompileCmdArgs;
-
+    // the classloader is kept alive because some classes may be loaded dynamically at execution time, not at defineClass() time
+    private @Nullable HotClassLoader currentClassLoader;
 
     /**
      * Recompile the app class. Returns the Class.
@@ -108,18 +109,27 @@ class FileReloader extends Reloader {
                     "Could not determine class name in file %s. File is empty, invalid or there are only inner classes?".formatted(
                             javaFile));
         }
+
+        if (currentClassLoader != null) {
+            try {
+                currentClassLoader.close();
+            } catch (IOException e) {
+                LOG.warn("Failed to close previous classloader", e);
+            }
+        }
+
         Method mainMethod = null;
-        try (final HotClassLoader loader = new HotClassLoader(this.classPathUrls,
-                                                              getClass().getClassLoader())) {
+        try {
+            currentClassLoader = new HotClassLoader(this.classPathUrls, getClass().getClassLoader());
             for (final JavaFileObject classFile : classFiles) {
                 final String className = classNameFor(classFile);
                 final byte[] classBytes = loadClassBytes(classFile);
-                final Class<?> appClass = loader.defineClass(className, classBytes);
+                final Class<?> appClass = currentClassLoader.defineClass(className, classBytes);
                 if (classFile == mainClassFile) {
                     mainMethod = appClass.getMethod("main", String[].class);
                 }
             }
-        } catch (IOException | NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             throw new CompilationException(e);
         }
         return mainMethod;
@@ -252,7 +262,7 @@ class FileReloader extends Reloader {
         if (providedClasspath != null && !providedClasspath.isEmpty()) {
             LOG.info("User-provided classpath added to the classpath successfully.");
             LOG.debug("Added from user-provided input: {}", providedClasspath);
-            cp.append(File.pathSeparator).append(providedClasspath);
+            cp.append(providedClasspath);
         }
 
         try {
@@ -260,7 +270,10 @@ class FileReloader extends Reloader {
             final String classpath = buildSystem.obtainClasspath(javaFilePath,
                                                                  customClasspathCmdArgs);
             if (!classpath.isBlank()) {
-                cp.append(File.pathSeparator).append(classpath);
+                if (!cp.isEmpty()) {
+                    cp.append(File.pathSeparator);
+                }
+                cp.append(classpath);
             }
             LOG.info("{} dependencies added to the classpath successfully.", buildSystem);
             LOG.debug("Added from {}: {}", buildSystem, classpath);

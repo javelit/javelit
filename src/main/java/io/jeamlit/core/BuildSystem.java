@@ -104,7 +104,9 @@ public enum BuildSystem {
             // add jbang style deps
             final Project jbangProject = Project.builder().build(javaFilePath);
             final Source mainSource = jbangProject.getMainSource();
-            final List<String> dependencies = getDependenciesFrom(mainSource);
+            List<String> dependencies = getDependenciesFrom(mainSource);
+            // remove the jeamlit dependencies - it's added to help the IDE plugins but it's not necessary, the FATJAR injects itself
+            dependencies = dependencies.stream().filter(e -> !e.startsWith("io.jeamlit:jeamlit:")).toList();
             if (!dependencies.isEmpty()) {
                 final DependencyResolver resolver = new DependencyResolver();
                 resolver.addDependencies(dependencies);
