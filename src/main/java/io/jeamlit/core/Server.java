@@ -85,6 +85,7 @@ public final class Server implements StateManager.RenderServer {
     @VisibleForTesting public final int port;
     private final @Nonnull AppRunner appRunner;
     private final @Nullable FileWatcher fileWatcher;
+    private final @Nonnull BuildSystem buildSystem;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
@@ -149,6 +150,9 @@ public final class Server implements StateManager.RenderServer {
         }
 
         public Server build() {
+            if (buildSystem == null) {
+                buildSystem = BuildSystem.inferBuildSystem();
+            }
             return new Server(this);
         }
     }
@@ -166,6 +170,7 @@ public final class Server implements StateManager.RenderServer {
         this.customHeaders = loadCustomHeaders(builder.headersFile);
         this.appRunner = new AppRunner(builder);
         this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
+        this.buildSystem = builder.buildSystem;
 
         // register in the state manager
         StateManager.setRenderServer(this);
@@ -636,7 +641,8 @@ public final class Server implements StateManager.RenderServer {
                 throw new IllegalStateException("FileWatcher is already running");
             }
             final Path directory;
-            if (appRunner.getBuildSystem() == BuildSystem.FATJAR_AND_JBANG || appRunner.getBuildSystem() == BuildSystem.RUNTIME) {
+            System.out.println(buildSystem);
+            if (buildSystem == BuildSystem.FATJAR_AND_JBANG || buildSystem == BuildSystem.RUNTIME) {
                 directory = watchedFile.getParent();
             } else {
                 directory = Paths.get("").toAbsolutePath();

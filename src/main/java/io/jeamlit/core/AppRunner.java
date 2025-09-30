@@ -40,12 +40,10 @@ final class AppRunner {
     private final @Nonnull AtomicReference<Method> mainMethod = new AtomicReference<>();
     private final @Nonnull Semaphore reloadAvailable = new Semaphore(1, true);
     private final @Nonnull Reloader reloader;
-    private final BuildSystem buildSystem;
 
 
     // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
     AppRunner(final @Nonnull Server.Builder builder) {
-        this.buildSystem = builder.buildSystem;
         if (builder.appPath != null) {
             this.reloader = new FileReloader(builder);
         } else if (builder.appClass != null) {
@@ -169,10 +167,5 @@ final class AppRunner {
                               stackTrace,
                               googleLink,
                               chatGptLink);
-    }
-
-    @Nonnull
-    BuildSystem getBuildSystem() {
-        return buildSystem;
     }
 }

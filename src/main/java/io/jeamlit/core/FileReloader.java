@@ -78,9 +78,7 @@ class FileReloader extends Reloader {
         }
         checkArgument(builder.appPath != null);
         this.javaFile = builder.appPath;
-        this.buildSystem = builder.buildSystem == null ?
-                BuildSystem.inferBuildSystem() :
-                builder.buildSystem;
+        this.buildSystem = builder.buildSystem;
     }
 
     @Override
