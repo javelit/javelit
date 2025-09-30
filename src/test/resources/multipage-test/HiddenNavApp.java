@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
+import io.jeamlit.components.multipage.JtPage;
 import io.jeamlit.core.Jt;
 
 public class HiddenNavApp {
     public static void main(String[] args) {
         // Navigation with hidden() - no sidebar should appear
-        Jt.navigation(
+        final JtPage currentPage = Jt.navigation(
             Jt.page(HomePage.class).title("Home").icon("🏠").home(),
             Jt.page(SettingsPage.class).title("Settings").icon("⚙️"),
             Jt.page(AboutPage.class).title("About").icon("ℹ️")
         ).hidden().use();  // Call hidden() to hide navigation
+
+        currentPage.run();
         
         // Content that should still be visible
         Jt.text("App with hidden navigation").use();

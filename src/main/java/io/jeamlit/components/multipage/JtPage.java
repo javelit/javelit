@@ -15,23 +15,114 @@
  */
 package io.jeamlit.components.multipage;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 
+import io.jeamlit.core.PageRunException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import static io.jeamlit.core.utils.EmojiUtils.ensureIsValidIcon;
 
-public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, @Nonnull String icon,
-                     @Nonnull String urlPath, boolean isHome,
-                     // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
-                     List<String> section) {
+public final class JtPage {
+    @Nonnull private final Class<?> pageApp;
+    @Nonnull private final String title;
+    @Nonnull private final String icon;
+    @Nonnull private final String urlPath;
+    private final boolean isHome;
+    private final List<String> section;
+
+    private JtPage(final @Nonnull Builder builder) {
+        this.pageApp = builder.pageApp;
+        this.title = builder.title;
+        this.icon = builder.icon;
+        this.urlPath = builder.urlPath;
+        this.isHome = builder.isHome;
+        this.section = builder.section;
+    }
 
     public static Builder builder(@Nonnull Class<?> page) {
         return new Builder(page);
     }
 
-    public static class Builder {
+    // for the moment there is no known public case for getting this field
+    // the user should call run() instead
+    @Nonnull
+    Class<?> pageApp() {
+        return pageApp;
+    }
+
+    @Nonnull
+    public String title() {
+        return title;
+    }
+
+    @Nonnull
+    public String icon() {
+        return icon;
+    }
+
+    @Nonnull
+    public String urlPath() {
+        return urlPath;
+    }
+
+    public boolean isHome() {
+        return isHome;
+    }
+
+    public List<String> section() {
+        return section;
+    }
+
+    public void run() {
+        callMainMethod(pageApp);
+    }
+
+    private static void callMainMethod(final @Nonnull Class<?> clazz) {
+        final Method pageMethod;
+        try {
+            pageMethod = clazz.getMethod("main", String[].class);
+        } catch (NoSuchMethodException e) {
+            throw new PageRunException(e);
+        }
+        try {
+            pageMethod.invoke(null, new Object[]{new String[]{}});
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new PageRunException(e);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        var that = (JtPage) obj;
+        return Objects.equals(this.pageApp, that.pageApp) && Objects.equals(this.title, that.title) && Objects.equals(
+                this.icon,
+                that.icon) && Objects.equals(this.urlPath,
+                                             that.urlPath) && this.isHome == that.isHome && Objects.equals(this.section,
+                                                                                                           that.section);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pageApp, title, icon, urlPath, isHome, section);
+    }
+
+    @Override
+    public String toString() {
+        return "JtPage[" + "pageApp=" + pageApp + ", " + "title=" + title + ", " + "icon=" + icon + ", " + "urlPath=" + urlPath + ", " + "isHome=" + isHome + ", " + "section=" + section + ']';
+    }
+
+
+    public static final class Builder {
         private final @Nonnull Class<?> pageApp;
         private String title;
         private String icon;
@@ -101,16 +192,16 @@ public record JtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, 
             if (urlPath == null) {
                 urlPath = "/" + pageApp.getSimpleName();
             }
-            return new JtPage(pageApp.getName(), title, icon, urlPath, isHome, section);
+            return new JtPage(this);
         }
 
         // used internally by the navigation component to modify some pages if necessary
-        protected boolean isHome() {
+        boolean isHome() {
             return isHome;
         }
 
 
-        protected Class<?> page() {
+        Class<?> page() {
             return this.pageApp;
         }
     }

@@ -16,8 +16,6 @@
 package io.jeamlit.components.multipage;
 
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,13 +31,10 @@ import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.JtContainer;
-import io.jeamlit.core.PageRunException;
 import io.jeamlit.core.Shared;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
-
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 public final class NavigationComponent extends JtComponent<JtPage> {
 
@@ -71,10 +66,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         if (homePages.isEmpty()) {
             JtPage.Builder firstPageBuilder = builder.pageBuilders.getFirst();
             firstPageBuilder.home();
-            this.home =  firstPageBuilder.build();
-        } else if (homePages.size() == 1) {
-            this.home = homePages.getFirst().build();
-        } else {
+        } else if (homePages.size() > 1) {
             throw new IllegalArgumentException(
                     "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
                             ", ",
@@ -83,11 +75,16 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         }
         builder.pageBuilders.forEach(e -> classNameToClass.put(e.page().getName(), e.page()));
         this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
+        this.home = this.pages.stream().filter(JtPage::isHome).findFirst().orElseThrow(() -> new RuntimeException("Home page not found. Implementation error. Please reach out to support."));
         this.position = builder.position;
 
         // Set initial page based on current URL, not always home
         final String currentPath = getCurrentPath();
         this.currentValue = getPageFor(currentPath);
+    }
+
+    public JtPage getHome() {
+        return home;
     }
 
     /**
@@ -104,12 +101,15 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             }
         }
         // 404
-        return null;
+        return JtPage.builder(NotFoundPageApp.class).title("Page not found").urlPath(urlPath).build();
     }
 
-    public @Nullable JtPage getPageFor(final @Nonnull Class<?> pageApp) {
+    public @Nullable JtPage getPageFor(final @Nullable Class<?> pageApp) {
+        if (pageApp == null) {
+            return home;
+        }
         for (final JtPage page : pages) {
-            if (page.fullyQualifiedName().equals(pageApp.getName())) {
+            if (page.pageApp().equals(pageApp)) {
                 return page;
             }
         }
@@ -191,40 +191,28 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         }
     }
 
-    @Override
-    protected void afterUse(@NotNull JtContainer container) {
-        if (currentValue != null) {
-            final Class<?> clazz = classNameToClass.get(currentValue.fullyQualifiedName());
-            checkArgument(clazz != null,
-                          "Unknown page: %s. Please reach out to support",
-                          currentValue.fullyQualifiedName());
-            callMainMethod(clazz);
-        } else {
-            Jt.title("Page Not Found.").use();
-            if (Jt.button("Go to home").use()) {
-                Jt.switchPage(classNameToClass.get(home.fullyQualifiedName()));
-            }
-        }
-    }
-
-    private static void callMainMethod(final @Nonnull Class<?> clazz) {
-        final Method pageMethod;
-        try {
-            pageMethod = clazz.getMethod("main", String[].class);
-        } catch (NoSuchMethodException e) {
-            throw new PageRunException(e);
-        }
-        try {
-            pageMethod.invoke(null, new Object[]{new String[]{}});
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new PageRunException(e);
-        }
-    }
-
+//    @Override
+//    protected JtPage convert(Object rawValue) {
+//        try {
+//            final FrontendJtPage frontendJtPage = Shared.OBJECT_MAPPER.convertValue(rawValue, FrontendJtPage.class);
+//            final Class<?> pageApp = classNameToClass.get(frontendJtPage.fullyQualifiedName());
+//            if (pageApp != null) {
+//                return getPageFor(pageApp);
+//            } else {
+//                // 404
+//                return JtPage.builder(NotFoundPageApp.class).title("Page not found").build();
+//            }
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(
+//                    "Failed to parse input widget value coming from the app. Please reach out to support.",
+//                    e);
+//        }
+//    }
 
     public String getPagesJson() {
         try {
-            return Shared.OBJECT_MAPPER.writeValueAsString(pages);
+            return Shared.OBJECT_MAPPER.writeValueAsString(pages.stream().map(FrontendJtPage::from).toList());
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize pages", e);
         }
@@ -232,10 +220,34 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
     public String getCurrentValueJson() {
         try {
-            return Shared.OBJECT_MAPPER.writeValueAsString(currentValue);
+            return Shared.OBJECT_MAPPER.writeValueAsString(FrontendJtPage.from(currentValue));
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize currentValue", e);
         }
     }
 
+
+    private record FrontendJtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, @Nonnull String icon,
+                                  @Nonnull String urlPath, boolean isHome,
+                                  // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
+                                  List<String> section) {
+        private static FrontendJtPage from(final @Nonnull JtPage page) {
+            return new FrontendJtPage(page.pageApp().getName(),
+                                      page.title(),
+                                      page.icon(),
+                                      page.urlPath(),
+                                      page.isHome(),
+                                      page.section());
+        }
+    }
+
+    public static class NotFoundPageApp {
+
+        public static void main(String[] args) {
+            Jt.title("Page Not Found.").use();
+            if (Jt.button("Go to home").use()) {
+                Jt.switchPage(null);
+            }
+        }
+    }
 }

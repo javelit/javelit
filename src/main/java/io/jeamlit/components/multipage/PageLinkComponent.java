@@ -85,7 +85,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         private String width = "content"; // content, stretch, or pixel value
 
         // Constructor for internal page links
-        public Builder(final @Nonnull Class<?> pageClass) {
+        public Builder(final @Nullable Class<?> pageClass) {
             this.isExternal = false;
 
             final NavigationComponent nav = getNavigationComponent();

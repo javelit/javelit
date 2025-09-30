@@ -481,7 +481,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param body The error text to display. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param body The error text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
         return new ErrorComponent.Builder(body);
@@ -602,7 +602,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this button is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this button is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static ButtonComponent.Builder button(@Language("markdown") final @Nonnull String label) {
         return new ButtonComponent.Builder(label);
@@ -627,7 +627,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this checkbox is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this checkbox is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static CheckboxComponent.Builder checkbox(@Language("markdown") final @Nonnull String label) {
         return new CheckboxComponent.Builder(label);
@@ -667,7 +667,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this toggle is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this toggle is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static ToggleComponent.Builder toggle(@Language("markdown") final @Nonnull String label) {
         return new ToggleComponent.Builder(label);
@@ -694,7 +694,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this slider is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this slider is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static SliderComponent.Builder slider(@Language("markdown") final @Nonnull String label) {
         return new SliderComponent.Builder(label);
@@ -1001,7 +1001,7 @@ public final class Jt {
      *}
      *
      * @param key   A unique string used to identify this popover
-     * @param label The label for the popover button. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label The label for the popover button. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static PopoverComponent.Builder popover(final @Nonnull String key,
                                                    @Language("markdown") @Nonnull String label) {
@@ -1175,7 +1175,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static TextInputComponent.Builder textInput(@Language("markdown") final @Nonnull String label) {
         return new TextInputComponent.Builder(label);
@@ -1220,7 +1220,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static TextAreaComponent.Builder textArea(@Language("markdown") final @Nonnull String label) {
         return new TextAreaComponent.Builder(label);
@@ -1249,7 +1249,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this date input is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this date input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static DateInputComponent.Builder dateInput(@Language("markdown") final @Nonnull String label) {
         return new DateInputComponent.Builder(label);
@@ -1274,7 +1274,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static NumberInputComponent.Builder<Number> numberInput(@Language("markdown") final @Nonnull String label) {
         return new NumberInputComponent.Builder<>(label);
@@ -1303,7 +1303,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label      A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label      A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param valueClass The number type class (Integer, Double, Float, etc.)
      */
     public static <T extends Number> NumberInputComponent.Builder<T> numberInput(@Language("markdown") final @Nonnull String label,
@@ -1357,7 +1357,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label   A short label explaining to the user what this radio selection is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label   A short label explaining to the user what this radio selection is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param options The list of options to choose from
      */
     public static <T> RadioComponent.Builder<T> radio(@Language("markdown") final @Nonnull String label,
@@ -1402,7 +1402,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label   A short label explaining to the user what this selection is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label   A short label explaining to the user what this selection is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param options The list of options to choose from
      * @param <T>     The type of the options
      */
@@ -1538,9 +1538,9 @@ public final class Jt {
      * }
      *}
      *
-     * @param pageClass The class of the page to link to in a multipage app.
+     * @param pageClass The class of the page to link to in a multipage app. If null, target the home page.
      */
-    public static PageLinkComponent.Builder pageLink(final @Nonnull Class<?> pageClass) {
+    public static PageLinkComponent.Builder pageLink(final @jakarta.annotation.Nullable Class<?> pageClass) {
         return new PageLinkComponent.Builder(pageClass);
     }
 
@@ -1554,7 +1554,7 @@ public final class Jt {
      * The current script run will continue if not complete.
      *
      * @param url   The URL to link to
-     * @param label The text to display for the link. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label The text to display for the link. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static PageLinkComponent.Builder pageLink(final @Nonnull String url,
                                                      final @Language("markdown") @Nonnull String label) {
@@ -1588,7 +1588,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param label A short label explaining to the user what this file uploader is for. Markdown is supported, see {@link io.jeamlit.core.Jt#markdown(String)} for more details.
+     * @param label A short label explaining to the user what this file uploader is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static FileUploaderComponent.Builder fileUploader(@Language("markdown") final @Nonnull String label) {
         return new FileUploaderComponent.Builder(label);
@@ -1885,8 +1885,9 @@ public final class Jt {
      *     }
      * }
      *}
+     * @param pageApp  The target page. If {@code null}, target the home page.
      */
-    public static void switchPage(final @Nonnull Class<?> pageApp) {
+    public static void switchPage(final @jakarta.annotation.Nullable Class<?> pageApp) {
         // note: the design here is pretty hacky
         final NavigationComponent nav = StateManager.getNavigationComponent();
         checkState(nav != null,
@@ -1894,7 +1895,7 @@ public final class Jt {
         final JtPage newPage = nav.getPageFor(pageApp);
         checkArgument(newPage != null,
                       "Invalid page %s. This page is not registered in Jt.navigation().",
-                      pageApp.getName());
+                      pageApp != null ? pageApp.getName() : "null (home page) - Please reach out to support.");
         final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(newPage.urlPath(),
                                                                                                Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));

@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
+import io.jeamlit.components.multipage.JtPage;
 import io.jeamlit.core.Jt;
 
 public class MultiPageApp {
     public static void main(String[] args) {
         // Navigation with multiple pages
-        Jt.navigation(
+        final JtPage currentPage = Jt.navigation(
             Jt.page(SettingsPage.class).title("Settings").icon("⚙️").urlPath("/config/settings"),
             Jt.page(HomePage.class).title("Home").icon("🏠").home(),
             Jt.page(AboutPage.class).title("About").icon("ℹ️")
         ).use();
+
+        currentPage.run();
         
         // Persistent footer element that should appear on all pages
         Jt.text("© 2025 Test App - Always Visible").use();
