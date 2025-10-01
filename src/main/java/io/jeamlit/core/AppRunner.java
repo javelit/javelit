@@ -106,7 +106,18 @@ final class AppRunner {
         boolean doRerun = false;
         Consumer<String> runAfterBreak = null;
         try {
-            mainMethod.get().invoke(null, new Object[]{new String[]{}});
+            // Apps may call ServiceLoader.load(SomeClass.class). This would use the current thread context classloader (not set here) or fallback to the System classloader.
+            // We need to use the HotClassLoader used to define the mainMethod
+            // NOTE: this is only necessary for when the mainMethod is built from a file but this should have no
+            // impact on the case where the mainMethod is passed directly
+            final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+            try {
+                final Method method = mainMethod.get();
+                Thread.currentThread().setContextClassLoader(method.getDeclaringClass().getClassLoader());
+                method.invoke(null, new Object[]{new String[]{}});
+            } finally {
+                Thread.currentThread().setContextClassLoader(originalClassLoader);
+            }
         } catch (Exception e) {
             if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
