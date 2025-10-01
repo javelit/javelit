@@ -42,6 +42,7 @@ import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 
 @SuppressWarnings("ImmutableEnumChecker") // ignore the array field in this enum - see https://errorprone.info/bugpattern/ImmutableEnumChecker - this one is internal only - just ensure compileCmdArgs is not mutated
 public enum BuildSystem {
+    @Deprecated // to be removed ASAP TODO CYRIL
     GRADLE("build.gradle",
            IS_OS_WINDOWS ? "gradlew.bat" : "gradlew",
            "gradle",
@@ -49,9 +50,11 @@ public enum BuildSystem {
            new String[]{"classes"}) {
         @Override
         boolean isUsed() {
-            return new File(this.buildSystemFile).exists();
+            return false;
+            // return new File(this.buildSystemFile).exists();
         }
     },
+    @Deprecated // to be removed ASAP TODO CYRIL
     MAVEN("pom.xml",
           IS_OS_WINDOWS ? "mvnw.cmd" : "mvnw",
           "mvn",
@@ -61,7 +64,8 @@ public enum BuildSystem {
           new String[]{"compile"}) {
         @Override
         boolean isUsed() {
-            return new File(this.buildSystemFile).exists();
+            return false;
+            //return new File(this.buildSystemFile).exists();
         }
     },
     FATJAR_AND_JBANG("java app file", "", "", new String[]{}, new String[]{}) {
