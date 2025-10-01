@@ -84,6 +84,8 @@ import static io.jeamlit.core.utils.Preconditions.checkState;
  */
 public final class Jt {
 
+    public static final JtContainer SIDEBAR = JtContainer.SIDEBAR;
+
     /**
      * Return the session state Map of the session. A session corresponds to an opened tab of the app.
      * <p>
