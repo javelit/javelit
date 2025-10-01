@@ -3,7 +3,7 @@
 import java.util.List;import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 
-public class SelectBoxExample {
+public class selectboxExample {
 
     enum Status {
         DRAFT, PENDING, APPROVED, REJECTED
@@ -12,10 +12,10 @@ public class SelectBoxExample {
     record Product(String name, double price) {}
 
     public static void main(String[] args) {
-        Jt.title("# SelectBox Component Demo").use();
+        Jt.title("# selectbox Component Demo").use();
 
-        Jt.markdown("## Basic SelectBox with Strings").use();
-        String basicChoice = Jt.selectBox("Choose your favorite programming language",
+        Jt.markdown("## Basic selectbox with Strings").use();
+        String basicChoice = Jt.selectbox("Choose your favorite programming language",
                 List.of("Java", "Python", "JavaScript", "TypeScript", "Go"))
                 .use();
         if (basicChoice != null) {
@@ -24,8 +24,8 @@ public class SelectBoxExample {
             Jt.text("No language selected").use();
         }
 
-        Jt.markdown("## SelectBox with Help").use();
-        String frameworkChoice = Jt.selectBox("Select web framework",
+        Jt.markdown("## selectbox with Help").use();
+        String frameworkChoice = Jt.selectbox("Select web framework",
                 List.of("React", "Vue.js", "Angular", "Svelte"))
                 .help("Choose your preferred frontend framework")
                 .use();
@@ -33,8 +33,8 @@ public class SelectBoxExample {
             Jt.text("🚀 Framework: **" + frameworkChoice + "**").use();
         }
 
-        Jt.markdown("## SelectBox with Default Selection").use();
-        String priorityChoice = Jt.selectBox("Select priority level",
+        Jt.markdown("## selectbox with Default Selection").use();
+        String priorityChoice = Jt.selectbox("Select priority level",
                 List.of("Low", "Medium", "High", "Critical"))
                 .index(1)// Pre-select "Medium" (index 1)
                 .help("Choose the priority for this task")
@@ -43,8 +43,8 @@ public class SelectBoxExample {
             Jt.text("⭐ Priority: **" + priorityChoice + "**").use();
         }
 
-        Jt.markdown("## SelectBox with No Default Selection").use();
-        String regionChoice = Jt.selectBox("Select region",
+        Jt.markdown("## selectbox with No Default Selection").use();
+        String regionChoice = Jt.selectbox("Select region",
                 List.of("North America", "Europe", "Asia", "South America", "Africa", "Oceania"))
                 .index(null)// Explicitly no pre-selection
                 .help("Choose your target region")
@@ -55,8 +55,8 @@ public class SelectBoxExample {
             Jt.text("⚠️ No region selected yet").use();
         }
 
-        Jt.markdown("## SelectBox with Custom Placeholder").use();
-        String cityChoice = Jt.selectBox("Select destination city",
+        Jt.markdown("## selectbox with Custom Placeholder").use();
+        String cityChoice = Jt.selectbox("Select destination city",
                 List.of("New York", "London", "Tokyo", "Sydney", "Paris"))
                 .index(null)
                 .placeholder("Pick a destination...")
@@ -65,8 +65,8 @@ public class SelectBoxExample {
             Jt.text("✈️ Destination: **" + cityChoice + "**").use();
         }
 
-        Jt.markdown("## SelectBox with Accept New Options (Combobox)").use();
-        String skillChoice = Jt.selectBox("Add or select a skill",
+        Jt.markdown("## selectbox with Accept New Options (Combobox)").use();
+        String skillChoice = Jt.selectbox("Add or select a skill",
                 List.of("Java Programming", "Web Design", "Data Analysis", "Machine Learning"))
                 .acceptNewOptions(true)
                 .help("You can select from the list or type a new skill")
@@ -75,8 +75,8 @@ public class SelectBoxExample {
             Jt.text("💪 Skill: **" + skillChoice + "**").use();
         }
 
-        Jt.markdown("## Disabled SelectBox").use();
-        Jt.selectBox("Premium features",
+        Jt.markdown("## Disabled selectbox").use();
+        Jt.selectbox("Premium features",
                 List.of("Advanced Analytics", "Custom Reports", "API Access", "Priority Support"))
                 .disabled(true)
                 .help("Upgrade to premium to access these features")
@@ -86,19 +86,19 @@ public class SelectBoxExample {
         Jt.markdown("## Label Visibility Options").use();
 
         // Visible label (default)
-        String visibleChoice = Jt.selectBox("**Visible** label selectbox",
+        String visibleChoice = Jt.selectbox("**Visible** label selectbox",
                 List.of("Option A", "Option B", "Option C"))
                 .labelVisibility(JtComponent.LabelVisibility.VISIBLE)
                 .use();
 
         // Hidden label (spacer)
-        String hiddenChoice = Jt.selectBox("Hidden label selectbox",
+        String hiddenChoice = Jt.selectbox("Hidden label selectbox",
                 List.of("Choice 1", "Choice 2", "Choice 3"))
                 .labelVisibility(JtComponent.LabelVisibility.HIDDEN)
                 .use();
 
         // Collapsed label (no space)
-        String collapsedChoice = Jt.selectBox("Collapsed label selectbox",
+        String collapsedChoice = Jt.selectbox("Collapsed label selectbox",
                 List.of("Item X", "Item Y", "Item Z"))
                 .labelVisibility(JtComponent.LabelVisibility.COLLAPSED)
                 .use();
@@ -107,27 +107,27 @@ public class SelectBoxExample {
 
         // Content width (default)
         Jt.text("Content width:").use();
-        String contentWidth = Jt.selectBox("Content width selectbox",
+        String contentWidth = Jt.selectbox("Content width selectbox",
                 List.of("Short", "Medium Length", "Very Long Option Name"))
                 .width("content")
                 .use();
 
         // Stretch width
         Jt.text("Stretch width:").use();
-        String stretchWidth = Jt.selectBox("Stretch width selectbox",
+        String stretchWidth = Jt.selectbox("Stretch width selectbox",
                 List.of("Alpha", "Beta", "Gamma"))
                 .width("stretch")
                 .use();
 
         // Fixed pixel width
         Jt.text("Fixed 350px width:").use();
-        String fixedWidth = Jt.selectBox("Fixed width selectbox",
+        String fixedWidth = Jt.selectbox("Fixed width selectbox",
                 List.of("One", "Two", "Three"))
                 .width(350)
                 .use();
 
-        Jt.markdown("## SelectBox with onChange Callback").use();
-        Jt.selectBox("Status", List.of("Active", "Inactive", "Pending"))
+        Jt.markdown("## selectbox with onChange Callback").use();
+        Jt.selectbox("Status", List.of("Active", "Inactive", "Pending"))
                 .onChange(selected -> {
                     if (selected != null) {
                         Jt.text("🔄 Callback triggered: Status changed to **" + selected + "**").use();
@@ -135,14 +135,14 @@ public class SelectBoxExample {
                 })
                 .use();
 
-        Jt.markdown("## Enum-based SelectBox").use();
-        Status status = Jt.selectBox("Select document status", List.of(Status.values()))
+        Jt.markdown("## Enum-based selectbox").use();
+        Status status = Jt.selectbox("Select document status", List.of(Status.values()))
                 .use();
         if (status != null) {
             Jt.text("📄 Document status: **" + status + "**").use();
         }
 
-        Jt.markdown("## SelectBox with Objects and FormatFunction").use();
+        Jt.markdown("## selectbox with Objects and FormatFunction").use();
         List<Product> products = List.of(
             new Product("Laptop", 999.99),
             new Product("Mouse", 29.99),
@@ -150,7 +150,7 @@ public class SelectBoxExample {
             new Product("Monitor", 299.99)
         );
 
-        Product selectedProduct = Jt.selectBox("Select product", products)
+        Product selectedProduct = Jt.selectbox("Select product", products)
                 .formatFunction(p -> p.name() + " - $" + p.price())
                 .help("Choose a product from our catalog")
                 .use();
@@ -160,7 +160,7 @@ public class SelectBoxExample {
         }
 
         Jt.markdown("## Markdown Support in Options").use();
-        String markdownChoice = Jt.selectBox("Choose formatting style",
+        String markdownChoice = Jt.selectbox("Choose formatting style",
                 List.of(
                     "**Bold** text style",
                     "*Italic* text style",
@@ -171,7 +171,7 @@ public class SelectBoxExample {
                 .use();
 
         Jt.markdown("## Empty Options with Accept New Options").use();
-        String newTagChoice = Jt.selectBox("Add a new tag",
+        String newTagChoice = Jt.selectbox("Add a new tag",
                                            List.<String>of())// Empty options list
                 .acceptNewOptions(true)
                 .help("Type a new tag name")
@@ -181,7 +181,7 @@ public class SelectBoxExample {
         }
 
         Jt.markdown("## Empty Options without Accept New Options (Disabled)").use();
-        Jt.selectBox("No options available",
+        Jt.selectbox("No options available",
                 List.of())// Empty options list
                 .acceptNewOptions(false)// This makes it disabled
                 .help("This selectbox is disabled because no options are available")

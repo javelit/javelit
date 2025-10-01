@@ -39,7 +39,7 @@ public class SelectBoxComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    String color = Jt.selectBox("Select color", List.of("Red", "Green", "Blue")).use();
+                    String color = Jt.selectbox("Select color", List.of("Red", "Green", "Blue")).use();
                     if (color != null) {
                         Jt.text("Selected: " + color).use();
                     } else {
@@ -72,7 +72,7 @@ public class SelectBoxComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    String size = Jt.selectBox("Select size", List.of("Small", "Medium", "Large"))
+                    String size = Jt.selectbox("Select size", List.of("Small", "Medium", "Large"))
                             .index(1)  // Select "Medium" (index 1)
                             .use();
                     if (size != null) {
@@ -105,7 +105,7 @@ public class SelectBoxComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    String option = Jt.selectBox("Select option", List.of("Option A", "Option B", "Option C"))
+                    String option = Jt.selectbox("Select option", List.of("Option A", "Option B", "Option C"))
                             .index(null)  // No default selection
                             .use();
                     if (option != null) {
@@ -148,7 +148,7 @@ public class SelectBoxComponentE2ETest {
                         new Person("Charlie", 35)
                     );
 
-                    Person selected = Jt.selectBox("Select person", people)
+                    Person selected = Jt.selectbox("Select person", people)
                             .formatFunction(p -> p.name() + " (" + p.age() + " years)")
                             .use();
 
@@ -185,7 +185,7 @@ public class SelectBoxComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    String skill = Jt.selectBox("Select or enter skill", List.of("Java", "Python", "JavaScript"))
+                    String skill = Jt.selectbox("Select or enter skill", List.of("Java", "Python", "JavaScript"))
                             .acceptNewOptions(true)
                             .use();
                     if (skill != null) {
@@ -225,7 +225,7 @@ public class SelectBoxComponentE2ETest {
 
             public class TestApp {
                 public static void main(String[] args) {
-                    String tag = Jt.selectBox("Enter new tag", List.<String>of())
+                    String tag = Jt.selectbox("Enter new tag", List.<String>of())
                             .acceptNewOptions(true)
                             .use();
                     if (tag != null) {

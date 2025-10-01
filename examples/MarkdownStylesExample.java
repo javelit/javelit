@@ -36,7 +36,7 @@ public class MarkdownStylesExample {
                 .help("Radio buttons with **markdown** in *labels* and `code snippets`")
                 .use();
 
-        Jt.selectBox("Choose **processing** *method*:",
+        Jt.selectbox("Choose **processing** *method*:",
                      List.of("**Fast** `algorithm.py`", "*Standard* **batch** processing", "~~Slow~~ **manual** `review.txt`"))
           .help("SelectBox with **markdown** support in *options* and `code`")
           .use();
@@ -142,7 +142,7 @@ public class MarkdownStylesExample {
           .type("primary")
           .use();
 
-        Jt.selectBox("Complex **formatting** test:", List.of(
+        Jt.selectbox("Complex **formatting** test:", List.of(
           "**Option 1:** *Standard* `processing` with [docs](https://example.com)",
           "**Option 2:** ~~Legacy~~ *mode* with `fallback.py`",
           "**Option 3:** *Advanced* `ML` processing ~~(beta)~~"))

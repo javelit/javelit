@@ -762,7 +762,7 @@ public final class Jt {
      * public class EmptyApp {
      *     public static void main(String[] args) {
      *         var placeholder = Jt.empty("content").use();
-     *         String selected = Jt.selectBox("Choose content",
+     *         String selected = Jt.selectbox("Choose content",
      *             List.of("None", "Text", "Button")).use();
      *
      *         switch (selected) {
@@ -972,7 +972,7 @@ public final class Jt {
      *
      *         Jt.text("Configure your preferences:").use(settings);
      *         boolean notifications = Jt.checkbox("Enable notifications").use(settings);
-     *         String theme = Jt.selectBox("Theme", List.of("Light", "Dark")).use(settings);
+     *         String theme = Jt.selectbox("Theme", List.of("Light", "Dark")).use(settings);
      *
      *         if (notifications) {
      *             Jt.text("Notifications are enabled").use();
@@ -1065,7 +1065,7 @@ public final class Jt {
      *         var form = Jt.form("survey").use();
      *         double satisfaction = Jt.slider("Satisfaction (1-10)").min(1).max(10).value(5).use(form);
      *         String feedback = Jt.textArea("Additional feedback").use(form);
-     *         String department = Jt.selectBox("Department",
+     *         String department = Jt.selectbox("Department",
      *                                          List.of("Engineering", "Marketing", "Sales", "Support")).use(form);
      *
      *         if (Jt.formSubmitButton("Submit Survey").use(form)) {
@@ -1377,7 +1377,7 @@ public final class Jt {
      *
      * public class SelectBoxApp {
      *     public static void main(String[] args) {
-     *         String country = Jt.selectBox("Select your country",
+     *         String country = Jt.selectbox("Select your country",
      *                                       List.of("United States", "Canada", "United Kingdom", "Germany", "France")).use();
      *
      *         if (country != null) {
@@ -1393,7 +1393,7 @@ public final class Jt {
      *
      * public class ProcessingSelectBoxApp {
      *     public static void main(String[] args) {
-     *         String priority = Jt.selectBox("Task priority",
+     *         String priority = Jt.selectbox("Task priority",
      *                                        List.of("Low", "Medium", "High", "Critical"))
      *                             .index(1)
      *                             .use();
@@ -1406,7 +1406,7 @@ public final class Jt {
      * @param options The list of options to choose from
      * @param <T>     The type of the options
      */
-    public static <T> SelectBoxComponent.Builder<T> selectBox(@Language("markdown") final @Nonnull String label,
+    public static <T> SelectBoxComponent.Builder<T> selectbox(@Language("markdown") final @Nonnull String label,
                                                               final @Nonnull List<T> options) {
         return new SelectBoxComponent.Builder<>(label, options);
     }
