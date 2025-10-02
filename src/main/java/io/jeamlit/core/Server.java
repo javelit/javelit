@@ -17,6 +17,7 @@ package io.jeamlit.core;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.BindException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,11 +34,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import io.methvin.watcher.DirectoryWatcher;
+import io.methvin.watcher.hashing.FileHasher;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
@@ -209,7 +214,20 @@ public final class Server implements StateManager.RenderServer {
         server = Undertow.builder().setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 200 * 1024 * 1024L)// 200Mb
                          .addHttpListener(port, "0.0.0.0").setHandler(app).build();
 
-        server.start();
+        try {
+            server.start();
+        } catch (RuntimeException e) {
+            if (e.getCause() != null && e.getCause() instanceof BindException) {
+                // yes this is not good practice to match on string but dev experience is important for this one
+                if (e.getMessage().contains("Address already in use")) {
+                    throw new RuntimeException(
+                            "Failed to launch the server. Port %s is already in use ? Try changing the port. In standalone mode, use --port <PORT>".formatted(
+                                    port),
+                            e);
+                }
+            }
+            throw e;
+        }
         if (fileWatcher != null) {
             try {
                 fileWatcher.start();
@@ -464,7 +482,8 @@ public final class Server implements StateManager.RenderServer {
             channel.resumeReceives();
         }
 
-        @SuppressWarnings("StringSplitter") // see https://errorprone.info/bugpattern/StringSplitter - checking for blank string should be enough here
+        @SuppressWarnings("StringSplitter")
+        // see https://errorprone.info/bugpattern/StringSplitter - checking for blank string should be enough here
         private @Nullable Session getHttpSessionFromWebSocket(WebSocketHttpExchange exchange) {
             final String cookieHeader = exchange.getRequestHeader("Cookie");
             if (cookieHeader != null) {
@@ -567,7 +586,8 @@ public final class Server implements StateManager.RenderServer {
         sendMessage(sessionId, message);
     }
 
-    @SuppressWarnings("ClassEscapesDefinedScope") // StateManager.ExecutionStatus is not meant to be public but is used as interface method param which must be public
+    @SuppressWarnings("ClassEscapesDefinedScope")
+    // StateManager.ExecutionStatus is not meant to be public but is used as interface method param which must be public
     @Override
     public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
         final Map<String, Object> message = new HashMap<>();
@@ -680,53 +700,68 @@ public final class Server implements StateManager.RenderServer {
                 directory = Paths.get("").toAbsolutePath();
             }
 
-            LOG.info("Watching for file changes in parent directory: {}", directory);
+            watcher = DirectoryWatcher
+                    .builder()
+                    .path(directory)
+                    .fileHasher(FileHasher.LAST_MODIFIED_TIME)
+                    .listener(event -> {
+                        final Path changedFile = event.path();
+                        // Only respond to changes to .java files in the source tree and pom.xml files
+                        // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
+                        if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile
+                                                                                                               .getFileName()
+                                                                                                               .toString())) {
+                            switch (event.eventType()) {
+                                case MODIFY -> {
+                                    LOG.info("File changed: {}. Rebuilding...", changedFile);
+                                    if (changedFile.equals(watchedFile)) {
+                                        notifyReload(Reloader.ReloadStrategy.CLASS);
+                                    } else {
+                                        notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                                    }
+                                }
+                                case DELETE -> {
+                                    if (changedFile.equals(watchedFile)) {
+                                        LOG.warn(
+                                                "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
+                                                watchedFile);
+                                        session2WsChannel
+                                                .keySet()
+                                                .forEach(id -> sendCompilationError(id, "App file was deleted."));
+                                    }
+                                }
+                                case CREATE -> {
+                                    if (changedFile.equals(watchedFile)) {
+                                        LOG.warn("App file {} recreated. Attempting to reload from the new file.",
+                                                 watchedFile);
+                                        notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                                    }
+                                }
+                                case OVERFLOW -> {
+                                    LOG.warn(
+                                            "Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
+                                }
+                                case null, default -> LOG.warn("File changed: {} but event type is not managed: {}.",
+                                                               changedFile,
+                                                               event.eventType());
+                            }
+                        }
+                    }).build();
 
-            watcher = DirectoryWatcher.builder().path(directory).listener(event -> {
-                final Path changedFile = event.path();
-                // Only respond to changes to .java files in the source tree and pom.xml files
-                // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-                if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile
-                                                                                                       .getFileName()
-                                                                                                       .toString())) {
-                    switch (event.eventType()) {
-                        case MODIFY -> {
-                            LOG.info("File changed: {}. Rebuilding...", changedFile);
-                            if (changedFile.equals(watchedFile)) {
-                                notifyReload(Reloader.ReloadStrategy.CLASS);
-                            } else {
-                                notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
-                            }
-                        }
-                        case DELETE -> {
-                            if (changedFile.equals(watchedFile)) {
-                                LOG.warn(
-                                        "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
-                                        watchedFile);
-                                session2WsChannel
-                                        .keySet()
-                                        .forEach(id -> sendCompilationError(id, "App file was deleted."));
-                            }
-                        }
-                        case CREATE -> {
-                            if (changedFile.equals(watchedFile)) {
-                                LOG.warn("App file {} recreated. Attempting to reload from the new file.", watchedFile);
-                                notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
-                            }
-                        }
-                        case OVERFLOW -> {
-                            LOG.warn(
-                                    "Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
-                        }
-                        case null, default -> LOG.warn("File changed: {} but event type is not managed: {}.",
-                                                       changedFile,
-                                                       event.eventType());
-                    }
-                }
-            }).build();
-
-            watcherFuture = watcher.watchAsync();
-            LOG.info("File watcher started successfully");
+            LOG.info("Initializing file watch in parent directory: {}", directory);
+            // see https://github.com/gmethvin/directory-watcher/issues/102 - the first step of watchAsync is actually blocking
+            // and may be too long if the user started jeamlit in a parent folder with many files or with files in cloud
+            final CompletableFuture<CompletableFuture<Void>> watcherFutureWrapper = CompletableFuture.supplyAsync(() -> watcher.watchAsync());
+            try {
+                watcherFuture = watcherFutureWrapper.get(10, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                throw new RuntimeException("Initializing file watch timed out after 10 seconds. Try to run the jeamlit app in a parent directory with less files. Also, do not run the jeamlit app in a parent directory that contains Cloud files (iCloud, Dropbox, etc...).", e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Initializing file watch was interrupted.", e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Initializing file watch failed.", e);
+            }
+            LOG.info("File watch started successfully");
         }
 
         protected void stop() {
