@@ -1,9 +1,12 @@
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS io.jeamlit:jeamlit:0.26.0
+
 
 
 import java.util.List;import io.jeamlit.core.Jt;
 import io.jeamlit.core.JtComponent;
 
-public class selectboxExample {
+public class SelectboxExample {
 
     enum Status {
         DRAFT, PENDING, APPROVED, REJECTED

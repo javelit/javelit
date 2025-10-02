@@ -47,11 +47,14 @@ import io.undertow.server.handlers.BlockingHandler;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.SetHeaderHandler;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.PathResourceManager;
 import io.undertow.server.handlers.resource.ResourceHandler;
+import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionAttachmentHandler;
@@ -86,6 +89,7 @@ public final class Server implements StateManager.RenderServer {
     private final @Nonnull AppRunner appRunner;
     private final @Nullable FileWatcher fileWatcher;
     private final @Nonnull BuildSystem buildSystem;
+    private final @Nullable Path appPath;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
@@ -169,6 +173,7 @@ public final class Server implements StateManager.RenderServer {
         this.port = builder.port;
         this.customHeaders = loadCustomHeaders(builder.headersFile);
         this.appRunner = new AppRunner(builder);
+        this.appPath = builder.appPath;
         this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
         this.buildSystem = builder.buildSystem;
 
@@ -180,9 +185,14 @@ public final class Server implements StateManager.RenderServer {
         HttpHandler app = new PathHandler()
                 .addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()))
                 .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
+                // internal static files
                 .addPrefixPath("/_/static",
-                               new ResourceHandler(new ClassPathResourceManager(getClass().getClassLoader(), "static")))
+                               resource(new ClassPathResourceManager(getClass().getClassLoader(), "static")))
                 .addPrefixPath("/", new IndexHandler());
+        final ResourceManager staticRm = buildStaticResourceManager();
+        if (staticRm != null) {
+            ((PathHandler) app).addPrefixPath("/app/static", resource(staticRm));
+        }
         app = new XsrfValidationHandler(app);
         // attach a BROWSER session cookie - this is not the same as app state "session" used downstream
         app = new SessionAttachmentHandler(app,
@@ -210,6 +220,22 @@ public final class Server implements StateManager.RenderServer {
         LOG.info("Jeamlit server started on http://localhost:{}", port);
     }
 
+    private @Nullable ResourceManager buildStaticResourceManager() {
+        if (appPath != null) {
+            // add static file serving
+            final Path staticPath = appPath.getParent().resolve("static");
+            if (Files.exists(staticPath) && Files.isDirectory(staticPath)) {
+                LOG.info("Serving static files from: {}", staticPath.toAbsolutePath());
+                return new PathResourceManager(staticPath, 100);
+            } else {
+                return null;
+            }
+        } else {
+            LOG.info("Serving static files from resources static folder");
+            return new ClassPathResourceManager(getClass().getClassLoader(), "static");
+        }
+    }
+
     public void stop() {
         if (fileWatcher != null) {
             fileWatcher.stop();
@@ -217,6 +243,13 @@ public final class Server implements StateManager.RenderServer {
         if (server != null) {
             server.stop();
         }
+    }
+
+    private static HttpHandler resource(final @Nonnull ResourceManager resourceManager) {
+        return new SetHeaderHandler(new ResourceHandler(resourceManager).setDirectoryListingEnabled(false)
+                                                                        .setCacheTime(3600), // 1 hour cache
+                                    "X-Content-Type-Options",
+                                    "nosniff");
     }
 
     private void notifyReload(final @Nonnull Reloader.ReloadStrategy reloadStrategy) {
