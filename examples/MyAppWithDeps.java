@@ -1,8 +1,10 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.jeamlit:jeamlit:0.26.0
 //DEPS org.apache.commons:commons-lang3:3.13.0
+//DEPS com.google.guava:guava:32.1.3-jre
 
-import com.google.common.collect.Lists;import io.jeamlit.core.Jt;
+import com.google.common.collect.Lists;
+import io.jeamlit.core.Jt;
 import org.apache.commons.lang3.StringUtils;
 
 public class MyAppWithDeps {
