@@ -223,7 +223,7 @@ public final class Server implements StateManager.RenderServer {
     private @Nullable ResourceManager buildStaticResourceManager() {
         if (appPath != null) {
             // add static file serving
-            final Path staticPath = appPath.getParent().resolve("static");
+            final Path staticPath = appPath.toAbsolutePath().getParent().resolve("static");
             if (Files.exists(staticPath) && Files.isDirectory(staticPath)) {
                 LOG.info("Serving static files from: {}", staticPath.toAbsolutePath());
                 return new PathResourceManager(staticPath, 100);
