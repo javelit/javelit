@@ -1,3 +1,5 @@
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS io.jeamlit:jeamlit:0.26.0
 //DEPS com.google.guava:guava:32.1.3-jre
 
 

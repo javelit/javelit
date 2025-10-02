@@ -1,5 +1,8 @@
 
 
+///usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS io.jeamlit:jeamlit:0.26.0
+
 import io.jeamlit.core.Jt;import model.Car;
 import model.Owner;
 

@@ -1,8 +1,12 @@
 
 
 
+/// usr/bin/env jbang "$0" "$@" ; exit $?
+//DEPS io.jeamlit:jeamlit:0.26.0
 
-import java.util.List;import io.jeamlit.components.layout.ColumnsComponent;import io.jeamlit.core.Jt;
+import java.util.List;
+
+import io.jeamlit.core.Jt;
 
 public class EmptyExample {
 
