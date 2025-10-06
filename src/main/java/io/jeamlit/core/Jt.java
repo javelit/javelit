@@ -1744,8 +1744,8 @@ public final class Jt {
      *
      * @param rows The list of objects representing table rows
      */
-    public static TableComponent.Builder table(final @Nonnull List<Object> rows) {
-        return TableComponent.Builder.ofObjsList(rows);
+    public static <E> TableComponent.Builder table(final @Nonnull List<E> rows) {
+        return TableComponent.Builder.ofObjsList((List) rows);
     }
 
     /**
@@ -1773,7 +1773,7 @@ public final class Jt {
      *
      * @param rows The array of objects representing table rows
      */
-    public static TableComponent.Builder table(final @Nonnull Object[] rows) {
+    public static <E> TableComponent.Builder table(final @Nonnull E[] rows) {
         return TableComponent.Builder.ofObjsArray(rows);
     }
 
@@ -1803,8 +1803,8 @@ public final class Jt {
      *
      * @param cols A map where keys are column names and values are arrays of column data
      */
-    public static TableComponent.Builder tableFromArrayColumns(final @Nonnull Map<@NotNull String, @NotNull Object[]> cols) {
-        return TableComponent.Builder.ofColumnsArrays(cols);
+    public static <E> TableComponent.Builder tableFromArrayColumns(final @Nonnull Map<@NotNull String, @NotNull E[]> cols) {
+        return TableComponent.Builder.ofColumnsArrays((Map) cols);
     }
 
     /**

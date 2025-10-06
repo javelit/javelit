@@ -16,6 +16,10 @@
 package io.jeamlit.components.chart;
 
 import java.io.StringWriter;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -30,7 +34,7 @@ import org.icepear.echarts.Option;
 import org.icepear.echarts.serializer.EChartsSerializer;
 import org.intellij.lang.annotations.Language;
 
-public class EchartsComponent extends JtComponent<JtComponent.NONE> {
+public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
 
     public enum Theme {
         DEFAULT("default"),
@@ -64,10 +68,11 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
 
-    protected final @Language("json") String echartOption;
-    protected final int height;
-    protected final @Nullable Integer width;
-    protected final String theme;
+    final @Language("json") String echartOption;
+    final int height;
+    final @Nullable Integer width;
+    final String theme;
+    final List<MapConfig> maps;
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
@@ -92,6 +97,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
         this.height = builder.height;
         this.width = builder.width;
         this.theme = builder.theme;
+        this.maps = List.copyOf(builder.maps);
     }
 
     public static class Builder extends JtComponentBuilder<JtComponent.NONE, EchartsComponent, Builder> {
@@ -101,6 +107,7 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
         private int height = 400;
         private Integer width;
         private String theme = "default";
+        private final List<MapConfig> maps = new ArrayList<>();
 
         public Builder(final @Nonnull Chart<?, ?> chart) {
             this.chart = chart;
@@ -152,6 +159,26 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
             return this;
         }
 
+        /**
+         * A GEO map to register.
+         * You can register multiple maps by calling this method multiple times.
+         * The geoJson URI should point to valid geoJson file. If you want Jeamlit to host the file, see <a href="/get-started/fundamentals/additional-features#static-file-serving" target="_blank">static file serving</a>.
+         */
+        public Builder withMap(final @Nonnull String mapName, final @Nonnull URI geoJson) {
+            this.maps.add(new MapConfig(mapName, geoJson, null));
+            return this;
+        }
+
+        /**
+         * A GEO map to register.
+         * You can register multiple maps by calling this method multiple times.
+         * The geoJson URI should point to valid geoJson file. If you want Jeamlit to host the file, see [static file serving](/get-started/fundamentals/additional-features#static-file-serving).
+         */
+        public Builder withMap(final @Nonnull String mapName, final @Nonnull URI geoJson, final Map<String, SpecialAreaConfig> specialAreas) {
+            this.maps.add(new MapConfig(mapName, geoJson, specialAreas));
+            return this;
+        }
+
         @Override
         public EchartsComponent build() {
             return new EchartsComponent(this);
@@ -177,4 +204,13 @@ public class EchartsComponent extends JtComponent<JtComponent.NONE> {
         return new TypeReference<>() {
         };
     }
+
+    String getMapsJson() {
+        return toJson(maps);
+    }
+
+    // direct mapping of https://echarts.apache.org/en/api.html#echarts.registerMap
+    private record MapConfig(String mapName, URI geoJsonUri, Map<String, SpecialAreaConfig> specialAreas) {}
+
+    public record SpecialAreaConfig(long left, long top, long width) {}
 }

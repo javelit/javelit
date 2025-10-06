@@ -29,6 +29,7 @@ if (!window.echarts) {
 class JtEcharts extends LitElement {
 
     static registeredThemes = new Set(["default"]);
+    static registeredMaps = new Set();
 
     static styles = css`
         :host {
@@ -46,6 +47,7 @@ class JtEcharts extends LitElement {
         height: { type: Number},
         width: {type: Number},
         theme: { type: String },
+        maps: { type: String },
     };
 
     constructor() {
@@ -74,6 +76,49 @@ class JtEcharts extends LitElement {
                 console.warn(`Failed to load theme ${this.theme}, falling back to default: ${err}`);
             }
         }
+
+        // Load and register maps if provided
+        if (this.maps && this.maps !== "[]") {
+            try {
+                const mapsConfig = JSON.parse(this.maps);
+                for (const mapConfig of mapsConfig) {
+                    const mapName = mapConfig.mapName;
+
+                    // Check if map is already registered
+                    if (JtEcharts.registeredMaps.has(mapName)) {
+                        console.log(`Map ${mapName} already registered, skipping...`);
+                        continue;
+                    }
+
+                    // Check if echarts already has this map
+                    if (window.echarts.getMap && window.echarts.getMap(mapName)) {
+                        console.log(`Map ${mapName} already exists in echarts, skipping...`);
+                        JtEcharts.registeredMaps.add(mapName);
+                        continue;
+                    }
+
+                    console.log(`Loading map ${mapName} from ${mapConfig.geoJsonUri}`);
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', mapConfig.geoJsonUri, false); // synchronous
+                        xhr.send();
+                        if (xhr.status === 200) {
+                            const geoJson = JSON.parse(xhr.responseText);
+                            window.echarts.registerMap(mapName, geoJson, mapConfig.specialAreas);
+                            JtEcharts.registeredMaps.add(mapName);
+                            console.log(`Successfully registered map ${mapName}`);
+                        } else {
+                            throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
+                        }
+                    } catch (err) {
+                        console.error(`Failed to load map ${mapName}: ${err}`);
+                    }
+                }
+            } catch (err) {
+                console.error(`Failed to parse maps configuration: ${err}`);
+            }
+        }
+
         this.style.setProperty('--min-height', this.height + 'px');
         if (this.width) {
             this.style.setProperty('--width', this.width + 'px');

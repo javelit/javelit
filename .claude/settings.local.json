@@ -28,7 +28,9 @@
       "Read(//Users/cyril/projects/jeamlit-docs/**)",
       "Bash(echo:*)",
       "mcp__jetbrains__get_file_problems",
-      "mcp__jetbrains__find_files_by_glob"
+      "mcp__jetbrains__find_files_by_glob",
+      "mcp__jetbrains__search_in_files_by_text",
+      "mcp__jetbrains__get_file_text_by_path"
     ],
     "deny": []
   }
