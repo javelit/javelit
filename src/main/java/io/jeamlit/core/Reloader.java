@@ -17,8 +17,6 @@ package io.jeamlit.core;
 
 import java.lang.reflect.Method;
 
-import jakarta.annotation.Nonnull;
-
 // not using an interface to not expose this in the public API
 abstract class Reloader {
 
@@ -31,5 +29,5 @@ abstract class Reloader {
         BUILD_CLASSPATH_AND_CLASS
     }
 
-    abstract Method reload(final @Nonnull ReloadStrategy reloadStrategy);
+    abstract Method reload();
 }

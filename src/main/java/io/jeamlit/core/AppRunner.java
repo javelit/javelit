@@ -57,7 +57,7 @@ final class AppRunner {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
                     LOG.info("Compiling the app for the first time.");
-                    reload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                    reload();
                     LOG.info("First time compilation successful.");
                 }
             } catch (Exception e) {
@@ -70,8 +70,8 @@ final class AppRunner {
         }).start();
     }
 
-    void reload(final @Nonnull Reloader.ReloadStrategy reloadStrategy) {
-        mainMethod.set(reloader.reload(reloadStrategy));
+    void reload() {
+        mainMethod.set(reloader.reload());
     }
 
     /**
@@ -85,9 +85,7 @@ final class AppRunner {
                 reloadAvailable.acquire();
                 if (mainMethod.get() == null) {
                     LOG.warn("Pre-compilation of the app failed the first time. Attempting first compilation again.");
-                    mainMethod.set(
-                            reloader.reload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS)
-                    );
+                    mainMethod.set(reloader.reload());
                 }
             } catch (InterruptedException e) {
                 Jt.error("Compilation interrupted.").use();

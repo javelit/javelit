@@ -270,10 +270,10 @@ public final class Server implements StateManager.RenderServer {
                                     "nosniff");
     }
 
-    private void notifyReload(final @Nonnull Reloader.ReloadStrategy reloadStrategy) {
+    private void notifyReload() {
         // reload the app and re-run the app for all sessions
         try {
-            appRunner.reload(reloadStrategy);
+            appRunner.reload();
         } catch (Exception e) {
             if (!(e instanceof CompilationException)) {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
@@ -714,11 +714,7 @@ public final class Server implements StateManager.RenderServer {
                             switch (event.eventType()) {
                                 case MODIFY -> {
                                     LOG.info("File changed: {}. Rebuilding...", changedFile);
-                                    if (changedFile.equals(watchedFile)) {
-                                        notifyReload(Reloader.ReloadStrategy.CLASS);
-                                    } else {
-                                        notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
-                                    }
+                                    notifyReload();
                                 }
                                 case DELETE -> {
                                     if (changedFile.equals(watchedFile)) {
@@ -734,7 +730,7 @@ public final class Server implements StateManager.RenderServer {
                                     if (changedFile.equals(watchedFile)) {
                                         LOG.warn("App file {} recreated. Attempting to reload from the new file.",
                                                  watchedFile);
-                                        notifyReload(Reloader.ReloadStrategy.BUILD_CLASSPATH_AND_CLASS);
+                                        notifyReload();
                                     }
                                 }
                                 case OVERFLOW -> {

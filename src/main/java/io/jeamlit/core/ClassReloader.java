@@ -17,8 +17,6 @@ package io.jeamlit.core;
 
 import java.lang.reflect.Method;
 
-import org.jetbrains.annotations.NotNull;
-
 import static io.jeamlit.core.utils.Preconditions.checkArgument;
 
 // compatible with JRE only
@@ -33,7 +31,7 @@ public class ClassReloader extends Reloader {
     }
 
     @Override
-    Method reload(@NotNull Reloader.ReloadStrategy reloadStrategy) {
+    Method reload() {
         try {
             // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
             final ClassLoader cl = Thread.currentThread().getContextClassLoader();

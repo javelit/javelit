@@ -182,6 +182,16 @@
             <version>4.7.5</version>
         </dependency>
 
+        <!-- optional tablesaw dep -->
+        <dependency>
+            <groupId>tech.tablesaw</groupId>
+            <artifactId>tablesaw-core</artifactId>
+            <version>0.44.4</version>
+            <!-- included in fat jar, but not as a transitive dependency for users of the thin jar-->
+            <optional>true</optional>
+        </dependency>
+
+
         <!--markdown rendering -->
         <dependency>
             <groupId>com.vladsch.flexmark</groupId>

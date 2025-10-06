@@ -1750,6 +1750,25 @@ public final class Jt {
 
     /**
      * Display a static table.
+     *
+     * @param dataframe A tablesaw Table instance. tablesaw is an optional dependency, so this method is not typed.
+     */
+    public static TableComponent.Builder table(final @Nonnull Object dataframe) {
+        try {
+            if (dataframe instanceof tech.tablesaw.api.Table t) {
+                final Map<String, Object[]> cols = TablesawUtils.toColumnArrays(t);
+                return tableFromArrayColumns(cols);
+            }
+        } catch (NoClassDefFoundError e) {
+            // TODO CYRIL add bom explanation once implemented - this error should only happen in embedded mode
+            throw new RuntimeException("Could not load optional tablesaw dependency. If you wish to create tables from dataframe, make sure tablesaw is available in the classpath.", e);
+        }
+        throw new IllegalArgumentException("Invalid dataframe type. dataframe has class %s. Supported dataframe class is: %s"
+                                                   .formatted(dataframe.getClass(), tech.tablesaw.api.Table.class));
+    }
+
+    /**
+     * Display a static table.
      * <p>
      * Examples:
      * Basic table with array of objects
