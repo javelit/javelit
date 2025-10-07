@@ -16,14 +16,18 @@
 package io.jeamlit.cli;
 
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.Callable;
 
 import ch.qos.logback.classic.Level;
 import io.jeamlit.core.Server;
+import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -91,7 +95,15 @@ public class Cli implements Callable<Integer> {
                 return 1;
             }
 
-            final Path javaFilePath = Paths.get(appPath);
+            // Resolve appPath - could be local file or URL
+            final Path javaFilePath;
+            try {
+                javaFilePath = resolveAppPath(appPath);
+            } catch (IOException e) {
+                logger.error("Failed to resolve app path: {}", appPath, e);
+                return 1;
+            }
+
             logger.info("Starting Jeamlit on file {}", javaFilePath.toAbsolutePath());
             if (!Files.exists(javaFilePath)) {
                 logger.error("File not found: {}", javaFilePath.toAbsolutePath());
@@ -138,6 +150,39 @@ public class Cli implements Callable<Integer> {
             // perform other parameter checks here
 
             return parametersAreValid;
+        }
+
+        // handle remote files
+        private Path resolveAppPath(final @Nonnull String pathOrUrl) throws IOException {
+            boolean isUrl = pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://");
+            if (isUrl) {
+                logger.info("Detected remote file URL: {}", pathOrUrl);
+                return downloadRemoteFile(pathOrUrl);
+            }
+            return Paths.get(pathOrUrl);
+        }
+
+        private Path downloadRemoteFile(final @Nonnull String url) throws IOException {
+            // Extract filename from URL
+            final String filename = extractFilename(url);
+            final Path tempDir = Files.createTempDirectory("jeamlit-remote-");
+            final Path targetFile = tempDir.resolve(filename);
+            logger.info("Downloading {} to {}", url, targetFile);
+            try (InputStream in = URI.create(url).toURL().openStream()) {
+                Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            logger.info("Successfully downloaded file to {}", targetFile);
+            return targetFile;
+        }
+
+        private static String extractFilename(final @Nonnull String path) {
+            // Get the path part of the URL
+            int lastSlash = path.lastIndexOf('/');
+            if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+                return path.substring(lastSlash + 1);
+            }
+            // Fallback to a default name if we can't extract - note cyril: depending on javac this may result in bugs ?
+            return "App.java";
         }
     }
 
