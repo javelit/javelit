@@ -73,6 +73,7 @@ public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
     final @Nullable Integer width;
     final String theme;
     final List<MapConfig> maps;
+    final boolean border;
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
@@ -98,6 +99,7 @@ public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
         this.width = builder.width;
         this.theme = builder.theme;
         this.maps = List.copyOf(builder.maps);
+        this.border = builder.border;
     }
 
     public static class Builder extends JtComponentBuilder<JtComponent.NONE, EchartsComponent, Builder> {
@@ -108,6 +110,7 @@ public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
         private Integer width;
         private String theme = "default";
         private final List<MapConfig> maps = new ArrayList<>();
+        private boolean border;
 
         public Builder(final @Nonnull Chart<?, ?> chart) {
             this.chart = chart;
@@ -176,6 +179,15 @@ public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
          */
         public Builder withMap(final @Nonnull String mapName, final @Nonnull URI geoJson, final Map<String, SpecialAreaConfig> specialAreas) {
             this.maps.add(new MapConfig(mapName, geoJson, specialAreas));
+            return this;
+        }
+
+        /**
+         * Whether to show a border around the container. {@code False} by default.
+         * For more control on the border style, set a border using the echarts chart configuration.
+         */
+        public Builder border(final boolean border) {
+            this.border = border;
             return this;
         }
 

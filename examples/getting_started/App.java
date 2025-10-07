@@ -96,7 +96,7 @@ public class App {
                                    .setItemStyle(new ItemStyle().setColor("#b02a02").setOpacity(0.6)));
         // plot the chart
         String mapBaseGeoJson = "https://raw.githubusercontent.com/jeamlit/public_assets/refs/heads/main/examples/manhattan.geo.json";
-        Jt.echarts(mapOption).withMap("manhattan", URI.create(mapBaseGeoJson)).height(600).use();
+        Jt.echarts(mapOption).withMap("manhattan", URI.create(mapBaseGeoJson)).height(600).border(true).use();
     }
 
     static Table loadData(int nrows) {

@@ -39,6 +39,11 @@ class JtEcharts extends LitElement {
         }
         #container {
             width: var(--width, 100%);
+            box-sizing: border-box;
+        }
+        :host([border]) #container {
+            border: 1px solid var(--jt-border-color);
+            border-radius: var(--jt-border-radius);
         }
     `;
 
@@ -48,6 +53,7 @@ class JtEcharts extends LitElement {
         width: {type: Number},
         theme: { type: String },
         maps: { type: String },
+        border: {type: Boolean, reflect: true}
     };
 
     constructor() {
