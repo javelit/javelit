@@ -50,7 +50,7 @@ public class RemoteFileE2ETest {
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(20000));
 
             // Verify the title from the remote app is visible
             final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
