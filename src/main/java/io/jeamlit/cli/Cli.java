@@ -139,17 +139,39 @@ public class Cli implements Callable<Integer> {
 
             return parametersAreValid;
         }
+    }
 
-        private void openBrowser(final String url) {
+    @Command(name = "hello", description = "Run the Hello World app.")
+    static class HelloWorldCommand implements Callable<Integer> {
+        @SuppressWarnings("unused")
+        @Option(names = {"-p", "--port"}, description = "Port to run server on", defaultValue = "8080")
+        private int port;
+
+        @Override
+        public Integer call() throws Exception {
+            final Level logLevel = Level.valueOf("INFO");
+            setLoggingLevel(logLevel);
+            logger.info("Starting the Hello World application");
+            final Server server = Server.builder(HelloWorld.class, port).build();
+            // Start everything
+            final String url = "http://localhost:" + port;
             try {
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(new URI(url));
-                } else {
-                    logger.warn("Desktop not supported, cannot open browser automatically");
-                }
+                server.start();
+                logger.info("Press Ctrl+C to stop");
             } catch (Exception e) {
-                logger.error("Could not open browser. Please open browser manually. ", e);
+                logger.error("Error starting server", e);
+                return 1;
             }
+            openBrowser(url);
+
+            // wait for interruption
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Shutting down...");
+                server.stop();
+            }));
+            Thread.currentThread().join();
+
+            return 0;
         }
     }
 
@@ -160,7 +182,9 @@ public class Cli implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        final int exitCode = new CommandLine(new Cli()).addSubcommand("run", new RunCommand())
+        final int exitCode = new CommandLine(new Cli())
+                .addSubcommand("run", new RunCommand())
+                .addSubcommand("hello", new HelloWorldCommand())
                 .execute(args);
         System.exit(exitCode);
     }
@@ -180,6 +204,18 @@ public class Cli implements Callable<Integer> {
                     + optional(Cli.class.getPackage())
                     .map(Package::getImplementationVersion)
                     .orElse("unknown version"),};
+        }
+    }
+
+    private static void openBrowser(final String url) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI(url));
+            } else {
+                logger.warn("Desktop not supported, cannot open browser automatically");
+            }
+        } catch (Exception e) {
+            logger.error("Could not open browser. Please open browser manually. ", e);
         }
     }
 }
