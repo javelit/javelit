@@ -28,6 +28,10 @@ public class HelloWorld {
                             - Check out [jeamlit.io](https://jeamlit.io)
                             - Jump into our [documentation](https://docs.jeamlit.io)
                             - Ask a question in the [community forum](https://github.com/jeamlit/jeamlit/discussions)
+                            
+                            ## Start building
+                            - Create [your first app](https://docs.jeamlit.io/get-started/tutorials/create-an-app)!
+                            - Create [a multipage app](https://docs.jeamlit.io/get-started/tutorials/create-a-multipage-app)!
                             """).use();
 
     }
