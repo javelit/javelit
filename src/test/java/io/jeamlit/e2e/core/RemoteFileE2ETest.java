@@ -20,6 +20,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import io.jeamlit.cli.Cli;
+import io.jeamlit.e2e.helpers.JeamlitTestHelper;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -46,11 +47,13 @@ public class RemoteFileE2ETest {
         cliThread.setDaemon(true);
         cliThread.start();
 
+        JeamlitTestHelper.waitForServerReady(port);
+
         // Verify with Playwright that the app is running
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(20000));
+            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
             // Verify the title from the remote app is visible
             final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);

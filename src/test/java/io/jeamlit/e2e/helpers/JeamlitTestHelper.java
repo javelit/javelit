@@ -116,7 +116,7 @@ public final class JeamlitTestHelper {
      *
      * @param port The port to check
      */
-    private static void waitForServerReady(int port) {
+    public static void waitForServerReady(int port) {
         int maxAttempts = 30;
         for (int i = 0; i < maxAttempts; i++) {
             try {
