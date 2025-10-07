@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Helper class to allocate unique ports for parallel test execution.
  */
-final class PortAllocator {
+public final class PortAllocator {
     private static final int BASE_PORT = 8501;
     private static final AtomicInteger portOffset = new AtomicInteger(0);
     private static final ExecutorService executor = Executors.newCachedThreadPool();
@@ -33,7 +33,7 @@ final class PortAllocator {
      * Tries to find an available port starting from BASE_PORT.
      * Times out after 10 seconds if no port can be found.
      */
-    static synchronized int getNextAvailablePort() {
+    public static synchronized int getNextAvailablePort() {
         final CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 int port = BASE_PORT + portOffset.getAndIncrement();
