@@ -1,6 +1,6 @@
-/// usr/bin/env jbang "$0" "$@" ; exit $?
+///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.32.0
+//DEPS io.jeamlit:jeamlit:0.33.0
 //DEPS tech.tablesaw:tablesaw-core:0.44.4
 
 import java.io.BufferedReader;
@@ -31,17 +31,14 @@ import tech.tablesaw.selection.Selection;
 
 public class App {
 
-    static final String DATE_COLUMN = "date/time";
-    static final String DATA_URL = "https://github.com/jeamlit/public_assets/raw/refs/heads/main/examples/uber-raw-data-sep14.csv.gz";
-
     public static void main(String[] args) {
         // Load data with caching
         Table data = (Table) Jt.cache().computeIfAbsent("data", k -> {
             Jt.text("Loading data...").use();
             Table df = loadData(10000);
-            Jt.text("Done! (using Jt.cache())").use();
             return df;
         });
+        Jt.text("Loading data...done! (using Jt.cache())").use();
 
         // Title
         Jt.title("Uber pickups in NYC").use();
@@ -103,6 +100,8 @@ public class App {
     }
 
     static Table loadData(int nrows) {
+        final String DATE_COLUMN = "date/time";
+        final String DATA_URL = "https://github.com/jeamlit/public_assets/raw/refs/heads/main/examples/uber-raw-data-sep14.csv.gz";
         try (InputStream in = URI.create(DATA_URL).toURL().openStream();
              GZIPInputStream gzipIn = new GZIPInputStream(in);
              InputStreamReader reader = new InputStreamReader(gzipIn);
