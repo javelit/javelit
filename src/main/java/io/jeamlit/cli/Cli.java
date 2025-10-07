@@ -186,7 +186,7 @@ public class Cli implements Callable<Integer> {
         }
     }
 
-    @Command(name = "hello", description = "Run the Hello World app.")
+    @Command(name = "hello", description = "Create and run a Hello World app.")
     static class HelloWorldCommand implements Callable<Integer> {
         @SuppressWarnings("unused")
         @Option(names = {"-p", "--port"}, description = "Port to run server on", defaultValue = "8080")
@@ -196,27 +196,32 @@ public class Cli implements Callable<Integer> {
         public Integer call() throws Exception {
             final Level logLevel = Level.valueOf("INFO");
             setLoggingLevel(logLevel);
-            logger.info("Starting the Hello World application");
-            final Server server = Server.builder(HelloWorld.class, port).build();
-            // Start everything
-            final String url = "http://localhost:" + port;
-            try {
-                server.start();
-                logger.info("Press Ctrl+C to stop");
-            } catch (Exception e) {
-                logger.error("Error starting server", e);
+
+            final Path helloWorldFile = Paths.get("HelloWorld.java");
+            if (Files.exists(helloWorldFile)) {
+                logger.info("HelloWorld.java already exists in the current directory");
+                logger.info("You can run it with: jeamlit run --port {} HelloWorld.java", port);
                 return 1;
             }
-            openBrowser(url);
+            try (InputStream resourceStream = getClass().getResourceAsStream("/cli/HelloWorld.java")) {
+                if (resourceStream == null) {
+                    logger.error("Could not find HelloWorld.java template in resources");
+                    return 1;
+                }
+                Files.copy(resourceStream, helloWorldFile);
+                logger.info("Created {} in the current directory", helloWorldFile.getFileName().toString());
+            } catch (IOException e) {
+                logger.error("Failed to create HelloWorld.java", e);
+                return 1;
+            }
 
-            // wait for interruption
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                logger.info("Shutting down...");
-                server.stop();
-            }));
-            Thread.currentThread().join();
+            // now just launch the RunCommand targeting the newly created HelloWorld.java
+            final RunCommand runCommand = new RunCommand();
+            runCommand.appPath = helloWorldFile.toString();
+            runCommand.port = port;
+            runCommand.noBrowser = false;
 
-            return 0;
+            return runCommand.call();
         }
     }
 

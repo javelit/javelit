@@ -450,6 +450,7 @@
                                 <exclude>target/**</exclude>
                                 <exclude>examples/**</exclude>
                                 <exclude>notes/**</exclude>
+                                <exclude>src/main/resources/cli/HelloWorld.java</exclude>
                                 <exclude>streamlit_ref/**</exclude>
                             </excludes>
                         </licenseSet>
