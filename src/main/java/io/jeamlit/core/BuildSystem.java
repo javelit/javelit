@@ -35,7 +35,7 @@ import static io.jeamlit.core.utils.LangUtils.optional;
 @SuppressWarnings("ImmutableEnumChecker")
 // ignore the array field in this enum - see https://errorprone.info/bugpattern/ImmutableEnumChecker - this one is internal only - just ensure compileCmdArgs is not mutated
 public enum BuildSystem {
-    FATJAR_AND_JBANG("java app file") {
+    FATJAR_AND_JBANG() {
 
         private static final Method DEPENDENCY_COLLECT_REFLECTION;
 
@@ -98,7 +98,7 @@ public enum BuildSystem {
             }
         }
     },
-    RUNTIME("java runtime") {
+    RUNTIME() {
         @Override
         boolean isUsed() {
             return false;
@@ -111,12 +111,7 @@ public enum BuildSystem {
         }
     };
 
-
-    final @Nonnull String buildSystemFile;
-
-    BuildSystem(@Nonnull String buildSystemFile) {
-        this.buildSystemFile = buildSystemFile;
-    }
+    BuildSystem() {}
 
     abstract boolean isUsed();
 

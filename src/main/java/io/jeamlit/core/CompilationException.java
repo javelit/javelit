@@ -26,6 +26,10 @@ class CompilationException extends RuntimeException {
         super(e.getMessage(), e.getCause());
     }
 
+    protected CompilationException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
     protected CompilationException(final String errorMessage) {
         super(errorMessage);
     }

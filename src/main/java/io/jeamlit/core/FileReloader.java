@@ -273,15 +273,12 @@ class FileReloader extends Reloader {
             }
             LOG.info("{} dependencies added to the classpath successfully.", buildSystem);
             LOG.debug("Added from {}: {}", buildSystem, classpath);
-        } catch (IOException | InterruptedException e) {
-            LOG.error(
-                    "Failed resolving {} dependencies from {}. {} classpath not injected in app. Please reach out to support with this error if need be.",
-                    buildSystem,
-                    buildSystem.buildSystemFile,
-                    buildSystem,
-                    e);
+        } catch (Exception e) {
+            if (e instanceof CompilationException ce) {
+                throw ce;
+            }
+            throw new CompilationException("Failed to resolve %s dependencies: %s".formatted(buildSystem, e.getMessage()), e);
         }
-
         return cp.toString();
     }
 

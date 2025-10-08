@@ -29,6 +29,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -706,11 +707,8 @@ public final class Server implements StateManager.RenderServer {
                     .fileHasher(FileHasher.LAST_MODIFIED_TIME)
                     .listener(event -> {
                         final Path changedFile = event.path();
-                        // Only respond to changes to .java files in the source tree and pom.xml files
-                        // previously: changedFile.equals(watchedFile) to only watch the main file --> NOTE: this may be different for maven/gradle builds
-                        if (changedFile.getFileName().toString().endsWith(".java") || "pom.xml".equals(changedFile
-                                                                                                               .getFileName()
-                                                                                                               .toString())) {
+                        // Only respond to changes to .java files in the source tree
+                        if (changedFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".java")) {
                             switch (event.eventType()) {
                                 case MODIFY -> {
                                     LOG.info("File changed: {}. Rebuilding...", changedFile);
