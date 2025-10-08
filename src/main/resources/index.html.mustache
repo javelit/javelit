@@ -708,6 +708,12 @@
             mutationsByContainer.forEach((mutations, container) => {
                 const containerEl = document.querySelector(`[data-container="${container}"]`);
                 if (!containerEl) {
+                    // If all mutations are page resets (clearBefore=true and index=0), skip silently
+                    // this can happen when a container is fully removed (eg because of a page change in a multipage app)
+                    const allArePageResets = mutations.every(m => m.clearBefore === true && m.index === 0);
+                    if (allArePageResets) {
+                        return; // Skip this container
+                    }
                     throw new Error(`Nested container not found for path: ${container}. Implementation error. Please reach out to support.`);
                 }
 
