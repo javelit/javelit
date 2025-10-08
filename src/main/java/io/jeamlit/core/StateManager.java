@@ -200,6 +200,7 @@ final class StateManager {
      * - run the user app - it will call addComponent (done via Jt methods)
      * - endExecution
      */
+    // Contract: CURRENT_EXECUTION_IN_THREAD value will always be set properly, except if the CURRENT_EXECUTION_IN_THREAD already has a value, which would correspond to an incorrect implementation of the endExecution method
     static void beginExecution(final String sessionId) {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
@@ -256,13 +257,24 @@ final class StateManager {
 
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
-        final Object state = session.getComponentsState().get(component.getKey());
-        if (state != null) {
-            component.updateValue(state);
-        } else if (component.returnValueIsAState()) {
-            // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
+        if (!NavigationComponent.UNIQUE_NAVIGATION_COMPONENT_KEY.equals(component.getKey())) {
+            final Object state = session.getComponentsState().get(component.getKey());
+            if (state != null) {
+                component.updateValue(state);
+            } else if (component.returnValueIsAState()) {
+                // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
+                session.getComponentsState().put(component.getKey(), component.returnValue());
+            }
+        } else {
+            // navigation component is responsible for managing its own state through url context
+            // also it may contain references to other classes that may be hot-reloaded, and the information of hot-reload is not available, hence getting the previous value would NEVER be correct
+            // SO:
+            // we never get the old value from the current state (component.updateValue(state); above) ...
+            // we expect the NavigationComponent to get its currentValue on its own based on urlContext --> see NavigationComponent constructor
+            // ...but we still put the current value in the widget states such that it's available like any other component state
             session.getComponentsState().put(component.getKey(), component.returnValue());
         }
+
 
         // Point-of-difference streaming logic
         final AppExecution lastExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
@@ -346,81 +358,87 @@ final class StateManager {
      * - run the user app - it will call addComponent (done via Jt methods)
      * - endExecution
      */
+    // Contract: CURRENT_EXECUTION_IN_THREAD value will always be removed properly, even if something else fails
     static void endExecution() {
-        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
-        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
-        final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
-        // empty containers that did not appear in the current execution
-        // clean up the end of containers that had their number of components decrease - can happen if no clear is triggered, eg if only a statement is removed
-        if (previousExecution != null) {
-            for (final JtContainer containerInPrevious : previousExecution.containerToComponents.keySet()) {
-                if (currentExecution.containerToComponents.containsKey(containerInPrevious)) {
-                    final LinkedHashMap<String, JtComponent<?>> currentComponents = currentExecution.containerToComponents.get(
-                            containerInPrevious);
-                    final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.containerToComponents.get(
-                            containerInPrevious);
-                    if (previousComponents.size() > currentComponents.size()) {
-                        renderServer.send(currentExecution.sessionId,
-                                          null,
-                                          containerInPrevious,
-                                          currentComponents.size(),
-                                          true);
+        try {
+            final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+            checkState(currentExecution != null, "No active execution context. Please reach out to support.");
+            final AppExecution previousExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
+            // empty containers that did not appear in the current execution
+            // clean up the end of containers that had their number of components decrease - can happen if no clear is triggered, eg if only a statement is removed
+            if (previousExecution != null) {
+                for (final JtContainer containerInPrevious : previousExecution.containerToComponents.keySet()) {
+                    if (currentExecution.containerToComponents.containsKey(containerInPrevious)) {
+                        final LinkedHashMap<String, JtComponent<?>> currentComponents = currentExecution.containerToComponents.get(
+                                containerInPrevious);
+                        final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.containerToComponents.get(
+                                containerInPrevious);
+                        if (previousComponents.size() > currentComponents.size()) {
+                            renderServer.send(currentExecution.sessionId,
+                                              null,
+                                              containerInPrevious,
+                                              currentComponents.size(),
+                                              true);
+                        }
+                    } else {
+                        // some container is not used anymore - empty it - it's the responsibility of the container to not appear when empty
+                        renderServer.send(currentExecution.sessionId, null, containerInPrevious, 0, true);
                     }
-                } else {
-                    // some container is not used anymore - empty it - it's the responsibility of the container to not appear when empty
-                    renderServer.send(currentExecution.sessionId, null, containerInPrevious, 0, true);
-                }
-            }
-        }
-
-        final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
-        for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> e : currentExecution.containerToComponents.entrySet()) {
-            final JtContainer container = e.getKey();
-            final LinkedHashMap<String, JtComponent<?>> currentComponents = e.getValue();
-            // reset and save components state
-            for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
-                final JtComponent<?> component = entry.getValue();
-                component.resetIfNeeded();
-                if (component.returnValueIsAState()) {
-                    session.getComponentsState().put(entry.getKey(), component.returnValue());
                 }
             }
 
-            // clear form to default values
-            if (!session.formComponentsToReset().isEmpty() && container.getParentFormComponentKey() != null) {
-                // exploit the ordering of the linked hashmap to know the correct index to override
-                int i = 0;
+            final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
+            for (final Map.Entry<JtContainer, LinkedHashMap<String, JtComponent<?>>> e : currentExecution.containerToComponents.entrySet()) {
+                final JtContainer container = e.getKey();
+                final LinkedHashMap<String, JtComponent<?>> currentComponents = e.getValue();
+                // reset and save components state
                 for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
-                    if (session.formComponentsToReset().contains(entry.getKey())) {
-                        final JtComponent<?> component = entry.getValue();
-                        component.resetToInitialValue();
+                    final JtComponent<?> component = entry.getValue();
+                    component.resetIfNeeded();
+                    if (component.returnValueIsAState()) {
                         session.getComponentsState().put(entry.getKey(), component.returnValue());
-                        renderServer.send(currentExecution.sessionId, component, container, i, false);
                     }
-                    i++;
                 }
-                session.formComponentsToReset().clear();
-            }
-        }
 
-        if (previousExecution != null) {
-            // remove component states of component that are not in the app anymore
-            final Set<String> componentsInUseKeys = new HashSet<>();
-            for (final Map<String, JtComponent<?>> m : currentExecution.containerToComponents.values()) {
-                componentsInUseKeys.addAll(m.keySet());
+                // clear form to default values
+                if (!session.formComponentsToReset().isEmpty() && container.getParentFormComponentKey() != null) {
+                    // exploit the ordering of the linked hashmap to know the correct index to override
+                    int i = 0;
+                    for (final Map.Entry<String, JtComponent<?>> entry : currentComponents.entrySet()) {
+                        if (session.formComponentsToReset().contains(entry.getKey())) {
+                            final JtComponent<?> component = entry.getValue();
+                            component.resetToInitialValue();
+                            session.getComponentsState().put(entry.getKey(), component.returnValue());
+                            renderServer.send(currentExecution.sessionId, component, container, i, false);
+                        }
+                        i++;
+                    }
+                    session.formComponentsToReset().clear();
+                }
             }
-            for (final Map<String, JtComponent<?>> m : previousExecution.containerToComponents.values()) {
-                m
-                        .keySet()
-                        .stream()
-                        .filter(k -> !componentsInUseKeys.contains(k))
-                        .forEach(k -> session.getComponentsState().remove(k));
-            }
-        }
 
-        LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
-        renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);
-        CURRENT_EXECUTION_IN_THREAD.remove();
+            if (previousExecution != null) {
+                // remove component states of component that are not in the app anymore
+                final Set<String> componentsInUseKeys = new HashSet<>();
+                for (final Map<String, JtComponent<?>> m : currentExecution.containerToComponents.values()) {
+                    componentsInUseKeys.addAll(m.keySet());
+                }
+                for (final Map<String, JtComponent<?>> m : previousExecution.containerToComponents.values()) {
+                    m
+                            .keySet()
+                            .stream()
+                            .filter(k -> !componentsInUseKeys.contains(k))
+                            .forEach(k -> session.getComponentsState().remove(k));
+                }
+            }
+
+            LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
+            renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);
+        } catch (Exception e) {
+            LOG.error("Failed to end execution properly. A reload of the app may be necessary. If this happens multiple times, please reach out to support.", e);
+        } finally {
+            CURRENT_EXECUTION_IN_THREAD.remove();
+        }
     }
 
     static void setUrlContext(final @Nonnull String sessionId,
