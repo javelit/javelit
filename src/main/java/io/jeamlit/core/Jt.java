@@ -447,8 +447,36 @@ public final class Jt {
      * }
      *}
      */
+    @Deprecated(forRemoval = true) // use divider(someKey)
     public static MarkdownComponent.Builder divider() {
         return new MarkdownComponent.Builder("---");
+    }
+
+    /**
+     * Display a horizontal rule.
+     * <p>
+     * Examples:
+     * Basic section separator
+     * {@snippet :
+     * import tech.catheu.jeamlit.core.Jt;
+     *
+     * public class DividerApp {
+     *     public static void main(String[] args) {
+     *         Jt.title("Section 1").use();
+     *         Jt.text("Content for section 1").use();
+     *
+     *         Jt.divider().use();
+     *
+     *         Jt.title("Section 2").use();
+     *         Jt.text("Content for section 2").use();
+     *     }
+     * }
+     *}
+     *
+     * @param key A unique key to avoid collisions when calling this method multiple times.
+     */
+    public static MarkdownComponent.Builder divider(final @Nonnull String key) {
+        return new MarkdownComponent.Builder("---").key(key);
     }
 
     /**
@@ -1761,10 +1789,13 @@ public final class Jt {
             }
         } catch (NoClassDefFoundError e) {
             // TODO CYRIL add bom explanation once implemented - this error should only happen in embedded mode
-            throw new RuntimeException("Could not load optional tablesaw dependency. If you wish to create tables from dataframe, make sure tablesaw is available in the classpath.", e);
+            throw new RuntimeException(
+                    "Could not load optional tablesaw dependency. If you wish to create tables from dataframe, make sure tablesaw is available in the classpath.",
+                    e);
         }
-        throw new IllegalArgumentException("Invalid dataframe type. dataframe has class %s. Supported dataframe class is: %s"
-                                                   .formatted(dataframe.getClass(), tech.tablesaw.api.Table.class));
+        throw new IllegalArgumentException(
+                "Invalid dataframe type. dataframe has class %s. Supported dataframe class is: %s"
+                        .formatted(dataframe.getClass(), tech.tablesaw.api.Table.class));
     }
 
     /**
@@ -1906,7 +1937,8 @@ public final class Jt {
      *     }
      * }
      *}
-     * @param pageApp  The target page. If {@code null}, target the home page.
+     *
+     * @param pageApp The target page. If {@code null}, target the home page.
      */
     public static void switchPage(final @jakarta.annotation.Nullable Class<?> pageApp) {
         // note: the design here is pretty hacky
