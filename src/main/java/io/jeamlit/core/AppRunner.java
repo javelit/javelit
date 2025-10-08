@@ -100,10 +100,10 @@ final class AppRunner {
             }
         }
 
-        StateManager.beginExecution(sessionId);
         boolean doRerun = false;
         Consumer<String> runAfterBreak = null;
         try {
+            StateManager.beginExecution(sessionId);
             // Apps may call ServiceLoader.load(SomeClass.class). This would use the current thread context classloader (not set here) or fallback to the System classloader.
             // We need to use the HotClassLoader used to define the mainMethod
             // NOTE: this is only necessary for when the mainMethod is built from a file but this should have no
