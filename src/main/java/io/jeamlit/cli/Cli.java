@@ -22,7 +22,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.concurrent.Callable;
 
 import ch.qos.logback.classic.Level;
@@ -81,7 +80,7 @@ public class Cli implements Callable<Integer> {
         private String[] customClasspathCmdArgs;
 
         @SuppressWarnings("unused")
-        @Option(names = {"--log-level"}, 
+        @Option(names = {"--log-level"},
                 description = "Set log level (TRACE, DEBUG, INFO, WARN, ERROR). Default: INFO. If the value is not recognized, fallbacks to DEBUG.",
                 defaultValue = "INFO")
         private String logLevel;
@@ -111,10 +110,10 @@ public class Cli implements Callable<Integer> {
             }
             // Create server
             final Server server = Server.builder(javaFilePath, port).additionalClasspath(classpath)
-                    .headersFile(headersFile)
-                    .customCompileCmdArgs(customCompileCmdArgs)
-                    .customClasspathCmdArgs(customClasspathCmdArgs)
-                    .build();
+                                        .headersFile(headersFile)
+                                        .customCompileCmdArgs(customCompileCmdArgs)
+                                        .customClasspathCmdArgs(customClasspathCmdArgs)
+                                        .build();
 
             // Start everything
             final String url = "http://localhost:" + port;
@@ -141,7 +140,10 @@ public class Cli implements Callable<Integer> {
 
         private boolean parametersAreValid() {
             boolean parametersAreValid = true;
-            if (!appPath.endsWith(".java")) {
+
+            // Only validate .java extension for local files (not URLs)
+            final boolean isUrl = appPath.startsWith("http://") || appPath.startsWith("https://");
+            if (!isUrl && !appPath.endsWith(".java")) {
                 // note: I know a Java file could in theory not end with .java but I want to reduce other issues downstream
                 logger.error("File {} does not look like a java file. File should end with .java",
                              appPath);
@@ -157,32 +159,9 @@ public class Cli implements Callable<Integer> {
             boolean isUrl = pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://");
             if (isUrl) {
                 logger.info("Detected remote file URL: {}", pathOrUrl);
-                return downloadRemoteFile(pathOrUrl);
+                return RemoteFileUtils.downloadRemoteFile(pathOrUrl);
             }
             return Paths.get(pathOrUrl);
-        }
-
-        private Path downloadRemoteFile(final @Nonnull String url) throws IOException {
-            // Extract filename from URL
-            final String filename = extractFilename(url);
-            final Path tempDir = Files.createTempDirectory("jeamlit-remote-");
-            final Path targetFile = tempDir.resolve(filename);
-            logger.info("Downloading {} to {}", url, targetFile);
-            try (InputStream in = URI.create(url).toURL().openStream()) {
-                Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
-            }
-            logger.info("Successfully downloaded file to {}", targetFile);
-            return targetFile;
-        }
-
-        private static String extractFilename(final @Nonnull String path) {
-            // Get the path part of the URL
-            int lastSlash = path.lastIndexOf('/');
-            if (lastSlash >= 0 && lastSlash < path.length() - 1) {
-                return path.substring(lastSlash + 1);
-            }
-            // Fallback to a default name if we can't extract - note cyril: depending on javac this may result in bugs ?
-            return "App.java";
         }
     }
 
@@ -252,8 +231,8 @@ public class Cli implements Callable<Integer> {
                             .map(Package::getImplementationTitle)
                             .orElse("unknown project name") + " "
                     + optional(Cli.class.getPackage())
-                    .map(Package::getImplementationVersion)
-                    .orElse("unknown version"),};
+                            .map(Package::getImplementationVersion)
+                            .orElse("unknown version"),};
         }
     }
 

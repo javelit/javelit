@@ -60,4 +60,32 @@ public class RemoteFileE2ETest {
             assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
         }
     }
+
+    @Test
+    void testRunRemoteGitHubFolder() {
+        final int port = getNextAvailablePort();
+        final String remoteFolderUrl = "https://github.com/jeamlit/jeamlit/tree/main/src/test/resources/multipage-remote";
+
+        // Execute jeamlit CLI in a separate thread
+        final Thread cliThread = new Thread(() -> {
+            // Use main method approach since subcommands are package-private
+            String[] args = {"run", remoteFolderUrl, "--port", String.valueOf(port), "--no-browser"};
+            Cli.main(args);
+        });
+        cliThread.setDaemon(true);
+        cliThread.start();
+
+        JeamlitTestHelper.waitForServerReady(port);
+
+        // Verify with Playwright that the app is running
+        try (final Playwright playwright = Playwright.create();
+             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Page page = browser.newPage()) {
+            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+
+            // Verify the multipage navigation is visible (checking for "Dashboard" link)
+            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+            assertThat(page.getByText("Users")).isVisible(timeout);
+        }
+    }
 }
