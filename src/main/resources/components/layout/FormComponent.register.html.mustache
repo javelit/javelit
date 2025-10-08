@@ -20,7 +20,15 @@
         static styles = css`
             :host {
                 display: block;
-                margin: 0 0;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            ::slotted(*:first-child) {
+                margin-top: 0;
+            }
+
+            ::slotted(*:last-child) {
+                margin-bottom: 0;
             }
             
             :host([width="content"]) {
