@@ -51,6 +51,8 @@ public final class PlaywrightUtils {
             1000);
     public static final LocatorAssertions.IsHiddenOptions WAIT_1_SEC_MAX_HIDDEN = new LocatorAssertions.IsHiddenOptions().setTimeout(
             1000);
+    public static final LocatorAssertions.IsHiddenOptions WAIT_10_MS_MAX_HIDDEN = new LocatorAssertions.IsHiddenOptions().setTimeout(
+            10);
     public static final LocatorAssertions.HasClassOptions WAIT_1_SEC_MAX_CLASS = new LocatorAssertions.HasClassOptions().setTimeout(
             1000);
 
