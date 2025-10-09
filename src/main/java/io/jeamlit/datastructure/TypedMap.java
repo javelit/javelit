@@ -94,6 +94,26 @@ public class TypedMap implements Map<String, Object> {
         return (Boolean) delegate.getOrDefault(key, defaultValue);
     }
 
+    public String putIfAbsentString(String key, String value) {
+        return (String) delegate.putIfAbsent(key, value);
+    }
+
+    public Integer putIfAbsentInt(String key, Integer value) {
+        return (Integer) delegate.putIfAbsent(key, value);
+    }
+
+    public Long putIfAbsentLong(String key, Long value) {
+        return (Long) delegate.putIfAbsent(key, value);
+    }
+
+    public Double putIfAbsentDouble(String key, Double value) {
+        return (Double) delegate.putIfAbsent(key, value);
+    }
+
+    public Boolean putIfAbsentBoolean(String key, Boolean value) {
+        return (Boolean) delegate.putIfAbsent(key, value);
+    }
+
     // Typed compute methods
     public String computeString(String key, BiFunction<String, String, String> remappingFunction) {
         return (String) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (String) v));
