@@ -74,6 +74,26 @@ public class TypedMap implements Map<String, Object> {
         return (Boolean) delegate.getOrDefault(key, defaultValue);
     }
 
+    public String getOrDefaultString(String key, String defaultValue) {
+        return (String) delegate.getOrDefault(key, defaultValue);
+    }
+
+    public Integer getOrDefaultInt(String key, Integer defaultValue) {
+        return (Integer) delegate.getOrDefault(key, defaultValue);
+    }
+
+    public Long getOrDefaultLong(String key, Long defaultValue) {
+        return (Long) delegate.getOrDefault(key, defaultValue);
+    }
+
+    public Double getOrDefaultDouble(String key, Double defaultValue) {
+        return (Double) delegate.getOrDefault(key, defaultValue);
+    }
+
+    public Boolean getOrDefaultBoolean(String key, Boolean defaultValue) {
+        return (Boolean) delegate.getOrDefault(key, defaultValue);
+    }
+
     // Typed compute methods
     public String computeString(String key, BiFunction<String, String, String> remappingFunction) {
         return (String) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (String) v));
