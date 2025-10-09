@@ -485,7 +485,7 @@ public final class Server implements StateManager.RenderServer {
                 return optional(channel.getSourceAddress())
                         .map(InetSocketAddress::getAddress)
                         .map(InetAddress::getHostAddress)
-                        .map(ip -> "127.0.0.1".equals(ip) || "::1".equals(ip))
+                        .map(ip -> Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1").contains(ip))
                         .orElse(false);
             } catch (Exception e) {
                 LOG.warn("Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.", e);
