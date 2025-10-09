@@ -111,8 +111,6 @@ public class Cli implements Callable<Integer> {
             // Create server
             final Server server = Server.builder(javaFilePath, port).additionalClasspath(classpath)
                                         .headersFile(headersFile)
-                                        .customCompileCmdArgs(customCompileCmdArgs)
-                                        .customClasspathCmdArgs(customClasspathCmdArgs)
                                         .build();
 
             // Start everything

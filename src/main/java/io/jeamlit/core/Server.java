@@ -117,8 +117,6 @@ public final class Server implements StateManager.RenderServer {
         @Nullable String classpath;
         @Nullable String headersFile;
         @Nullable BuildSystem buildSystem;
-        @Nullable String[] customClasspathCmdArgs;
-        @Nullable String[] customCompileCmdArgs;
 
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
@@ -146,16 +144,6 @@ public final class Server implements StateManager.RenderServer {
         public Builder buildSystem(@Nullable BuildSystem buildSystem) {
             checkState(appClass == null, "Cannot set build system when appClass is provided directly.");
             this.buildSystem = buildSystem;
-            return this;
-        }
-
-        public Builder customClasspathCmdArgs(@Nullable String[] customClasspathCmdArgs) {
-            this.customClasspathCmdArgs = customClasspathCmdArgs;
-            return this;
-        }
-
-        public Builder customCompileCmdArgs(@Nullable String[] customCompileCmdArgs) {
-            this.customCompileCmdArgs = customCompileCmdArgs;
             return this;
         }
 
