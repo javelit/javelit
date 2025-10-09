@@ -213,17 +213,14 @@ class RemoteFileUtils {
                     .forEach(javaFiles::add);
         }
         if (javaFiles.size() == 1) {
-            System.out.println("FOUND HERE");
             return javaFiles.getFirst();
         }
         final Path appJava = folderPath.resolve("App.java");
         if (Files.exists(appJava)) {
-            System.out.println("FOUND THERE");
             return appJava;
         }
         final Path mainJava = folderPath.resolve("Main.java");
         if (Files.exists(mainJava)) {
-            System.out.println("FOUND HERE AGIAN");
             return mainJava;
         }
 
