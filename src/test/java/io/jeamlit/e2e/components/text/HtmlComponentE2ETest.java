@@ -21,9 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_ATTRIBUTE;
-import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_HIDDEN;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT;
 
 
@@ -94,7 +94,7 @@ public class HtmlComponentE2ETest {
             assertThat(page.locator("jt-html p")).hasText("Safe content", WAIT_1_SEC_MAX_TEXT);
             
             // Check that script tag is NOT present (sanitized)
-            assertThat(page.locator("jt-html script")).isHidden(WAIT_1_SEC_MAX_HIDDEN);
+            assertThat(page.locator("jt-html script")).isHidden(WAIT_10_MS_MAX_HIDDEN);
         });
     }
 }
