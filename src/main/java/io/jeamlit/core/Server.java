@@ -18,6 +18,8 @@ package io.jeamlit.core;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.BindException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -100,6 +103,7 @@ public final class Server implements StateManager.RenderServer {
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
     private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
+    private final Set<String> localSessions = new ConcurrentSkipListSet<>();
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final String customHeaders;
 
@@ -432,6 +436,10 @@ public final class Server implements StateManager.RenderServer {
         public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
             final String sessionId = UUID.randomUUID().toString();
             session2WsChannel.put(sessionId, channel);
+            if (isLocalClient(channel)) {
+                localSessions.add(sessionId);
+            }
+
             // Send session ID to frontend immediately
             final Map<String, Object> sessionInitMessage = new HashMap<>();
             sessionInitMessage.put("type", "session_init");
@@ -463,12 +471,26 @@ public final class Server implements StateManager.RenderServer {
                 protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
                     session2WsChannel.remove(sessionId);
                     session2Xsrf.remove(sessionId);
+                    localSessions.remove(sessionId);
                     sessionRegisteredTypes.remove(sessionId);
                     StateManager.clearSession(sessionId);
                 }
             });
             // No initial render - wait for path_update message from frontend
             channel.resumeReceives();
+        }
+
+        private boolean isLocalClient(final @Nonnull WebSocketChannel channel) {
+            try {
+                return optional(channel.getSourceAddress())
+                        .map(InetSocketAddress::getAddress)
+                        .map(InetAddress::getHostAddress)
+                        .map(ip -> "127.0.0.1".equals(ip) || "::1".equals(ip))
+                        .orElse(false);
+            } catch (Exception e) {
+                LOG.warn("Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.", e);
+                return false;
+            }
         }
 
         @SuppressWarnings("StringSplitter")
@@ -516,6 +538,16 @@ public final class Server implements StateManager.RenderServer {
                 StateManager.setUrlContext(sessionId, urlContext);
                 // Trigger app execution with new URL context
                 doRerun = true;
+            }
+            case "clear_cache" -> {
+                // only allow cache clearing from localhost
+                if (localSessions.contains(sessionId)) {
+                    StateManager.getCache().clear();
+                    LOG.info("Cache cleared by developer user request from localhost");
+                    doRerun = true;
+                } else {
+                    LOG.warn("clear_cache request rejected from non-localhost session: {}", sessionId);
+                }
             }
             default -> LOG.warn("Unknown message type: {}", frontendMessage.type());
         }
