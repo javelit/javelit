@@ -98,7 +98,7 @@ class JtToolbarMenu extends LitElement {
         .menu-divider {
             height: 1px;
             background: var(--jt-border-color);
-            margin: var(--jt-spacing-xs) 0;
+            margin: 0 0;
         }
 
         .menu-icon {
@@ -121,21 +121,34 @@ class JtToolbarMenu extends LitElement {
         .material-symbols-rounded {
             font-family: 'Material Symbols Rounded';
         }
+
+        .menu-section-label {
+            padding: var(--jt-spacing-xs) var(--jt-spacing-md);
+            font-size: var(--jt-font-size-xs);
+        }
+
+        .developer-section {
+            background: var(--jt-bg-secondary);
+        }
     `;
 
     static properties = {
-        showMenu: { type: Boolean, state: true }
+        showMenu: { type: Boolean, state: true },
+        isLocalhost: { type: Boolean, state: true }
     };
 
     constructor() {
         super();
         this.showMenu = false;
+        this.isLocalhost = false;
         this.handleOutsideClick = this.handleOutsideClick.bind(this);
     }
 
     connectedCallback() {
         super.connectedCallback();
         document.addEventListener('click', this.handleOutsideClick);
+        // Check if running on localhost
+        this.isLocalhost = window.jeamlit && window.jeamlit.isLocalhost;
     }
 
     disconnectedCallback() {
@@ -172,6 +185,12 @@ class JtToolbarMenu extends LitElement {
                     settingsModal.show = true;
                 }
                 break;
+            case 'clear-cache':
+                // Send clear cache message to backend (only works on localhost)
+                if (window.jeamlit && window.jeamlit.sendMessage) {
+                    window.jeamlit.sendMessage({ type: 'clear_cache' });
+                }
+                break;
         }
     }
 
@@ -186,21 +205,34 @@ class JtToolbarMenu extends LitElement {
                 <span class="material-symbols-rounded">menu</span>
             </button>
             <div class="menu-dropdown ${this.showMenu ? 'show' : ''}">
-                <button 
-                    class="menu-item" 
+                <button
+                    class="menu-item"
                     @click="${(e) => this.handleMenuItemClick('rerun', e)}"
                 >
                     <span class="material-symbols-rounded menu-icon">refresh</span>
                     <span class="menu-label">Rerun</span>
                 </button>
                 <div class="menu-divider"></div>
-                <button 
-                    class="menu-item" 
+                <button
+                    class="menu-item"
                     @click="${(e) => this.handleMenuItemClick('settings', e)}"
                 >
                     <span class="material-symbols-rounded menu-icon">settings</span>
                     <span class="menu-label">Settings</span>
                 </button>
+                ${this.isLocalhost ? html`
+                    <div class="menu-divider"></div>
+                    <div class="developer-section">
+                        <div class="menu-section-label">Developer Options</div>
+                        <button
+                                class="menu-item"
+                                @click="${(e) => this.handleMenuItemClick('clear-cache', e)}"
+                        >
+                            <span class="material-symbols-rounded menu-icon">delete</span>
+                            <span class="menu-label">Clear cache</span>
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
     }
