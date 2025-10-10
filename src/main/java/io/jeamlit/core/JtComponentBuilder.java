@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.jeamlit.core.utils.EmojiUtils;
@@ -36,6 +35,17 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     protected @Nullable String userKey;
 
     boolean noPersist;
+
+    // WARNING - will get broken if multiple inheritance level of builders are introduced
+    private static Field[] getFields(final @Nonnull Class<?> clazz) {
+        // this only retrieves fields defined directly in the implem - does not retrieve JtComponentBuilder inherited field
+        final Field[] f = clazz.getDeclaredFields();
+        Arrays.sort(f, Comparator.comparing(Field::getName));
+        for (final Field field : f) {
+            field.setAccessible(true);
+        }
+        return f;
+    }
 
     /**
      * A string to use as the unique key for the widget.
@@ -68,15 +78,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     protected String generateInternalKey() {
         try {
             final Class<?> clazz = this.getClass();
-            final Field[] fields = FIELDS_CACHE.computeIfAbsent(clazz, c -> {
-                // this only retrieves fields defined directly in the implem - does not retrieve JtComponentBuilder inherited field
-                final Field[] f = c.getDeclaredFields();
-                Arrays.sort(f, Comparator.comparing(Field::getName));
-                for (Field field : f) {
-                    field.setAccessible(true);
-                }
-                return f;
-            });
+            final Field[] fields = FIELDS_CACHE.computeIfAbsent(clazz, JtComponentBuilder::getFields);
             int numInheritedFields = 1;
             final Object[] values = new Object[fields.length + numInheritedFields];
             int i = 0;
@@ -89,7 +91,9 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
             final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
             final String pagePrefix = StateManager.pagePrefix();
-            return "%s%s_%s_%s".formatted(pagePrefix, userKey != null ? userKey : "noCustomKey", baseName, Objects.hash(values));
+            // WARNING: not fast, not JVM stable so not distributed-Jeamlit compatible, potentially not memory efficient and GC stressing
+            final int valuesHash = Arrays.deepToString(values).hashCode();
+            return "%s%s_%s_%s".formatted(pagePrefix, userKey != null ? userKey : "noCustomKey", baseName, valuesHash);
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);
