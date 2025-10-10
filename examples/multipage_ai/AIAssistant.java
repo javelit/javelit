@@ -9,8 +9,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import io.jeamlit.components.multipage.JtPage;
 import io.jeamlit.core.Jt;
+import io.jeamlit.core.JtPage;
 import io.jeamlit.core.Shared;
 import pages.ChatPage;
 import pages.ClassificationPage;

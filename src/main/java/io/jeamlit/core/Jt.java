@@ -41,8 +41,6 @@ import io.jeamlit.components.layout.FormSubmitButtonComponent;
 import io.jeamlit.components.layout.PopoverComponent;
 import io.jeamlit.components.layout.TabsComponent;
 import io.jeamlit.components.media.FileUploaderComponent;
-import io.jeamlit.components.multipage.JtPage;
-import io.jeamlit.components.multipage.NavigationComponent;
 import io.jeamlit.components.multipage.PageLinkComponent;
 import io.jeamlit.components.status.ErrorComponent;
 import io.jeamlit.components.text.CodeComponent;
@@ -143,7 +141,7 @@ public final class Jt {
         final InternalSessionState session = StateManager.getCurrentSession();
         // NOTE: best would be to have a deep-copy-on-read map
         // here it's the responsibility of the user to not mutate the values inside this map
-        return new TypedMap(Map.copyOf(session.getUserVisibleComponentsState()));
+        return new TypedMap(Map.copyOf(session.getUserVisibleComponentsState()), StateManager.pagePrefix());
     }
 
     /**

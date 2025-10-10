@@ -88,7 +88,8 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
             values[i++] = noPersist;
 
             final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
-            return "%s_%s_%s".formatted(userKey != null ? userKey : "noCustomKey", baseName, Objects.hash(values));
+            final String pagePrefix = StateManager.pagePrefix();
+            return "%s%s_%s_%s".formatted(pagePrefix, userKey != null ? userKey : "noCustomKey", baseName, Objects.hash(values));
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);

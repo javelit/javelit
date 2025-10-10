@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import io.jeamlit.components.multipage.JtPage;
-import io.jeamlit.core.Jt;
+
+
+import io.jeamlit.core.Jt;import io.jeamlit.core.JtPage;
 
 public class MultiPageApp {
     public static void main(String[] args) {

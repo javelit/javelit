@@ -25,159 +25,170 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A Map wrapper that provides typed access methods for session state.
  * Implements the full Map interface while adding type-safe getters and compute methods.
+ * Supports optional key prefixing for page-scoped state management.
  */
 public class TypedMap implements Map<String, Object> {
     private final Map<String, Object> delegate;
+    private final String prefix;
 
     public TypedMap(final Map<String, Object> delegate) {
+        this(delegate, "");
+    }
+
+    public TypedMap(final Map<String, Object> delegate, final String prefix) {
         this.delegate = delegate;
+        this.prefix = prefix;
+    }
+
+    private String prefixKey(String key) {
+        return prefix + key;
     }
 
     // Typed getters
     public String getString(String key) {
-        return (String) delegate.get(key);
+        return (String) delegate.get(prefixKey(key));
     }
 
     public String getString(String key, String defaultValue) {
-        return (String) delegate.getOrDefault(key, defaultValue);
+        return (String) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Integer getInt(String key) {
-        return (Integer) delegate.get(key);
+        return (Integer) delegate.get(prefixKey(key));
     }
 
     public Integer getInt(String key, Integer defaultValue) {
-        return (Integer) delegate.getOrDefault(key, defaultValue);
+        return (Integer) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Long getLong(String key) {
-        return (Long) delegate.get(key);
+        return (Long) delegate.get(prefixKey(key));
     }
 
     public Long getLong(String key, Long defaultValue) {
-        return (Long) delegate.getOrDefault(key, defaultValue);
+        return (Long) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Double getDouble(String key) {
-        return (Double) delegate.get(key);
+        return (Double) delegate.get(prefixKey(key));
     }
 
     public Double getDouble(String key, Double defaultValue) {
-        return (Double) delegate.getOrDefault(key, defaultValue);
+        return (Double) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Boolean getBoolean(String key) {
-        return (Boolean) delegate.get(key);
+        return (Boolean) delegate.get(prefixKey(key));
     }
 
     public Boolean getBoolean(String key, Boolean defaultValue) {
-        return (Boolean) delegate.getOrDefault(key, defaultValue);
+        return (Boolean) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public String getOrDefaultString(String key, String defaultValue) {
-        return (String) delegate.getOrDefault(key, defaultValue);
+        return (String) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Integer getOrDefaultInt(String key, Integer defaultValue) {
-        return (Integer) delegate.getOrDefault(key, defaultValue);
+        return (Integer) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Long getOrDefaultLong(String key, Long defaultValue) {
-        return (Long) delegate.getOrDefault(key, defaultValue);
+        return (Long) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Double getOrDefaultDouble(String key, Double defaultValue) {
-        return (Double) delegate.getOrDefault(key, defaultValue);
+        return (Double) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public Boolean getOrDefaultBoolean(String key, Boolean defaultValue) {
-        return (Boolean) delegate.getOrDefault(key, defaultValue);
+        return (Boolean) delegate.getOrDefault(prefixKey(key), defaultValue);
     }
 
     public String putIfAbsentString(String key, String value) {
-        return (String) delegate.putIfAbsent(key, value);
+        return (String) delegate.putIfAbsent(prefixKey(key), value);
     }
 
     public Integer putIfAbsentInt(String key, Integer value) {
-        return (Integer) delegate.putIfAbsent(key, value);
+        return (Integer) delegate.putIfAbsent(prefixKey(key), value);
     }
 
     public Long putIfAbsentLong(String key, Long value) {
-        return (Long) delegate.putIfAbsent(key, value);
+        return (Long) delegate.putIfAbsent(prefixKey(key), value);
     }
 
     public Double putIfAbsentDouble(String key, Double value) {
-        return (Double) delegate.putIfAbsent(key, value);
+        return (Double) delegate.putIfAbsent(prefixKey(key), value);
     }
 
     public Boolean putIfAbsentBoolean(String key, Boolean value) {
-        return (Boolean) delegate.putIfAbsent(key, value);
+        return (Boolean) delegate.putIfAbsent(prefixKey(key), value);
     }
 
     // Typed compute methods
     public String computeString(String key, BiFunction<String, String, String> remappingFunction) {
-        return (String) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (String) v));
+        return (String) delegate.compute(prefixKey(key), (k, v) -> remappingFunction.apply(k, (String) v));
     }
 
     public Integer computeInt(String key, BiFunction<String, Integer, Integer> remappingFunction) {
-        return (Integer) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Integer) v));
+        return (Integer) delegate.compute(prefixKey(key), (k, v) -> remappingFunction.apply(k, (Integer) v));
     }
 
     public Long computeLong(String key, BiFunction<String, Long, Long> remappingFunction) {
-        return (Long) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Long) v));
+        return (Long) delegate.compute(prefixKey(key), (k, v) -> remappingFunction.apply(k, (Long) v));
     }
 
     public Double computeDouble(String key, BiFunction<String, Double, Double> remappingFunction) {
-        return (Double) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Double) v));
+        return (Double) delegate.compute(prefixKey(key), (k, v) -> remappingFunction.apply(k, (Double) v));
     }
 
     public Boolean computeBoolean(String key, BiFunction<String, Boolean, Boolean> remappingFunction) {
-        return (Boolean) delegate.compute(key, (k, v) -> remappingFunction.apply(k, (Boolean) v));
+        return (Boolean) delegate.compute(prefixKey(key), (k, v) -> remappingFunction.apply(k, (Boolean) v));
     }
 
     // Typed computeIfPresent methods
     public String computeIfPresentString(String key, BiFunction<String, String, String> remappingFunction) {
-        return (String) delegate.computeIfPresent(key,
+        return (String) delegate.computeIfPresent(prefixKey(key),
                                                   (k, v) -> remappingFunction.apply(k, (String) v));
     }
 
     public Integer computeIfPresentInt(String key, BiFunction<String, Integer, Integer> remappingFunction) {
-        return (Integer) delegate.computeIfPresent(key,
+        return (Integer) delegate.computeIfPresent(prefixKey(key),
                                                    (k, v) -> remappingFunction.apply(k,
                                                                                      (Integer) v));
     }
 
     public Long computeIfPresentLong(String key, BiFunction<String, Long, Long> remappingFunction) {
-        return (Long) delegate.computeIfPresent(key,
+        return (Long) delegate.computeIfPresent(prefixKey(key),
                                                 (k, v) -> remappingFunction.apply(k, (Long) v));
     }
 
     public Double computeIfPresentDouble(String key, BiFunction<String, Double, Double> remappingFunction) {
-        return (Double) delegate.computeIfPresent(key,
+        return (Double) delegate.computeIfPresent(prefixKey(key),
                                                   (k, v) -> remappingFunction.apply(k, (Double) v));
     }
 
     public Boolean computeIfPresentBoolean(String key, BiFunction<String, Boolean, Boolean> remappingFunction) {
-        return (Boolean) delegate.computeIfPresent(key,
+        return (Boolean) delegate.computeIfPresent(prefixKey(key),
                                                    (k, v) -> remappingFunction.apply(k,
                                                                                      (Boolean) v));
     }
 
     // Typed computeIfAbsent methods
     public String computeIfAbsentString(String key, Function<String, String> mappingFunction) {
-        return (String) delegate.computeIfAbsent(key, mappingFunction);
+        return (String) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
     public Integer computeIfAbsentInt(String key, Function<String, Integer> mappingFunction) {
-        return (Integer) delegate.computeIfAbsent(key, mappingFunction);
+        return (Integer) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
     public Long computeIfAbsentLong(String key, Function<String, Long> mappingFunction) {
-        return (Long) delegate.computeIfAbsent(key, mappingFunction);
+        return (Long) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
     public Double computeIfAbsentDouble(String key, Function<String, Double> mappingFunction) {
-        return (Double) delegate.computeIfAbsent(key, mappingFunction);
+        return (Double) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
     // Delegate all Map methods
@@ -193,6 +204,9 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public boolean containsKey(Object key) {
+        if (key instanceof String) {
+            return delegate.containsKey(prefixKey((String) key));
+        }
         return delegate.containsKey(key);
     }
 
@@ -203,16 +217,22 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public Object get(Object key) {
+        if (key instanceof String) {
+            return delegate.get(prefixKey((String) key));
+        }
         return delegate.get(key);
     }
 
     @Override
     public Object put(String key, Object value) {
-        return delegate.put(key, value);
+        return delegate.put(prefixKey(key), value);
     }
 
     @Override
     public Object remove(Object key) {
+        if (key instanceof String) {
+            return delegate.remove(prefixKey((String) key));
+        }
         return delegate.remove(key);
     }
 
@@ -262,6 +282,9 @@ public class TypedMap implements Map<String, Object> {
     // Additional Map methods from Java 8+
     @Override
     public Object getOrDefault(Object key, Object defaultValue) {
+        if (key instanceof String) {
+            return delegate.getOrDefault(prefixKey((String) key), defaultValue);
+        }
         return delegate.getOrDefault(key, defaultValue);
     }
 
@@ -277,44 +300,47 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public Object putIfAbsent(String key, Object value) {
-        return delegate.putIfAbsent(key, value);
+        return delegate.putIfAbsent(prefixKey(key), value);
     }
 
     @Override
     public boolean remove(Object key, Object value) {
+        if (key instanceof String) {
+            return delegate.remove(prefixKey((String) key), value);
+        }
         return delegate.remove(key, value);
     }
 
     @Override
     public boolean replace(String key, Object oldValue, Object newValue) {
-        return delegate.replace(key, oldValue, newValue);
+        return delegate.replace(prefixKey(key), oldValue, newValue);
     }
 
     @Override
     public Object replace(String key, Object value) {
-        return delegate.replace(key, value);
+        return delegate.replace(prefixKey(key), value);
     }
 
     @Override
     public Object computeIfAbsent(String key, @NotNull Function<? super String, ? extends Object> mappingFunction) {
-        return delegate.computeIfAbsent(key, mappingFunction);
+        return delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
     @Override
     public Object computeIfPresent(String key,
                                    @NotNull BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
-        return delegate.computeIfPresent(key, remappingFunction);
+        return delegate.computeIfPresent(prefixKey(key), remappingFunction);
     }
 
     @Override
     public Object compute(String key, @NotNull BiFunction<? super String, ? super Object, ? extends Object> remappingFunction) {
-        return delegate.compute(key, remappingFunction);
+        return delegate.compute(prefixKey(key), remappingFunction);
     }
 
     @Override
     public Object merge(String key,
                         @NotNull Object value,
                         @NotNull BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
-        return delegate.merge(key, value, remappingFunction);
+        return delegate.merge(prefixKey(key), value, remappingFunction);
     }
 }

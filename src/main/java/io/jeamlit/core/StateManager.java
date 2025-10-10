@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.jeamlit.components.layout.FormComponent;
 import io.jeamlit.components.layout.FormSubmitButtonComponent;
-import io.jeamlit.components.multipage.NavigationComponent;
 import io.jeamlit.datastructure.TypedMap;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -54,6 +53,13 @@ final class StateManager {
         // does not record main and sidebar containers - only children of these 2 root containers
         private final Set<JtContainer> clearedContainers = new HashSet<>();
         private final Set<JtContainer> clearedLayoutContainers = new HashSet<>();
+        // this is not the "current page" according to the URL - this is the currentPage for key context purpose
+        // for instance
+        // var page1 = Jt.navigation().use(); // currentPage is null
+        // page.run() // inside the run, currentPage=page1 --> key context is different
+        // Jt.text().use() // currentPage is back to null
+        // this is used to implement: 1: key isolation by page  2: state persistence across pages when page is changed
+        private JtPage executionPage;
 
         private AppExecution(final String sessionId) {
             this.sessionId = sessionId;
@@ -187,6 +193,53 @@ final class StateManager {
 
     static TypedMap getCache() {
         return CACHE;
+    }
+
+    static void setPageContext(final @Nonnull JtPage page) {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
+        final InternalSessionState session = getCurrentSession();
+
+        // Get previous page to check if we need to clear its state
+        final JtPage previousPage = session.getLastExecutionPage();
+
+        // If previous page had noPersistWhenLeft flag and we're switching to a different page, clear its state
+        if (previousPage != null
+            && previousPage.isNoPersistWhenLeft()
+            // urlPath diff should be enough and will be simpler to understand/debug than equals until the code stabilizes
+            && // urlPath diff should be enough and will be simpler to understand/debug than equals until the code stabilizes
+            !previousPage.urlPath().equals(page.urlPath())) {
+            LOG.debug("Clearing state for page {} with noPersistWhenLeft", previousPage.urlPath());
+            final String prefixToClear = prefixOf(previousPage);
+            session.removeAllComponentsWithPrefix(prefixToClear);
+        }
+
+        // Set new page context
+        currentExecution.executionPage = page;
+    }
+
+    static void clearPageContext() {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        checkState(currentExecution != null, "No active execution context.");
+        // could happen for legit edge case but throwing for the moment to catch implementation errors
+        if (currentExecution.executionPage != null) {
+            getCurrentSession().setLastExecutionPage(currentExecution.executionPage);
+            currentExecution.executionPage = null;
+        } else {
+            LOG.warn("No current execution page. This should only happen if an error happened upstream in setPageContext.");
+        }
+    }
+
+    static String pagePrefix() {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        if (currentExecution == null || currentExecution.executionPage == null) {
+            return "";
+        }
+        return prefixOf(currentExecution.executionPage);
+    }
+
+    private static String prefixOf(final @Nonnull JtPage page) {
+        return page.urlPath() + "/";
     }
 
     static void registerCallback(final String sessionId, final String componentKey) {

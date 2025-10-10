@@ -37,7 +37,7 @@ import static io.jeamlit.core.utils.Preconditions.checkState;
  * In Jeamlit, the user state is made available in {@link Jt#sessionState()}.
  * The components state is made available in {@link Jt#componentsState()}.
  */
-class InternalSessionState {
+final class InternalSessionState {
     // readable/writable by users
     private final Map<String, Object> userState = new ConcurrentHashMap<>();
 
@@ -69,7 +69,9 @@ class InternalSessionState {
 
     private UrlContext urlContext;
 
-    protected InternalSessionState() {
+    private JtPage lastExecutionPage;
+
+    InternalSessionState() {
     }
 
     Map<String, Object> getUserState() {
@@ -88,6 +90,12 @@ class InternalSessionState {
         }
     }
 
+    void removeAllComponentsWithPrefix(@Nonnull String prefix) {
+        componentsState.keySet().removeIf(key -> key.startsWith(prefix));
+        userVisibleComponentsState.keySet().removeIf(key -> key.startsWith(prefix));
+        internalKeyToUserKey.keySet().removeIf(key -> key.startsWith(prefix));
+    }
+
     Object getComponentState(final @Nonnull String componentKey) {
         return componentsState.get(componentKey);
     }
@@ -95,8 +103,9 @@ class InternalSessionState {
     void upsertComponentsState(final @Nonnull JtComponent component) {
         componentsState.put(component.getKey(), component.returnValue());
         if (component.getUserKey() != null) {
-            internalKeyToUserKey.put(component.getKey(), component.getUserKey());
-            userVisibleComponentsState.put(component.getUserKey(), component.returnValue());
+            final String prefixedUserKey = StateManager.pagePrefix() + component.getUserKey();
+            internalKeyToUserKey.put(component.getKey(), prefixedUserKey);
+            userVisibleComponentsState.put(prefixedUserKey, component.returnValue());
         }
     }
 
@@ -106,7 +115,8 @@ class InternalSessionState {
         checkState(componentsState.containsKey(componentKey), "Implementation error. Please reach out to support.");
         componentsState.put(componentKey, updatedValue);
         if (internalKeyToUserKey.containsKey(componentKey)) {
-            userVisibleComponentsState.put(internalKeyToUserKey.get(componentKey), updatedValue);
+            final String prefixedUserKey = internalKeyToUserKey.get(componentKey);
+            userVisibleComponentsState.put(prefixedUserKey, updatedValue);
         }
     }
 
@@ -124,19 +134,27 @@ class InternalSessionState {
         this.callbackComponentKey = callbackComponentKey;
     }
 
-    protected Map<String, Map<String, Object>> pendingInFormComponentsState() {
+    Map<String, Map<String, Object>> pendingInFormComponentsState() {
         return pendingInFormComponentsState;
     }
 
-    public Set<String> formComponentsToReset() {
+    Set<String> formComponentsToReset() {
         return formComponentsToReset;
     }
 
-    public void setUrlContext(UrlContext urlContext) {
+    void setUrlContext(UrlContext urlContext) {
         this.urlContext = urlContext;
     }
 
-    public UrlContext getUrlContext() {
+    UrlContext getUrlContext() {
         return urlContext;
+    }
+
+    void setLastExecutionPage(JtPage lastExecutionPage) {
+        this.lastExecutionPage = lastExecutionPage;
+    }
+
+    JtPage getLastExecutionPage() {
+        return lastExecutionPage;
     }
 }

@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jeamlit.components.multipage;
+package io.jeamlit.core;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
-import io.jeamlit.core.PageRunException;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
@@ -32,6 +31,7 @@ public final class JtPage {
     @Nonnull private final String icon;
     @Nonnull private final String urlPath;
     private final boolean isHome;
+    private final boolean noPersistWhenLeft;
     private final List<String> section;
 
     private JtPage(final @Nonnull Builder builder) {
@@ -40,6 +40,7 @@ public final class JtPage {
         this.icon = builder.icon;
         this.urlPath = builder.urlPath;
         this.isHome = builder.isHome;
+        this.noPersistWhenLeft = builder.noPersistWhenLeft;
         this.section = builder.section;
     }
 
@@ -73,12 +74,21 @@ public final class JtPage {
         return isHome;
     }
 
+    public boolean isNoPersistWhenLeft() {
+        return noPersistWhenLeft;
+    }
+
     public List<String> section() {
         return section;
     }
 
     public void run() {
-        callMainMethod(pageApp);
+        try {
+            StateManager.setPageContext(this);
+            callMainMethod(pageApp);
+        } finally {
+            StateManager.clearPageContext();
+        }
     }
 
     private static void callMainMethod(final @Nonnull Class<?> clazz) {
@@ -107,18 +117,18 @@ public final class JtPage {
         return Objects.equals(this.pageApp, that.pageApp) && Objects.equals(this.title, that.title) && Objects.equals(
                 this.icon,
                 that.icon) && Objects.equals(this.urlPath,
-                                             that.urlPath) && this.isHome == that.isHome && Objects.equals(this.section,
+                                             that.urlPath) && this.isHome == that.isHome && this.noPersistWhenLeft == that.noPersistWhenLeft && Objects.equals(this.section,
                                                                                                            that.section);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pageApp, title, icon, urlPath, isHome, section);
+        return Objects.hash(pageApp, title, icon, urlPath, isHome, noPersistWhenLeft, section);
     }
 
     @Override
     public String toString() {
-        return "JtPage[" + "pageApp=" + pageApp + ", " + "title=" + title + ", " + "icon=" + icon + ", " + "urlPath=" + urlPath + ", " + "isHome=" + isHome + ", " + "section=" + section + ']';
+        return "JtPage[" + "pageApp=" + pageApp + ", " + "title=" + title + ", " + "icon=" + icon + ", " + "urlPath=" + urlPath + ", " + "isHome=" + isHome + ", " + "noPersistWhenLeft=" + noPersistWhenLeft + ", " + "section=" + section + ']';
     }
 
 
@@ -128,6 +138,7 @@ public final class JtPage {
         private String icon;
         private String urlPath;
         private boolean isHome;
+        private boolean noPersistWhenLeft;
         private List<String> section;
 
         public Builder(@Nonnull Class<?> pageApp) {
@@ -171,6 +182,16 @@ public final class JtPage {
          */
         public Builder home() {
             this.isHome = true;
+            return this;
+        }
+
+        /**
+         * Mark this page to clear all its state when the user navigates to another page.
+         * While on the page, components persist normally, based on user-provided keys.
+         * When leaving the page, all page-scoped state is cleared.
+         */
+        public Builder noPersistWhenLeft() {
+            this.noPersistWhenLeft = true;
             return this;
         }
 

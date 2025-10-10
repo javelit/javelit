@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jeamlit.components.multipage;
+package io.jeamlit.core;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -27,11 +27,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtComponent;
-import io.jeamlit.core.JtComponentBuilder;
-import io.jeamlit.core.JtContainer;
-import io.jeamlit.core.Shared;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
