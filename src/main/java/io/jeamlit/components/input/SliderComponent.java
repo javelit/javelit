@@ -52,7 +52,7 @@ public final class SliderComponent extends JtComponent<Double> {
     }
 
     private SliderComponent(Builder builder) {
-        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
+        super(builder, builder.value, builder.onChange);
 
         this.label = markdownToHtml(builder.label, true);
         this.min = builder.min;

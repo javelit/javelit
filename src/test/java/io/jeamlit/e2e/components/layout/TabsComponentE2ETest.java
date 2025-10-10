@@ -40,7 +40,7 @@ public class TabsComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    TabsComponent.Tabs tabs = Jt.tabs("test-tabs", List.of("Tab 0", "Tab 1", "Tab 2")).use();
+                    TabsComponent.Tabs tabs = Jt.tabs(List.of("Tab 0", "Tab 1", "Tab 2")).use();
             
                     // Content for Tab 1
                     Jt.text("Content of Tab 0").use(tabs.tab(0));

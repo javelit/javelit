@@ -124,7 +124,7 @@ public class DateInputExample {
         Jt.markdown("## Date Range Selection Example").use();
         Jt.text("Select a date range for your vacation:").use();
 
-        var cols = Jt.columns("date-range", 2).use();
+        var cols = Jt.columns(2).use();
 
         LocalDate startDate = Jt
                 .dateInput("Start date")
@@ -144,7 +144,7 @@ public class DateInputExample {
         }
 
         // Summary section
-        Jt.divider().use();
+        Jt.divider("great_divide").use();
         Jt.markdown("### Summary").use();
 
         int selectedCount = 0;

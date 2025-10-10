@@ -38,7 +38,7 @@ public class ColumnsComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    ColumnsComponent.Columns cols = Jt.columns("test-cols", 2).use();
+                    ColumnsComponent.Columns cols = Jt.columns(2).use();
             
                     // Add content to first column
                     Jt.text("Column 0 Content").use(cols.col(0));

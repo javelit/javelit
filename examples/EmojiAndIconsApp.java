@@ -15,7 +15,7 @@ public class EmojiAndIconsApp {
         
         
         // FormSubmitButton tests
-        var f = Jt.form("the-key").use();
+        var f = Jt.form().use();
         Jt.text("**Form Submit Button Components:**").use(f);
         Jt.formSubmitButton("Submit Form").icon(":send:").use(f);
         Jt.formSubmitButton("Save Form").icon("💾").use(f);

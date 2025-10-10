@@ -44,9 +44,8 @@ final class StateManager {
 
     private static class AppExecution {
         private final String sessionId;
-        // container path
+        // {container_path: {component_internal_key: component_object}}
         // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
-        // component key to component object
         private final Map<JtContainer, LinkedHashMap<String, JtComponent<?>>> containerToComponents = new LinkedHashMap<>();
         // current position in the list of components per container
         private final Map<JtContainer, Integer> containerToCurrentIndex = new LinkedHashMap<>();
@@ -116,8 +115,8 @@ final class StateManager {
      * Handles component updates and returns true if app should be re-run
      */
     static boolean handleComponentUpdate(final String sessionId,
-                                                   final String componentKey,
-                                                   final Object updatedValue) {
+                                         final String componentKey,
+                                         final Object updatedValue) {
         // find the component and its container
         final InternalSessionState session = SESSIONS.get(sessionId);
         checkState(session != null, "No session with id %s. Implementation error ?", sessionId);
@@ -150,7 +149,7 @@ final class StateManager {
                     .pendingInFormComponentsState()
                     .get(parentFormComponentKey);
             if (pendingInFormComponentStates != null) {
-                session.getComponentsState().putAll(pendingInFormComponentStates);
+                session.updateAllComponentsState(pendingInFormComponentStates);
 
                 // check if the form has clearOnSubmit enabled and act accordingly - Note: data struct manipulation is a bit heavy but won't optimize for the moment
                 final FormComponent formComponent = lastExecution.containerToComponents.values().stream()
@@ -167,7 +166,7 @@ final class StateManager {
 
                 pendingInFormComponentStates.clear();
             }
-            session.getComponentsState().put(componentKey, updatedValue);
+            session.updateComponentsState(componentKey, updatedValue);
             registerCallback(sessionId, componentKey);
             return true;
         }
@@ -181,7 +180,7 @@ final class StateManager {
             return false;
         }
         // handle normal case
-        session.getComponentsState().put(componentKey, component.convert(updatedValue));
+        session.updateComponentsState(componentKey, component.convert(updatedValue));
         registerCallback(sessionId, componentKey);
         return rerun;
     }
@@ -244,7 +243,15 @@ final class StateManager {
                 .stream()
                 .anyMatch(components -> components.containsKey(component.getKey()))) {
             // a component with the same id was already registered while running the app top to bottom
-            throw DuplicateWidgetIDException.of(component);
+            throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
+        }
+        if (component.getUserKey() != null && currentExecution.containerToComponents
+                .values()
+                .stream()
+                .anyMatch(components ->
+                                  components.values().stream().anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
+        )) {
+            throw DuplicateWidgetIDException.forDuplicateUserKey(component);
         }
 
         final LinkedHashMap<String, JtComponent<?>> componentsMap = currentExecution
@@ -258,12 +265,14 @@ final class StateManager {
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
         if (!NavigationComponent.UNIQUE_NAVIGATION_COMPONENT_KEY.equals(component.getKey())) {
-            final Object state = session.getComponentsState().get(component.getKey());
+            final Object state = session.getComponentState(component.getKey());
             if (state != null) {
                 component.updateValue(state);
-            } else if (component.returnValueIsAState()) {
+            }
+            if (component.returnValueIsAState()) {
                 // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
-                session.getComponentsState().put(component.getKey(), component.returnValue());
+                // and the user visible componentsState map is up to date
+                session.upsertComponentsState(component);
             }
         } else {
             // navigation component is responsible for managing its own state through url context
@@ -272,7 +281,7 @@ final class StateManager {
             // we never get the old value from the current state (component.updateValue(state); above) ...
             // we expect the NavigationComponent to get its currentValue on its own based on urlContext --> see NavigationComponent constructor
             // ...but we still put the current value in the widget states such that it's available like any other component state
-            session.getComponentsState().put(component.getKey(), component.returnValue());
+            session.upsertComponentsState(component);
         }
 
 
@@ -396,7 +405,9 @@ final class StateManager {
                     final JtComponent<?> component = entry.getValue();
                     component.resetIfNeeded();
                     if (component.returnValueIsAState()) {
-                        session.getComponentsState().put(entry.getKey(), component.returnValue());
+                        checkState(entry.getKey().equals(component.getKey()),
+                                   "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
+                        session.upsertComponentsState(component);
                     }
                 }
 
@@ -408,7 +419,9 @@ final class StateManager {
                         if (session.formComponentsToReset().contains(entry.getKey())) {
                             final JtComponent<?> component = entry.getValue();
                             component.resetToInitialValue();
-                            session.getComponentsState().put(entry.getKey(), component.returnValue());
+                            checkState(entry.getKey().equals(component.getKey()),
+                                       "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
+                            session.upsertComponentsState(component);
                             renderServer.send(currentExecution.sessionId, component, container, i, false);
                         }
                         i++;
@@ -418,17 +431,22 @@ final class StateManager {
             }
 
             if (previousExecution != null) {
-                // remove component states of component that are not in the app anymore
-                final Set<String> componentsInUseKeys = new HashSet<>();
+                // remove component states from session state if:
+                //   (component was not present in the current execution) AND (component does not have a user key OR component has flag noPersist)
+                final Set<String> componentsUsedInExecutionKeys = new HashSet<>();
                 for (final Map<String, JtComponent<?>> m : currentExecution.containerToComponents.values()) {
-                    componentsInUseKeys.addAll(m.keySet());
+                    componentsUsedInExecutionKeys.addAll(m.keySet());
                 }
                 for (final Map<String, JtComponent<?>> m : previousExecution.containerToComponents.values()) {
-                    m
-                            .keySet()
-                            .stream()
-                            .filter(k -> !componentsInUseKeys.contains(k))
-                            .forEach(k -> session.getComponentsState().remove(k));
+                    // remove components state for components that:
+                    m.values()
+                    .stream()
+                     // component was not present in the current execution
+                    .filter(c -> !componentsUsedInExecutionKeys.contains(c.getKey()))
+                     // component does not have a user key OR component has flag noPersist
+                    .filter(e -> e.getUserKey() == null || e.isNoPersist())
+                    .map(JtComponent::getKey)
+                    .forEach(session::removeComponentState);
                 }
             }
 
@@ -445,7 +463,7 @@ final class StateManager {
                               final @Nonnull InternalSessionState.UrlContext urlContext) {
         final InternalSessionState session = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
         session.setUrlContext(urlContext);
-        session.getComponentsState().remove(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
+        session.removeComponentState(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
     }
 
     static @Nonnull InternalSessionState.UrlContext getUrlContext() {

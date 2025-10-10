@@ -802,7 +802,7 @@ public class JsonDoclet implements Doclet {
      */
     private List<ExecutableElement> getAllBuilderMethods(TypeElement builderClass, DocletEnvironment environment) {
         final List<ExecutableElement> allMethods = new ArrayList<>();
-        final Set<String> methodsToIgnore = Set.of("generateKeyForInteractive", "ensureIsValidIcon", "build");
+        final Set<String> methodsToIgnore = Set.of("generateInternalKey", "ensureIsValidIcon", "build");
 
         // Start with the concrete builder class
         TypeElement currentClass = builderClass;

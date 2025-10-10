@@ -60,7 +60,7 @@ public class DateInputComponent extends JtComponent<LocalDate> {
     }
 
     private DateInputComponent(final @Nonnull Builder builder) {
-        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
+        super(builder, builder.value, builder.onChange);
         this.label = markdownToHtml(builder.label, true);
         this.minValue = Objects.requireNonNull(builder.minValue, "Implementation error. Please reach out to support.");
         this.maxValue = Objects.requireNonNull(builder.maxValue, "Implementation error. Please reach out to support.");

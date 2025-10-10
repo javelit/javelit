@@ -51,7 +51,7 @@ public final class ButtonComponent extends JtComponent<Boolean> {
     }
 
     private ButtonComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), false, builder.onClick);
+        super(builder, false, builder.onClick);
 
         this.label = markdownToHtml(builder.label, true);
         this.type = builder.type;

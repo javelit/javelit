@@ -133,17 +133,21 @@ public abstract class JtComponent<T> {
             """;
 
 
-    private final String key;
+    private final String internalKey;
+    private final @Nullable String userKey;
+    private final boolean noPersist;
     protected T currentValue;
     private T initialValue;
     protected @Nullable Consumer<T> callback;
     private final JtContainer defaultContainer;
 
-    protected JtComponent(final @Nonnull String key,
+    protected JtComponent(final @Nonnull JtComponentBuilder builder,
                           final T currentValue,
                           final @Nullable Consumer<T> callback,
                           final @Nonnull JtContainer defaultContainer) {
-        this.key = key;
+        this.internalKey = builder.generateInternalKey();
+        this.userKey = builder.userKey;
+        this.noPersist = builder.noPersist;
         this.currentValue = currentValue;
         if (returnValueIsAState() && currentValue != null && !(currentValue instanceof Number) && !(currentValue instanceof String)) {
             // deep copy - not sure if it's really necessary
@@ -160,12 +164,21 @@ public abstract class JtComponent<T> {
         this.defaultContainer = defaultContainer;
     }
 
-    protected JtComponent(final @Nonnull String key, final T currentValue, final @Nullable Consumer<T> callback) {
-        this(key, currentValue, callback, JtContainer.MAIN);
+    protected JtComponent(final @Nonnull JtComponentBuilder builder, final T currentValue, final @Nullable Consumer<T> callback) {
+        this(builder, currentValue, callback, JtContainer.MAIN);
     }
 
+    // note: not renamed to internalKey for the moment because it'd break all templates // FIXME PERSIST
     public String getKey() {
-        return key;
+        return internalKey;
+    }
+
+    @Nullable String getUserKey() {
+        return userKey;
+    }
+
+    boolean isNoPersist() {
+        return noPersist;
     }
 
     /**

@@ -38,7 +38,7 @@ public class FormComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    JtContainer formContainer = Jt.form("test-form").use();
+                    JtContainer formContainer = Jt.form().use();
                     Jt.text("used to get out of form").use();
             
                     // Add form inputs

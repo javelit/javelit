@@ -40,7 +40,7 @@ public class ContainerComponentE2ETest {
                 public static void main(String[] args) {
                     Jt.text("Before container").use();
             
-                    JtContainer container = Jt.container("test-container").use();
+                    JtContainer container = Jt.container().use();
                     Jt.text("Inside container").use(container);
                     Jt.button("Container Button").use(container);
             

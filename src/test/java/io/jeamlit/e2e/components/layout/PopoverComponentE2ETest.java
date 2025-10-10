@@ -38,7 +38,7 @@ public class PopoverComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    JtContainer popoverContainer = Jt.popover("test-popover", "Click me").use();
+                    JtContainer popoverContainer = Jt.popover("Click me").use();
                     Jt.text("Content inside popover").use(popoverContainer);
                     Jt.button("Popover Button").use(popoverContainer);
             

@@ -40,7 +40,7 @@ public class ClassificationPage {
         // Examples section
         String exampleValue = Jt.sessionState().computeIfAbsentString("input", k -> "I love this product! It's amazing and works perfectly.");
 
-        var col1 = Jt.columns("cols", 3).use();
+        var col1 = Jt.columns(3).use();
         if (Jt.button("Positive example").use(col1.col(0))) {
             exampleValue = "This is absolutely wonderful! Best experience ever!";
         }

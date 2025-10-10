@@ -19,7 +19,9 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.jeamlit.core.utils.EmojiUtils;
 import jakarta.annotation.Nonnull;
@@ -29,7 +31,11 @@ import jakarta.annotation.Nullable;
 // SELF is the self-referential generic to be able to return the correct implementing class in some methods of this abstract class
 public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF extends JtComponentBuilder<B, T, SELF>> {
 
-    protected @Nullable String key;
+    private static final Map<Class<?>, Field[]> FIELDS_CACHE = new ConcurrentHashMap<>();
+
+    protected @Nullable String userKey;
+
+    boolean noPersist;
 
     /**
      * A string to use as the unique key for the widget.
@@ -37,8 +43,17 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
      * No two widgets may have the same key.
      */
     @SuppressWarnings("unchecked")
-    public SELF key(final String key) {
-        this.key = key;
+    public SELF key(final @Nonnull String key) {
+        if (JtContainer.RESERVED_PATHS.contains(key)) {
+            throw new IllegalArgumentException("Component key value `" + key + "` is a reserved value. Please use another key value.");
+        }
+        this.userKey = key;
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public SELF noPersist() {
+        this.noPersist = true;
         return (SELF) this;
     }
 
@@ -46,32 +61,34 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
     /**
      * Implementation helper.
-     * Uses reflection to construct a key value.
-     * If set, the key field is used instead.
+     * Uses reflection to construct a key value from userKey, className and other fields hash
      * <p>
-     * Note: pretty slow and hacky.
      * See <a href="https://github.com/streamlit/streamlit/blob/4cc8cbccf529f351a29af88c15685a8a90153dd9/lib/streamlit/elements/lib/utils.py#L153">streamlit implementation</a> for reference.
      **/
-    public String generateKeyForInteractive() {
-        if (key != null && !key.isBlank()) {
-            return key;
-        }
+    protected String generateInternalKey() {
         try {
             final Class<?> clazz = this.getClass();
-            // 2. Fallback: build a key from class name + fields
-            final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
-            final Field[] fields = clazz.getDeclaredFields();
-            Arrays.sort(fields, Comparator.comparing(Field::getName));
-            final Object[] values = new Object[fields.length];
-            // fixme cyril think of a size limit - this could get crazy big and slow - or hash but keep things understandable for the user
-            for (int i = 0; i < fields.length; i++) {
-                final Field field = fields[i];
-                field.setAccessible(true);
-                final Object value = field.get(this);
-                values[i] = value;
+            final Field[] fields = FIELDS_CACHE.computeIfAbsent(clazz, c -> {
+                // this only retrieves fields defined directly in the implem - does not retrieve JtComponentBuilder inherited field
+                final Field[] f = c.getDeclaredFields();
+                Arrays.sort(f, Comparator.comparing(Field::getName));
+                for (Field field : f) {
+                    field.setAccessible(true);
+                }
+                return f;
+            });
+            int numInheritedFields = 1;
+            final Object[] values = new Object[fields.length + numInheritedFields];
+            int i = 0;
+            for (final Field field: fields) {
+                final Object fieldValue = field.get(this);
+                values[i++] = fieldValue;
             }
+            // add inherited fields - don't add userKey it's kept it clear, see below
+            values[i++] = noPersist;
 
-            return baseName + "_" + Objects.hash(values);
+            final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
+            return "%s_%s_%s".formatted(userKey != null ? userKey : "noCustomKey", baseName, Objects.hash(values));
 
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Failed to compute key", e);

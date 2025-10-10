@@ -24,7 +24,6 @@ import com.github.mustachejava.MustacheFactory;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.JtContainer;
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +47,7 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
 
     private ContainerComponent(final Builder builder) {
         // the currentValue is set when use() is called
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.height = builder.height;
         this.border = builder.border;
         this.inPlace = builder.inPlace;
@@ -59,9 +58,8 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
         private @Nullable Boolean border;
         private final boolean inPlace;
 
-        public Builder(final @Nonnull String key, final boolean inPlace) {
+        public Builder(final boolean inPlace) {
             this.inPlace = inPlace;
-            this.key = key;
         }
 
         /**
@@ -82,9 +80,6 @@ public final class ContainerComponent extends JtComponent<JtContainer> {
 
         @Override
         public ContainerComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
             if (border == null) {
                 border = height != null;
             }

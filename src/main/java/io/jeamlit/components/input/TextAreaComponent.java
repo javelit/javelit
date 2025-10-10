@@ -49,7 +49,7 @@ public final class TextAreaComponent extends JtComponent<String> {
     }
 
     private TextAreaComponent(Builder builder) {
-        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
+        super(builder, builder.value, builder.onChange);
 
         this.label = markdownToHtml(builder.label, true);
         this.value = builder.value;

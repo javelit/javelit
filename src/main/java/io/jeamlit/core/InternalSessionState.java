@@ -24,6 +24,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import static io.jeamlit.core.utils.Preconditions.checkState;
 
 /**
  * In streamlit, userState (free key-value storage in session_state) and
@@ -36,10 +40,19 @@ import jakarta.annotation.Nonnull;
 class InternalSessionState {
     // readable/writable by users
     private final Map<String, Object> userState = new ConcurrentHashMap<>();
-    // componentKey  -> value (not writable by users)
+
+    // {componentKey: value}  - NOT EXPOSED TO USERS
     // not using a ConcurrentHashMap because need to support null values
     // concurrency on this map is an edge case, not the normal case so should be fine
     private final Map<String, Object> componentsState = Collections.synchronizedMap(new HashMap<>());
+
+    // {componentUserKey: value} - exposed to users but should not be modifiable directly when exposed
+    // it's the responsibility of the internal logic (non public API) that gets this map to perform an immutable map wrapping or even consider a deep copy
+    // not using a ConcurrentHashMap because need to support null values
+    // concurrency on this map is an edge case, not the normal case so should be fine
+    private final Map<String, Object> userVisibleComponentsState = Collections.synchronizedMap(new HashMap<>());
+
+    private final Map<@NotNull String, @NotNull String> internalKeyToUserKey = new ConcurrentHashMap<>();
 
     // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
     // values that are not applied yet - they are pending because controlled by a form
@@ -63,8 +76,44 @@ class InternalSessionState {
         return userState;
     }
 
-    Map<String, Object> getComponentsState() {
-        return componentsState;
+    Map<String, Object> getUserVisibleComponentsState() {
+        return userVisibleComponentsState;
+    }
+
+    void removeComponentState(@Nonnull String componentKey) {
+        componentsState.remove(componentKey);
+        if (internalKeyToUserKey.containsKey(componentKey)) {
+            userVisibleComponentsState.remove(internalKeyToUserKey.get(componentKey));
+            internalKeyToUserKey.remove(componentKey);
+        }
+    }
+
+    Object getComponentState(final @Nonnull String componentKey) {
+        return componentsState.get(componentKey);
+    }
+
+    void upsertComponentsState(final @Nonnull JtComponent component) {
+        componentsState.put(component.getKey(), component.returnValue());
+        if (component.getUserKey() != null) {
+            internalKeyToUserKey.put(component.getKey(), component.getUserKey());
+            userVisibleComponentsState.put(component.getUserKey(), component.returnValue());
+        }
+    }
+
+    // corresponds to a frontend update
+    void updateComponentsState(final @Nonnull String componentKey, final Object updatedValue) {
+        // this is a precondition - caller already ensures (and must), but keeping it here for safer refactorings and early catching of bugs
+        checkState(componentsState.containsKey(componentKey), "Implementation error. Please reach out to support.");
+        componentsState.put(componentKey, updatedValue);
+        if (internalKeyToUserKey.containsKey(componentKey)) {
+            userVisibleComponentsState.put(internalKeyToUserKey.get(componentKey), updatedValue);
+        }
+    }
+
+    void updateAllComponentsState(final Map<@NotNull String, @Nullable Object> componentKeyToUpdatedValue) {
+        for (final Map.Entry<String, Object> entry : componentKeyToUpdatedValue.entrySet()) {
+            updateComponentsState(entry.getKey(), entry.getValue());
+        }
     }
 
     String getCallbackComponentKey() {

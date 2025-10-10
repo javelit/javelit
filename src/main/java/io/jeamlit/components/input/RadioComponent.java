@@ -204,7 +204,7 @@ public class RadioComponent<T> extends JtComponent<@Nullable T> {
 
 
     private RadioComponent(final Builder<T> builder) {
-        super(builder.generateKeyForInteractive(),
+        super(builder,
               builder.index == null ? null : builder.options.get(builder.index),
               builder.onChange);
         this.label = markdownToHtml(builder.label, true);

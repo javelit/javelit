@@ -60,7 +60,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     }
 
     private NavigationComponent(final Builder builder) {
-        super(UNIQUE_NAVIGATION_COMPONENT_KEY, null, // set later in this constructor
+        super(builder, null, // set later in this constructor
               null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
         final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
         if (homePages.isEmpty()) {
@@ -124,6 +124,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         private NavigationPosition position;
 
         public Builder(JtPage.Builder... pages) {
+            this.userKey = JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
             Collections.addAll(this.pageBuilders, pages);
         }
 
@@ -144,6 +145,15 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             return this;
         }
 
+        @Override
+        protected String generateInternalKey() {
+            return JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
+        }
+
+        @Override
+        public Builder key(final @NotNull String key) {
+            throw new UnsupportedOperationException("The key of the navigation component cannot be modified. It is JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY");
+        }
 
         @Override
         public NavigationComponent build() {

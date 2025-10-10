@@ -73,7 +73,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
 
     private ColumnsComponent(final ColumnsComponent.Builder builder) {
         // the currentValue is set when use() is called - see beforeUse
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.numColumns = builder.numColumns;
         this.widths = builder.widths;
         this.gap = builder.gap;
@@ -88,8 +88,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
         private @Nonnull ColumnsComponent.VerticalAlignment verticalAlignment = VerticalAlignment.TOP;
         private boolean border;
 
-        public Builder(final @Nonnull String key, final int numColumns) {
-            this.key = key;
+        public Builder(final int numColumns) {
             numColumns(numColumns);
         }
 
@@ -143,9 +142,6 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
 
         @Override
         public ColumnsComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
             if (widths != null) {
                 if (widths.size() != numColumns) {
                     throw new IllegalArgumentException(

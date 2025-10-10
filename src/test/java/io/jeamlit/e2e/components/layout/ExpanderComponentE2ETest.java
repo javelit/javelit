@@ -39,7 +39,7 @@ public class ExpanderComponentE2ETest {
             
             public class TestApp {
                 public static void main(String[] args) {
-                    JtContainer expanderContainer = Jt.expander("test-expander", "Click to expand").use();
+                    JtContainer expanderContainer = Jt.expander("Click to expand").use();
                     Jt.text("Hidden content inside expander").use(expanderContainer);
                     Jt.button("Hidden Button").use(expanderContainer);
                 }

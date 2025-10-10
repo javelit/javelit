@@ -18,12 +18,12 @@ public class MyApp {
         Jt.text("Welcome to Jeamlit - Streamlit for Java!").use();
         Jt.text("This demo shows basic components and state management.").use();
 
-        var containerDebug = Jt.container("debug-container")
+        var containerDebug = Jt.container()
                 .border(false)
                 .use();
         Jt.text("My debug container").use(containerDebug);
 
-        final var columns = Jt.columns("the-column", 3)
+        final var columns = Jt.columns(3)
                 .verticalAlignment(ColumnsComponent.VerticalAlignment.TOP)
                 .border(true)
                 .gap(ColumnsComponent.Gap.SMALL)
@@ -42,9 +42,9 @@ public class MyApp {
         Jt.title("WAIT").use(JtContainer.SIDEBAR);
         Double age = Jt.slider("Select your age").min(0).max(100).value(30).use();
         Jt.text("You selected age: " + age).use();
-        var container = Jt.container("container-1").use();
+        var container = Jt.container().key("container1").use();
         Jt.text("test in container").use(container);
-        var container2 =  Jt.container("container-2").use(container);
+        var container2 =  Jt.container().key("container2").use(container);
         if (Jt.button("hihi this is in container 2").use(container2)) {
             Jt.text("clicked and inside container 1 and container 2 ").use(container);
         }

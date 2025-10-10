@@ -45,7 +45,7 @@ public final class HtmlComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private HtmlComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
+        super(builder, NONE.NONE_VALUE, null);
         this.htmlContent = builder.htmlContent;
         this.width = builder.width;
     }

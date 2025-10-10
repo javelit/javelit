@@ -137,7 +137,7 @@ public final class CheckboxComponent extends JtComponent<@NotNull Boolean> {
     }
 
     private CheckboxComponent(final @Nonnull Builder builder) {
-        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
+        super(builder, builder.value, builder.onChange);
         this.label = markdownToHtml(builder.label, true);
         this.help = builder.help;
         this.disabled = builder.disabled;

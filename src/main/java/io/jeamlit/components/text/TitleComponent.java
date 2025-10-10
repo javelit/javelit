@@ -45,7 +45,7 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private TitleComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
+        super(builder, NONE.NONE_VALUE, null);
         this.body = markdownToHtml(builder.body, true);
         this.anchor = builder.anchor;
         this.help = builder.help;

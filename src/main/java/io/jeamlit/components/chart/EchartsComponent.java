@@ -82,7 +82,7 @@ public final class EchartsComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private EchartsComponent(final @Nonnull Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
+        super(builder, NONE.NONE_VALUE, null);
         if (builder.chart != null) {
             // see https://github.com/ECharts-Java/ECharts-Java/blob/61c82301c5fb45bb848cb779640968f5b959955e/src/main/java/org/icepear/echarts/render/Engine.java#L184C12-L184C18
             // we are not using Engine.java directly because it import handlebars - we don't want handlebars as a dependency, it's excluded

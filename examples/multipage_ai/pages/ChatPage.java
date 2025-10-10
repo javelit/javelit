@@ -29,7 +29,7 @@ public class ChatPage {
         String modelName = Jt.sessionState().getString("selected_model", "gemma3:270m");
 
         // Question input
-        JtContainer formContainer = Jt.form("chat_input").use();
+        JtContainer formContainer = Jt.form().use();
         String question = Jt.textArea("Your question")
                             .value("What is the meaning of life?")
                             .height(100)
@@ -50,7 +50,7 @@ public class ChatPage {
                 Jt.text("Please enter a question.").use();
             } else {
                 try {
-                    var inPlaceContainer = Jt.empty("load-and-answer").use();
+                    var inPlaceContainer = Jt.empty().use();
                     // Show spinner while processing
                     Jt.text("Thinking...").use(inPlaceContainer);
 

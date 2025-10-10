@@ -1,8 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.jeamlit:jeamlit:0.32.0
 
-package io.jeamlit.components.input;
-
 import io.jeamlit.core.Jt;
 
 public class NumberInputExample {

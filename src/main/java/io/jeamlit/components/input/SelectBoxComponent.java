@@ -209,7 +209,7 @@ public class SelectBoxComponent<T> extends JtComponent<@Nullable T> {
 
 
     private SelectBoxComponent(final Builder<T> builder) {
-        super(builder.generateKeyForInteractive(),
+        super(builder,
               builder.index == null || builder.options.isEmpty() ? null : builder.options.get(builder.index),
               builder.onChange);
         this.label = markdownToHtml(builder.label, true);

@@ -50,7 +50,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
     }
 
     private FormSubmitButtonComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), false, builder.onClick);
+        super(builder, false, builder.onClick);
 
         this.label = builder.label;
         this.type = builder.type;

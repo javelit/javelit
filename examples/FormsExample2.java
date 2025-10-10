@@ -1,8 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.jeamlit:jeamlit:0.32.0
 
-package io.jeamlit.examples;
-
 import io.jeamlit.core.Jt;
 
 public class FormsExample2 {
@@ -11,7 +9,7 @@ public class FormsExample2 {
         Jt.title("Forms Example").use();
         Jt.text("This example demonstrates form functionality with batching.").use();
         
-        var form = Jt.form("user_form")
+        var form = Jt.form()
             .clearOnSubmit(false)
             .border(true)
             .use();

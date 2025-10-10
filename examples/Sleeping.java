@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.jeamlit:jeamlit:0.32.0
 
-package io.jeamlit.core;
+import io.jeamlit.core.Jt;
 
 public class Sleeping {
     public static void main(String[] args) throws InterruptedException {

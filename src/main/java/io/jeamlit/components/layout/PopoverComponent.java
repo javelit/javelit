@@ -47,7 +47,7 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
 
     private PopoverComponent(final Builder builder) {
         // the currentValue is set when use() is called
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.label = markdownToHtml(builder.label, true);
         this.help = builder.help;
         this.disabled = builder.disabled;
@@ -60,8 +60,7 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
         private boolean disabled;
         private boolean useContainerWidth;
 
-        public Builder(final @Nonnull String key, @Language("markdown") final @Nonnull String label) {
-            this.key = key;
+        public Builder(@Language("markdown") final @Nonnull String label) {
             this.label = label;
         }
 
@@ -92,9 +91,6 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
 
         @Override
         public PopoverComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
             if (label.trim().isEmpty()) {
                 throw new IllegalArgumentException("Popover label cannot be null or empty");
             }

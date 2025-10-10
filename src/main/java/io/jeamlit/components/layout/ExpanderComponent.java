@@ -45,7 +45,7 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
 
     private ExpanderComponent(final Builder builder) {
         // the currentValue is set when use() is called
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.label = builder.label;
         this.expanded = builder.expanded;
         this.width = builder.width;
@@ -56,8 +56,7 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
         private boolean expanded;
         private @Nullable String width = "stretch";
 
-        public Builder(final @Nonnull String key, final @Nonnull String label) {
-            this.key = key;
+        public Builder(final @Nonnull String label) {
             this.label = label;
         }
 
@@ -98,9 +97,6 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
 
         @Override
         public ExpanderComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
             return new ExpanderComponent(this);
         }
     }

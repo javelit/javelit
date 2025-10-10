@@ -24,7 +24,6 @@ import com.github.mustachejava.MustacheFactory;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.JtContainer;
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +46,7 @@ public final class FormComponent extends JtComponent<JtContainer> {
 
     private FormComponent(final Builder builder) {
         // the currentValue is set when use() is called
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.clearOnSubmit = builder.clearOnSubmit;
         this.enterToSubmit = builder.enterToSubmit;
         this.border = builder.border;
@@ -62,8 +61,7 @@ public final class FormComponent extends JtComponent<JtContainer> {
         private @Nullable String width = "stretch";
         private @Nullable String height = "content";
 
-        public Builder(final @Nonnull String key) {
-            this.key = key;
+        public Builder() {
         }
 
         /**
@@ -132,9 +130,6 @@ public final class FormComponent extends JtComponent<JtContainer> {
 
         @Override
         public FormComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
             return new FormComponent(this);
         }
     }

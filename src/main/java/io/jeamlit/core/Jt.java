@@ -142,8 +142,8 @@ public final class Jt {
     public static TypedMap componentsState() {
         final InternalSessionState session = StateManager.getCurrentSession();
         // NOTE: best would be to have a deep-copy-on-read map
-        // here it's the responsibility of the user to not play around with the values inside this map
-        return new TypedMap(Map.copyOf(session.getComponentsState()));
+        // here it's the responsibility of the user to not mutate the values inside this map
+        return new TypedMap(Map.copyOf(session.getUserVisibleComponentsState()));
     }
 
     /**
@@ -752,7 +752,7 @@ public final class Jt {
      *
      * public class ContainerApp {
      *     public static void main(String[] args) {
-     *         var container = Jt.container("my-container").use();
+     *         var container = Jt.container().use();
      *
      *         Jt.text("This is inside the container").use(container);
      *         Jt.text("This is outside the container").use();
@@ -761,10 +761,9 @@ public final class Jt {
      * }
      *}
      *
-     * @param key A unique string used to identify this container
      */
-    public static ContainerComponent.Builder container(final @Nonnull String key) {
-        return new ContainerComponent.Builder(key, false);
+    public static ContainerComponent.Builder container() {
+        return new ContainerComponent.Builder(false);
     }
 
     /**
@@ -791,7 +790,7 @@ public final class Jt {
      *
      * public class EmptyApp {
      *     public static void main(String[] args) {
-     *         var placeholder = Jt.empty("content").use();
+     *         var placeholder = Jt.empty().use();
      *         String selected = Jt.selectbox("Choose content",
      *             List.of("None", "Text", "Button")).use();
      *
@@ -814,7 +813,7 @@ public final class Jt {
      *
      * public class AnimationEmptyApp {
      *     public static void main(String[] args) {
-     *         var emptyContainer = Jt.empty("content").use();
+     *         var emptyContainer = Jt.empty().use();
      *          for (i = 10; i>=1; i--) {
      *               Jt.text(i + "!").use(emptyContainer);
      *                Thread.sleep(1000);
@@ -825,10 +824,9 @@ public final class Jt {
      * }
      *}
      *
-     * @param key A unique string used to identify this container
      */
-    public static ContainerComponent.Builder empty(final @Nonnull String key) {
-        return new ContainerComponent.Builder(key, true);
+    public static ContainerComponent.Builder empty() {
+        return new ContainerComponent.Builder(true);
     }
 
     /**
@@ -854,7 +852,7 @@ public final class Jt {
      *
      * public class ColumnsApp {
      *     public static void main(String[] args) {
-     *         var cols = Jt.columns("main-cols", 3).use();
+     *         var cols = Jt.columns(3).use();
      *
      *         Jt.title("A cat").use(cols.col(0));
      *         Jt.title("A dog").use(cols.col(1));
@@ -863,11 +861,10 @@ public final class Jt {
      * }
      *}
      *
-     * @param key        A unique string used to identify this columns container
      * @param numColumns The number of columns to create
      */
-    public static ColumnsComponent.Builder columns(final @Nonnull String key, final int numColumns) {
-        return new ColumnsComponent.Builder(key, numColumns);
+    public static ColumnsComponent.Builder columns(final int numColumns) {
+        return new ColumnsComponent.Builder(numColumns);
     }
 
     /**
@@ -897,7 +894,7 @@ public final class Jt {
      *
      * public class TabsApp {
      *     public static void main(String[] args) {
-     *         var tabs = Jt.tabs("content-tabs", List.of("Overview", "Details", "Settings")).use();
+     *         var tabs = Jt.tabs(List.of("Overview", "Details", "Settings")).use();
      *
      *         Jt.text("Welcome to the overview page").use(tabs.tab("Overview"));
      *         Jt.text("Here are the details").use(tabs.tab("Details"));
@@ -912,7 +909,7 @@ public final class Jt {
      *
      * public class DataTabsApp {
      *     public static void main(String[] args) {
-     *         var tabs = Jt.tabs("analysis", List.of("Sales", "Marketing", "Finance")).use();
+     *         var tabs = Jt.tabs(List.of("Sales", "Marketing", "Finance")).use();
      *
      *         // Sales tab
      *         Jt.title("Sales Dashboard").use(tabs.tab(0));
@@ -929,11 +926,10 @@ public final class Jt {
      * }
      *}
      *
-     * @param key  A unique string used to identify this tabs container
      * @param tabs A list of tab labels
      */
-    public static TabsComponent.Builder tabs(final @Nonnull String key, @Nonnull List<@NotNull String> tabs) {
-        return new TabsComponent.Builder(key, tabs);
+    public static TabsComponent.Builder tabs(@Nonnull List<@NotNull String> tabs) {
+        return new TabsComponent.Builder(tabs);
     }
 
     /**
@@ -958,7 +954,7 @@ public final class Jt {
      *
      * public class ExpanderApp {
      *     public static void main(String[] args) {
-     *         var expander = Jt.expander("explanation", "See explanation").use();
+     *         var expander = Jt.expander("See explanation").use();
      *
      *         Jt.text("""
      *                 [A great explanation on the why and how of life.]
@@ -967,11 +963,10 @@ public final class Jt {
      * }
      *}
      *
-     * @param key   A unique string used to identify this expander
      * @param label The label for the expander header
      */
-    public static ExpanderComponent.Builder expander(final @Nonnull String key, @Nonnull String label) {
-        return new ExpanderComponent.Builder(key, label);
+    public static ExpanderComponent.Builder expander(@Nonnull String label) {
+        return new ExpanderComponent.Builder(label);
     }
 
     /**
@@ -998,7 +993,7 @@ public final class Jt {
      *
      * public class PopoverApp {
      *     public static void main(String[] args) {
-     *         var settings = Jt.popover("settings", "⚙️ Settings").use();
+     *         var settings = Jt.popover("⚙️ Settings").use();
      *
      *         Jt.text("Configure your preferences:").use(settings);
      *         boolean notifications = Jt.checkbox("Enable notifications").use(settings);
@@ -1021,7 +1016,7 @@ public final class Jt {
      *         Jt.text("Username:").use();
      *         Jt.textInput("Enter username").use();
      *
-     *         var help = Jt.popover("help", "❓ Help").use();
+     *         var help = Jt.popover("❓ Help").use();
      *         Jt.text("**Username requirements:**").use(help);
      *         Jt.text("- Must be 3-20 characters long").use(help);
      *         Jt.text("- Only letters and numbers allowed").use(help);
@@ -1030,12 +1025,10 @@ public final class Jt {
      * }
      *}
      *
-     * @param key   A unique string used to identify this popover
      * @param label The label for the popover button. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
-    public static PopoverComponent.Builder popover(final @Nonnull String key,
-                                                   @Language("markdown") @Nonnull String label) {
-        return new PopoverComponent.Builder(key, label);
+    public static PopoverComponent.Builder popover(@Language("markdown") @Nonnull String label) {
+        return new PopoverComponent.Builder(label);
     }
 
     /**
@@ -1069,7 +1062,7 @@ public final class Jt {
      *
      * public class FormApp {
      *     public static void main(String[] args) {
-     *         var form = Jt.form("registration").use();
+     *         var form = Jt.form().use();
      *
      *         String name = Jt.textInput("Full Name").use(form);
      *         String email = Jt.textInput("Email").use(form);
@@ -1092,7 +1085,7 @@ public final class Jt {
      *
      * public class SurveyFormApp {
      *     public static void main(String[] args) {
-     *         var form = Jt.form("survey").use();
+     *         var form = Jt.form().use();
      *         double satisfaction = Jt.slider("Satisfaction (1-10)").min(1).max(10).value(5).use(form);
      *         String feedback = Jt.textArea("Additional feedback").use(form);
      *         String department = Jt.selectbox("Department",
@@ -1106,10 +1099,9 @@ public final class Jt {
      * }
      *}
      *
-     * @param key A unique string used to identify this form
      */
-    public static FormComponent.Builder form(final @Nonnull String key) {
-        return new FormComponent.Builder(key);
+    public static FormComponent.Builder form() {
+        return new FormComponent.Builder();
     }
 
     /**

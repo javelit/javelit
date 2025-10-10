@@ -108,14 +108,14 @@ public class MarkdownStylesExample {
 
         Jt.markdown("These components were **already implemented correctly** with proper `markdown-content` usage.");
 
-        var tabs = Jt.tabs("the-tab-key", List.of("**Data** *Analysis*", "*Visualization* `Charts`")).use();
+        var tabs = Jt.tabs(List.of("**Data** *Analysis*", "*Visualization* `Charts`")).use();
         Jt.markdown("Tab content with **bold** *italic* and `code` support").use(tabs.tab(0));
         Jt.markdown("Another tab with **markdown** formatting").use(tabs.tab(1));
 
-        var exp = Jt.expander("expander-key", "**Show** *advanced* `options`").use();
+        var exp = Jt.expander("**Show** *advanced* `options`").use();
         Jt.markdown("Expander content supports **all markdown** *formatting* including `inline code`, [links](https://example.com), and ~~strikethrough~~.").use(exp);
 
-        var popover = Jt.popover("some-key", "**Hover** for *info*")
+        var popover = Jt.popover("**Hover** for *info*")
           .use();
         Jt.text("Hello").use(popover);
 

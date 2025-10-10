@@ -60,7 +60,7 @@ public final class NumberInputComponent<T extends Number> extends JtComponent<T>
     }
 
     private NumberInputComponent(final Builder<T> builder) {
-        super(builder.generateKeyForInteractive(), builder.value, builder.onChange);
+        super(builder, builder.value, builder.onChange);
 
         this.label = markdownToHtml(builder.label, true);
         this.minValue = builder.minValue;

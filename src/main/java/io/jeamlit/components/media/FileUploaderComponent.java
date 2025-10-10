@@ -68,7 +68,7 @@ public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
     }
 
     private FileUploaderComponent(final Builder builder) {
-        super(builder.generateKeyForInteractive(), List.of(), builder.onChange);
+        super(builder, List.of(), builder.onChange);
         this.label = markdownToHtml(builder.label, true);
         this.types = builder.types;
         this.acceptMultipleFiles = builder.acceptMultipleFiles;

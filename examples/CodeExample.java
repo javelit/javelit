@@ -2,8 +2,7 @@
 //DEPS io.jeamlit:jeamlit:0.32.0
 
 
-
-import io.jeamlit.components.layout.*;import io.jeamlit.core.Jt;
+import io.jeamlit.core.Jt;
 
 public class CodeExample {
     public static void main(String[] args) {
@@ -163,7 +162,7 @@ public class CodeExample {
         Jt.code("short code").width("content").lineNumbers(true).use();
 
         Jt.markdown("### Stretch Height (Fills Available Space)").use();
-        final var cs = Jt.container("c").height(500).use();
+        final var cs = Jt.container().height(500).use();
         Jt.code("""
                 // This code block stretches to available height
                 public class StretchExample {

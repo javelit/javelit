@@ -5,7 +5,7 @@ import io.jeamlit.core.Jt;
 
 public class PageLinkExample {
     public static void main(String[] args) {
-        var c = Jt.container("the-key").use();
+        var c = Jt.container().use();
 
         Jt.navigation(
             Jt.page(Home.class).title("Home").home(),

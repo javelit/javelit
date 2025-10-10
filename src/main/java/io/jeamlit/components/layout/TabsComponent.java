@@ -54,7 +54,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
     private TabsComponent(final Builder builder) {
         // the currentValue is set when use() is called - see beforeUse
-        super(builder.generateKeyForInteractive(), null, null);
+        super(builder, null, null);
         this.tabs = builder.tabs;
         this.width = builder.width;
     }
@@ -63,8 +63,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
         private final List<@NotNull String> tabs;
         private String width = "stretch";
 
-        public Builder(final @Nonnull String key, @Nonnull List<@NotNull String> tabs) {
-            this.key = key;
+        public Builder(@Nonnull List<@NotNull String> tabs) {
             if (tabs.isEmpty()) {
                 throw new IllegalArgumentException("tabs cannot be null or empty");
             }
@@ -105,10 +104,6 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
 
         @Override
         public TabsComponent build() {
-            if (JtContainer.RESERVED_PATHS.contains(this.key)) {
-                throw new IllegalArgumentException("Component " + this.key + " is a reserved value. Please use another key value.");
-            }
-
             return new TabsComponent(this);
         }
     }

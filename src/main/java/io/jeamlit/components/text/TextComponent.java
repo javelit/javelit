@@ -104,7 +104,7 @@ public final class TextComponent extends JtComponent<JtComponent.NONE> {
     }
 
     private TextComponent(Builder builder) {
-        super(builder.generateKeyForInteractive(), NONE.NONE_VALUE, null);
+        super(builder, NONE.NONE_VALUE, null);
         this.body = builder.body;
         this.help = builder.help;
         this.width = builder.width;
