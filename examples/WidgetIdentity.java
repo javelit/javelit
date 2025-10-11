@@ -11,8 +11,6 @@ public class WidgetIdentity {
     public static void main(String[] args) {
         int minimum = Jt.numberInput("mini", Integer.class).minValue(0).maxValue(10).use();
         int slider1 = Jt.slider("no key").min(minimum).use().intValue();
-        Jt.text("keyed value before: " + String.valueOf(Jt.componentsState().get("key1"))).use();
         int slider2 = Jt.slider("with key").key("key1").min(minimum).use().intValue();
-        Jt.text("keyed value after: " + String.valueOf(Jt.componentsState().get("key1"))).use();
     }
 }
