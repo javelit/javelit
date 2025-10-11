@@ -167,8 +167,7 @@ public abstract class JtComponent<T> {
         this(builder, currentValue, callback, JtContainer.MAIN);
     }
 
-    // note: not renamed to internalKey for the moment because it'd break all templates // FIXME PERSIST
-    public String getKey() {
+    public String getInternalKey() {
         return internalKey;
     }
 

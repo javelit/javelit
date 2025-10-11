@@ -601,7 +601,7 @@ public final class Server implements StateManager.RenderServer {
         LOG.debug("Sending delta: index={}, clearBefore={}, component={}",
                   index,
                   clearBefore,
-                  component != null ? component.getKey() : null);
+                  component != null ? component.getInternalKey() : null);
         LOG.debug("  HTML: {}", component != null ? component.render() : null);
         LOG.debug("  Registrations: {}", registrations.size());
         sendMessage(sessionId, message);

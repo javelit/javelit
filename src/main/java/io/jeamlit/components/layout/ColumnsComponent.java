@@ -186,7 +186,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
 
     @Override
     protected void beforeUse(final @NotNull JtContainer container) {
-        final JtContainer baseContainer = container.child(getKey());
+        final JtContainer baseContainer = container.child(getInternalKey());
         this.currentValue = new Columns(baseContainer, numColumns);
     }
 

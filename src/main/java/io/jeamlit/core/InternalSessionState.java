@@ -101,10 +101,10 @@ final class InternalSessionState {
     }
 
     void upsertComponentsState(final @Nonnull JtComponent component) {
-        componentsState.put(component.getKey(), component.returnValue());
+        componentsState.put(component.getInternalKey(), component.returnValue());
         if (component.getUserKey() != null) {
             final String prefixedUserKey = StateManager.pagePrefix() + component.getUserKey();
-            internalKeyToUserKey.put(component.getKey(), prefixedUserKey);
+            internalKeyToUserKey.put(component.getInternalKey(), prefixedUserKey);
             userVisibleComponentsState.put(prefixedUserKey, component.returnValue());
         }
     }

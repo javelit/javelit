@@ -128,6 +128,6 @@ public final class PopoverComponent extends JtComponent<JtContainer> {
 
     @Override
     protected void beforeUse(final @NotNull JtContainer container) {
-        this.currentValue = container.child(getKey());
+        this.currentValue = container.child(getInternalKey());
     }
 }

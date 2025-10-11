@@ -294,7 +294,7 @@ final class StateManager {
         if (currentExecution.containerToComponents
                 .values()
                 .stream()
-                .anyMatch(components -> components.containsKey(component.getKey()))) {
+                .anyMatch(components -> components.containsKey(component.getInternalKey()))) {
             // a component with the same id was already registered while running the app top to bottom
             throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
         }
@@ -313,12 +313,12 @@ final class StateManager {
         if (container.isInPlace()) {
             componentsMap.clear();
         }
-        componentsMap.put(component.getKey(), component);
+        componentsMap.put(component.getInternalKey(), component);
 
         // Restore state from session if available
         final InternalSessionState session = getCurrentSession();
-        if (!NavigationComponent.UNIQUE_NAVIGATION_COMPONENT_KEY.equals(component.getKey())) {
-            final Object state = session.getComponentState(component.getKey());
+        if (!NavigationComponent.UNIQUE_NAVIGATION_COMPONENT_KEY.equals(component.getInternalKey())) {
+            final Object state = session.getComponentState(component.getInternalKey());
             if (state != null) {
                 component.updateValue(state);
             }
@@ -458,7 +458,7 @@ final class StateManager {
                     final JtComponent<?> component = entry.getValue();
                     component.resetIfNeeded();
                     if (component.returnValueIsAState()) {
-                        checkState(entry.getKey().equals(component.getKey()),
+                        checkState(entry.getKey().equals(component.getInternalKey()),
                                    "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
                         session.upsertComponentsState(component);
                     }
@@ -472,7 +472,7 @@ final class StateManager {
                         if (session.formComponentsToReset().contains(entry.getKey())) {
                             final JtComponent<?> component = entry.getValue();
                             component.resetToInitialValue();
-                            checkState(entry.getKey().equals(component.getKey()),
+                            checkState(entry.getKey().equals(component.getInternalKey()),
                                        "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
                             session.upsertComponentsState(component);
                             renderServer.send(currentExecution.sessionId, component, container, i, false);
@@ -495,10 +495,10 @@ final class StateManager {
                     m.values()
                     .stream()
                      // component was not present in the current execution
-                    .filter(c -> !componentsUsedInExecutionKeys.contains(c.getKey()))
+                    .filter(c -> !componentsUsedInExecutionKeys.contains(c.getInternalKey()))
                      // component does not have a user key OR component has flag noPersist
                     .filter(e -> e.getUserKey() == null || e.isNoPersist())
-                    .map(JtComponent::getKey)
+                    .map(JtComponent::getInternalKey)
                     .forEach(session::removeComponentState);
                 }
             }
@@ -536,7 +536,7 @@ final class StateManager {
                          final boolean clearBefore) {
             LOG.error(
                     "Cannot send indexed delta for component {} in container {} at index {} to session {}. No render server is registered.",
-                    component != null ? component.getKey() : null,
+                    component != null ? component.getInternalKey() : null,
                     container,
                     index,
                     sessionId);

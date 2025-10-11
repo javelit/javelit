@@ -48,7 +48,7 @@ final class DuplicateWidgetIDException extends RuntimeException {
                 To fix this, please pass a unique key argument to each widget. \s
                 Component: %s
                 """.formatted(component.getClass().getName(),
-                              component.getKey(), componentJson);
+                              component.getInternalKey(), componentJson);
         return new DuplicateWidgetIDException(message);
     }
 
