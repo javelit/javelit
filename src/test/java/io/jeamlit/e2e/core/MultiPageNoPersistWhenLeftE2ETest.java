@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -79,7 +80,7 @@ public class MultiPageNoPersistWhenLeftE2ETest {
             page1Input.press("Enter");
 
             // Click on page2
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page2")).click();
+            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 2")).click(WAIT_1_SEC_MAX_CLICK);
 
             // Ensure page 2 text input is here
             Locator page2Input = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 2 text input")).locator("input");
@@ -97,7 +98,7 @@ public class MultiPageNoPersistWhenLeftE2ETest {
             page2Input.press("Enter");
 
             // Click on page 1
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page1")).click();
+            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 1")).click(WAIT_1_SEC_MAX_CLICK);
 
             // Ensure "page 1 text input" is here and its value is empty string
             Locator page1InputAgain = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 1 text input")).locator("input");
@@ -106,7 +107,7 @@ public class MultiPageNoPersistWhenLeftE2ETest {
                 "Page1 with noPersistWhenLeft should have cleared its state");
 
             // Click on page 2
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page2")).click();
+            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 2")).click(WAIT_1_SEC_MAX_CLICK);
 
             // Ensure "page 2 text input" is here and its value is "should stay here"
             Locator page2InputAgain = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 2 text input")).locator("input");

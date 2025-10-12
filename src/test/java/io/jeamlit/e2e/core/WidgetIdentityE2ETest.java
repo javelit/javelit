@@ -23,6 +23,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for widget identity behavior.
@@ -66,7 +67,7 @@ public class WidgetIdentityE2ETest {
 
             // Change the number input to 1 (click + button or fill with "1")
             Locator numberInputPlusButton = page.locator("jt-number-input .step-up");
-            numberInputPlusButton.click();
+            numberInputPlusButton.click(WAIT_1_SEC_MAX_CLICK);
 
             // Verify final state
             // The first text should show "keyed value before: 20" because the slider without key

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.TestInfo;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -75,7 +76,7 @@ public class NoRenderStatePersistenceE2ETest {
             noPersistInput.fill("value3");
 
             // Click on "view2" radio button (second option)
-            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click();
+            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click(WAIT_1_SEC_MAX_CLICK);
 
             // Verify that the text inputs are no longer visible
             assertThat(page.getByText("☝️ Now go back to view1 and see if your text is still there")).isVisible(WAIT_1_SEC_MAX);
@@ -84,7 +85,7 @@ public class NoRenderStatePersistenceE2ETest {
             assertThat(page.locator("jt-text-input").nth(2)).isHidden(WAIT_10_MS_MAX_HIDDEN);
 
             // Click back on "view1" radio button (first option)
-            page.locator("jt-radio .radio-option:nth-child(1) .radio-visual").click();
+            page.locator("jt-radio .radio-option:nth-child(1) .radio-visual").click(WAIT_1_SEC_MAX_CLICK);
 
             // Wait for inputs to reappear
             assertThat(page.getByText("☝️ Enter some text, then click on view2 above")).isVisible(WAIT_1_SEC_MAX);
@@ -140,14 +141,14 @@ public class NoRenderStatePersistenceE2ETest {
             assertThat(secondText).containsText("default value", WAIT_1_SEC_MAX_TXT);
 
             // Step 3: Click view2 radio button
-            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click();
+            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click(WAIT_1_SEC_MAX_CLICK);
 
             // Step 4: Verify first text displays "default value", second text displays "0.0"
             assertThat(firstText).containsText("default value", WAIT_1_SEC_MAX_TXT);
             assertThat(secondText).containsText("0.0", WAIT_1_SEC_MAX_TXT);
 
             // Step 5: Click view1 radio button
-            page.locator("jt-radio .radio-option:nth-child(1) .radio-visual").click();
+            page.locator("jt-radio .radio-option:nth-child(1) .radio-visual").click(WAIT_1_SEC_MAX_CLICK);
 
             // Step 6: Verify first text displays "0.0", second text displays "default value"
             assertThat(firstText).containsText("0.0", WAIT_1_SEC_MAX_TXT);
@@ -163,7 +164,7 @@ public class NoRenderStatePersistenceE2ETest {
             assertThat(secondText).containsText("new text", WAIT_1_SEC_MAX_TXT);
 
             // Step 9: Click view2 radio button
-            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click();
+            page.locator("jt-radio .radio-option:nth-child(2) .radio-visual").click(WAIT_1_SEC_MAX_CLICK);
 
             // Step 10: Verify first text displays "new text", second text displays "0.0"
             assertThat(firstText).containsText("new text", WAIT_1_SEC_MAX_TXT);
@@ -171,7 +172,7 @@ public class NoRenderStatePersistenceE2ETest {
 
             // Step 11: Click number input plus button
             Locator plusButton = page.locator("jt-number-input .step-up");
-            plusButton.click();
+            plusButton.click(WAIT_1_SEC_MAX_CLICK);
 
             // Step 12: Verify both texts display "0.01"
             assertThat(firstText).containsText("0.01", WAIT_1_SEC_MAX_TXT);

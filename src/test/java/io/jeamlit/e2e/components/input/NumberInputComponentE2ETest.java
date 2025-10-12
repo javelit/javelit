@@ -23,6 +23,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for NumberInputComponent.
@@ -82,7 +83,7 @@ public class NumberInputComponentE2ETest {
             assertThat(page.getByText("Count: 5")).isVisible(WAIT_1_SEC_MAX);
             // Click the + button --> value should increment
             final Locator plusButton = page.locator("jt-number-input .step-up");
-            plusButton.click();
+            plusButton.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Count: 6")).isVisible(WAIT_1_SEC_MAX);
             // Click the - button twice - value should decrement
             final Locator minusButton = page.locator("jt-number-input .step-down");

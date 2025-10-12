@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for FormComponent and FormSubmitButtonComponent.
@@ -62,17 +63,17 @@ public class FormComponentE2ETest {
             // Fill name form input
             Locator nameInput = page.locator("jt-text-input[label='Your Name'] input");
             nameInput.fill("John");
-            textUtilLocator.click();
+            textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
             // ensure the change did not apply yet because the form was not submitted
             assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
             // Fill email form input
             Locator emailInput = page.locator("jt-text-input[label='Your Email'] input");
             emailInput.fill("john@example.com");
-            textUtilLocator.click();
+            textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
             
             // Click submit button
-            page.locator("jt-form-submit-button button").click();
+            page.locator("jt-form-submit-button button").click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Name: " + "John" + ", Email: " + "john@example.com")).isVisible(WAIT_1_SEC_MAX);
         });
     }

@@ -29,6 +29,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static io.jeamlit.e2e.helpers.OsUtils.copyResourceDirectory;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT_C;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -114,7 +115,7 @@ public class MultiPageE2ETest {
             assertTrue(initialUrl.endsWith("/HomePage"));
             
             // Click on Settings in the sidebar
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Settings")).click();
+            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Settings")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed to custom path /config/settings
             String settingsUrl = page.url();
             assertTrue(settingsUrl.endsWith("/config/settings"));
@@ -125,7 +126,7 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             
             // Click on About in the sidebar
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).click();
+            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed to /AboutPage
             String aboutUrl = page.url();
             assertTrue(aboutUrl.endsWith("/AboutPage"));
@@ -136,7 +137,7 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             
             // Click back to Home
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Home")).click();
+            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Home")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed back to /HomePage
             String homeUrl = page.url();
             assertTrue(homeUrl.endsWith("/HomePage"));
@@ -161,7 +162,7 @@ public class MultiPageE2ETest {
             assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate to Settings page
-            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click();
+            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify footer persists on Settings page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar persists
@@ -170,7 +171,7 @@ public class MultiPageE2ETest {
             assertThat(page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About"))).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate to About page
-            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click();
+            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify footer persists on About page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar persists
@@ -180,10 +181,10 @@ public class MultiPageE2ETest {
             
             // Verify the active page highlighting changes
             // The Settings link should have the 'active' class when on Settings page
-            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click();
+            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("Settings")).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator(".nav-item.active")).containsText("Settings", WAIT_1_SEC_MAX_TEXT_C);
             // The About link should have the 'active' class when on About page  
-            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click();
+            page.locator(".nav-item").filter(new Locator.FilterOptions().setHasText("About")).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator(".nav-item.active")).containsText("About", WAIT_1_SEC_MAX_TEXT_C);
         });
     }

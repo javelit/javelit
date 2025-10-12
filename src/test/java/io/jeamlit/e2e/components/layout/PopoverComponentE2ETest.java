@@ -23,6 +23,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
 /**
@@ -57,11 +58,11 @@ public class PopoverComponentE2ETest {
             final Locator outsideText = page.getByText("Content outside popover");
             assertThat(outsideText).isVisible(WAIT_1_SEC_MAX);
             // Click to open popover
-            popoverButton.click();
+            popoverButton.click(WAIT_1_SEC_MAX_CLICK);
             // Check that popover content is now visible
             assertThat(page.getByText("Content inside popover")).isVisible(WAIT_1_SEC_MAX);
             // click outside
-            outsideText.click();
+            outsideText.click(WAIT_1_SEC_MAX_CLICK);
             // Check that popover content is not visible anymore
             assertThat(page.getByText("Content inside popover")).not().isVisible(WAIT_50_MS_MAX);
 

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
 
 /**
@@ -55,7 +56,7 @@ public class ExpanderComponentE2ETest {
             // Initially, content should be hidden (collapsed)
             assertThat(page.getByText("Hidden content inside expander")).not().isVisible(WAIT_50_MS_MAX);
             // Click to expand
-            expanderLocator.click();
+            expanderLocator.click(WAIT_1_SEC_MAX_CLICK);
             // Check that content is now visible
             assertThat(page.getByText("Hidden content inside expander")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Hidden Button")).isVisible(WAIT_1_SEC_MAX);

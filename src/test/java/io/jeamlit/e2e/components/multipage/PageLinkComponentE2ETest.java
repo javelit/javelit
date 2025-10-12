@@ -27,6 +27,7 @@ import org.junit.jupiter.api.TestInfo;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for PageLinkComponent.
@@ -81,12 +82,12 @@ public class PageLinkComponentE2ETest {
             assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Navigate to About page
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).first().click();
+            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).first().click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("About page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page).hasURL(Pattern.compile(".*/about"));
 
             // Test internal navigation - click Home link
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("🏠 Home")).click();
+            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("🏠 Home")).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Home page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page).hasURL(Pattern.compile(".*/Home"));
             
@@ -144,7 +145,7 @@ public class PageLinkComponentE2ETest {
             assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
             
             // Navigate to About page
-            page.getByText("ℹ️ About", EXACT_MATCH).click();
+            page.getByText("ℹ️ About", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             // Should be on about page with correct active state
             assertThat(page).hasURL(Pattern.compile(".*/about"));
             assertThat(page.getByText("About page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -154,7 +155,7 @@ public class PageLinkComponentE2ETest {
             assertThat(page.locator("jt-page-link").first()).not().hasAttribute("is-active", "");
             
             // Navigate back to Home
-            page.getByText("🏠 Home", EXACT_MATCH).click();
+            page.getByText("🏠 Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             
             // Should be back on root URL with Home active again
             assertThat(page).hasURL(Pattern.compile(".*/Home"));

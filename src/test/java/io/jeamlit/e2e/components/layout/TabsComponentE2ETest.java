@@ -25,6 +25,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for TabsComponent.
@@ -71,7 +72,7 @@ public class TabsComponentE2ETest {
             assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
             assertThat(page.getByText("Content of Tab 2")).not().isVisible(WAIT_10_MS_MAX);
             // Click on Tab 2
-            tab2Header.click();
+            tab2Header.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
             assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);

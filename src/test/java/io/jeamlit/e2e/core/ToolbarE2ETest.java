@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for toolbar functionality including loading states and menu interactions.
@@ -57,16 +58,16 @@ public class ToolbarE2ETest {
             assertThat(menuButton).isVisible(WAIT_1_SEC_MAX);
             
             // Test 4: Clicking rerun should show spinner again
-            menuButton.click();
+            menuButton.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator(".menu-dropdown.show")).isVisible(WAIT_1_SEC_MAX);
-            page.getByText("Rerun").click();
+            page.getByText("Rerun").click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator("jt-status-widget")).isVisible(WAIT_1_SEC_MAX);
             // Wait for rerun to complete
             assertThat(page.locator("jt-status-widget")).isHidden(new LocatorAssertions.IsHiddenOptions().setTimeout(2000));
             
             // Test 5: Settings modal functionality
-            page.locator(".menu-button").click();
-            page.locator("#toolbar-menu").getByText("Settings", new Locator.GetByTextOptions().setExact(true)).click();
+            page.locator(".menu-button").click(WAIT_1_SEC_MAX_CLICK);
+            page.locator("#toolbar-menu").getByText("Settings", new Locator.GetByTextOptions().setExact(true)).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator("#settings-modal")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#settings-modal").getByText("Settings")).isVisible(WAIT_1_SEC_MAX);
         });

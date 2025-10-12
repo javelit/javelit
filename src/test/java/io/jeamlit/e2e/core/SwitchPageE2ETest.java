@@ -46,7 +46,7 @@ class SwitchPageE2ETest {
             
                 public static class HomePage {
                     public static void main(String[] args) {
-                        Jt.title("Home Page").use();
+                        Jt.title("The Home Page").use();
                         Jt.text("Welcome to the home page!").use();
             
                         // Test programmatic switch to Products page
@@ -83,7 +83,7 @@ class SwitchPageE2ETest {
         
         PlaywrightUtils.runInDedicatedBrowser(testInfo, app, page -> {
             // Wait for app to load and verify we're on HomePage
-            assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("The Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertTrue(page.url().endsWith("/HomePage"));
             

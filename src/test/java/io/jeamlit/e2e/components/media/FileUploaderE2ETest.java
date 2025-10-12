@@ -28,6 +28,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
  * End-to-end tests for FileUploaderComponent.
@@ -68,7 +69,7 @@ public class FileUploaderE2ETest {
                 // Wait for and handle the file chooser dialog
                 FileChooser fileChooser = page.waitForFileChooser(() -> {
                     // Click the "Browse files" button
-                    page.getByText("Browse files").click();
+                    page.getByText("Browse files").click(WAIT_1_SEC_MAX_CLICK);
                 });
                 
                 // Set the CSV file to upload
