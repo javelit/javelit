@@ -191,6 +191,10 @@ public class TypedMap implements Map<String, Object> {
         return (Double) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
     }
 
+    public Boolean computeIfAbsentBoolean(String key, Function<String, Boolean> mappingFunction) {
+        return (Boolean) delegate.computeIfAbsent(prefixKey(key), mappingFunction);
+    }
+
     // Delegate all Map methods
     @Override
     public int size() {
