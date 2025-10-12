@@ -1944,6 +1944,55 @@ public final class Jt {
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
     }
 
+    /**
+     * Rerun the script immediately.
+     * <p>
+     * When {@code Jt.rerun()} is called, Jeamlit halts the current app run and executes no further statements. Jeamlit immediately
+     * queues the script to rerun. In a multipage app: by default, the rerun is for the same url path (same page). If the rerun could make
+     * the current page unavailable, pass {@code toHome = true} to send back to the home url and avoid 404 errors.
+     * <p>
+     * Examples:
+     * Updating session state and triggering rerun
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * public class RerunApp {
+     *     public static void main(String[] args) {
+     *          Jt.sessionState().computeIfAbsent("value", "Title");
+     *
+     *         // Display current value
+     *         Jt.title(Jt.sessionState().getString("value")).use();
+     *
+     *         if (Jt.button("Foo").use()) {
+     *             Jt.sessionState().put("value", "Foo");
+     *             Jt.rerun(false);
+     *         }
+     *     }
+     * }
+     *}
+     *
+     * @param toHome If {@code true}, rerun in {@code /} url path. If {@code false}, rerun in current path.
+     */
+    public static void rerun(final boolean toHome) {
+        if (toHome) {
+            final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext("/", Map.of());
+            throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
+        } else {
+            throw new BreakAndReloadAppException(null);
+        }
+    }
+
+    /**
+     * Rerun the script immediately.
+     * <p>
+     * When {@code Jt.rerun()} is called, Jeamlit halts the current app run and executes no further statements. Jeamlit immediately
+     * queues the script to rerun. In a multipage app: by default, the rerun is for the same url path (same page). If the rerun could make
+     * the current page unavailable, pass {@code toHome = true} to send back to the home url and avoid 404 errors.
+     */
+    public static void rerun() {
+        Jt.rerun(false);
+    }
+
     private Jt() {
     }
 
