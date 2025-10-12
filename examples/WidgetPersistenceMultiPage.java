@@ -10,7 +10,7 @@ import java.util.List;import io.jeamlit.core.Jt;
 // To clear all states of a page when the page is left, call .noPersistWhenLeft() on the page.
 public class WidgetPersistenceMultiPage {
     public static void main(String[] args) {
-        var page = Jt.navigation(Jt.page(Page1.class), Jt.page(Page2.class).noPersistWhenLeft()).use();
+        var page = Jt.navigation(Jt.page(Page1.class).section("hehe"), Jt.page(Page2.class).noPersistWhenLeft()).use();
         page.run();
     }
 
