@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import static io.jeamlit.core.utils.EmojiUtils.ensureIsValidIcon;
 
@@ -206,14 +207,22 @@ public final class JtPage {
             return this;
         }
 
-        public JtPage build() {
+        JtPage build() {
             if (title == null) {
-                title = pageApp.getSimpleName();
+                title = camelCaseToTitle(pageApp.getSimpleName());
             }
             if (urlPath == null) {
                 urlPath = "/" + pageApp.getSimpleName();
             }
             return new JtPage(this);
+        }
+
+        @VisibleForTesting
+        static String camelCaseToTitle(String camelCase) {
+            return camelCase
+                .replaceAll("([a-z0-9])([A-Z])", "$1 $2")// lowercase/digit followed by uppercase
+                .replaceAll("([a-zA-Z])([0-9])", "$1 $2")// letter followed by digit
+                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1 $2");  // CAPS followed by Caps
         }
 
         // used internally by the navigation component to modify some pages if necessary
