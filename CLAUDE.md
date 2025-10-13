@@ -10,7 +10,6 @@ This file provides guidance to Claude Code when working with this repository.
 - **Build System**: Maven
 - **Java Version**: 21 (configured in pom.xml, runs on Java 21+)
 - **Package Structure**: `io.jeamlit`
-- **Design Decisions**: See DESIGN_DECISIONS.md
 
 ## Build Commands
 
@@ -71,8 +70,8 @@ The custom JsonDoclet implementation:
 
 ```
 src/main/java/io/jeamlit  # Main application code
-src/test/java/              # Unit tests
 src/main/resources/         # Application resources
+src/test/java/              # Unit tests
 ```
 
 ## Configuration
@@ -80,7 +79,6 @@ src/main/resources/         # Application resources
 **pom.xml** - Maven configuration
 - Group ID: `io.jeamlit`
 - Artifact ID: `jeamlit`
-- Version: `1.0-SNAPSHOT`
 
 ## Development Notes
 
