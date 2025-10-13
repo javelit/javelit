@@ -1,0 +1,305 @@
+Improved threads support with scoped values.
+<Plan below is not great but gives the idea - manual code will be faster>
+
+Support for `Jt.` commands in threads will be implemented with [ScopedValues](https://openjdk.org/jeps/506).
+This feature is final in Java 25. The thread support will be introduced once a majority of the community has moved to Java 25.
+
+│ ╭────────────────────────────────────────────────────────────────────────────────────────────────────────╮ │
+│ │ Migration Plan: ThreadLocal → ScopedValue                                                              │ │
+│ │                                                                                                        │ │
+│ │ Overview                                                                                               │ │
+│ │                                                                                                        │ │
+│ │ Migrate from ThreadLocal<AppExecution> to ScopedValue<String> (sessionId) with a concurrent map for    │ │
+│ │ execution storage. This eliminates thread pool issues and provides clearer lifecycle management.       │ │
+│ │                                                                                                        │ │
+│ │ Changes Required                                                                                       │ │
+│ │                                                                                                        │ │
+│ │ 1. StateManager.java - Core Changes                                                                    │ │
+│ │                                                                                                        │ │
+│ │ Line 70: Replace ThreadLocal declaration                                                               │ │
+│ │ // REMOVE:                                                                                             │ │
+│ │ private static final ThreadLocal<AppExecution> CURRENT_EXECUTION_IN_THREAD = new ThreadLocal<>();      │ │
+│ │                                                                                                        │ │
+│ │ // ADD:                                                                                                │ │
+│ │ private static final ScopedValue<String> CURRENT_SESSION_ID = ScopedValue.newInstance();               │ │
+│ │ private static final Map<String, AppExecution> CURRENT_EXECUTIONS = new ConcurrentHashMap<>();         │ │
+│ │                                                                                                        │ │
+│ │ Add helper method (after line 106):                                                                    │ │
+│ │ private static AppExecution getCurrentExecution() {                                                    │ │
+│ │     final String sessionId = CURRENT_SESSION_ID.get();                                                 │ │
+│ │     if (sessionId == null) {                                                                           │ │
+│ │         throw new IllegalStateException("No active session context");                                  │ │
+│ │     }                                                                                                  │ │
+│ │     final AppExecution execution = CURRENT_EXECUTIONS.get(sessionId);                                  │ │
+│ │     if (execution == null) {                                                                           │ │
+│ │         throw new IllegalStateException("Session context exists but no execution found. Please reach   │ │
+│ │ out to support.");                                                                                     │ │
+│ │     }                                                                                                  │ │
+│ │     return execution;                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 108-115: Update getCurrentSession()                                                              │ │
+│ │ static InternalSessionState getCurrentSession() {                                                      │ │
+│ │     final String currentSessionId = getCurrentExecution().sessionId;                                   │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 117-121: Update clearSession()                                                                   │ │
+│ │ static void clearSession(String sessionId) {                                                           │ │
+│ │     SESSIONS.remove(sessionId);                                                                        │ │
+│ │     LAST_EXECUTIONS.remove(sessionId);                                                                 │ │
+│ │     // REMOVED: CURRENT_EXECUTION_IN_THREAD.remove() - unsafe with thread pools                        │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 123-145: Update handleUserCodeComponentUpdate()                                                  │ │
+│ │ static void handleUserCodeComponentUpdate(@NotNull String userKey, @Nullable Object value) {           │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 225-259: Update setPageContext() and clearPageContext()                                          │ │
+│ │ static void setPageContext(final @Nonnull JtPage page) {                                               │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ static void clearPageContext() {                                                                       │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 261-267: Update pagePrefix()                                                                     │ │
+│ │ static String pagePrefix() {                                                                           │ │
+│ │     try {                                                                                              │ │
+│ │         final AppExecution currentExecution = getCurrentExecution();                                   │ │
+│ │         if (currentExecution.executionPage == null) {                                                  │ │
+│ │             return "";                                                                                 │ │
+│ │         }                                                                                              │ │
+│ │         return prefixOf(currentExecution.executionPage);                                               │ │
+│ │     } catch (IllegalStateException e) {                                                                │ │
+│ │         // No execution context                                                                        │ │
+│ │         return "";                                                                                     │ │
+│ │     }                                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 284-309: Major refactor - Update beginExecution()                                                │ │
+│ │ static void beginExecution(final String sessionId) {                                                   │ │
+│ │     // Create new execution                                                                            │ │
+│ │     final AppExecution newExecution = new AppExecution(sessionId);                                     │ │
+│ │                                                                                                        │ │
+│ │     // Check no concurrent execution for same session                                                  │ │
+│ │     final AppExecution existing = CURRENT_EXECUTIONS.putIfAbsent(sessionId, newExecution);             │ │
+│ │     checkState(existing == null,                                                                       │ │
+│ │                "Session %s already has an active execution. This should not happen. Please reach out   │ │
+│ │ to support.",                                                                                          │ │
+│ │                sessionId);                                                                             │ │
+│ │                                                                                                        │ │
+│ │     renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN);                                         │ │
+│ │                                                                                                        │ │
+│ │     // Run callback before everything else                                                             │ │
+│ │     final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId,              │ │
+│ │                                                                                k -> new                │ │
+│ │ InternalSessionState());                                                                               │ │
+│ │     final String callbackComponentKey = internalSessionState.getCallbackComponentKey();                │ │
+│ │     if (callbackComponentKey != null) {                                                                │ │
+│ │         final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId)                              │ │
+│ │                 .containerToComponents                                                                 │ │
+│ │                 .values().stream()                                                                     │ │
+│ │                 .filter(components -> components.containsKey(callbackComponentKey))                    │ │
+│ │                 .findAny()                                                                             │ │
+│ │                 .map(components -> components.get(callbackComponentKey))                               │ │
+│ │                 .orElse(null);                                                                         │ │
+│ │         if (jtComponent == null) {                                                                     │ │
+│ │             LOG.warn("Failed to run callback method. Component with key {} not found...",              │ │
+│ │ callbackComponentKey);                                                                                 │ │
+│ │         } else {                                                                                       │ │
+│ │             jtComponent.executeCallback();                                                             │ │
+│ │         }                                                                                              │ │
+│ │     }                                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 318-435: Update addComponent()                                                                   │ │
+│ │ static void addComponent(final @Nonnull JtComponent<?> component, final @Nonnull JtContainer           │ │
+│ │ container) {                                                                                           │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 455-546: Major refactor - Update endExecution()                                                  │ │
+│ │ static void endExecution() {                                                                           │ │
+│ │     try {                                                                                              │ │
+│ │         final AppExecution currentExecution = getCurrentExecution();  // ← Changed                     │ │
+│ │                                                                                                        │ │
+│ │         // All existing logic unchanged...                                                             │ │
+│ │                                                                                                        │ │
+│ │         LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);                             │ │
+│ │         renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);                      │ │
+│ │     } catch (Exception e) {                                                                            │ │
+│ │         LOG.error("Failed to end execution properly...", e);                                           │ │
+│ │     } finally {                                                                                        │ │
+│ │         // Get sessionId before removing from map                                                      │ │
+│ │         try {                                                                                          │ │
+│ │             final String sessionId = CURRENT_SESSION_ID.get();                                         │ │
+│ │             if (sessionId != null) {                                                                   │ │
+│ │                 CURRENT_EXECUTIONS.remove(sessionId);                                                  │ │
+│ │             }                                                                                          │ │
+│ │         } catch (Exception e) {                                                                        │ │
+│ │             LOG.error("Failed to clean up execution map", e);                                          │ │
+│ │         }                                                                                              │ │
+│ │     }                                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 556-561: Update getUrlContext()                                                                  │ │
+│ │ static @Nonnull InternalSessionState.UrlContext getUrlContext() {                                      │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Lines 587-595: Update getNavigationComponent()                                                         │ │
+│ │ static @Nullable NavigationComponent getNavigationComponent() {                                        │ │
+│ │     final AppExecution currentExecution = getCurrentExecution();  // ← Changed                         │ │
+│ │     // rest unchanged                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ 2. AppRunner.java - Execution Wrapping                                                                 │ │
+│ │                                                                                                        │ │
+│ │ Lines 80-145: Wrap runApp() execution with ScopedValue                                                 │ │
+│ │ void runApp(final String sessionId) {                                                                  │ │
+│ │     // First-time compilation check (keep as-is, lines 82-101)                                         │ │
+│ │     if (mainMethod.get() == null) {                                                                    │ │
+│ │         StateManager.beginExecution(sessionId);                                                        │ │
+│ │         try {                                                                                          │ │
+│ │             // ... compilation logic unchanged ...                                                     │ │
+│ │         } finally {                                                                                    │ │
+│ │             reloadAvailable.release();                                                                 │ │
+│ │             StateManager.endExecution();                                                               │ │
+│ │         }                                                                                              │ │
+│ │     }                                                                                                  │ │
+│ │                                                                                                        │ │
+│ │     // Main execution - WRAP with ScopedValue                                                          │ │
+│ │     ScopedValue.where(StateManager.CURRENT_SESSION_ID, sessionId).run(() -> {                          │ │
+│ │         boolean doRerun = false;                                                                       │ │
+│ │         Consumer<String> runAfterBreak = null;                                                         │ │
+│ │         try {                                                                                          │ │
+│ │             StateManager.beginExecution(sessionId);                                                    │ │
+│ │             final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();    │ │
+│ │             try {                                                                                      │ │
+│ │                 final Method method = mainMethod.get();                                                │ │
+│ │                                                                                                        │ │
+│ │ Thread.currentThread().setContextClassLoader(method.getDeclaringClass().getClassLoader());             │ │
+│ │                 method.invoke(null, new Object[]{new String[]{}});                                     │ │
+│ │             } finally {                                                                                │ │
+│ │                 Thread.currentThread().setContextClassLoader(originalClassLoader);                     │ │
+│ │             }                                                                                          │ │
+│ │         } catch (Exception e) {                                                                        │ │
+│ │             // ... error handling unchanged ...                                                        │ │
+│ │         } finally {                                                                                    │ │
+│ │             StateManager.endExecution();                                                               │ │
+│ │         }                                                                                              │ │
+│ │                                                                                                        │ │
+│ │         if (doRerun) {                                                                                 │ │
+│ │             if (runAfterBreak != null) {                                                               │ │
+│ │                 runAfterBreak.accept(sessionId);                                                       │ │
+│ │             }                                                                                          │ │
+│ │             runApp(sessionId);                                                                         │ │
+│ │         }                                                                                              │ │
+│ │     });                                                                                                │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ Issue: Need to handle recursion (rerun). Options:                                                      │ │
+│ │ - Option A: Move rerun logic outside ScopedValue (cleaner)                                             │ │
+│ │ - Option B: Keep nested ScopedValue calls (ScopedValue supports rebinding same key)                    │ │
+│ │                                                                                                        │ │
+│ │ Recommended: Option A - Refactor rerun to loop instead of recursion:                                   │ │
+│ │ void runApp(final String sessionId) {                                                                  │ │
+│ │     // First-time compilation (unchanged)                                                              │ │
+│ │                                                                                                        │ │
+│ │     // Main execution loop                                                                             │ │
+│ │     boolean doRerun = true;                                                                            │ │
+│ │     Consumer<String> runAfterBreak = null;                                                             │ │
+│ │                                                                                                        │ │
+│ │     while (doRerun) {                                                                                  │ │
+│ │         if (runAfterBreak != null) {                                                                   │ │
+│ │             runAfterBreak.accept(sessionId);                                                           │ │
+│ │             runAfterBreak = null;                                                                      │ │
+│ │         }                                                                                              │ │
+│ │                                                                                                        │ │
+│ │         final AtomicBoolean shouldRerun = new AtomicBoolean(false);                                    │ │
+│ │         final AtomicReference<Consumer<String>> nextRunAfterBreak = new AtomicReference<>();           │ │
+│ │                                                                                                        │ │
+│ │         ScopedValue.where(StateManager.CURRENT_SESSION_ID, sessionId).run(() -> {                      │ │
+│ │             try {                                                                                      │ │
+│ │                 StateManager.beginExecution(sessionId);                                                │ │
+│ │                 // ... execution logic ...                                                             │ │
+│ │             } catch (Exception e) {                                                                    │ │
+│ │                 if (/* rerun condition */) {                                                           │ │
+│ │                     shouldRerun.set(true);                                                             │ │
+│ │                     nextRunAfterBreak.set(/* callback */);                                             │ │
+│ │                 } else {                                                                               │ │
+│ │                     // error handling                                                                  │ │
+│ │                 }                                                                                      │ │
+│ │             } finally {                                                                                │ │
+│ │                 StateManager.endExecution();                                                           │ │
+│ │             }                                                                                          │ │
+│ │         });                                                                                            │ │
+│ │                                                                                                        │ │
+│ │         doRerun = shouldRerun.get();                                                                   │ │
+│ │         runAfterBreak = nextRunAfterBreak.get();                                                       │ │
+│ │     }                                                                                                  │ │
+│ │ }                                                                                                      │ │
+│ │                                                                                                        │ │
+│ │ 3. StateManager.java - Make CURRENT_SESSION_ID Accessible                                              │ │
+│ │                                                                                                        │ │
+│ │ After line 70: Change visibility for AppRunner access                                                  │ │
+│ │ // Package-private for AppRunner                                                                       │ │
+│ │ static final ScopedValue<String> CURRENT_SESSION_ID = ScopedValue.newInstance();                       │ │
+│ │                                                                                                        │ │
+│ │ 4. Testing Strategy                                                                                    │ │
+│ │                                                                                                        │ │
+│ │ Create test: ScopedValueMigrationE2ETest.java                                                          │ │
+│ │ - Test basic execution with ScopedValue                                                                │ │
+│ │ - Test thread pool reuse (simulate multiple sessions on same thread)                                   │ │
+│ │ - Test concurrent executions on different threads                                                      │ │
+│ │ - Test clearSession during execution (should not interfere)                                            │ │
+│ │ - Test rerun behavior                                                                                  │ │
+│ │ - Test exception during execution (ensure cleanup)                                                     │ │
+│ │                                                                                                        │ │
+│ │ Implementation Order                                                                                   │ │
+│ │                                                                                                        │ │
+│ │ 1. ✅ Phase 1: StateManager changes (core migration)                                                    │ │
+│ │   - Replace ThreadLocal with ScopedValue                                                               │ │
+│ │   - Add getCurrentExecution() helper                                                                   │ │
+│ │   - Update all 10 .get() call sites                                                                    │ │
+│ │   - Update clearSession()                                                                              │ │
+│ │ 2. ✅ Phase 2: AppRunner changes                                                                        │ │
+│ │   - Refactor runApp() to use while loop instead of recursion                                           │ │
+│ │   - Wrap execution with ScopedValue.where().run()                                                      │ │
+│ │ 3. ✅ Phase 3: Testing                                                                                  │ │
+│ │   - Run existing E2E tests                                                                             │ │
+│ │   - Add new ScopedValue-specific tests                                                                 │ │
+│ │   - Verify thread pool behavior                                                                        │ │
+│ │ 4. ✅ Phase 4: Cleanup                                                                                  │ │
+│ │   - Remove any dead code                                                                               │ │
+│ │   - Update comments                                                                                    │ │
+│ │   - Verify no ThreadLocal references remain                                                            │ │
+│ │                                                                                                        │ │
+│ │ Risks & Mitigations                                                                                    │ │
+│ │                                                                                                        │ │
+│ │ Risk: Rerun recursion complexity with ScopedValue nesting                                              │ │
+│ │ Mitigation: Convert to loop (cleaner anyway)                                                           │ │
+│ │                                                                                                        │ │
+│ │ Risk: First-time compilation uses beginExecution without ScopedValue wrapper                           │ │
+│ │ Mitigation: Keep as-is (compilation happens once, not performance critical)                            │ │
+│ │                                                                                                        │ │
+│ │ Risk: Breaking existing functionality                                                                  │ │
+│ │ Mitigation: Comprehensive E2E test suite already exists                                                │ │
+│ │                                                                                                        │ │
+│ │ Benefits After Migration                                                                               │ │
+│ │                                                                                                        │ │
+│ │ ✅ Thread-safe clearSession() - no risk of clearing wrong execution                                     │ │
+│ │ ✅ Automatic context cleanup - no manual .remove() needed                                               │ │
+│ │ ✅ Better performance with virtual threads                                                              │ │
+│ │ ✅ Clearer execution lifecycle                                                                          │ │
+│ │ ✅ Prevents ThreadLocal leaks                                                                           │ │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│
