@@ -199,11 +199,9 @@ public abstract class JtComponent<T> {
     }
 
     /**
-     * Get the current value and optionally reset state.
-     * Button components reset to false after reading.
-     * Input components keep their value.
+     * Get the current value.
      */
-    protected final T returnValue() {
+    final T returnValue() {
         return currentValue;
     }
 
