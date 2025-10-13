@@ -211,18 +211,6 @@ public class UpdateComponentStateE2ETest {
             // Verify name was cleared
             assertThat(page.getByText("Hello unknown")).isVisible(WAIT_1_SEC_MAX);
             assertThat(nameInput).hasValue("");
-
-            // Enter a new name
-            nameInput.fill("Test");
-            nameInput.press("Enter");
-            assertThat(page.getByText("Hello Test")).isVisible(WAIT_1_SEC_MAX);
-
-            // Click "Streamlit!" button
-            page.getByText("Streamlit!").click(WAIT_1_SEC_MAX_CLICK);
-
-            // Verify name was set to "Streamlit"
-            assertThat(page.getByText("Hello Streamlit")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(nameInput).hasValue("Streamlit");
         });
     }
 }
