@@ -2,7 +2,7 @@ import io.jeamlit.core.Jt;
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.32.0
+//DEPS io.jeamlit:jeamlit:0.40.0
 
 public class FormExample {
 

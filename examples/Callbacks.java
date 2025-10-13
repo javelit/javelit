@@ -1,7 +1,7 @@
 
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.32.0
+//DEPS io.jeamlit:jeamlit:0.40.0
 
 import java.util.function.Consumer;import io.jeamlit.core.Jt;
 

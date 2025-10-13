@@ -21,6 +21,9 @@ public class App {
                 Jt.rerun(true);
             }
         }
+
+        private LoginPage() {
+        }
     }
 
     public class LogoutPage {
@@ -30,6 +33,9 @@ public class App {
                 Jt.rerun(true);
             }
         }
+
+        private LogoutPage() {
+        }
     }
 
     public class DashboardPage {
@@ -38,5 +44,11 @@ public class App {
             Jt.text("This dashboard page is only available if the user is logged in.").use();
             Jt.markdown("*the dashboard is not implemented, this is for example purpose*").use();
         }
+
+        private DashboardPage() {
+        }
+    }
+
+    private App() {
     }
 }
