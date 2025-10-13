@@ -1,163 +1,159 @@
 # Jeamlit <span style="transform: scale(-1,1); display:inline-block;">🚡</span>
 
-A Streamlit-like framework for building interactive data applications in Java.
+Welcome! 
+## What is Jeamlit ? 
+Jeamlit is a **Java** *lightning fast* data app development framework, heavily inspired by (*drumroll…* 🥁) Streamlit!  
 
-## Overview
+Jeamlit makes it dead simple to create data apps **in minutes**. 
+Build dashboards, back-offices, generate reports, showcase APIS, etc...   
+**The best part?** You can run your Jeamlit app standalone, or embed it right into your existing Java project.
 
-Jeamlit brings the simplicity of Streamlit to Java developers. Write data apps with minimal code using a familiar API, complete with automatic hot-reloading and session state management.
+<img src="images/demo.gif" alt="Streamlit Hello" height=300 href="none"></img>
 
-## Features
+*Not convinced? It's ok. Read the [Oh No! Another high-level framework](#oh-no-another-high-level-framework) and [Shouldn't I use Streamlit?](#shouldnt-i-use-streamlit) sections.*
 
-- **Simple API**: Familiar Streamlit-like syntax (`Jeamlit.title()`, `Jeamlit.slider()`, etc.)
-- **Hot Reload**: Automatic recompilation and browser refresh on file changes
-- **Session State**: Persistent state management across app reruns
-- **Web Components**: Modern frontend built with Lit web components
-- **WebSocket Communication**: Real-time updates between frontend and backend
+- [Install](#install)
+- [Get Started]()
+- [Documentation](https://docs.jeamlit.io/) 
+- [Forum](https://github.com/jeamlit/jeamlit/discussions/)
 
-## Quick Start
+## Install
 
-### Prerequisites
+Jeamlit requires A Java JDK >= `21`.
 
-- Java 21 or higher
-- Maven (wrapper included)
+There are 2 main ways to install and run Jeamlit:
+- as a **standalone** CLI and app runner
+- **embedded** in an existing Java project
 
-### Installation
+You'll find a short version below. [Read the doc](https://docs.jeamlit.io/get-started/installation) to get more details for each method.
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd jeamlit
-```
 
-2. Build the project:
-```bash
-./mvnw clean package
-```
+### Standalone
+1. Install the CLI ([JBang](https://www.jbang.dev/) is highly recommended)
+    ```bash
+    # recommended: install with jbang
+    jbang app install io.jeamlit:jeamlit:0.40.0:all
 
-### Running Your First App
+    # vanilla
+    curl -L -o jeamlit.jar https://repo1.maven.org/maven2/io/jeamlit/jeamlit/0.40.0/jeamlit-0.40.0-all.jar
+    ```
+2. Validate the installation by running the Hello app:
+   ```bash
+   # jbang
+   jeamlit hello
+   
+   # vanilla
+   java -jar jeamlit.jar hello
+   ```
+3. Play with the Hello World!
+5. Want to see a fancier app ? 
+   ```bash
+   jeamlit run https://raw.githubusercontent.com/jeamlit/jeamlit/main/examples/getting_started/App.java
+   ```
 
-1. Create a simple Java file (e.g., `MyApp.java`):
+Find more details in the [standalone installation doc](https://docs.jeamlit.io/get-started/installation/standalone). 
+**Don't forget to install the [JBang IDE plugin](https://docs.jeamlit.io/get-started/installation/standalone#prerequisites) for completion and highlighting!** 
 
+Once you're ready to go further, look at the [fundamental concepts](https://docs.jeamlit.io/get-started/fundamentals) or jump straight into [creating your first app](https://docs.jeamlit.io/get-started/tutorials/create-an-app). 
+
+### Embedded server
+1. Add the dependency to your project
+   ```xml
+   <dependency>
+       <groupId>io.jeamlit</groupId>
+       <artifactId>jeamlit</artifactId>
+       <version>0.40.0</version>
+   </dependency>
+   ```
+2. Launch the server in your project
+   ```java
+   void startJeamlitServer() {
+    // the Jeamlit webapp class
+    class MyApp {
+      public static void main(String[] args) {
+        Jt.text("Hello World").use();
+        }
+      }
+    
+      // prepare a Jeamlit server
+      var server = Server.builder(MyApp.class, 8888).build();
+    
+     // start the server - this is non-blocking, user thread
+     server.start();
+   }
+   ```
+
+Find more details in the [embedded installation doc](https://docs.jeamlit.io/get-started/installation/embedded-vanilla#development-with-hot-reload).
+**Don't forget to look at the [IDE hot-reload setup](https://docs.jeamlit.io/get-started/installation/embedded-vanilla#development-with-hot-reload)!**
+
+Once you're ready to go further, look at the [fundamental concepts](https://docs.jeamlit.io/get-started/fundamentals) or jump straight into [creating your first app](https://docs.jeamlit.io/get-started/tutorials/create-an-app).
+
+
+## Quickstart
+Create a new file named App.java in your project directory with the following code:
 ```java
 import io.jeamlit.core.Jt;
 
-public class MyApp {
+public class App { 
     public static void main(String[] args) {
-        Jt.title("My First Jeamlit App");
-
-        Jt.text("Welcome to Jeamlit - Streamlit for Java!");
-
-        int age = Jt.slider("Select your age", 0, 100, 25);
-        Jt.write("You selected age: " + age);
-
-        if (Jt.button("Click me!")) {
-            Jt.write("Button was clicked!");
-
-            var state = Jt.sessionState();
-            int clickCount = state.computeInt("clicks", (k, v) -> v == null ? 1 : v + 1);
-
-            Jt.write("Button clicked " + clickCount + " times");
-        }
-    }
+        int x = Jt.slider("Select a value").use();
+        Jt.write(x + " squared is " + (x * x)).use();
+      }
 }
 ```
 
-2. Run the app:
-```bash
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java
+Run it:
+```
+jeamlit run App.java
 ```
 
-3. Open your browser to `http://localhost:8080`
+Want more ?
+look at the [fundamental concepts](https://docs.jeamlit.io/get-started/fundamentals), jump straight into [creating your first app](https://docs.jeamlit.io/get-started/tutorials/create-an-app).   
+Not ambitious enough? Create a LangChain4J AI [multipage app](https://docs.jeamlit.io/get-started/tutorials/create-a-multipage-app). 
 
-The app will automatically reload when you save changes to `MyApp.java`.
+## Oh, No! Another high-level framework
+Jeamlit is **not** another abstraction layer that hides the HTML/CSS/Javascript. 
+That alone is not enough to significantly improve productivity. 
+The real pain is in **bindings**: handling events, reacting to changes, passing messages, 
+parsing results... you get it.
+ 
 
-## API Reference
+**Jeamlit promise is to remove all of that.**
 
-### Basic Components
-
-- `Jt.title(String)` - Display a title
-- `Jt.text(String)` - Display text
-- `Jt.write(Object)` - Display any object
-
-### Interactive Widgets
-
-- `Jt.button(String)` - Button widget (returns boolean)
-- `Jt.slider(String, min, max, default)` - Slider widget (returns int)
-
-### State Management
-
-- `Jt.sessionState()` - Get typed session state (extends Map<String, Object>)
-- `state.getInt(key, defaultValue)` - Get integer value with default
-- `state.getString(key, defaultValue)` - Get string value with default
-- `state.getBoolean(key, defaultValue)` - Get boolean value with default
-- `state.computeInt(key, (k, v) -> ...)` - Compute integer value (handles null/initialization)
-- `state.put(key, value)` - Set any value (full Map interface available)
-- All standard Map operations: `get()`, `containsKey()`, `remove()`, `compute()`, etc.
-
-## CLI Options
-
-```bash
-# Run an app
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java
-
-# Specify custom port
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java --port 3000
-
-# Don't open browser automatically
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java --no-browser
-
-# Run with full path
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run src/main/java/MyApp.java
-
-# Add custom classpath
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java --classpath /path/to/libs
+Here is an example:
+```
+double size = Jt.slider("How tall are you ? in cm").max(220).use();
+if (size > 200) {
+    Jt.text("Damn, that huge!").use();
+}
 ```
 
-## Development
+That's it. That's the **full** webapp code. You can move the slider: the `size` variable 
+will take the latest value in the frontend.   
+What's the order of execution then ? Top-to-bottom. Every time something happens in the app, 
+the app logic re-runs, top-to-bottom, with
+the latest values from the frontend.
 
-### Building from Source
+We hope this sparks your curiosity!
 
+*By the way, once you have jeamlit installed, you can run this example with*
 ```bash
-# Clean and compile
-./mvnw clean compile
-
-# Run tests
-./mvnw test
-
-# Package JAR
-./mvnw package
+jeamlit run https://raw.githubusercontent.com/jeamlit/jeamlit/refs/heads/main/examples/readme/App.java 
 ```
 
-### Running Tests
+## Shouldn't I use Streamlit?
+Jeamlit: 
+- is Java-native
+- can be embedded directly into your existing Java system. 
 
-```bash
-./mvnw test
-```
+If neither of those points matters to you... well, that's farewell. You should use [Streamlit](https://streamlit.io/).   
+If you're still there: thanks. There are also plenty of small differences that make Jeamlit worth a try: simpler state management, 
+easier custom components, etc...
 
-### Development Workflow
-
-1. Build the project: `./mvnw package`
-2. Create your Java app file
-3. Run: `java -jar target/jeamlit-1.0-SNAPSHOT.jar run MyApp.java`
-
-**Note**: The framework automatically compiles your Java file and handles file watching with recompilation. Optional Java Agent provides enhanced hot-reload capabilities.
-
-## Architecture
-
-- **Web Server**: Undertow for HTTP/WebSocket communication
-- **Frontend**: Lit web components with hybrid reactivity
-- **Hot Reload**: File watching with automatic recompilation (optional Java Agent for enhanced class reloading)
-- **State Management**: Session-based state similar to Streamlit
-- **CLI**: Picocli-based command-line interface
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+## Contribute
+Thanks for you interest in improving Jeamlit! <span style="transform: scale(-1,1); display:inline-block;">🚡</span>  
+To start a discussion, open an [issue](https://github.com/jeamlit/jeamlit/issues) or a thread in the [forum](https://github.com/jeamlit/jeamlit/discussions).   
+For development, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
-
-[Add license information]
+Jeamlit is free and open-source, licensed under the [Apache 2.0 license](LICENSE).
