@@ -6,7 +6,7 @@ Jeamlit is a **Java** *lightning fast* data app development framework, heavily i
 
 Jeamlit makes it dead simple to create data apps **in minutes**. 
 Build dashboards, back-offices, generate reports, showcase APIS, etc...   
-**The best part?** You can run your Jeamlit app standalone, or embed it right into your existing Java project.
+**The best part?** You can run your Jeamlit app standalone, or **embed it right into your existing Java project**.
 
 <img src="images/demo.gif" alt="Streamlit Hello" height=300 href="none"></img>
 
