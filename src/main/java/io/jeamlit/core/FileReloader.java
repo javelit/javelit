@@ -43,7 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 // requires a JDK
 class FileReloader extends Reloader {

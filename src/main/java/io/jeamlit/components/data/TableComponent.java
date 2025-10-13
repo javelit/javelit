@@ -33,7 +33,7 @@ import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.Shared;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class TableComponent extends JtComponent<JtComponent.NONE> {
 

@@ -24,7 +24,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public final class JtContainer implements JtComponent.NotAState {
 

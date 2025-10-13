@@ -27,7 +27,7 @@ import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.jeamlit.core.utils.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * In streamlit, userState (free key-value storage in session_state) and

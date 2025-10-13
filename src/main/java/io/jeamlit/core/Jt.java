@@ -56,8 +56,8 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
-import static io.jeamlit.core.utils.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * The main entrypoint for app creators.

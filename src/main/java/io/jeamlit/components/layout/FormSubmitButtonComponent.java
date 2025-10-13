@@ -29,7 +29,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 
-import static io.jeamlit.core.utils.Preconditions.checkState;
+import static com.google.common.base.Preconditions.checkState;
 
 public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
     // the following fields are protected to be visible to the template engine - see render function

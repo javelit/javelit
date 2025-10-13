@@ -17,7 +17,7 @@ package io.jeamlit.core;
 
 import java.lang.reflect.Method;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 // compatible with JRE only
 public class ClassReloader extends Reloader {

@@ -37,7 +37,7 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class FileUploaderComponent extends JtComponent<List<JtUploadedFile>> {
 

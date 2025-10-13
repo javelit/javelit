@@ -30,7 +30,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
 

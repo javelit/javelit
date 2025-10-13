@@ -16,12 +16,15 @@
 package io.jeamlit.core;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.jeamlit.core.utils.EmojiUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -31,6 +34,8 @@ import jakarta.annotation.Nullable;
 public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF extends JtComponentBuilder<B, T, SELF>> {
 
     private static final Map<Class<?>, Field[]> FIELDS_CACHE = new ConcurrentHashMap<>();
+
+    private static final HashFunction HF = Hashing.murmur3_128(31);
 
     protected @Nullable String userKey;
 
@@ -91,8 +96,8 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
             final String baseName = clazz.getName().toLowerCase(Locale.ROOT).replace("$builder", "");
             final String pagePrefix = StateManager.pagePrefix();
-            // WARNING: not fast, not JVM stable so not distributed-Jeamlit compatible, potentially not memory efficient and GC stressing
-            final int valuesHash = Arrays.deepToString(values).hashCode();
+            // Arrays.deepToString may not be optimal in terms of speed here
+            final String valuesHash = HF.hashString(Arrays.deepToString(values), StandardCharsets.UTF_8).toString();
             return "%s%s_%s_%s".formatted(pagePrefix, userKey != null ? userKey : "noCustomKey", baseName, valuesHash);
 
         } catch (IllegalAccessException e) {

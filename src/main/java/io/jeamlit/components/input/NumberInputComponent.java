@@ -31,7 +31,7 @@ import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.jeamlit.core.utils.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 public final class NumberInputComponent<T extends Number> extends JtComponent<T> {
 
