@@ -57,7 +57,7 @@ public final class MarkdownUtils {
         }
         final Node document = parser.parse(markdown);
         String html = renderer.render(document).trim();
-        if (removeWrap) {
+        if (!html.isBlank() && removeWrap) {
             final boolean thereIsAWrappingTag = document.getFirstChild() == document.getLastChild();
             if (thereIsAWrappingTag) {
                 final int closeWrapTagIdx = html.indexOf('>');

@@ -44,14 +44,14 @@ public class MarkdownUtilsTest {
                                               <p>With some content</p>""", """
                                               <p>Breaking stuff</p>
                                               <h2>A title</h2>
-                                              <p>With some content</p>"""));
+                                              <p>With some content</p>"""),
+                         Arguments.of("", "", ""));
     }
 
 
     @ParameterizedTest
     @MethodSource("testCases")
     public void testMarkdownConversion(final String input, final String keepWrap, final String removeWrap) {
-        assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
         assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
         assertThat(MarkdownUtils.markdownToHtml(input, true)).isEqualTo(removeWrap);
     }
