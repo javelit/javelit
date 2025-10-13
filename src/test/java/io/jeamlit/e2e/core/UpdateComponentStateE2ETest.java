@@ -16,6 +16,7 @@
 package io.jeamlit.e2e.core;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import io.jeamlit.e2e.helpers.PlaywrightUtils;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -26,77 +27,31 @@ import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.jeamlit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
- * End-to-end tests for programmatically updating component state via Jt.updateComponentState().
+ * End-to-end tests for programmatically updating component state via Jt.setComponentState().
  */
 public class UpdateComponentStateE2ETest {
 
+    /**
+     * Error when updating after render
+     * This test verifies that attempting to update a component's state after it has been rendered
+     * throws an IllegalArgumentException.
+     */
     @Test
-    void testUpdateSliderValue(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.jeamlit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    double volume = Jt.slider("Volume").key("volume").min(0).max(100).value(50).use();
-
-                    Jt.text("Current volume: " + volume).use();
-
-                    if (Jt.button("Set to Max").use()) {
-                        Jt.updateComponentState("volume", 100.0);
-                        Jt.rerun();
-                    }
-
-                    if (Jt.button("Set to Min").use()) {
-                        Jt.updateComponentState("volume", 0.0);
-                        Jt.rerun();
-                    }
-                }
-            }
-            """;
-
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
-            // Wait for page to load
-            assertThat(page.locator("jt-slider")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify initial state
-            assertThat(page.getByText("Current volume: 50.0")).isVisible(WAIT_1_SEC_MAX);
-            final Locator slider = page.locator("jt-slider .slider-input");
-            assertThat(slider).hasValue("50");
-
-            // Click "Set to Max" button
-            page.locator("jt-button").filter(new Locator.FilterOptions().setHasText("Set to Max")).click(WAIT_1_SEC_MAX_CLICK);
-
-            // Verify slider was updated to 100
-            assertThat(page.getByText("Current volume: 100.0")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(slider).hasValue("100");
-
-            // Click "Set to Min" button
-            page.locator("jt-button").filter(new Locator.FilterOptions().setHasText("Set to Min")).click(WAIT_1_SEC_MAX_CLICK);
-
-            // Verify slider was updated to 0
-            assertThat(page.getByText("Current volume: 0.0")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(slider).hasValue("0");
-        });
-    }
-
-    @Test
-    void testUpdateMultipleTextInputs(TestInfo testInfo) {
+    void testErrorWhenUpdatingAfterRender(TestInfo testInfo) {
         final @Language("java") String app = """
             import io.jeamlit.core.Jt;
 
             public class TestApp {
                 public static void main(String[] args) {
                     String name = Jt.textInput("Name").key("name").use();
-                    String email = Jt.textInput("Email").key("email").use();
 
-                    Jt.text("Name: " + name).use();
-                    Jt.text("Email: " + email).use();
-
-                    if (Jt.button("Clear Form").use()) {
-                        Jt.updateComponentState("name", "");
-                        Jt.updateComponentState("email", "");
-                        Jt.rerun();
+                    // These buttons will error because their nested code changes
+                    // a widget's state after that widget within the script.
+                    if (Jt.button("Clear name").use()) {
+                        Jt.setComponentState("name", "");
                     }
+
+                    Jt.text("Hello " + (name != null && !name.isEmpty() ? name : "unknown")).use();
                 }
             }
             """;
@@ -105,59 +60,169 @@ public class UpdateComponentStateE2ETest {
             // Wait for page to load
             assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 
-            // Fill in the form
-            final Locator nameInput = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("Name")).locator("input");
-            final Locator emailInput = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("Email")).locator("input");
+            // Enter a name
+            final Locator nameInput = page.locator("jt-text-input input");
+            nameInput.fill("John");
+            nameInput.press("Enter");
 
-            nameInput.fill("John Doe");
-            emailInput.fill("john@example.com");
+            // Verify initial greeting
+            assertThat(page.getByText("Hello John")).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify the values are displayed
-            assertThat(page.getByText("Name: John Doe")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Email: john@example.com")).isVisible(WAIT_1_SEC_MAX);
+            // Click "Clear name" button - this should trigger an error
+            page.getByText("Clear name").click(WAIT_1_SEC_MAX_CLICK);
 
-            // Click "Clear Form" button
-            page.locator("jt-button").filter(new Locator.FilterOptions().setHasText("Clear Form")).click(WAIT_1_SEC_MAX_CLICK);
-
-            // Verify both inputs are cleared
-            assertThat(page.getByText("Name:")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Email:")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(nameInput).hasValue("");
-            assertThat(emailInput).hasValue("");
+            // Verify an exception is reported with "IllegalArgumentException"
+            assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("IllegalArgumentException", new Page.GetByTextOptions().setExact(false)).first()).isVisible(WAIT_1_SEC_MAX);
         });
     }
 
+    /**
+     * Using session state flag for button
+     * This test verifies that updating component state before rendering works correctly
+     * by using a session state flag to control when the update happens.
+     */
     @Test
-    void testUpdateComponentStateWithNonexistentKey(TestInfo testInfo) {
+    void testUsingSessionStateFlag(TestInfo testInfo) {
         final @Language("java") String app = """
             import io.jeamlit.core.Jt;
 
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.text("Testing update with nonexistent key").use();
-
-                    if (Jt.button("Update Nonexistent").use()) {
-                        try {
-                            Jt.updateComponentState("nonexistent_key", "value");
-                            Jt.text("ERROR: Should have thrown exception").use();
-                        } catch (IllegalStateException e) {
-                            Jt.text("Caught expected exception: " + e.getMessage()).use();
-                        }
+                    if (Jt.componentsState().getBoolean("clear", false)) {
+                        Jt.setComponentState("name", "");
                     }
+
+                    String name = Jt.textInput("Name").key("name").use();
+                    Jt.button("Clear name").key("clear").use();
+
+                    Jt.text("Hello " + (name != null && !name.isEmpty() ? name : "unknown")).use();
                 }
             }
             """;
 
         PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             // Wait for page to load
-            assertThat(page.getByText("Testing update with nonexistent key")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 
-            // Click button to trigger update with nonexistent key
-            page.locator("jt-button").click(WAIT_1_SEC_MAX_CLICK);
+            // Enter a name
+            final Locator nameInput = page.locator("jt-text-input input");
+            nameInput.fill("Alice");
+            nameInput.press("Enter");
 
-            // Verify exception was caught and displayed
-            assertThat(page.getByText("Caught expected exception")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("No component with key 'nonexistent_key'")).isVisible(WAIT_1_SEC_MAX);
+            // Verify initial greeting
+            assertThat(page.getByText("Hello Alice")).isVisible(WAIT_1_SEC_MAX);
+
+            // Click "Clear name" button
+            page.getByText("Clear name").click(WAIT_1_SEC_MAX_CLICK);
+
+            // Verify name was cleared
+            assertThat(page.getByText("Hello unknown")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(nameInput).hasValue("");
+        });
+    }
+
+    /**
+     * Using callbacks
+     * This test verifies that updating component state works correctly when done via
+     * button onClick callbacks.
+     */
+    @Test
+    void testUsingCallbacks(TestInfo testInfo) {
+        final @Language("java") String app = """
+            import io.jeamlit.core.Jt;
+
+            public class TestApp {
+                public static void main(String[] args) {
+                    String name = Jt.textInput("Name").key("name").use();
+
+                    Jt.button("Clear name")
+                        .onClick(button -> Jt.setComponentState("name", ""))
+                        .use();
+
+                    Jt.text("Hello " + (name != null && !name.isEmpty() ? name : "unknown")).use();
+                }
+            }
+            """;
+
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+            // Wait for page to load
+            assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
+
+            // Enter a name
+            final Locator nameInput = page.locator("jt-text-input input");
+            nameInput.fill("Bob");
+            nameInput.press("Enter");
+
+            // Verify initial greeting
+            assertThat(page.getByText("Hello Bob")).isVisible(WAIT_1_SEC_MAX);
+
+            // Click "Clear name" button
+            page.getByText("Clear name").click(WAIT_1_SEC_MAX_CLICK);
+
+            // Verify name was cleared
+            assertThat(page.getByText("Hello unknown")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(nameInput).hasValue("");
+        });
+    }
+
+    /**
+     * Using containers
+     * This test verifies that updating component state before rendering works correctly
+     * even when components are rendered out of logical order using containers.
+     */
+    @Test
+    void testUsingContainers(TestInfo testInfo) {
+        final @Language("java") String app = """
+            import io.jeamlit.core.Jt;
+            import io.jeamlit.core.JtContainer;
+
+            public class TestApp {
+                public static void main(String[] args) {
+                    JtContainer begin = Jt.container().use();
+
+                    if (Jt.button("Clear name").use()) {
+                        Jt.setComponentState("name", "");
+                    }
+
+                    // The widget is second in logic, but first in display
+                    String name = Jt.textInput("Name").key("name").use(begin);
+
+                    Jt.text("Hello " + (name != null && !name.isEmpty() ? name : "unknown")).use();
+                }
+            }
+            """;
+
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+            // Wait for page to load
+            assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
+
+            // Enter a name
+            final Locator nameInput = page.locator("jt-text-input input");
+            nameInput.fill("Charlie");
+            nameInput.press("Enter");
+
+            // Verify initial greeting
+            assertThat(page.getByText("Hello Charlie")).isVisible(WAIT_1_SEC_MAX);
+
+            // Click "Clear name" button
+            page.getByText("Clear name").click(WAIT_1_SEC_MAX_CLICK);
+
+            // Verify name was cleared
+            assertThat(page.getByText("Hello unknown")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(nameInput).hasValue("");
+
+            // Enter a new name
+            nameInput.fill("Test");
+            nameInput.press("Enter");
+            assertThat(page.getByText("Hello Test")).isVisible(WAIT_1_SEC_MAX);
+
+            // Click "Streamlit!" button
+            page.getByText("Streamlit!").click(WAIT_1_SEC_MAX_CLICK);
+
+            // Verify name was set to "Streamlit"
+            assertThat(page.getByText("Hello Streamlit")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(nameInput).hasValue("Streamlit");
         });
     }
 }

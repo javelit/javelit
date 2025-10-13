@@ -145,6 +145,44 @@ public final class Jt {
     }
 
     /**
+     * Update a component's value by its user-defined key.
+     * <p>
+     * This method allows programmatic updating of component state. Limits:
+     * <ul>
+     *     <li>You cannot modify the value of a component that has not been rendered with a {@code .key()} in the session yet.</li>
+     *     <li>You cannot modify the value of a component that has already been rendered in the current app run.</li>
+     * </ul>
+     * Learn more in the <a href="https://docs.jeamlit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets">modify widget examples</>.
+     * <p>
+     * This method does not validate that the provided value is of the correct type for the component. If the type is incompatible, the component will throw a {@code ClassCastException} when its {@code use()} method is called.
+     * <p>
+     * Examples:
+     * Programmatically update a text input value
+     * {@snippet :
+     * import io.jeamlit.core.Jt;
+     *
+     * public class UpdateStateApp {
+     *     public static void main(String[] args) {
+     *         String name = Jt.textInput("Name").key("name").use();
+     *         Jt.button("Clear name")
+     *           .onClick(b -> Jt.setComponentState("name", ""))
+     *           .use();
+     *         Jt.text("Hello " + name).use();
+     *     }
+     * }
+     *}
+     * <p>
+     *
+     * @param key The key of the component (as set via {@code .key()})
+     * @param value The new value to set
+     * @throws IllegalArgumentException if userKey is null or the provided key does not match an existing component
+     * @throws IllegalStateException if component has already been rendered in the current execution
+     */
+    public static void setComponentState(final @Nonnull String key, final @Nullable Object value) {
+        StateManager.handleUserCodeComponentUpdate(key, value);
+    }
+
+    /**
      * Return the app cache. The app cache is shared across all sessions.
      * Put values in this map that are meant to be shared across all users.
      * For instance: database long-lived connections, ML models loaded weights, etc...

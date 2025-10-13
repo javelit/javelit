@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static io.jeamlit.core.utils.LangUtils.optional;
 
@@ -117,8 +118,34 @@ final class StateManager {
         SESSIONS.remove(sessionId);
     }
 
+
+    static void handleUserCodeComponentUpdate(@NotNull String userKey, @Nullable Object value) {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
+        final InternalSessionState session = StateManager.getCurrentSession();
+        // Check if component has already been rendered in current execution
+        final String internalKey = session.getInternalKeyFromUserKey(userKey);
+        checkArgument(internalKey != null,
+                      "No component with key %s exists in current page context. Make sure the component has been rendered with .key(\"%s\") at least once before trying to update its value.",
+                      userKey,
+                      userKey);
+        boolean componentAlreadyUsedInRun = currentExecution.containerToComponents
+                .values()
+                .stream()
+                .anyMatch(components -> components.containsKey(internalKey));
+        checkArgument(!componentAlreadyUsedInRun,
+                      """
+                              Cannot update the value of component with key `%s`. The component has already been rendered in the current run. \s
+                              Component state updates must happen before the component is rendered with .use(). \s
+                              Consider moving Jt.updateComponentState(...) to before the component's .use() call, or use a button/callback to update on the next run. \s
+                              See https://docs.jeamlit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets
+                              """,
+                      userKey);
+        session.updateComponentsState(internalKey, value);
+    }
+
     /**
-     * Handles component updates and returns true if app should be re-run
+     * Handles frontend component updates and returns true if app should be re-run
      */
     static boolean handleComponentUpdate(final String sessionId,
                                          final String componentKey,
@@ -226,7 +253,8 @@ final class StateManager {
             getCurrentSession().setLastExecutionPage(currentExecution.executionPage);
             currentExecution.executionPage = null;
         } else {
-            LOG.warn("No current execution page. This should only happen if an error happened upstream in setPageContext.");
+            LOG.warn(
+                    "No current execution page. This should only happen if an error happened upstream in setPageContext.");
         }
     }
 
@@ -302,8 +330,11 @@ final class StateManager {
                 .values()
                 .stream()
                 .anyMatch(components ->
-                                  components.values().stream().anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
-        )) {
+                                  components
+                                          .values()
+                                          .stream()
+                                          .anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
+                )) {
             throw DuplicateWidgetIDException.forDuplicateUserKey(component);
         }
 
@@ -493,20 +524,22 @@ final class StateManager {
                 for (final Map<String, JtComponent<?>> m : previousExecution.containerToComponents.values()) {
                     // remove components state for components that:
                     m.values()
-                    .stream()
+                     .stream()
                      // component was not present in the current execution
-                    .filter(c -> !componentsUsedInExecutionKeys.contains(c.getInternalKey()))
+                     .filter(c -> !componentsUsedInExecutionKeys.contains(c.getInternalKey()))
                      // component does not have a user key OR component has flag noPersist
-                    .filter(e -> e.getUserKey() == null || e.isNoPersist())
-                    .map(JtComponent::getInternalKey)
-                    .forEach(session::removeComponentState);
+                     .filter(e -> e.getUserKey() == null || e.isNoPersist())
+                     .map(JtComponent::getInternalKey)
+                     .forEach(session::removeComponentState);
                 }
             }
 
             LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
             renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);
         } catch (Exception e) {
-            LOG.error("Failed to end execution properly. A reload of the app may be necessary. If this happens multiple times, please reach out to support.", e);
+            LOG.error(
+                    "Failed to end execution properly. A reload of the app may be necessary. If this happens multiple times, please reach out to support.",
+                    e);
         } finally {
             CURRENT_EXECUTION_IN_THREAD.remove();
         }
@@ -543,7 +576,8 @@ final class StateManager {
         }
 
         @Override
-        public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
+        public void sendStatus(final @Nonnull String sessionId,
+                               @NotNull StateManager.ExecutionStatus executionStatus) {
             LOG.error("Cannot send run status {} to session {}. No render server is registered",
                       executionStatus,
                       sessionId);

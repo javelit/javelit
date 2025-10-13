@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +55,8 @@ final class InternalSessionState {
     // concurrency on this map is an edge case, not the normal case so should be fine
     private final Map<String, Object> userVisibleComponentsState = Collections.synchronizedMap(new HashMap<>());
 
-    private final Map<@NotNull String, @NotNull String> internalKeyToUserKey = new ConcurrentHashMap<>();
+    // concurrency on this map is an edge case, not the normal case so should be fine
+    private final BiMap<@NotNull String, @NotNull String> internalKeyToUserKey = Maps.synchronizedBiMap(HashBiMap.create());
 
     // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
     // values that are not applied yet - they are pending because controlled by a form
@@ -124,6 +128,11 @@ final class InternalSessionState {
         for (final Map.Entry<String, Object> entry : componentKeyToUpdatedValue.entrySet()) {
             updateComponentsState(entry.getKey(), entry.getValue());
         }
+    }
+
+    @Nullable String getInternalKeyFromUserKey(final @Nonnull String userKey) {
+        final String prefixedUserKey = StateManager.pagePrefix() + userKey;
+        return internalKeyToUserKey.inverse().get(prefixedUserKey);
     }
 
     String getCallbackComponentKey() {
