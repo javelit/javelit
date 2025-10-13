@@ -10,7 +10,26 @@
   1. Open an example
   2. Right click anywhere in the file --> Sync JBang DEPS to Module
 
-## Build the doc
+
+## Common operations
+*In commands below, `clean` is optional*.
+
+**Compile**:
+```
+./mvnw clean compile
+```
+
+**Test**:
+```
+./mvnw clean test
+```
+
+**Build the jars**: 
+```
+./mvnw clean install -DskipTests
+```
+
+**Build the doc**: 
 ```bash
 ./mvnw clean package -Prelease -DskipTests
 ```
