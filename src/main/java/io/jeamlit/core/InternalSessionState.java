@@ -108,7 +108,7 @@ final class InternalSessionState {
         componentsState.put(component.getInternalKey(), component.returnValue());
         if (component.getUserKey() != null) {
             final String prefixedUserKey = StateManager.pagePrefix() + component.getUserKey();
-            internalKeyToUserKey.put(component.getInternalKey(), prefixedUserKey);
+            internalKeyToUserKey.forcePut(component.getInternalKey(), prefixedUserKey);
             userVisibleComponentsState.put(prefixedUserKey, component.returnValue());
         }
     }
