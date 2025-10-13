@@ -114,8 +114,11 @@ final class StateManager {
         return SESSIONS.get(currentSessionId);
     }
 
+    // must run on the same thread as the handler (it is the case) for CURRENT_EXECUTION_IN_THREAD.remove() to be correct
     static void clearSession(String sessionId) {
         SESSIONS.remove(sessionId);
+        LAST_EXECUTIONS.remove(sessionId);
+        CURRENT_EXECUTION_IN_THREAD.remove();
     }
 
 
