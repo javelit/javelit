@@ -15,6 +15,7 @@ Build dashboards, back-offices, generate reports, showcase APIS, etc...
 - [Install](#install)
 - [Get Started](#quickstart)
 - [Documentation](https://docs.jeamlit.io/) 
+- [Components](https://docs.jeamlit.io/develop/api-reference).
 - [Forum](https://github.com/jeamlit/jeamlit/discussions/)
 
 ## Install
