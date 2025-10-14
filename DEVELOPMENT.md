@@ -25,6 +25,11 @@ This section may lack crucial details. Don't hesitate to reach out on the [forum
 ./mvnw clean package -Prelease -DskipTests
 ```
 
+**Check new dependencies**:
+```bash
+./mvnw versions:display-dependency-updates
+```
+
 
 ## Working on examples:
 - Make sure you have the Jbang plugin installed in your IDE
