@@ -2,7 +2,7 @@
 
 
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.42.0
+//DEPS io.jeamlit:jeamlit:0.44.0
 
 import java.util.List;
 
