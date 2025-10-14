@@ -35,4 +35,9 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      - name: commit documentation updates
+        run: |
+          git add README.md examples/
+          git commit --allow-empty -m "post-release documentation updates"
+          git push
 
