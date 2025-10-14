@@ -8,12 +8,12 @@ Jeamlit makes it dead simple to create data apps **in minutes**.
 Build dashboards, back-offices, generate reports, showcase APIS, etc...   
 **The best part?** You can run your Jeamlit app standalone, or **embed it right into your existing Java project**.
 
-<img src="images/demo.gif" alt="Streamlit Hello" height=300 href="none"></img>
+<img src="images/demo.gif" alt="Jeamlit demo app" height=300 href="none"></img>
 
 *Not convinced? It's ok. Read the [Oh No! Another high-level framework](#oh-no-another-high-level-framework) and [Shouldn't I use Streamlit?](#shouldnt-i-use-streamlit) sections.*
 
 - [Install](#install)
-- [Get Started]()
+- [Get Started](#quickstart)
 - [Documentation](https://docs.jeamlit.io/) 
 - [Forum](https://github.com/jeamlit/jeamlit/discussions/)
 
@@ -96,8 +96,8 @@ import io.jeamlit.core.Jt;
 
 public class App { 
     public static void main(String[] args) {
-        int x = Jt.slider("Select a value").use();
-        Jt.write(x + " squared is " + (x * x)).use();
+        int x = Jt.slider("Select a value").use().intValue();
+        Jt.markdown("## `%s` squared is `%s`".formatted(x, x*x)).use();
       }
 }
 ```
@@ -106,6 +106,8 @@ Run it:
 ```
 jeamlit run App.java
 ```
+
+<img src="images/demo_2_squared.gif" alt="Jeamlit x squared demo" height=200 href="none"></img>
 
 Want more ?
 look at the [fundamental concepts](https://docs.jeamlit.io/get-started/fundamentals), jump straight into [creating your first app](https://docs.jeamlit.io/get-started/tutorials/create-an-app).   
