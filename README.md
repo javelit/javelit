@@ -128,15 +128,14 @@ if (size > 200) {
 }
 ```
 
-That's it. That's the **full** webapp code. You can move the slider: the `size` variable 
-will take the latest value in the frontend.   
-What's the order of execution then ? Top-to-bottom. Every time something happens in the app, 
-the app logic re-runs, top-to-bottom, with
-the latest values from the frontend.
-
+That's it. That's the **entire** webapp code. Move the slider, and the size variable immediately 
+reflects the latest frontend value.
+What's the execution order then ? Top-to-bottom. Every time something changes in the app, 
+the logic re-runs from top to bottom, using the most up-to-date values from the frontend.
+  
 We hope this sparks your curiosity!
 
-*By the way, once you have jeamlit installed, you can run this example with*
+*By the way, once you have jeamlit [installed](#install), you can run this example with*
 ```bash
 jeamlit run https://raw.githubusercontent.com/jeamlit/jeamlit/refs/heads/main/examples/readme/App.java 
 ```
@@ -144,14 +143,14 @@ jeamlit run https://raw.githubusercontent.com/jeamlit/jeamlit/refs/heads/main/ex
 ## Shouldn't I use Streamlit?
 Jeamlit: 
 - is Java-native
-- can be embedded directly into your existing Java system. 
+- can be embedded directly into your existing Java project. 
 
-If neither of those points matters to you... well, that's farewell. You should use [Streamlit](https://streamlit.io/).   
-If you're still there: thanks. There are also plenty of small differences that make Jeamlit worth a try: simpler state management, 
-easier custom components, etc...
+If neither of those points matters to you... well, farewell. You should use [Streamlit](https://streamlit.io/).   
+If you're still there: thanks. There are plenty of smaller differences that make Jeamlit worth a try: simpler state management, 
+easier custom components, and more.
 
 ## Contribute
-Thanks for you interest in improving Jeamlit! <span style="transform: scale(-1,1); display:inline-block;">🚡</span>  
+Really? Thanks for you interest in improving Jeamlit! <span style="transform: scale(-1,1); display:inline-block;">🚡</span>  
 To start a discussion, open an [issue](https://github.com/jeamlit/jeamlit/issues) or a thread in the [forum](https://github.com/jeamlit/jeamlit/discussions).   
 For development, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
