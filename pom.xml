@@ -811,6 +811,16 @@
                                                          flags="g"/>
 
                                             <echo message="Updated README.md to release version ${project.version}"/>
+
+                                            <!-- Update version in example files: //DEPS io.jeamlit:jeamlit:0.42.0 -->
+                                            <replaceregexp match="io\.jeamlit:jeamlit:[0-9.]+"
+                                                         replace="io.jeamlit:jeamlit:${project.version}"
+                                                         flags="g">
+                                                <fileset dir="${project.basedir}/examples">
+                                                    <include name="**/*.java"/>
+                                                </fileset>
+                                            </replaceregexp>
+                                            <echo message="Updated example files to version ${project.version}"/>
                                         </sequential>
 
                                         <echo unless:set="is.release.version" xmlns:unless="ant:unless"
