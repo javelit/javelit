@@ -1,0 +1,76 @@
+name: Update Version References
+
+on:
+  schedule:
+    # Run daily at 3am UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch latest Jeamlit version from Maven Central
+        id: get-version
+        run: |
+          # Fetch maven-metadata.xml
+          METADATA_URL="https://repo1.maven.org/maven2/io/jeamlit/jeamlit/maven-metadata.xml"
+          METADATA=$(curl -s "$METADATA_URL")
+
+          # Extract latest version (prefer <release> over <latest>)
+          VERSION=$(echo "$METADATA" | sed -n 's/.*<release>\([^<]*\)<\/release>.*/\1/p')
+          # Fallback to <latest> if <release> not found
+          [ -z "$VERSION" ] && VERSION=$(echo "$METADATA" | sed -n 's/.*<latest>\([^<]*\)<\/latest>.*/\1/p')
+
+          if [ -z "$VERSION" ]; then
+            echo "Failed to fetch version from Maven Central"
+            exit 1
+          fi
+
+          echo "Latest version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update README.md
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+
+          # Update JBang command: io.jeamlit:jeamlit:X.Y.Z:all
+          sed -i "s/io\.jeamlit:jeamlit:[0-9.]\+:all/io.jeamlit:jeamlit:$VERSION:all/g" README.md
+
+          # Update Maven Central URL: /jeamlit/X.Y.Z/jeamlit-X.Y.Z-all.jar
+          sed -i "s|jeamlit/[0-9.]\+/jeamlit-[0-9.]\+-all\.jar|jeamlit/$VERSION/jeamlit-$VERSION-all.jar|g" README.md
+
+          # Update Maven dependency: <version>X.Y.Z</version>
+          sed -i "s|<version>[0-9.]\+</version>|<version>$VERSION</version>|g" README.md
+
+      - name: Update example files
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+
+          # Update version in all example .java files: //DEPS io.jeamlit:jeamlit:X.Y.Z
+          find examples -name "*.java" -type f -exec sed -i "s/io\.jeamlit:jeamlit:[0-9.]\+/io.jeamlit:jeamlit:$VERSION/g" {} +
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          git config --global user.name "jeamlit-ci"
+          git config --global user.email "jeamlit-ci@users.noreply.github.com"
+          git add README.md examples/
+          git commit -m "chore: update version references to $VERSION"
+          git push
