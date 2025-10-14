@@ -769,6 +769,57 @@
                             </execution>
                         </executions>
                     </plugin>
+
+                    <!-- Update README.md version during release -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>update-readme-version</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Check if this is a release version (not SNAPSHOT) -->
+                                        <condition property="is.release.version">
+                                            <not>
+                                                <contains string="${project.version}" substring="SNAPSHOT"/>
+                                            </not>
+                                        </condition>
+
+                                        <sequential if:set="is.release.version" xmlns:if="ant:if">
+                                            <!-- Update JBang command: io.jeamlit:jeamlit:0.42.0:all -->
+                                            <replaceregexp file="${project.basedir}/README.md"
+                                                         match="io\.jeamlit:jeamlit:[0-9.]+:all"
+                                                         replace="io.jeamlit:jeamlit:${project.version}:all"
+                                                         flags="g"/>
+
+                                            <!-- Update Maven Central URL: /jeamlit/0.42.0/jeamlit-0.42.0-all.jar -->
+                                            <replaceregexp file="${project.basedir}/README.md"
+                                                         match="jeamlit/[0-9.]+/jeamlit-[0-9.]+-all\.jar"
+                                                         replace="jeamlit/${project.version}/jeamlit-${project.version}-all.jar"
+                                                         flags="g"/>
+
+                                            <!-- Update Maven dependency: <version>0.42.0</version> -->
+                                            <replaceregexp file="${project.basedir}/README.md"
+                                                         match="&lt;version&gt;[0-9.]+&lt;/version&gt;"
+                                                         replace="&lt;version&gt;${project.version}&lt;/version&gt;"
+                                                         flags="g"/>
+
+                                            <echo message="Updated README.md to release version ${project.version}"/>
+                                        </sequential>
+
+                                        <echo unless:set="is.release.version" xmlns:unless="ant:unless"
+                                              message="Skipping README update - version ${project.version} is a SNAPSHOT"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
