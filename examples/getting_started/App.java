@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.40.0
+//DEPS io.jeamlit:jeamlit:0.42.0
 //DEPS tech.tablesaw:tablesaw-core:0.44.4
 
 import java.io.BufferedReader;

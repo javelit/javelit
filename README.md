@@ -32,10 +32,10 @@ You'll find a short version below. [Read the doc](https://docs.jeamlit.io/get-st
 1. Install the CLI ([JBang](https://www.jbang.dev/) is highly recommended)
     ```bash
     # recommended: install with jbang
-    jbang app install io.jeamlit:jeamlit:0.40.0:all
+    jbang app install io.jeamlit:jeamlit:0.42.0:all
 
     # vanilla
-    curl -L -o jeamlit.jar https://repo1.maven.org/maven2/io/jeamlit/jeamlit/0.40.0/jeamlit-0.40.0-all.jar
+    curl -L -o jeamlit.jar https://repo1.maven.org/maven2/io/jeamlit/jeamlit/0.42.0/jeamlit-0.42.0-all.jar
     ```
 2. Validate the installation by running the Hello app:
    ```bash
@@ -62,7 +62,7 @@ Once you're ready to go further, look at the [fundamental concepts](https://docs
    <dependency>
        <groupId>io.jeamlit</groupId>
        <artifactId>jeamlit</artifactId>
-       <version>0.40.0</version>
+       <version>0.42.0</version>
    </dependency>
    ```
 2. Launch the server in your project
