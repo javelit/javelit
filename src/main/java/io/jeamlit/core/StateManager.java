@@ -555,6 +555,14 @@ final class StateManager {
         session.removeComponentState(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
     }
 
+    // this feature is named "clear cache" in the frontend but it clears cache and session states
+    // it is only available to developer sessions
+    static void developerReset() {
+        CACHE.clear();
+        SESSIONS.clear();
+        LAST_EXECUTIONS.clear();
+    }
+
     static @Nonnull InternalSessionState.UrlContext getUrlContext() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         checkState(currentExecution != null, "No active execution context. Please reach out to support.");

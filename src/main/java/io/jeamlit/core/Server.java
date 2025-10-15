@@ -542,7 +542,7 @@ public final class Server implements StateManager.RenderServer {
             case "clear_cache" -> {
                 // only allow cache clearing from localhost
                 if (localSessions.contains(sessionId)) {
-                    StateManager.getCache().clear();
+                    StateManager.developerReset();
                     LOG.info("Cache cleared by developer user request from localhost");
                     doRerun = true;
                 } else {
