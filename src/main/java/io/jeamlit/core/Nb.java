@@ -31,7 +31,7 @@ public class Nb {
         initTemplate = mf.compile("nb.html.mustache");
     }
 
-    public String getInitHtml() {
+    public static String getInitHtml() {
         final StringWriter writer = new StringWriter();
         initTemplate.execute(writer, Map.of("MATERIAL_SYMBOLS_CDN",
                                             JtComponent.MATERIAL_SYMBOLS_CDN,
@@ -45,7 +45,10 @@ public class Nb {
         return writer.toString();
     }
 
-    public String render(JtComponent component) {
+    public static String render(JtComponent component) {
         return component.register() + component.render();
+    }
+
+    private Nb() {
     }
 }
