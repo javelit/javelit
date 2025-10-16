@@ -217,10 +217,9 @@ public abstract class JtComponent<T> {
 
     /**
      * Update the component's value from frontend.
-     * Uses Jackson for type-safe deserialization.
      */
-    protected final void updateValue(final Object valueUpdate) {
-        this.currentValue = validate((T) valueUpdate);
+    protected final void setCurrentValue(final Object valueUpdate) {
+        this.currentValue = (T) valueUpdate;
     }
 
     // convert the frontend value to the java representation
@@ -231,7 +230,9 @@ public abstract class JtComponent<T> {
     protected T convert(final Object rawValue) {
         try {
             // Use Jackson to convert to the target type
-            return Shared.OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
+            T t = Shared.OBJECT_MAPPER.convertValue(rawValue, getTypeReference());
+            t = validate(t);
+            return t;
         } catch (Exception e) {
             throw new RuntimeException(
                     "Failed to parse input widget value coming from the app. Please reach out to support.",
@@ -239,6 +240,12 @@ public abstract class JtComponent<T> {
         }
     }
 
+    /**
+     * The implementer of this method is free to decide what to do if the value is incorrect: throw an error or sanitize.
+     * If an error is thrown, it will be reported in the app.
+     * If an error is thrown for a value coming from the frontend, the error is reported as a modal. It should only happen in case of attack or bug.
+     * If an error is thrown for a value coming from the app code (eg with Jt.setComponentState()), the error is shown in the code as an error widget.
+     */
     protected T validate(final T value) {
         // template pattern - allows implementing class to perform further validation and cleanup
         // after the input value received from the frontend is parsed successfully

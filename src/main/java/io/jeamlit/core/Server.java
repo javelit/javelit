@@ -522,34 +522,42 @@ public final class Server implements StateManager.RenderServer {
 
     private void handleMessage(final String sessionId, final FrontendMessage frontendMessage) {
         boolean doRerun = false;
-        switch (frontendMessage.type()) {
-            case "component_update" -> {
-                doRerun = StateManager.handleComponentUpdate(sessionId,
-                                                             frontendMessage.componentKey(),
-                                                             frontendMessage.value());
-            }
-            case "reload" -> doRerun = true;
-            case "path_update" -> {
-                final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(optional(
-                        frontendMessage.path()).orElse(""),
-                                                                                                       optional(
-                                                                                                               frontendMessage.queryParameters()).orElse(
-                                                                                                               Map.of()));
-                StateManager.setUrlContext(sessionId, urlContext);
-                // Trigger app execution with new URL context
-                doRerun = true;
-            }
-            case "clear_cache" -> {
-                // only allow cache clearing from localhost
-                if (localSessions.contains(sessionId)) {
-                    StateManager.developerReset();
-                    LOG.info("Cache cleared by developer user request from localhost");
-                    doRerun = true;
-                } else {
-                    LOG.warn("clear_cache request rejected from non-localhost session: {}", sessionId);
+        try {
+            switch (frontendMessage.type()) {
+                case "component_update" -> {
+                    doRerun = StateManager.handleComponentUpdate(sessionId,
+                                                                 frontendMessage.componentKey(),
+                                                                 frontendMessage.value());
                 }
+                case "reload" -> doRerun = true;
+                case "path_update" -> {
+                    final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(optional(
+                            frontendMessage.path()).orElse(""),
+                                                                                                           optional(
+                                                                                                                   frontendMessage.queryParameters()).orElse(
+                                                                                                                   Map.of()));
+                    StateManager.setUrlContext(sessionId, urlContext);
+                    // Trigger app execution with new URL context
+                    doRerun = true;
+                }
+                case "clear_cache" -> {
+                    // only allow cache clearing from localhost
+                    if (localSessions.contains(sessionId)) {
+                        StateManager.developerReset();
+                        LOG.info("Cache cleared by developer user request from localhost");
+                        doRerun = true;
+                    } else {
+                        LOG.warn("clear_cache request rejected from non-localhost session: {}", sessionId);
+                    }
+                }
+                default -> LOG.warn("Unknown message type: {}", frontendMessage.type());
             }
-            default -> LOG.warn("Unknown message type: {}", frontendMessage.type());
+        } catch (Exception e) {
+            // log because it's really unexpected
+            LOG.error("Error handling client message", e);
+            sendFullScreenModalError(sessionId, "Client message processing error",
+                                     "The server was not able to process the client message. Please reach out to support if this error is unexpected.",
+                                     e.getMessage());
         }
 
         if (doRerun) {
@@ -635,11 +643,22 @@ public final class Server implements StateManager.RenderServer {
         }
     }
 
-    private void sendCompilationError(final String sessionId, final String error) {
+    private void sendFullScreenModalError(final String sessionId,
+                                          final String title,
+                                          final String paragraph,
+                                          final String error) {
         final Map<String, Object> message = new HashMap<>();
-        message.put("type", "compilation_error");
+        message.put("type", "modal_error");
+        message.put("title", title);
+        message.put("paragraph", paragraph);
         message.put("error", error);
         sendMessage(sessionId, message);
+    }
+
+    private void sendCompilationError(final String sessionId, final String error) {
+        sendFullScreenModalError(sessionId, "Compilation error",
+                                 "Fix the compilation errors below and save the file to continue:",
+                                 error);
     }
 
     private String getIndexHtml(final String xsrfToken) {

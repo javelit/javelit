@@ -218,6 +218,23 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes errorPulse {
+            0% {
+                box-shadow: 0 0 0 0 var(--jt-theme-color);
+            }
+            50% {
+                box-shadow: 0 0 0 4px var(--jt-theme-color);
+            }
+            100% {
+                box-shadow: 0 0 0 0 var(--jt-theme-color);
+            }
+        }
+
+        .error-updated {
+            border-radius: var(--jt-border-radius-lg);
+            animation: errorPulse 0.6s linear 3;
+        }
+
         .jeamlit-attribution {
             position: fixed;
             bottom: 0;
@@ -281,11 +298,11 @@
     <jt-internal-code body="jeamlit run YourApp.java" language="language-bash"></jt-internal-code>
 </jt-connection-error-modal>
 
-{{! Compilation Error Modal }}
-<jt-connection-error-modal id="compilation-modal">
-    <span slot="title">Compilation error</span>
-    <p>Fix the compilation errors below and save the file to continue:</p>
-    <jt-internal-code id="compilation-code" body="" language="language-none"></jt-internal-code>
+{{! Any other error modal }}
+<jt-connection-error-modal id="other-error-modal">
+    <span id="other-error-title" slot="title">Compilation error</span>
+    <p id="other-error-paragraph">Fix the compilation errors below and save the file to continue:</p>
+    <jt-internal-code id="other-error-code" body="" language="language-none"></jt-internal-code>
 </jt-connection-error-modal>
 
 {{! Settings Modal }}
@@ -304,8 +321,7 @@
     const sidebarContainer = document.getElementById('sidebar-container');
     const collapseBtn = document.getElementById('collapse-btn');
     const connectionModal = document.getElementById('connection-modal');
-    const compilationModal = document.getElementById('compilation-modal');
-    const compilationCode = document.getElementById('compilation-code');
+    const otherErrorModal = document.getElementById('other-error-modal');
     const statusWidget = document.getElementById('status-widget');
     const settingsContent = document.querySelector('jt-settings-content');
     const mainLayout = document.querySelector('.main-layout');
@@ -514,7 +530,7 @@
                 connectionState = 'connected';
                 console.log('WebSocket connected');
                 connectionModal.show = false;
-                compilationModal.show = false;
+                otherErrorModal.show = false;
             };
 
             ws.onerror = (error) => {
@@ -550,8 +566,8 @@
             window.jeamlit.sessionId = message.sessionId;
         } else if (message.type === 'delta') {
             applyDelta(message);
-        } else if (message.type === 'compilation_error') {
-            showCompilationError(message.error);
+        } else if (message.type === 'modal_error') {
+            showModalError(message)
         } else if (message.type === 'status') {
             if (statusWidget) {
                 // TODO: This await is a workaround for a race condition. The custom element 
@@ -643,7 +659,7 @@
         }
 
         // Close compilation modal since we're receiving successful deltas
-        compilationModal.show = false;
+        otherErrorModal.show = false;
 
         // Handle component registrations immediately
         handleComponentRegistrations(message.registrations);
@@ -738,11 +754,32 @@
         });
     }
 
-    function showCompilationError(error) {
-        // Set the error message in the jt-internal-code component
-        compilationCode.body = error;
-        // Show the compilation modal
-        compilationModal.show = true;
+    function showModalError(message) {
+        document.getElementById('other-error-title').textContent = message.title;
+        document.getElementById('other-error-paragraph').textContent = message.paragraph;
+
+        // hotfix - the jt-internal-code component does not support body updates - recreating a new jt-internal-code manually
+        const oldCodeElement = document.getElementById('other-error-code');
+        if (oldCodeElement) {
+            oldCodeElement.remove();
+        }
+        const newCodeElement = document.createElement('jt-internal-code');
+        newCodeElement.id = 'other-error-code';
+        newCodeElement.setAttribute('body', message.error);
+        newCodeElement.setAttribute('language', 'language-none');
+
+        // if the modal was already visible, apply animation to make change visible
+        if (otherErrorModal.show === true) {
+            newCodeElement.classList.add('error-updated');
+            // Remove animation class after it completes
+            setTimeout(() => {
+                newCodeElement.classList.remove('error-updated');
+            }, 1800); // Match animation duration (600ms × 3 loops)
+        }
+
+        otherErrorModal.appendChild(newCodeElement);
+
+        otherErrorModal.show = true;
     }
 
     // Settings management

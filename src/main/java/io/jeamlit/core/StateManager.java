@@ -354,7 +354,7 @@ final class StateManager {
         if (!NavigationComponent.UNIQUE_NAVIGATION_COMPONENT_KEY.equals(component.getInternalKey())) {
             final Object state = session.getComponentState(component.getInternalKey());
             if (state != null) {
-                component.updateValue(state);
+                component.setCurrentValue(state);
             }
             if (component.returnValueIsAState()) {
                 // put the current value in the widget states such that rows below this component have access to its state directly after it's added for the first time
@@ -365,7 +365,7 @@ final class StateManager {
             // navigation component is responsible for managing its own state through url context
             // also it may contain references to other classes that may be hot-reloaded, and the information of hot-reload is not available, hence getting the previous value would NEVER be correct
             // SO:
-            // we never get the old value from the current state (component.updateValue(state); above) ...
+            // we never get the old value from the current state (component.setCurrentValue(state); above) ...
             // we expect the NavigationComponent to get its currentValue on its own based on urlContext --> see NavigationComponent constructor
             // ...but we still put the current value in the widget states such that it's available like any other component state
             session.upsertComponentsState(component);
