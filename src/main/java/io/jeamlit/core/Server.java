@@ -114,6 +114,8 @@ public final class Server implements StateManager.RenderServer {
         indexTemplate = mf.compile("index.html.mustache");
     }
 
+    private String lastCompilationErrorMessage;
+
     public static final class Builder {
         final @Nullable Path appPath;
         final @Nullable Class<?> appClass;
@@ -267,11 +269,13 @@ public final class Server implements StateManager.RenderServer {
         // reload the app and re-run the app for all sessions
         try {
             appRunner.reload();
+            lastCompilationErrorMessage = null;
         } catch (Exception e) {
             if (!(e instanceof CompilationException)) {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
             }
-            session2WsChannel.keySet().forEach(sessionId -> sendCompilationError(sessionId, e.getMessage()));
+            lastCompilationErrorMessage = e.getMessage();
+            session2WsChannel.keySet().forEach(sessionId -> sendCompilationError(sessionId, lastCompilationErrorMessage));
             return;
         }
 
@@ -557,14 +561,21 @@ public final class Server implements StateManager.RenderServer {
             LOG.error("Error handling client message", e);
             sendFullScreenModalError(sessionId, "Client message processing error",
                                      "The server was not able to process the client message. Please reach out to support if this error is unexpected.",
-                                     e.getMessage());
+                                     e.getMessage(), true);
         }
 
+
         if (doRerun) {
-            try {
-                appRunner.runApp(sessionId);
-            } catch (CompilationException e) {
-                sendCompilationError(sessionId, e.getMessage());
+            if (lastCompilationErrorMessage != null) {
+                sendCompilationError(sessionId, lastCompilationErrorMessage);
+            } else {
+                try {
+                    appRunner.runApp(sessionId);
+                    lastCompilationErrorMessage = null;
+                } catch (CompilationException e) {
+                    lastCompilationErrorMessage = e.getMessage();
+                    sendCompilationError(sessionId, e.getMessage());
+                }
             }
         }
     }
@@ -646,19 +657,21 @@ public final class Server implements StateManager.RenderServer {
     private void sendFullScreenModalError(final String sessionId,
                                           final String title,
                                           final String paragraph,
-                                          final String error) {
+                                          final String error,
+                                          final boolean closable) {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "modal_error");
         message.put("title", title);
         message.put("paragraph", paragraph);
         message.put("error", error);
+        message.put("closable", closable);
         sendMessage(sessionId, message);
     }
 
     private void sendCompilationError(final String sessionId, final String error) {
         sendFullScreenModalError(sessionId, "Compilation error",
                                  "Fix the compilation errors below and save the file to continue:",
-                                 error);
+                                 error, false);
     }
 
     private String getIndexHtml(final String xsrfToken) {

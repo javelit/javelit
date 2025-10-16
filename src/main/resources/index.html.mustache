@@ -577,6 +577,9 @@
                 await customElements.whenDefined('jt-status-widget');
                 statusWidget.updateStatus(message.status);
             }
+            if (message.status === "BEGIN") {
+                otherErrorModal.show = false;
+            }
             if (message.status === "END" && isFirstDelta) {
                 const loadingPlaceholder = document.getElementById('loading-placeholder');
                 if (loadingPlaceholder) {
@@ -786,7 +789,15 @@
 
         otherErrorModal.appendChild(newCodeElement);
 
+        // Set or remove prevent-close attribute based on message.closable
+        if (message.closable === false) {
+            otherErrorModal.setAttribute('prevent-close', '');
+        } else {
+            otherErrorModal.removeAttribute('prevent-close');
+        }
+
         otherErrorModal.show = true;
+
     }
 
     // Settings management
