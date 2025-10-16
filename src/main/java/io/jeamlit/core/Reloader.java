@@ -20,14 +20,5 @@ import java.lang.reflect.Method;
 // not using an interface to not expose this in the public API
 abstract class Reloader {
 
-    enum ReloadStrategy {
-        /**
-         * only reload the classes previous classpath will be used if it exists
-         * no maven/gradle build
-         */
-        CLASS,
-        BUILD_CLASSPATH_AND_CLASS
-    }
-
     abstract Method reload();
 }
