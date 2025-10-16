@@ -154,7 +154,7 @@ public final class Jt {
      * </ul>
      * Learn more in the <a href="https://docs.jeamlit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets">modify widget examples</>.
      * <p>
-     * This method does not validate that the provided value is of the correct type for the component. If the type is incompatible, the component will throw a {@code ClassCastException} when its {@code use()} method is called.
+     * This method validates that the provided value is of the correct type and respects constraints if any (for instance, value range).
      * <p>
      * Examples:
      * Programmatically update a text input value
@@ -177,6 +177,7 @@ public final class Jt {
      * @param value The new value to set
      * @throws IllegalArgumentException if userKey is null or the provided key does not match an existing component
      * @throws IllegalStateException if component has already been rendered in the current execution
+     * @throws ClassCastException if value type does not match component type
      */
     public static void setComponentState(final @Nonnull String key, final @Nullable Object value) {
         StateManager.handleUserCodeComponentUpdate(key, value);
