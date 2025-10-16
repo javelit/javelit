@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static io.jeamlit.core.utils.LangUtils.optional;
 
 // no api here should ever be exposed
 // users should use Jt
@@ -144,7 +143,12 @@ final class StateManager {
                               See https://docs.jeamlit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets
                               """,
                       userKey);
-        session.updateComponentsState(internalKey, value);
+        final AppExecution lastExecution = LAST_EXECUTIONS.get(currentExecution.sessionId);
+        checkState(lastExecution != null, "Implementation error. Please reach out to support.");
+        JtComponent c = findIn(lastExecution, internalKey);
+        Object safeValue = c.validate(value);
+
+        session.updateComponentsState(internalKey, safeValue);
     }
 
     /**
@@ -188,13 +192,7 @@ final class StateManager {
                 session.updateAllComponentsState(pendingInFormComponentStates);
 
                 // check if the form has clearOnSubmit enabled and act accordingly - Note: data struct manipulation is a bit heavy but won't optimize for the moment
-                final FormComponent formComponent = lastExecution.containerToComponents.values().stream()
-                                                                                       .filter(m -> m.containsKey(
-                                                                                               parentFormComponentKey))
-                                                                                       .map(m -> m.get(
-                                                                                               parentFormComponentKey))
-                                                                                       .map(FormComponent.class::cast)
-                                                                                       .findFirst().orElse(null);
+                final FormComponent formComponent = (FormComponent) findIn(lastExecution, parentFormComponentKey);
                 checkState(formComponent != null, "Form component not found for key %s", parentFormComponentKey);
                 if (formComponent.isClearOnSubmit()) {
                     session.formComponentsToReset().addAll(pendingInFormComponentStates.keySet());
@@ -597,12 +595,15 @@ final class StateManager {
 
     static @Nullable NavigationComponent getNavigationComponent() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
-        return (NavigationComponent) optional(currentExecution.containerToComponents.values().stream()
-                                                                                    .filter(components -> components
-                                                                                            .containsKey(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY))
-                                                                                    .findFirst()
-                                                                                    .orElse(null))
-                .map(m -> m.get(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY)).orElse(null);
+        return (NavigationComponent) findIn(currentExecution, JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
 
+    }
+
+    private static @Nullable JtComponent<?> findIn(StateManager.AppExecution execution, String internalKey) {
+        return execution.containerToComponents.values().stream()
+                                              .filter(c -> c.containsKey(internalKey))
+                                              .findFirst()
+                                              .map(m -> m.get(internalKey))
+                                              .orElse(null);
     }
 }
