@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Response;
 import io.jeamlit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Test;
@@ -184,7 +185,7 @@ public class StaticServingE2ETest {
         PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
             // Try to access the static directory directly
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
-            final Response response = page.navigate(baseUrl + "/app/static/");
+            final APIResponse response = page.request().get(baseUrl + "/app/static/");
 
             // Should get 403 Forbidden or 404 Not Found (directory listing disabled)
             assertTrue(response.status() == 403 || response.status() == 404);
