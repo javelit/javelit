@@ -283,7 +283,7 @@
             <jt-toolbar-menu id="toolbar-menu"></jt-toolbar-menu>
         </div>
         <div id="main-container" class="main-layout" data-container="main">
-            <div class="loading-state">
+            <div id="loading-placeholder" class="loading-state">
                 <div class="loading-spinner"></div>
                 <div class="loading-text">Loading...</div>
             </div>
@@ -295,14 +295,14 @@
 <jt-connection-error-modal id="connection-modal" prevent-close>
     <span slot="title">Connection Error</span>
     <p>Is Jeamlit still running? If you accidentally stopped Jeamlit, just restart it in your terminal:</p>
-    <jt-internal-code body="jeamlit run YourApp.java" language="language-bash"></jt-internal-code>
+    <jt-internal-code body="jeamlit run YourApp.java" language="bash"></jt-internal-code>
 </jt-connection-error-modal>
 
 {{! Any other error modal }}
 <jt-connection-error-modal id="other-error-modal">
     <span id="other-error-title" slot="title">Compilation error</span>
     <p id="other-error-paragraph">Fix the compilation errors below and save the file to continue:</p>
-    <jt-internal-code id="other-error-code" body="" language="language-none"></jt-internal-code>
+    <jt-internal-code id="other-error-code" body=""></jt-internal-code>
 </jt-connection-error-modal>
 
 {{! Settings Modal }}
@@ -327,7 +327,7 @@
     const mainLayout = document.querySelector('.main-layout');
 
     // Track if this is the first message to clear connecting text
-    let isFirstMessage = true;
+    let isFirstDelta = true;
 
     // Localhost detection and XSRF token - available globally
     window.jeamlit = {
@@ -565,18 +565,25 @@
             // Store WebSocket session ID for POST/PUT requests - eg file uploads
             window.jeamlit.sessionId = message.sessionId;
         } else if (message.type === 'delta') {
-            applyDelta(message);
+            handleDeltaMessage(message);
         } else if (message.type === 'modal_error') {
-            showModalError(message)
+            handleModalErrorMessage(message)
         } else if (message.type === 'status') {
             if (statusWidget) {
-                // TODO: This await is a workaround for a race condition. The custom element 
-                // (jt-status-widget) is defined asynchronously via type="module" script, but 
-                // this code runs before the element is upgraded. A better fix would be to load 
+                // TODO: This await is a workaround for a race condition. The custom element
+                // (jt-status-widget) is defined asynchronously via type="module" script, but
+                // this code runs before the element is upgraded. A better fix would be to load
                 // the custom element synchronously or restructure the script loading order.
                 await customElements.whenDefined('jt-status-widget');
                 statusWidget.updateStatus(message.status);
             }
+            if (message.status === "END" && isFirstDelta) {
+                const loadingPlaceholder = document.getElementById('loading-placeholder');
+                if (loadingPlaceholder) {
+                    loadingPlaceholder.innerHTML = '<p>This app seems empty!<br>Get started by adding the following code:</p><jt-internal-code body="Jt.text(&quot;Hello World!&quot;).use();" language="java"></jt-internal-code>';
+                }
+            }
+
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
@@ -644,7 +651,7 @@
         });
     }
 
-    function applyDelta(message) {
+    function handleDeltaMessage(message) {
         const {
             index = null,                 // null means append
             html,
@@ -653,9 +660,9 @@
         } = message;
 
         // Clear initial "Connecting..." message on first delta
-        if (isFirstMessage) {
+        if (isFirstDelta) {
             mainContainer.innerHTML = '';
-            isFirstMessage = false;
+            isFirstDelta = false;
         }
 
         // Close compilation modal since we're receiving successful deltas
@@ -754,7 +761,7 @@
         });
     }
 
-    function showModalError(message) {
+    function handleModalErrorMessage(message) {
         document.getElementById('other-error-title').textContent = message.title;
         document.getElementById('other-error-paragraph').textContent = message.paragraph;
 
