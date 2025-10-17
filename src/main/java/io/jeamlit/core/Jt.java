@@ -18,7 +18,6 @@ package io.jeamlit.core;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.SequencedCollection;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.jeamlit.components.chart.EchartsComponent;
@@ -1911,11 +1910,9 @@ public final class Jt {
      * }
      *}
      *
-     * @param cols     A map where keys are column names and values are collections of column data
-     * @param <Values> The type of collection containing the column values
+     * @param cols  A map where keys are column names and values are collections of column data
      */
-    public static <Values extends @NotNull SequencedCollection<@Nullable Object>> TableComponent.Builder tableFromListColumns(
-            final @Nonnull Map<@NotNull String, Values> cols) {
+    public static TableComponent.Builder tableFromListColumns(final @Nonnull Map<@NotNull String, @NotNull List<Object>> cols) {
         return TableComponent.Builder.ofColumnsLists(cols);
     }
 

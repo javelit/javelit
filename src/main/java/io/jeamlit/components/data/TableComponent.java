@@ -20,18 +20,17 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SequencedCollection;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import jakarta.annotation.Nonnull;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import io.jeamlit.core.JtComponent;
 import io.jeamlit.core.JtComponentBuilder;
 import io.jeamlit.core.Shared;
+import jakarta.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -57,17 +56,17 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
 
     public static class Builder extends JtComponentBuilder<JtComponent.NONE, TableComponent, Builder> {
 
-        final Map<String, SequencedCollection<Object>> col2ListData;
+        final Map<String, List<Object>> col2ListData;
         final Map<String, Object[]> col2ArrayData;
-        final SequencedCollection<Object> listOfObjs;
+        final List<Object> listOfObjs;
         final Object[] arrayOfObjs;
 
         List<String> columns = null;
         String[][] values = null;
 
-        private Builder(final @jakarta.annotation.Nullable Map<String, SequencedCollection<Object>> col2ListData,
+        private Builder(final @jakarta.annotation.Nullable Map<String, List<Object>> col2ListData,
                         final @jakarta.annotation.Nullable Map<String, Object[]> col2ArrayData,
-                        final @jakarta.annotation.Nullable SequencedCollection<Object> objsList,
+                        final @jakarta.annotation.Nullable List<Object> objsList,
                         final @jakarta.annotation.Nullable Object[] objsArray) {
             this.col2ListData = col2ListData;
             this.col2ArrayData = col2ArrayData;
@@ -80,8 +79,8 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
          * All columns must have the same number of elements.
          */
         @SuppressWarnings("unchecked")
-        public static <Values extends @NotNull SequencedCollection<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
-            return new Builder((Map<String, SequencedCollection<Object>>) col2List, null, null, null);
+        public static <Values extends @NotNull List<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
+            return new Builder((Map<String, List<Object>>) col2List, null, null, null);
         }
 
         /**
@@ -96,7 +95,7 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
          * Creates a table from a list of objects, where each object represents a row and object properties become columns.
          * Objects are serialized to extract their fields as table columns.
          */
-        public static Builder ofObjsList(@Nonnull SequencedCollection<Object> objsList) {
+        public static Builder ofObjsList(@Nonnull List<Object> objsList) {
             return new Builder(null, null, objsList, null);
         }
 
@@ -114,7 +113,7 @@ public class TableComponent extends JtComponent<JtComponent.NONE> {
             if (col2ListData != null) {
                 // use of LinkedHashMap to respect order if the user passed an ordered map
                 colName2Column = new LinkedHashMap<>();
-                for (final Map.Entry<String, SequencedCollection<Object>> entry : col2ListData.entrySet()) {
+                for (final Map.Entry<String, List<Object>> entry : col2ListData.entrySet()) {
                     colName2Column.put(entry.getKey(), entry.getValue().toArray());
                 }
             } else {
