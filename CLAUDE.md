@@ -103,6 +103,7 @@ src/test/java/              # Unit tests
     - Then :host([use-container-width]) .[REPLACE_BY_SOME_INTERNAL_CLASS] { width: 100%; }
 - Main containers (:host in lit css) should always be in display block
 - **IMPORTANT**:  in the render template, do not use triple brackets `{{{` to inject values, always use double brackets `{{`
+- **CRITICAL - Markdown CSS Class**: When rendering markdown content in Lit components, ALWAYS use the class name `markdown-content`, NEVER `markdown-body`. This is the correct class name for markdown styling in this project.
 - **Width method pattern**: Whenever a ComponentBuilder has a `width(String)` method, it must also include a `width(int)` overload for pixel values:
 ```java
 public Builder width(final int widthPixels) {
