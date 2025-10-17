@@ -11,4 +11,7 @@ public class App {
             Jt.text("Damn, that huge!").use();
         }
     }
+
+    private App() {
+    }
 }
