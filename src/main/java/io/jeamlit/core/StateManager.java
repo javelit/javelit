@@ -15,6 +15,7 @@
  */
 package io.jeamlit.core;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,6 +54,7 @@ final class StateManager {
         // does not record main and sidebar containers - only children of these 2 root containers
         private final Set<JtContainer> clearedContainers = new HashSet<>();
         private final Set<JtContainer> clearedLayoutContainers = new HashSet<>();
+        private final HashMap<String, Integer> unusedComponents = new HashMap<>();
         // this is not the "current page" according to the URL - this is the currentPage for key context purpose
         // for instance
         // var page1 = Jt.navigation().use(); // currentPage is null
@@ -94,7 +96,8 @@ final class StateManager {
                   final @Nullable Integer index,
                   final boolean clearBefore);
 
-        void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus);
+        void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus,
+                        final @Nullable Map<String, Integer> unusedComponents);
     }
 
     static void setRenderServer(final @Nonnull RenderServer sender) {
@@ -286,7 +289,7 @@ final class StateManager {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
-        renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN);
+        renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN, null);
 
         // run callback before everything else
         final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId,
@@ -536,7 +539,7 @@ final class StateManager {
             }
 
             LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
-            renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END);
+            renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END, currentExecution.unusedComponents);
         } catch (Exception e) {
             LOG.error(
                     "Failed to end execution properly. A reload of the app may be necessary. If this happens multiple times, please reach out to support.",
@@ -586,7 +589,8 @@ final class StateManager {
 
         @Override
         public void sendStatus(final @Nonnull String sessionId,
-                               @NotNull StateManager.ExecutionStatus executionStatus) {
+                               @NotNull StateManager.ExecutionStatus executionStatus,
+                               @Nullable Map<String, Integer> unusedComponents) {
             LOG.error("Cannot send run status {} to session {}. No render server is registered",
                       executionStatus,
                       sessionId);
@@ -597,6 +601,29 @@ final class StateManager {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         return (NavigationComponent) findIn(currentExecution, JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
 
+    }
+
+    static void recordComponentInstantiation(final @Nonnull String componentName) {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        if (currentExecution != null) {
+            currentExecution.unusedComponents.compute(componentName, (k, v) -> v == null ? 1 : v + 1);
+        } else {
+            // we need to support out-of-execution case for Nb
+            // just do nothing, the record thing is a nice to have to tell users in dev mode they are not
+            // eventually all methods that depend on CURRENT_EXECUTION_IN_THREAD.get() will be a no op if they do not apply in CURRENT_EXECUTION_IN_THREAD
+        }
+    }
+
+    // see recordComponentInstantiation
+    static void recordComponentUsed(final @Nonnull String componentName) {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        if (currentExecution != null && currentExecution.unusedComponents.containsKey(componentName)) {
+            if (currentExecution.unusedComponents.get(componentName) == 1) {
+                currentExecution.unusedComponents.remove(componentName);
+            } else {
+                currentExecution.unusedComponents.compute(componentName, (k, v) -> v - 1);
+            }
+        }
     }
 
     private static @Nullable JtComponent<?> findIn(StateManager.AppExecution execution, String internalKey) {

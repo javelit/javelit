@@ -258,6 +258,7 @@
     {{ customHeaders }}
     {{> tooltip.html.mustache }}
     {{> connection-error-modal.html.mustache }}
+    {{> toast.html.mustache }}
     {{> code.html.mustache }}
     {{> toolbar-menu.html.mustache }}
     {{> status-widget.html.mustache }}
@@ -586,9 +587,16 @@
                     loadingPlaceholder.innerHTML = '<p>This app seems empty!<br>Get started by adding the following code:</p><jt-internal-code body="Jt.text(&quot;Hello World!&quot;).use();" language="java"></jt-internal-code>';
                 }
             }
-
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
+        }
+        if (window.jeamlit.isLocalhost && message.toastDuration) {
+            const toast = document.createElement('jt-internal-toast');
+            toast.body = message.toastBody ? message.toastBody : "";
+            toast.icon = message.toastIcon ? message.toastIcon : "";
+            toast.duration = message.toastDuration;
+            toast.position = "bottom"
+            document.body.appendChild(toast);
         }
     }
 

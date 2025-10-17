@@ -41,6 +41,10 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
 
     boolean noPersist;
 
+    protected JtComponentBuilder() {
+        StateManager.recordComponentInstantiation(usageRecordName());
+    }
+
     // WARNING - will get broken if multiple inheritance level of builders are introduced
     private static Field[] getFields(final @Nonnull Class<?> clazz) {
         // this only retrieves fields defined directly in the implem - does not retrieve JtComponentBuilder inherited field
@@ -108,7 +112,8 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     /**
      * Put the widget in the app, in the {@code MAIN} container.
      */
-    public B use() {
+    public final B use() {
+        StateManager.recordComponentUsed(this.getClass().getSimpleName());
         final T component = build();
         return component.use();
     }
@@ -116,9 +121,13 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     /**
      * Put the widget in the app, in the provided container.
      */
-    public B use(final @Nonnull JtContainer container) {
+    public final B use(final @Nonnull JtContainer container) {
         final T component = build();
         return component.use(container);
+    }
+
+    protected String usageRecordName() {
+        return this.getClass().getName().replace("$Builder", "");
     }
 
     protected static void ensureIsValidIcon(@org.jetbrains.annotations.Nullable String icon) {

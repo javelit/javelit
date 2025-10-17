@@ -139,6 +139,7 @@ public abstract class JtComponent<T> {
     private T initialValue;
     protected @Nullable Consumer<T> callback;
     private final JtContainer defaultContainer;
+    private final String usageRecordName;
 
     protected JtComponent(final @Nonnull JtComponentBuilder builder,
                           final T currentValue,
@@ -146,6 +147,7 @@ public abstract class JtComponent<T> {
                           final @Nonnull JtContainer defaultContainer) {
         this.internalKey = builder.generateInternalKey();
         this.userKey = builder.userKey;
+        this.usageRecordName = builder.usageRecordName();
         this.noPersist = builder.noPersist;
         this.currentValue = currentValue;
         if (returnValueIsAState() && currentValue != null && !(currentValue instanceof Number) && !(currentValue instanceof String)) {
@@ -278,6 +280,7 @@ public abstract class JtComponent<T> {
      * Add the component to the app in the provided container and return its value.
      */
     public final T use(final @Nonnull JtContainer container) {
+        StateManager.recordComponentUsed(usageRecordName);
         beforeUse(container);
         StateManager.addComponent(this, container);
         afterUse(container);

@@ -1,0 +1,226 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+
+    class JtInternalToast extends LitElement {
+        static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
+            :host {
+                position: fixed;
+                right: var(--jt-spacing-xl);
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideIn 0.3s ease-out;
+            }
+
+            :host([position="bottom"]) {
+                bottom: var(--jt-spacing-xl);
+            }
+
+            :host([position="top"]) {
+                top: var(--jt-spacing-4xl);
+            }
+
+            :host([hiding]) {
+                animation: slideOut 0.3s ease-out forwards;
+                pointer-events: none;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideOut {
+                from {
+                    opacity: 1;
+                }
+                to {
+                    opacity: 0;
+                }
+            }
+
+            .toast-container {
+                background: var(--jt-bg-primary);
+                border-radius: var(--jt-border-radius-lg);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                padding: var(--jt-spacing-md);
+                font-family: var(--jt-font-family);
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .toast-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--jt-text-primary);
+                flex-shrink: 0;
+            }
+
+            .toast-icon.material {
+                font-family: 'Material Symbols Rounded';
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+                font-size: var(--jt-font-size-xl);
+            }
+
+            .toast-icon.emoji {
+                font-size: var(--jt-font-size-xl);
+            }
+
+            .toast-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .toast-body {
+                color: var(--jt-text-primary);
+                font-size: var(--jt-font-size-base);
+                word-wrap: break-word;
+            }
+
+            .toast-body p:first-child {
+                margin-top: 0;
+            }
+
+            .toast-body p:last-child {
+                margin-bottom: 0;
+            }
+
+            .close-button {
+                background: none;
+                border: none;
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-lg);
+                color: var(--jt-text-secondary);
+                cursor: pointer;
+                padding: 0;
+                opacity: 0.7;
+                transition: opacity var(--jt-transition-fast);
+                flex-shrink: 0;
+            }
+
+            .close-button:hover {
+                opacity: 1;
+            }
+        `;
+
+        static properties = {
+            body: { type: String },
+            icon: { type: String },
+            duration: { type: Number },
+            position: { type: String, reflect: true }
+        };
+
+        constructor() {
+            super();
+            this.body = '';
+            this.icon = ':info:';
+            this.duration = 6;
+            this.position = 'bottom';
+            this.autoDismissTimeout = null;
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+
+            // Auto-dismiss after duration (if positive)
+            if (this.duration > 0) {
+                this.autoDismissTimeout = setTimeout(() => {
+                    this.dismiss();
+                }, this.duration * 1000);
+            }
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+
+            // Clear timeout if element is removed
+            if (this.autoDismissTimeout) {
+                clearTimeout(this.autoDismissTimeout);
+                this.autoDismissTimeout = null;
+            }
+        }
+
+        dismiss() {
+            // Clear timeout
+            if (this.autoDismissTimeout) {
+                clearTimeout(this.autoDismissTimeout);
+                this.autoDismissTimeout = null;
+            }
+
+            // Start exit animation
+            this.setAttribute('hiding', '');
+
+            // Remove from DOM after animation completes
+            setTimeout(() => {
+                this.remove();
+            }, 300); // Match animation duration
+        }
+
+        handleCloseClick() {
+            this.dismiss();
+        }
+
+        isEmoji(str) {
+            return str && str.length <= 2 && /\p{Emoji}/u.test(str);
+        }
+
+        isMaterialIcon(str) {
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(1, -1);  // Remove leading and trailing colons
+        }
+
+        render() {
+            const iconContent = this.icon ? (
+                this.isEmoji(this.icon) ?
+                    html`<span class="toast-icon emoji">${this.icon}</span>` :
+                    this.isMaterialIcon(this.icon) ?
+                        html`<span class="toast-icon material">${this.getMaterialIconName(this.icon)}</span>` :
+                        null
+            ) : null;
+
+            return html`
+                <div class="toast-container">
+                    ${iconContent}
+                    <div class="toast-content">
+                        <div class="toast-body">
+                            <div class="markdown-content">${unsafeHTML(this.body)}</div>
+                        </div>
+                    </div>
+                    <button class="close-button" @click="${this.handleCloseClick}">
+                        close
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-internal-toast', JtInternalToast);
+</script>

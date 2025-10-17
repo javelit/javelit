@@ -81,6 +81,7 @@ import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -629,11 +630,34 @@ public final class Server implements StateManager.RenderServer {
     @SuppressWarnings("ClassEscapesDefinedScope")
     // StateManager.ExecutionStatus is not meant to be public but is used as interface method param which must be public
     @Override
-    public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus) {
+    public void sendStatus(final @Nonnull String sessionId, @NotNull StateManager.ExecutionStatus executionStatus,
+                           final @Nullable Map<String, Integer> unusedComponents) {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "status");
         message.put("status", executionStatus);
+        if (localSessions.contains(sessionId) && unusedComponents != null && !unusedComponents.isEmpty()) {
+            message.put("toastDuration", 10);
+            final List<String> unusedComponentsListItems = unusedComponents.entrySet().stream()
+                                                                       .map(e -> unusedComponentToMarkdownLi(e.getKey(), e.getValue()))
+                                                                       .toList();
+            final @Language("markdown") String toastBody = """
+                    The following components were created but never used: \s
+                    %s
+                    
+                    Did you forget to call `.use()`? \s
+                    
+                    <sup>_This message only appears in **Dev Mode**_</sup>
+                    """.formatted(String.join("\n", unusedComponentsListItems));
+            message.put("toastBody", MarkdownUtils.markdownToHtml(toastBody, false));
+            message.put("toastIcon", ":warning:");
+        }
         sendMessage(sessionId, message);
+    }
+
+    private static String unusedComponentToMarkdownLi(final String name, final Integer unusedCount) {
+        final String userFriendlyName = name.substring(name.lastIndexOf(".") + 1).replace("Component", "");
+        return "- "+ userFriendlyName + " - _" + unusedCount + "_";
+
     }
 
     private void sendMessage(final String sessionId, final Map<String, Object> message) {
