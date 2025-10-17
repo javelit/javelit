@@ -34,9 +34,38 @@ import static io.jeamlit.e2e.helpers.PortAllocator.getNextAvailablePort;
 public class RemoteFileE2ETest {
 
     @Test
-    void testRunRemoteFileViaUrl() {
+    void testRunRemoteFileViaPlainTextUrl() {
         final int port = getNextAvailablePort();
         final String remoteUrl = "https://raw.githubusercontent.com/jeamlit/jeamlit/refs/heads/main/src/test/resources/RemoteUrlApp.java";
+
+        // Execute jeamlit CLI in a separate thread
+        final Thread cliThread = new Thread(() -> {
+            // Use main method approach since subcommands are package-private
+            String[] args = {"run", remoteUrl, "--port", String.valueOf(port), "--no-browser"};
+            Cli.main(args);
+        });
+        cliThread.setDaemon(true);
+        cliThread.start();
+
+        JeamlitTestHelper.waitForServerReady(port);
+
+        // Verify with Playwright that the app is running
+        try (final Playwright playwright = Playwright.create();
+             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Page page = browser.newPage()) {
+            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+
+            // Verify the title from the remote app is visible
+            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+            assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
+        }
+    }
+
+    @Test
+    void testRunRemoteFileViaGithubBlobUrl() {
+        final int port = getNextAvailablePort();
+        // also test without protocol
+        final String remoteUrl = "https://github.com/jeamlit/jeamlit/blob/refs/heads/main/src/test/resources/RemoteUrlApp.java";
 
         // Execute jeamlit CLI in a separate thread
         final Thread cliThread = new Thread(() -> {

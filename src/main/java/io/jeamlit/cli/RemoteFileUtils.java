@@ -42,28 +42,55 @@ import static com.google.common.base.Preconditions.checkArgument;
 class RemoteFileUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(RemoteFileUtils.class);
+    public static final String INVALID_URL_MESSAGE = """
+            Invalid URL format. The URL should be either:
+            (1) A direct link to a text/plain .java file (e.g., https://raw.githubusercontent.com/user/repo/branch/file.java)
+            (2) A GitHub folder tree URL (e.g., github.com/user/repo/tree/branch/path/to/folder)
+            (3) A GitHub file blob URL (e.g., github.com/jeamlit/jeamlit/blob/main/examples/Callbacks.java)
+            Got: %s
+            """;
 
-    static Path downloadRemoteFile(final @Nonnull String url) throws IOException {
+    static Path downloadRemoteFile(@Nonnull String url) throws IOException {
+        if (isGitHubUiWebsite(url)) {
+            if (isGitHubTreeUrl(url)) {
+                return downloadGitHubFolder(url);
+            } else if (isGitHubBlob(url)) {
+                url = convertBlobToRaw(url);
+            } else {
+                throw new IllegalArgumentException(INVALID_URL_MESSAGE);
+            }
+        }
         final String fileSuffix = getFileSuffix(url);
         if (fileSuffix != null) {
             checkArgument(".java".equals(fileSuffix),
                           "Unsupported file type: %s. Only .java files are supported. " + "If you're trying to run a Java file, make sure the URL ends with .java",
                           fileSuffix);
             return downloadSingleFile(url);
-        } else {
-            // Case 3: URL looks like a folder - verify it's a GitHub URL
-            checkArgument(isGitHubTreeUrl(url),
-                          "Invalid URL format. The URL should be either:\n" + "  (1) A direct link to a .java file (e.g., https://raw.githubusercontent.com/user/repo/branch/file.java)\n" + "  (2) A GitHub folder URL (e.g., https://github.com/user/repo/tree/branch/path/to/folder)\n" + "Got: %s",
-                          url);
-            return downloadGitHubFolder(url);
         }
+        throw new IllegalArgumentException(INVALID_URL_MESSAGE);
+    }
+
+    // assuming isGitHubUiWebsite is true
+    private static boolean isGitHubTreeUrl(final @Nonnull String url) {
+        return url.contains("/tree/");
+    }
+
+    private static boolean isGitHubBlob(final @Nonnull String url) {
+        return url.contains("/blob/");
+    }
+
+    private static boolean isGitHubUiWebsite(final @Nonnull String url) {
+        return url.startsWith("https://github.com/");
     }
 
     /**
-     * Check if URL is a GitHub tree URL (folder)
+     * Convert GitHub blob URL to raw.githubusercontent.com URL
+     * e.g., https://github.com/owner/repo/blob/branch/path/file.java
+     * -> https://raw.githubusercontent.com/owner/repo/branch/path/file.java
      */
-    private static boolean isGitHubTreeUrl(final @Nonnull String url) {
-        return url.startsWith("https://github.com/") && url.contains("/tree/");
+    private static @Nonnull String convertBlobToRaw(final @Nonnull String url) {
+        return url.replace("github.com", "raw.githubusercontent.com")
+                  .replace("/blob/", "/");
     }
 
     /**
