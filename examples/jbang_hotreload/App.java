@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.44.0
+//DEPS io.jeamlit:jeamlit:0.47.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
 
 import java.nio.file.Path;
