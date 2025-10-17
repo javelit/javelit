@@ -165,8 +165,7 @@ final class StateManager {
         checkState(session != null, "No session with id %s. Implementation error ?", sessionId);
         final AppExecution lastExecution = LAST_EXECUTIONS.get(sessionId);
         checkState(lastExecution != null,
-                   "Got an update from component key %s in session %s but there wasn't any previous run in this session. Cannot identify source of the update. Try to refresh the page.",
-                   componentKey,
+                   "Received an update from session %s but there wasn't any previous run in this session. Try to refresh the page.",
                    sessionId);
         JtComponent<?> component = null;
         JtContainer componentContainer = null;
