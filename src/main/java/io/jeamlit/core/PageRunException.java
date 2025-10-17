@@ -16,9 +16,6 @@
 package io.jeamlit.core;
 
 public class PageRunException extends RuntimeException {
-    public PageRunException(String message) {
-        super(message);
-    }
 
     public PageRunException(final Exception e) {
         super(e.getMessage(), e.getCause());
