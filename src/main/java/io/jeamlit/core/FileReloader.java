@@ -238,7 +238,8 @@ class FileReloader extends Reloader {
     }
 
 
-    private static final class HotClassLoader extends URLClassLoader {
+    // visible for classloader ClassCast exception detection - see AppRunner
+    static final class HotClassLoader extends URLClassLoader {
 
         private HotClassLoader(final ClassLoader parent) {
             super(new URL[]{}, parent);
@@ -292,6 +293,4 @@ class FileReloader extends Reloader {
         return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
                 .replace(File.separatorChar, '.').replace(".class", "");
     }
-
-
 }

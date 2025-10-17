@@ -67,11 +67,22 @@ final class InternalSessionState {
 
     private String callbackComponentKey;
 
+    // whether this is a developer session
+    private boolean isDeveloper;
+
     void clearStates() {
         userState.clear();
         removeAllComponentsWithPrefix("");
         formComponentsToReset.addAll(pendingInFormComponentsState.keySet());
         pendingInFormComponentsState.clear();
+    }
+
+    public boolean isDeveloper() {
+        return isDeveloper;
+    }
+
+    public void setDeveloper(boolean developer) {
+        isDeveloper = developer;
     }
 
     record UrlContext(@Nonnull String currentPath,

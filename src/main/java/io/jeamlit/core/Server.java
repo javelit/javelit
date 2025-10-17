@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -104,7 +103,6 @@ public final class Server implements StateManager.RenderServer {
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
     private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
-    private final Set<String> localSessions = new ConcurrentSkipListSet<>();
     private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final String customHeaders;
 
@@ -442,7 +440,7 @@ public final class Server implements StateManager.RenderServer {
             final String sessionId = UUID.randomUUID().toString();
             session2WsChannel.put(sessionId, channel);
             if (isLocalClient(channel)) {
-                localSessions.add(sessionId);
+                StateManager.registerDeveloperSession(sessionId);
             }
 
             // Send session ID to frontend immediately
@@ -476,7 +474,6 @@ public final class Server implements StateManager.RenderServer {
                 protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
                     session2WsChannel.remove(sessionId);
                     session2Xsrf.remove(sessionId);
-                    localSessions.remove(sessionId);
                     sessionRegisteredTypes.remove(sessionId);
                     StateManager.clearSession(sessionId);
                 }
@@ -547,7 +544,7 @@ public final class Server implements StateManager.RenderServer {
                 }
                 case "clear_cache" -> {
                     // only allow cache clearing from localhost
-                    if (localSessions.contains(sessionId)) {
+                    if (StateManager.isDeveloperSession(sessionId)) {
                         StateManager.developerReset();
                         LOG.info("Cache cleared by developer user request from localhost");
                         doRerun = true;
@@ -635,7 +632,7 @@ public final class Server implements StateManager.RenderServer {
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "status");
         message.put("status", executionStatus);
-        if (localSessions.contains(sessionId) && unusedComponents != null && !unusedComponents.isEmpty()) {
+        if (StateManager.isDeveloperSession(sessionId) && unusedComponents != null && !unusedComponents.isEmpty()) {
             message.put("toastDuration", 10);
             final List<String> unusedComponentsListItems = unusedComponents.entrySet().stream()
                                                                        .map(e -> unusedComponentToMarkdownLi(e.getKey(), e.getValue()))

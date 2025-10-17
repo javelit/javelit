@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,7 @@ import static io.jeamlit.core.utils.StringUtils.percentEncode;
 final class AppRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppRunner.class);
+    private static final Pattern CLASSLOADER_MISMATCH_CLASSNAME_P = Pattern.compile("class (.*?) cannot be cast to");
 
     private final @Nonnull AtomicReference<Method> mainMethod = new AtomicReference<>();
     private final @Nonnull Semaphore reloadAvailable = new Semaphore(1, true);
@@ -128,9 +130,12 @@ final class AppRunner {
                 runAfterBreak = u.runAfterBreak;
                 doRerun = true;
             } else {
-                @Language("markdown") final String errorMessage = buildErrorMessage(e);
-                // Send error as a component usage - its lifecycle is managed like all other components
-                Jt.error(errorMessage).use();
+                final Throwable t = unwrapException(e);
+                // send error feedback as in-app components - their lifecycle is managed like all other components
+                sendUserFeedback(t);
+                if (StateManager.isDeveloperSession(sessionId)) {
+                    sendDeveloperFeedback(t);
+                }
             }
         } finally {
             StateManager.endExecution();
@@ -144,14 +149,47 @@ final class AppRunner {
         }
     }
 
+    private void sendDeveloperFeedback(Throwable t) {
+        if (t instanceof ClassCastException cce) {
+            if (isClassloaderMismatch(cce)) {
+                final String className = extractSourceClassName(cce);
+                final JtContainer devC = Jt.container().border(true).use();
+                Jt.markdown("""
+                                    <sup>_This message only appears in **Dev Mode**_</sup> \s
+                                    Following the hot-reload, a `%s` value in the Cache, Session State or Component State is not valid anymore. \s
+                                    Try to clear the cache. \s
+                                    To limit this issue, try to put the Class definition of `%s` in a separate
+                                    Java file. During hot-reload, Jeamlit tries its best to not redefine a Class that is unchanged. \s
+                                    This issue cannot happen in production. \s
+                                    """.formatted(className, className)).use(devC);
+                Jt.button("Clear cache").icon(":delete:").onClick(o -> StateManager.developerReset()).use(devC);
+            }
+        }
+    }
 
-    private static @Language("markdown") @NotNull String buildErrorMessage(Throwable error) {
-        if (error instanceof PageRunException) {
-            error = error.getCause();
+    // find whether the ClassCastException is caused by a ClassLoader mismatch of Jeamlit classloaders
+    private boolean isClassloaderMismatch(final ClassCastException cce) {
+        String message = cce.getMessage();
+        if (message == null) {
+            return false;
         }
-        if (error instanceof InvocationTargetException) {
-            error = error.getCause();
+        final String loaderPattern = "of loader " + FileReloader.HotClassLoader.class.getName();
+        // Check if the pattern appears twice (two different HotClassLoader instances)
+        int firstIndex = message.indexOf(loaderPattern);
+        if (firstIndex == -1) {
+            return false;
         }
+        int secondIndex = message.indexOf(loaderPattern, firstIndex + loaderPattern.length());
+        return secondIndex != -1;
+    }
+
+    // for the classloader mismatch case
+    private String extractSourceClassName(final @Nonnull ClassCastException cce) {
+        final Matcher m = CLASSLOADER_MISMATCH_CLASSNAME_P.matcher(cce.getMessage() == null ? "" : cce.getMessage());
+        return m.find() ? m.group(1) : "unknown class";
+    }
+
+    private static void sendUserFeedback(final Throwable error) {
         final String exceptionSimpleName = error.getClass().getSimpleName();
         final String errorMessage = optional(error.getMessage()).orElse("[ no error message ]");
         final String stackTrace = stackTraceString(error);
@@ -162,8 +200,7 @@ final class AppRunner {
                                                                                                  exceptionSimpleName,
                                                                                                  errorMessage,
                                                                                                  stackTrace)));
-
-        return """
+        @Language("markdown") String errorMarkdown = """
                 **%s**: %s
                 
                 **Stacktrace**:
@@ -176,5 +213,18 @@ final class AppRunner {
                               stackTrace,
                               googleLink,
                               chatGptLink);
+
+        // Send error as a component usage - its lifecycle is managed like all other components
+        Jt.error(errorMarkdown).use();
+    }
+
+    private static Throwable unwrapException(Throwable error) {
+        if (error instanceof PageRunException) {
+            error = error.getCause();
+        }
+        if (error instanceof InvocationTargetException) {
+            error = error.getCause();
+        }
+        return error;
     }
 }

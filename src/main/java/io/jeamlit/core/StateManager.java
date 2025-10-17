@@ -624,6 +624,19 @@ final class StateManager {
         }
     }
 
+    static void registerDeveloperSession(final @Nonnull String sessionId) {
+        final InternalSessionState sessionState = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
+        sessionState.setDeveloper(true);
+    }
+
+    static boolean isDeveloperSession(final String sessionId) {
+        final InternalSessionState sessionState = SESSIONS.get(sessionId);
+        // can be relaxed later - for the moment catching bugs early
+        checkState(sessionState != null, "Unknown session %s. Please reach out to support.", sessionId);
+        return sessionState.isDeveloper();
+
+    }
+
     private static @Nullable JtComponent<?> findIn(StateManager.AppExecution execution, String internalKey) {
         return execution.containerToComponents.values().stream()
                                               .filter(c -> c.containsKey(internalKey))
