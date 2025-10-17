@@ -67,6 +67,13 @@ final class InternalSessionState {
 
     private String callbackComponentKey;
 
+    void clearStates() {
+        userState.clear();
+        removeAllComponentsWithPrefix("");
+        formComponentsToReset.addAll(pendingInFormComponentsState.keySet());
+        pendingInFormComponentsState.clear();
+    }
+
     record UrlContext(@Nonnull String currentPath,
                              @Nonnull Map<String, List<String>> queryParameters) {
     }

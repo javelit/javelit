@@ -559,8 +559,7 @@ final class StateManager {
     // it is only available to developer sessions
     static void developerReset() {
         CACHE.clear();
-        SESSIONS.clear();
-        LAST_EXECUTIONS.clear();
+        SESSIONS.values().forEach(InternalSessionState::clearStates);
     }
 
     static @Nonnull InternalSessionState.UrlContext getUrlContext() {
