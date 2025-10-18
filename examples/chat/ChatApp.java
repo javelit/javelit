@@ -1,6 +1,6 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.47.0
+//DEPS io.jeamlit:jeamlit:0.48.0
 
 import java.util.ArrayList;
 import java.util.List;
