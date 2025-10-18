@@ -274,7 +274,9 @@ public final class Server implements StateManager.RenderServer {
                 LOG.error("Unknown error type: {}", e.getClass(), e);
             }
             lastCompilationErrorMessage = e.getMessage();
-            session2WsChannel.keySet().forEach(sessionId -> sendCompilationError(sessionId, lastCompilationErrorMessage));
+            session2WsChannel
+                    .keySet()
+                    .forEach(sessionId -> sendCompilationError(sessionId, lastCompilationErrorMessage));
             return;
         }
 
@@ -490,7 +492,9 @@ public final class Server implements StateManager.RenderServer {
                         .map(ip -> Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1").contains(ip))
                         .orElse(false);
             } catch (Exception e) {
-                LOG.warn("Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.", e);
+                LOG.warn(
+                        "Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.",
+                        e);
                 return false;
             }
         }
@@ -536,8 +540,8 @@ public final class Server implements StateManager.RenderServer {
                     final UrlContext urlContext = new UrlContext(optional(
                             frontendMessage.path()).orElse(""),
                                                                  optional(
-                                                                                                                   frontendMessage.queryParameters()).orElse(
-                                                                                                                   Map.of()));
+                                                                         frontendMessage.queryParameters()).orElse(
+                                                                         Map.of()));
                     StateManager.setUrlContext(sessionId, urlContext);
                     // Trigger app execution with new URL context
                     doRerun = true;
@@ -557,9 +561,11 @@ public final class Server implements StateManager.RenderServer {
         } catch (Exception e) {
             // log because it's really unexpected
             LOG.error("Error handling client message", e);
-            sendFullScreenModalError(sessionId, "Client message processing error",
+            sendFullScreenModalError(sessionId,
+                                     "Client message processing error",
                                      "The server was not able to process the client message. Please reach out to support if this error is unexpected.",
-                                     e.getMessage(), true);
+                                     e.getMessage(),
+                                     true);
         }
 
 
@@ -637,8 +643,9 @@ public final class Server implements StateManager.RenderServer {
         if (StateManager.isDeveloperSession(sessionId) && unusedComponents != null && !unusedComponents.isEmpty()) {
             message.put("toastDuration", 10);
             final List<String> unusedComponentsListItems = unusedComponents.entrySet().stream()
-                                                                       .map(e -> unusedComponentToMarkdownLi(e.getKey(), e.getValue()))
-                                                                       .toList();
+                                                                           .map(e -> unusedComponentToMarkdownLi(e.getKey(),
+                                                                                                                 e.getValue()))
+                                                                           .toList();
             final @Language("markdown") String toastBody = """
                     The following components were created but never used: \s
                     %s
@@ -655,7 +662,7 @@ public final class Server implements StateManager.RenderServer {
 
     private static String unusedComponentToMarkdownLi(final String name, final Integer unusedCount) {
         final String userFriendlyName = name.substring(name.lastIndexOf(".") + 1).replace("Component", "");
-        return "- "+ userFriendlyName + " - _" + unusedCount + "_";
+        return "- " + userFriendlyName + " - _" + unusedCount + "_";
 
     }
 
@@ -824,7 +831,9 @@ public final class Server implements StateManager.RenderServer {
             try {
                 watcherFuture = watcherFutureWrapper.get(10, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                throw new RuntimeException("Initializing file watch timed out after 10 seconds. Try to run the jeamlit app in a parent directory with less files. Also, do not run the jeamlit app in a parent directory that contains Cloud files (iCloud, Dropbox, etc...).", e);
+                throw new RuntimeException(
+                        "Initializing file watch timed out after 10 seconds. Try to run the jeamlit app in a parent directory with less files. Also, do not run the jeamlit app in a parent directory that contains Cloud files (iCloud, Dropbox, etc...).",
+                        e);
             } catch (InterruptedException e) {
                 throw new RuntimeException("Initializing file watch was interrupted.", e);
             } catch (ExecutionException e) {
