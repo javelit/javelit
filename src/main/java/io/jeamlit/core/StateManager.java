@@ -549,7 +549,7 @@ final class StateManager {
     }
 
     static void setUrlContext(final @Nonnull String sessionId,
-                              final @Nonnull InternalSessionState.UrlContext urlContext) {
+                              final @Nonnull UrlContext urlContext) {
         final InternalSessionState session = SESSIONS.computeIfAbsent(sessionId, k -> new InternalSessionState());
         session.setUrlContext(urlContext);
         session.removeComponentState(JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY);
@@ -562,7 +562,7 @@ final class StateManager {
         SESSIONS.values().forEach(InternalSessionState::clearStates);
     }
 
-    static @Nonnull InternalSessionState.UrlContext getUrlContext() {
+    static @Nonnull UrlContext getUrlContext() {
         final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
         checkState(currentExecution != null, "No active execution context. Please reach out to support.");
         final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
@@ -644,4 +644,20 @@ final class StateManager {
                                               .map(m -> m.get(internalKey))
                                               .orElse(null);
     }
+
+
+    /// CAUTION the return values  of the methods below are exposed in the public api
+    static @Nonnull TypedMap publicSessionState() {
+        final InternalSessionState session = getCurrentSession();
+        return new TypedMap(session.getUserState());
+    }
+
+    static @Nonnull TypedMap publicComponentsState() {
+        final InternalSessionState session = getCurrentSession();
+        // NOTE: best would be to have a deep-copy-on-read map
+        // here it's the responsibility of the user to not mutate the values inside this map
+        return new TypedMap(Map.copyOf(session.getUserVisibleComponentsState()), pagePrefix());
+    }
+
+
 }

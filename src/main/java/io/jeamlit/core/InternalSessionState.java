@@ -18,7 +18,6 @@ package io.jeamlit.core;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
+ * Note:
  * In streamlit, userState (free key-value storage in session_state) and
  * componentsState (widget states) are made available via the same map.
  * This can cause confusion because in most cases the components state should not be edited
@@ -83,10 +83,6 @@ final class InternalSessionState {
 
     public void setDeveloper(boolean developer) {
         isDeveloper = developer;
-    }
-
-    record UrlContext(@Nonnull String currentPath,
-                             @Nonnull Map<String, List<String>> queryParameters) {
     }
 
     private UrlContext urlContext;

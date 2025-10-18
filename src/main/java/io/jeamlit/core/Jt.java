@@ -109,8 +109,7 @@ public final class Jt {
      *}
      */
     public static TypedMap sessionState() {
-        final InternalSessionState session = StateManager.getCurrentSession();
-        return new TypedMap(session.getUserState());
+        return StateManager.publicSessionState();
     }
 
     /**
@@ -137,10 +136,7 @@ public final class Jt {
      *}
      */
     public static TypedMap componentsState() {
-        final InternalSessionState session = StateManager.getCurrentSession();
-        // NOTE: best would be to have a deep-copy-on-read map
-        // here it's the responsibility of the user to not mutate the values inside this map
-        return new TypedMap(Map.copyOf(session.getUserVisibleComponentsState()), StateManager.pagePrefix());
+        return StateManager.publicComponentsState();
     }
 
     /**
@@ -1975,8 +1971,8 @@ public final class Jt {
         checkArgument(newPage != null,
                       "Invalid page %s. This page is not registered in Jt.navigation().",
                       pageApp != null ? pageApp.getName() : "null (home page) - Please reach out to support.");
-        final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(newPage.urlPath(),
-                                                                                               Map.of());
+        final UrlContext urlContext = new UrlContext(newPage.urlPath(),
+                                                     Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
     }
 
@@ -2011,7 +2007,7 @@ public final class Jt {
      */
     public static void rerun(final boolean toHome) {
         if (toHome) {
-            final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext("/", Map.of());
+            final UrlContext urlContext = new UrlContext("/", Map.of());
             throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
         } else {
             throw new BreakAndReloadAppException(null);

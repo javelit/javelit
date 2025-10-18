@@ -533,9 +533,9 @@ public final class Server implements StateManager.RenderServer {
                 }
                 case "reload" -> doRerun = true;
                 case "path_update" -> {
-                    final InternalSessionState.UrlContext urlContext = new InternalSessionState.UrlContext(optional(
+                    final UrlContext urlContext = new UrlContext(optional(
                             frontendMessage.path()).orElse(""),
-                                                                                                           optional(
+                                                                 optional(
                                                                                                                    frontendMessage.queryParameters()).orElse(
                                                                                                                    Map.of()));
                     StateManager.setUrlContext(sessionId, urlContext);
