@@ -165,7 +165,9 @@ public abstract class JtComponent<T> {
         this.defaultContainer = defaultContainer;
     }
 
-    protected JtComponent(final @Nonnull JtComponentBuilder builder, final T currentValue, final @Nullable Consumer<T> callback) {
+    protected JtComponent(final @Nonnull JtComponentBuilder builder,
+                          final T currentValue,
+                          final @Nullable Consumer<T> callback) {
         this(builder, currentValue, callback, JtContainer.MAIN);
     }
 
@@ -173,7 +175,8 @@ public abstract class JtComponent<T> {
         return internalKey;
     }
 
-    @Nullable String getUserKey() {
+    @Nullable
+    String getUserKey() {
         return userKey;
     }
 
@@ -338,6 +341,16 @@ public abstract class JtComponent<T> {
         return MarkdownUtils.markdownToHtml(markdown, removeWrap);
     }
 
+
+
+    /**
+     * Returns a key that allows to skip sending the register() content if the content has already been sent
+     * This default implementation does not depend on the JtComponent fields.
+     * If a Component could return different register() values based its fields, make sure to override this method.
+     */
+    protected String frontendRegistrationKey() {
+        return this.getClass().getName();
+    }
 
     // StateManager wrappers.
     //  The methods below are simply wrapping StateManager methods

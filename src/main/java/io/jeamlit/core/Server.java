@@ -591,13 +591,15 @@ public final class Server implements StateManager.RenderServer {
 
         if (component != null) {
             // note: hot reload does not work for changes in the register() method
-            final String componentType = component.getClass().getName();
-            if (!componentsAlreadyRegistered.contains(componentType)) {
+            final String frontendRegistrationKey = component.frontendRegistrationKey();
+            if (!componentsAlreadyRegistered.contains(frontendRegistrationKey)) {
                 final @Nullable String registerCode = component.register();
                 if (registerCode != null) {
                     registrations.add(registerCode);
                 }
-                componentsAlreadyRegistered.add(componentType);
+                // TODO: marking the component as registered here is too soon. - opeartions below could throw, and even the frontend could fail
+                //  so best would be to have a feedback from the UI when a registrartion is successful - can be done later
+                componentsAlreadyRegistered.add(frontendRegistrationKey);
             }
         }
 
