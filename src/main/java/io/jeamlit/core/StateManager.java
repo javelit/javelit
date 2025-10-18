@@ -91,7 +91,8 @@ final class StateManager {
     interface RenderServer {
         // component can be null to trigger a full cleanup
         void send(final @Nonnull String sessionId,
-                  final @Nullable JtComponent<?> component,
+                  final @Nullable String renderHtml,
+                  final @Nullable String registrationHtml,
                   @Nonnull JtContainer container,
                   final @Nullable Integer index,
                   final boolean clearBefore);
@@ -418,8 +419,11 @@ final class StateManager {
         }
 
         // send the component with clear instruction if needed
+        final Set<String> registeredInFrontend =  session.getRegisteredInFrontend();
+        final String frontendRegistrationKey = component.frontendRegistrationKey();
         renderServer.send(currentExecution.sessionId,
-                          component,
+                          component.render(),
+                          registeredInFrontend.contains(frontendRegistrationKey) ? null : component.register(),
                           container,
                           // not necessary to pass the index if a difference has been found and the clear message has been sent already
                           currentExecution.containerToFoundDifference.get(container) && !clearBefore ?
@@ -427,6 +431,8 @@ final class StateManager {
                                   currentExecution.containerToCurrentIndex.get(
                                           container),
                           clearBefore);
+        // assume that if send does not throw, the message was well received by the frontend and the component was registered properly
+        registeredInFrontend.add(frontendRegistrationKey);
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
         if (component.returnValue() instanceof JtContainer) {
             currentExecution.clearedContainers.add((JtContainer) component.returnValue());
@@ -472,13 +478,14 @@ final class StateManager {
                         if (previousComponents.size() > currentComponents.size()) {
                             renderServer.send(currentExecution.sessionId,
                                               null,
+                                              null,
                                               containerInPrevious,
                                               currentComponents.size(),
                                               true);
                         }
                     } else {
                         // some container is not used anymore - empty it - it's the responsibility of the container to not appear when empty
-                        renderServer.send(currentExecution.sessionId, null, containerInPrevious, 0, true);
+                        renderServer.send(currentExecution.sessionId, null, null, containerInPrevious, 0, true);
                     }
                 }
             }
@@ -509,7 +516,8 @@ final class StateManager {
                             checkState(entry.getKey().equals(component.getInternalKey()),
                                        "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
                             session.upsertComponentsState(component);
-                            renderServer.send(currentExecution.sessionId, component, container, i, false);
+                            // registrationHtml is never necessary here - skipping the check/update of the registeredInFrontend Set
+                            renderServer.send(currentExecution.sessionId, component.render(), null, container, i, false);
                         }
                         i++;
                     }
@@ -573,13 +581,14 @@ final class StateManager {
     private static class NoOpRenderServer implements RenderServer {
         @Override
         public void send(final @Nonnull String sessionId,
-                         final @Nullable JtComponent<?> component,
+                         final @Nullable String renderHtml,
+                         final @Nullable String registrationHtml,
                          final @NotNull JtContainer container,
                          final @Nullable Integer index,
                          final boolean clearBefore) {
             LOG.error(
-                    "Cannot send indexed delta for component {} in container {} at index {} to session {}. No render server is registered.",
-                    component != null ? component.getInternalKey() : null,
+                    "Cannot send indexed delta for component html {} in container {} at index {} to session {}. No render server is registered.",
+                    renderHtml,
                     container,
                     index,
                     sessionId);

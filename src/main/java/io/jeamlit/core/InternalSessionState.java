@@ -65,6 +65,10 @@ final class InternalSessionState {
     // set of component keys to reset after the run of the script - the update has to be sent to the frontend.
     private final Set<String> formComponentsToReset = new HashSet<>();
 
+    // the content of JtComponent.register() only has to be sent once to the frontend per session
+    // this set maintains the registered components
+    private final Set<String> registeredInFrontend = new HashSet<>();
+
     private String callbackComponentKey;
 
     // whether this is a developer session
@@ -179,5 +183,9 @@ final class InternalSessionState {
 
     JtPage getLastExecutionPage() {
         return lastExecutionPage;
+    }
+
+    public Set<String> getRegisteredInFrontend() {
+        return registeredInFrontend;
     }
 }

@@ -29,7 +29,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -103,7 +102,6 @@ public final class Server implements StateManager.RenderServer {
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
     private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
-    private final Map<String, Set<String>> sessionRegisteredTypes = new ConcurrentHashMap<>();
     private final String customHeaders;
 
     private static final Mustache indexTemplate;
@@ -476,7 +474,6 @@ public final class Server implements StateManager.RenderServer {
                 protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
                     session2WsChannel.remove(sessionId);
                     session2Xsrf.remove(sessionId);
-                    sessionRegisteredTypes.remove(sessionId);
                     StateManager.clearSession(sessionId);
                 }
             });
@@ -586,33 +583,15 @@ public final class Server implements StateManager.RenderServer {
 
     @Override
     public void send(final @Nonnull String sessionId,
-                     final @Nullable JtComponent<?> component,
-                     @NotNull JtContainer container,
+                     final @Nullable String renderHtml,
+                     final @Nullable String registrationHtml,
+                     final @NotNull JtContainer container,
                      final @Nullable Integer index,
                      final boolean clearBefore) {
-        // Handle component registration
-        final Set<String> componentsAlreadyRegistered = sessionRegisteredTypes.computeIfAbsent(sessionId,
-                                                                                               k -> new HashSet<>());
-        final List<String> registrations = new ArrayList<>();
-
-        if (component != null) {
-            // note: hot reload does not work for changes in the register() method
-            final String frontendRegistrationKey = component.frontendRegistrationKey();
-            if (!componentsAlreadyRegistered.contains(frontendRegistrationKey)) {
-                final @Nullable String registerCode = component.register();
-                if (registerCode != null) {
-                    registrations.add(registerCode);
-                }
-                // TODO: marking the component as registered here is too soon. - opeartions below could throw, and even the frontend could fail
-                //  so best would be to have a feedback from the UI when a registrartion is successful - can be done later
-                componentsAlreadyRegistered.add(frontendRegistrationKey);
-            }
-        }
-
         // Send message to frontend
         final Map<String, Object> message = new HashMap<>();
         message.put("type", "delta");
-        message.put("html", component != null ? component.render() : null);
+        message.put("html", renderHtml);
         message.put("container", container.frontendDataContainerField());
         if (index != null) {
             message.put("index", index);
@@ -620,15 +599,10 @@ public final class Server implements StateManager.RenderServer {
         if (clearBefore) {
             message.put("clearBefore", true);
         }
-        if (!registrations.isEmpty()) {
-            message.put("registrations", registrations);
+        if (registrationHtml != null && !registrationHtml.isBlank()) {
+            message.put("registrations", List.of(registrationHtml));
         }
-        LOG.debug("Sending delta: index={}, clearBefore={}, component={}",
-                  index,
-                  clearBefore,
-                  component != null ? component.getInternalKey() : null);
-        LOG.debug("  HTML: {}", component != null ? component.render() : null);
-        LOG.debug("  Registrations: {}", registrations.size());
+        LOG.debug("Sending delta: {}", message);
         sendMessage(sessionId, message);
     }
 
