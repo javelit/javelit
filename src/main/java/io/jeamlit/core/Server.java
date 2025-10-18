@@ -76,6 +76,7 @@ import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.CloseMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
+import io.undertow.websockets.extensions.PerMessageDeflateHandshake;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -180,7 +181,7 @@ public final class Server implements StateManager.RenderServer {
 
     public void start() {
         HttpHandler app = new PathHandler()
-                .addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()))
+                .addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()).addExtension(new PerMessageDeflateHandshake()))
                 .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
                 // internal static files
                 .addPrefixPath("/_/static",
