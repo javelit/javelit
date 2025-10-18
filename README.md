@@ -35,7 +35,7 @@ You'll find a short version below. [Read the doc](https://docs.jeamlit.io/get-st
 1. Install the CLI ([JBang](https://www.jbang.dev/) is highly recommended)
     ```bash
     # recommended: install with jbang
-    jbang app install io.jeamlit:jeamlit:0.48.0:all@fatjar
+    jbang app install jeamlit@jeamlit
 
     # vanilla
     curl -L -o jeamlit.jar https://repo1.maven.org/maven2/io/jeamlit/jeamlit/0.48.0/jeamlit-0.48.0-all.jar
