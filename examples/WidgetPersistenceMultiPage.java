@@ -1,5 +1,5 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.48.0
+//DEPS io.jeamlit:jeamlit:0.49.0
 
 
 
