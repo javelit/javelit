@@ -375,7 +375,7 @@ public final class Jt {
      * For monospace text, use {@link Jt#code}
      * Examples:
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class TextApp {
      *     public static void main(String[] args) {
@@ -403,7 +403,7 @@ public final class Jt {
      * Examples:
      * Basic title and title with markdown formatting and styling
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class TitleApp {
      *     public static void main(String[] args) {
@@ -436,7 +436,7 @@ public final class Jt {
      * Examples:
      * Basic markdown formatting and colored text styling
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class MarkdownApp {
      *     public static void main(String[] args) {
@@ -464,7 +464,7 @@ public final class Jt {
      * Examples:
      * Basic section separator
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class DividerApp {
      *     public static void main(String[] args) {
@@ -490,7 +490,7 @@ public final class Jt {
      * Examples:
      * Basic section separator
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class DividerApp {
      *     public static void main(String[] args) {
@@ -517,7 +517,7 @@ public final class Jt {
      * Examples:
      * Simple error message
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ErrorApp {
      *     public static void main(String[] args) {
@@ -534,7 +534,7 @@ public final class Jt {
      * <p>
      * Error with markdown formatting
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class FormattedErrorApp {
      *     public static void main(String[] args) {
@@ -561,7 +561,7 @@ public final class Jt {
      * Examples:
      * Simple HTML content
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class HtmlApp {
      *     public static void main(String[] args) {
@@ -590,7 +590,7 @@ public final class Jt {
      * Examples:
      * Loading HTML from file
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.nio.file.Path;
      *
@@ -614,7 +614,7 @@ public final class Jt {
      * Examples:
      * Simple code block
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class CodeApp {
      *     public static void main(String[] args) {
@@ -625,7 +625,7 @@ public final class Jt {
      * <p>
      * Multi-line code with syntax highlighting
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class MultilineCodeApp {
      *     public static void main(String[] args) {
@@ -651,7 +651,7 @@ public final class Jt {
      * Examples:
      * Basic button usage and interaction
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ButtonApp {
      *     public static void main(String[] args) {
@@ -676,7 +676,7 @@ public final class Jt {
      * Examples:
      * Basic checkbox usage
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class CheckboxApp {
      *     public static void main(String[] args) {
@@ -701,7 +701,7 @@ public final class Jt {
      * Examples:
      * Simple toggle
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ToggleApp {
      *     public static void main(String[] args) {
@@ -714,7 +714,7 @@ public final class Jt {
      * <p>
      * Toggle with default value
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ToggleDefaultApp {
      *     public static void main(String[] args) {
@@ -741,7 +741,7 @@ public final class Jt {
      * Examples:
      * Basic integer slider usage
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class SliderApp {
      *     public static void main(String[] args) {
@@ -780,7 +780,7 @@ public final class Jt {
      * Examples:
      * Basic container usage and adding elements out of order
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ContainerApp {
      *     public static void main(String[] args) {
@@ -816,7 +816,7 @@ public final class Jt {
      * Examples:
      * Dynamic content replacement
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -841,7 +841,7 @@ public final class Jt {
      * <p>
      * Simple animations
      * {@snippet :
-     * import io.javelit.core.Jt;import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;import io.javelit.core.Jt;
      *
      * public class AnimationEmptyApp {
      *     public static void main(String[] args) {
@@ -880,7 +880,7 @@ public final class Jt {
      * Examples:
      * Basic three-column layout with headers and content
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ColumnsApp {
      *     public static void main(String[] args) {
@@ -920,7 +920,7 @@ public final class Jt {
      * Examples:
      * Basic tabbed interface
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -937,7 +937,7 @@ public final class Jt {
      * <p>
      * Data analysis tabs
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class DataTabsApp {
      *     public static void main(String[] args) {
@@ -982,7 +982,7 @@ public final class Jt {
      * Examples:
      * Basic expander with explanation content
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ExpanderApp {
      *     public static void main(String[] args) {
@@ -1019,7 +1019,7 @@ public final class Jt {
      * Examples:
      * Settings popover
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -1041,7 +1041,7 @@ public final class Jt {
      * <p>
      * Help popover with information
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class HelpPopoverApp {
      *     public static void main(String[] args) {
@@ -1090,7 +1090,7 @@ public final class Jt {
      * Examples:
      * User registration form
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class FormApp {
      *     public static void main(String[] args) {
@@ -1111,7 +1111,7 @@ public final class Jt {
      * <p>
      * Survey form
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -1146,7 +1146,7 @@ public final class Jt {
      * Examples:
      * Basic form submit button
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class FormSubmitApp {
      *     public static void main(String[] args) {
@@ -1165,7 +1165,7 @@ public final class Jt {
      * <p>
      * Multiple submit buttons in same form
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class MultiSubmitApp {
      *     public static void main(String[] args) {
@@ -1197,7 +1197,7 @@ public final class Jt {
      * Examples:
      * Simple text input
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class TextInputApp {
      *     public static void main(String[] args) {
@@ -1212,7 +1212,7 @@ public final class Jt {
      * <p>
      * Text input with validation
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ValidatedTextInputApp {
      *     public static void main(String[] args) {
@@ -1241,7 +1241,7 @@ public final class Jt {
      * Examples:
      * Simple text area
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class TextAreaApp {
      *     public static void main(String[] args) {
@@ -1257,7 +1257,7 @@ public final class Jt {
      * <p>
      * Text area for code input
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class CodeTextAreaApp {
      *     public static void main(String[] args) {
@@ -1286,7 +1286,7 @@ public final class Jt {
      * Examples:
      * Simple date input
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.time.LocalDate;
      * import java.time.Period;
@@ -1315,7 +1315,7 @@ public final class Jt {
      * Examples:
      * Simple number input
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class NumberInputApp {
      *     public static void main(String[] args) {
@@ -1340,7 +1340,7 @@ public final class Jt {
      * Examples:
      * Integer input with specific type
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class TypedNumberInputApp {
      *     public static void main(String[] args) {
@@ -1371,7 +1371,7 @@ public final class Jt {
      * Examples:
      * Simple radio selection
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -1389,7 +1389,7 @@ public final class Jt {
      * <p>
      * Radio with custom objects
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ProductRadioApp {
      *     public static void main(String[] args) {
@@ -1425,7 +1425,7 @@ public final class Jt {
      * Examples:
      * Simple dropdown selection
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
@@ -1443,7 +1443,7 @@ public final class Jt {
      * <p>
      * Dropdown with default value
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ProcessingSelectBoxApp {
      *     public static void main(String[] args) {
@@ -1471,7 +1471,7 @@ public final class Jt {
      * Examples:
      * Basic page creation with custom title and icon
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class NavigationApp {
      *     public static class FirstPage {
@@ -1516,7 +1516,7 @@ public final class Jt {
      * Examples:
      * Basic multipage navigation setup
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class NavigationApp {
      *     public static class FirstPage {
@@ -1559,7 +1559,7 @@ public final class Jt {
      * A multipage app with the sidebar hidden.
      * A footer replaces the sidebar. The footer contains links to all pages of the app and an external link.
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * public class ToDelete {
      *
@@ -1655,7 +1655,7 @@ public final class Jt {
      * Examples:
      * Plot from a {@code Chart} ({@code Bar} extends {@code Chart}).
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import org.icepear.echarts.Bar;
      *
@@ -1688,7 +1688,7 @@ public final class Jt {
      * Examples:
      * Plot from an {@code Option}.
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import org.icepear.echarts.Option;
      * import org.icepear.echarts.charts.bar.BarSeries;
@@ -1731,7 +1731,7 @@ public final class Jt {
      * Examples:
      * Plot from a JSON {@code String}
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import org.icepear.echarts.Option;
      * import org.icepear.echarts.charts.bar.BarSeries;
@@ -1776,7 +1776,7 @@ public final class Jt {
      * Examples:
      * Basic table with data objects
      * {@snippet :
-     * import tech.catheu.javelit.core.Jt;
+     * import io.javelit.core.Jt;
      *
      * import java.util.List;
      *
