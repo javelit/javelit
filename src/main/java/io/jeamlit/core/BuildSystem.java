@@ -22,9 +22,10 @@ import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
-import dev.jbang.dependencies.DependencyResolver;
+import dev.jbang.dependencies.DependencyUtil;
 import dev.jbang.dependencies.ModularClassPath;
 import dev.jbang.source.Project;
 import dev.jbang.source.Source;
@@ -81,9 +82,14 @@ public enum BuildSystem {
             // remove the jeamlit dependencies - it's added to help the IDE plugins but it's not necessary, the FATJAR injects itself
             dependencies = dependencies.stream().filter(e -> !e.startsWith("io.jeamlit:jeamlit:")).toList();
             if (!dependencies.isEmpty()) {
-                final DependencyResolver resolver = new DependencyResolver();
-                resolver.addDependencies(dependencies);
-                final ModularClassPath modularClasspath = resolver.resolve();
+                final ModularClassPath modularClasspath = DependencyUtil.resolveDependencies(new ArrayList<>(dependencies),
+                                                   // default to maven central
+                                                   List.of(),
+                                                   false,
+                                                   false,
+                                                   false,
+                                                   true,
+                                                   false);
                 cp.append(File.pathSeparator).append(modularClasspath.getClassPath());
             }
 
@@ -111,7 +117,8 @@ public enum BuildSystem {
         }
     };
 
-    BuildSystem() {}
+    BuildSystem() {
+    }
 
     abstract boolean isUsed();
 
