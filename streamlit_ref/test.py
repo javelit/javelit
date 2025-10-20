@@ -9,8 +9,8 @@ if "details_shown" not in st.session_state:
     st.session_state.details_shown = 0
 
 # Title and intro
-st.title("Jeamlit Demo App")
-st.text("Welcome to Jeamlit - Streamlit for Java!")
+st.title("Javelit Demo App")
+st.text("Welcome to Javelit - Streamlit for Java!")
 st.text("This demo shows basic components and state management.")
 
 # Slider

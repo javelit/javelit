@@ -26,8 +26,8 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
       - name: set github user
         run: |
-          git config --global user.name "jeamlit-ci"
-          git config --global user.email "jeamlit-ci@users.noreply.github.com"
+          git config --global user.name "javelit-ci"
+          git config --global user.email "javelit-ci@users.noreply.github.com"
       - name: create release
         run: |
           ./mvnw -B -V -ntp -Prelease release:clean initialize release:prepare release:perform

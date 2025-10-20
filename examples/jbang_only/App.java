@@ -1,14 +1,14 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
 
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.Server;
+import io.javelit.core.Jt;
+import io.javelit.core.Server;
 
 // run with jbang App.java
-// run with jbang --debug App.java to get IDE hot-reload (less powerful than jeamlit hot-reload)
-// see https://docs.jeamlit.io/get-started/installation/embedded-vanilla#development-with-hot-reload
+// run with jbang --debug App.java to get IDE hot-reload (less powerful than javelit hot-reload)
+// see https://docs.javelit.io/get-started/installation/embedded-vanilla#development-with-hot-reload
 public class App {
 
     public static void main(String[] args) {

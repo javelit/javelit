@@ -1,4 +1,4 @@
-name: Update Jeamlit version in docs and examples
+name: Update Javelit version in docs and examples
 
 on:
   schedule:
@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Fetch latest Jeamlit version from Maven Central
+      - name: Fetch latest Javelit version from Maven Central
         id: get-version
         run: |
           # Fetch maven-metadata.xml
-          METADATA_URL="https://repo1.maven.org/maven2/io/jeamlit/jeamlit/maven-metadata.xml"
+          METADATA_URL="https://repo1.maven.org/maven2/io/javelit/javelit/maven-metadata.xml"
           METADATA=$(curl -s "$METADATA_URL")
 
           # Extract latest version (prefer <release> over <latest>)
@@ -38,11 +38,11 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
 
-          # Update JBang command: io.jeamlit:jeamlit:X.Y.Z:all
-          sed -i "s/io\.jeamlit:jeamlit:[0-9.]\+:all/io.jeamlit:jeamlit:$VERSION:all/g" README.md
+          # Update JBang command: io.javelit:javelit:X.Y.Z:all
+          sed -i "s/io\.javelit:javelit:[0-9.]\+:all/io.javelit:javelit:$VERSION:all/g" README.md
 
-          # Update Maven Central URL: /jeamlit/X.Y.Z/jeamlit-X.Y.Z-all.jar
-          sed -i "s|jeamlit/[0-9.]\+/jeamlit-[0-9.]\+-all\.jar|jeamlit/$VERSION/jeamlit-$VERSION-all.jar|g" README.md
+          # Update Maven Central URL: /javelit/X.Y.Z/javelit-X.Y.Z-all.jar
+          sed -i "s|javelit/[0-9.]\+/javelit-[0-9.]\+-all\.jar|javelit/$VERSION/javelit-$VERSION-all.jar|g" README.md
 
           # Update Maven dependency: <version>X.Y.Z</version>
           sed -i "s|<version>[0-9.]\+</version>|<version>$VERSION</version>|g" README.md
@@ -51,8 +51,8 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
 
-          # Update version in all example .java files: //DEPS io.jeamlit:jeamlit:X.Y.Z
-          find examples -name "*.java" -type f -exec sed -i "s/io\.jeamlit:jeamlit:[0-9.]\+/io.jeamlit:jeamlit:$VERSION/g" {} +
+          # Update version in all example .java files: //DEPS io.javelit:javelit:X.Y.Z
+          find examples -name "*.java" -type f -exec sed -i "s/io\.javelit:javelit:[0-9.]\+/io.javelit:javelit:$VERSION/g" {} +
 
       - name: Check for changes
         id: check-changes
@@ -69,8 +69,8 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
-          git config --global user.name "jeamlit-ci"
-          git config --global user.email "jeamlit-ci@users.noreply.github.com"
+          git config --global user.name "javelit-ci"
+          git config --global user.email "javelit-ci@users.noreply.github.com"
           git add README.md examples/
           git commit -m "chore: update version references to $VERSION"
           git push

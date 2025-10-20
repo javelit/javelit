@@ -148,7 +148,7 @@ class JtToolbarMenu extends LitElement {
         super.connectedCallback();
         document.addEventListener('click', this.handleOutsideClick);
         // Check if running on localhost
-        this.isLocalhost = window.jeamlit && window.jeamlit.isLocalhost;
+        this.isLocalhost = window.javelit && window.javelit.isLocalhost;
     }
 
     disconnectedCallback() {
@@ -174,8 +174,8 @@ class JtToolbarMenu extends LitElement {
         switch(action) {
             case 'rerun':
                 // Send reload message to backend
-                if (window.jeamlit && window.jeamlit.sendMessage) {
-                    window.jeamlit.sendMessage({ type: 'reload' });
+                if (window.javelit && window.javelit.sendMessage) {
+                    window.javelit.sendMessage({ type: 'reload' });
                 }
                 break;
             case 'settings':
@@ -187,8 +187,8 @@ class JtToolbarMenu extends LitElement {
                 break;
             case 'clear-cache':
                 // Send clear cache message to backend (only works on localhost)
-                if (window.jeamlit && window.jeamlit.sendMessage) {
-                    window.jeamlit.sendMessage({ type: 'clear_cache' });
+                if (window.javelit && window.javelit.sendMessage) {
+                    window.javelit.sendMessage({ type: 'clear_cache' });
                 }
                 break;
         }

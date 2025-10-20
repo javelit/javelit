@@ -1,11 +1,11 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
 
-import java.util.List;import io.jeamlit.core.Jt;
+import java.util.List;import io.javelit.core.Jt;
 
-// contrary to Streamlit (https://github.com/streamlit/streamlit/issues/6074), Jeamlit can maintain state of
+// contrary to Streamlit (https://github.com/streamlit/streamlit/issues/6074), Javelit can maintain state of
 // widgets across pages. States are maintained if a key is provided with .key()
 // To clear all states of a page when the page is left, call .noPersistWhenLeft() on the page.
 public class WidgetPersistenceMultiPage {

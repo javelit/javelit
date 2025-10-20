@@ -1,9 +1,9 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 import java.util.List;
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 // even if a widget has a key, its value is reset if its configuration has changed
 public class WidgetIdentity {

@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
 
@@ -7,15 +7,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.jeamlit.components.media.FileUploaderComponent;import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtUploadedFile;
+import io.javelit.components.media.FileUploaderComponent;import io.javelit.core.Jt;
+import io.javelit.core.JtUploadedFile;
 
 public class FileUploaderExample {
     public static void main(String[] args) {
         // Title
         Jt.title("📁 File Uploader Examples");
         
-        Jt.text("This example demonstrates the three file upload modes available in Jeamlit.");
+        Jt.text("This example demonstrates the three file upload modes available in Javelit.");
         
         
         

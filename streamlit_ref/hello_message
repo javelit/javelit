@@ -40,7 +40,7 @@
 
 
 ###################### NOTES ###################
-NOTE: no need for watchdog equivalent in jeamlit
+NOTE: no need for watchdog equivalent in javelit
 Use colors
 Show both LOCAL and network URL
 There is a loader when changing pages.

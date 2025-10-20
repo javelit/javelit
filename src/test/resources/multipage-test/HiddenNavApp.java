@@ -16,7 +16,7 @@
 
 
 
-import io.jeamlit.core.Jt;import io.jeamlit.core.JtPage;
+import io.javelit.core.Jt;import io.javelit.core.JtPage;
 
 public class HiddenNavApp {
     public static void main(String[] args) {

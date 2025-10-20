@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class MarkdownExample {
     public static void main(String[] args) {
@@ -62,7 +62,7 @@ public class MarkdownExample {
             Here are some example links:
             
             - Visit [the example website](https://example.com) for a great example
-            - Check out [GitHub](https://github.com/jeamlit/jeamlit) for the code repository of this project
+            - Check out [GitHub](https://github.com/javelit/javelit) for the code repository of this project
             - Learn more about [Markdown](https://www.markdownguide.org/basic-syntax/)
             """).use();
 

@@ -16,7 +16,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Jeamlit App</title>
+    <title>Javelit App</title>
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
     <link rel="preload" as="style" href="{{ MATERIAL_SYMBOLS_CDN }}">
     <link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
@@ -235,7 +235,7 @@
             animation: errorPulse 0.6s linear 3;
         }
 
-        .jeamlit-attribution {
+        .javelit-attribution {
             position: fixed;
             bottom: 0;
             right: 0;
@@ -250,7 +250,7 @@
             border-radius: var(--jt-border-radius) 0 0 0;
         }
 
-        .jeamlit-attribution:hover {
+        .javelit-attribution:hover {
             font-weight: var(--jt-font-weight-bold);
             padding: var(--jt-spacing-sm) var(--jt-spacing-sm);
         }
@@ -295,8 +295,8 @@
 {{! Connection Error Modal }}
 <jt-connection-error-modal id="connection-modal" prevent-close>
     <span slot="title">Connection Error</span>
-    <p>Is Jeamlit still running? If you accidentally stopped Jeamlit, just restart it in your terminal:</p>
-    <jt-internal-code body="jeamlit run YourApp.java" language="bash"></jt-internal-code>
+    <p>Is Javelit still running? If you accidentally stopped Javelit, just restart it in your terminal:</p>
+    <jt-internal-code body="javelit run YourApp.java" language="bash"></jt-internal-code>
 </jt-connection-error-modal>
 
 {{! Any other error modal }}
@@ -313,7 +313,7 @@
 </jt-connection-error-modal>
 
 {{! Attribution }}
-<a href="https://github.com/jeamlit/jeamlit" class="jeamlit-attribution" target="_blank" rel="noopener">&hearts; Built with Jeamlit &hearts;</a>
+<a href="https://github.com/javelit/javelit" class="javelit-attribution" target="_blank" rel="noopener">&hearts; Built with Javelit &hearts;</a>
 
 <script>
     const app = document.getElementById('app');
@@ -331,12 +331,12 @@
     let isFirstDelta = true;
 
     // Localhost detection and XSRF token - available globally
-    window.jeamlit = {
+    window.javelit = {
         isLocalhost: window.location.hostname === 'localhost',
         xsrfToken: "{{ XSRF_TOKEN }}"
     };
-    if (window.jeamlit.isLocalhost) {
-        document.querySelector('.jeamlit-attribution').style.display = 'none';
+    if (window.javelit.isLocalhost) {
+        document.querySelector('.javelit-attribution').style.display = 'none';
     }
 
     // Connection management
@@ -344,7 +344,7 @@
     let connectionState = 'disconnected'; // 'connected', 'disconnected', 'reconnecting'
 
     // Sidebar collapse state management
-    let sidebarCollapsed = localStorage.getItem('jeamlit-sidebar-collapsed') === 'true';
+    let sidebarCollapsed = localStorage.getItem('javelit-sidebar-collapsed') === 'true';
     
     // Sidebar resize state
     let isResizing = false;
@@ -360,7 +360,7 @@
             fullSidebar.classList.add('collapsed');
         } else {
             // Restore saved width if not collapsed
-            const savedWidth = localStorage.getItem('jeamlit-sidebar-width');
+            const savedWidth = localStorage.getItem('javelit-sidebar-width');
             if (savedWidth) {
                 fullSidebar.style.width = savedWidth + 'px';
             }
@@ -444,7 +444,7 @@
         // Save width
         if (!sidebarCollapsed) {
             const currentWidth = fullSidebar.offsetWidth;
-            localStorage.setItem('jeamlit-sidebar-width', currentWidth);
+            localStorage.setItem('javelit-sidebar-width', currentWidth);
         }
         
         // Remove document listeners
@@ -461,24 +461,24 @@
             // Save current width before collapsing
             const currentWidth = fullSidebar.offsetWidth;
             if (currentWidth > 24) {
-                localStorage.setItem('jeamlit-sidebar-expanded-width', currentWidth);
+                localStorage.setItem('javelit-sidebar-expanded-width', currentWidth);
             }
             fullSidebar.classList.add('collapsed');
             fullSidebar.style.width = '24px';
         } else {
             // Restore saved width when expanding
             fullSidebar.classList.remove('collapsed');
-            const savedWidth = localStorage.getItem('jeamlit-sidebar-expanded-width') || 
-                              localStorage.getItem('jeamlit-sidebar-width') || 
+            const savedWidth = localStorage.getItem('javelit-sidebar-expanded-width') ||
+                              localStorage.getItem('javelit-sidebar-width') ||
                               DEFAULT_SIDEBAR_WIDTH;
             fullSidebar.style.width = savedWidth + 'px';
         }
         
         // Store state in localStorage
-        localStorage.setItem('jeamlit-sidebar-collapsed', sidebarCollapsed.toString());
+        localStorage.setItem('javelit-sidebar-collapsed', sidebarCollapsed.toString());
     }
 
-    window.jeamlit = {...window.jeamlit,
+    window.javelit = {...window.javelit,
         sendComponentUpdate: function(componentKey, value) {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -499,7 +499,7 @@
             }
 
             // Send path_update message to backend to trigger app re-run
-            window.jeamlit.sendMessage({
+            window.javelit.sendMessage({
                 type: 'path_update',
                 path: window.location.pathname,
                 queryParameters: queryObj,
@@ -527,7 +527,7 @@
             ws.onmessage = handleWebSocketMessage;
 
             ws.onopen = () => {
-                window.jeamlit.sendPathUpdate();
+                window.javelit.sendPathUpdate();
                 connectionState = 'connected';
                 console.log('WebSocket connected');
                 connectionModal.show = false;
@@ -564,7 +564,7 @@
         const message = JSON.parse(event.data);
         if (message.type === 'session_init') {
             // Store WebSocket session ID for POST/PUT requests - eg file uploads
-            window.jeamlit.sessionId = message.sessionId;
+            window.javelit.sessionId = message.sessionId;
         } else if (message.type === 'delta') {
             handleDeltaMessage(message);
         } else if (message.type === 'modal_error') {
@@ -590,7 +590,7 @@
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
-        if (window.jeamlit.isLocalhost && message.toastDuration) {
+        if (window.javelit.isLocalhost && message.toastDuration) {
             const toast = document.createElement('jt-internal-toast');
             toast.body = message.toastBody ? message.toastBody : "";
             toast.icon = message.toastIcon ? message.toastIcon : "";
@@ -631,10 +631,10 @@
         if (!registrations || registrations.length === 0) return;
 
         // Ensure a hidden container is present
-        let container = document.getElementById('jeamlit-registrations');
+        let container = document.getElementById('javelit-registrations');
         if (!container) {
             container = document.createElement('div');
-            container.id = 'jeamlit-registrations';
+            container.id = 'javelit-registrations';
             container.style.display = 'none';
             document.body.appendChild(container);
         }
@@ -821,7 +821,7 @@
 
     function loadAndApplySettings() {
         try {
-            const stored = localStorage.getItem('jeamlit-settings');
+            const stored = localStorage.getItem('javelit-settings');
             if (stored) {
                 const config = JSON.parse(stored);
                 applySettings(config);

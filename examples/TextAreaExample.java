@@ -1,9 +1,9 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
 
-import io.jeamlit.components.input.TextAreaComponent;import io.jeamlit.core.Jt;
+import io.javelit.components.input.TextAreaComponent;import io.javelit.core.Jt;
 
 public class TextAreaExample {
     public static void main(String[] args) {

@@ -15,7 +15,7 @@
  */
 package pages;
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class SettingsPage {
     public static void main(String[] args) {

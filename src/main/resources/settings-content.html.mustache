@@ -146,7 +146,7 @@ class JtSettingsContent extends LitElement {
 
     loadConfig() {
         try {
-            const stored = localStorage.getItem('jeamlit-settings');
+            const stored = localStorage.getItem('javelit-settings');
             return stored ? JSON.parse(stored) : this.getDefaultConfig();
         } catch (e) {
             console.warn('Failed to load settings from localStorage:', e);
@@ -164,7 +164,7 @@ class JtSettingsContent extends LitElement {
 
     saveConfig() {
         try {
-            localStorage.setItem('jeamlit-settings', JSON.stringify(this.config));
+            localStorage.setItem('javelit-settings', JSON.stringify(this.config));
             // Emit config change event for other components to listen
             this.dispatchEvent(new CustomEvent('config-change', {
                 detail: { config: this.config },

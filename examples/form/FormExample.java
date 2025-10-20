@@ -1,8 +1,8 @@
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 public class FormExample {
 

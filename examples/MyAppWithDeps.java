@@ -1,15 +1,15 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 //DEPS org.apache.commons:commons-lang3:3.13.0
 //DEPS com.google.guava:guava:32.1.3-jre
 
 import com.google.common.collect.Lists;
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 import org.apache.commons.lang3.StringUtils;
 
 public class MyAppWithDeps {
     public static void main(String[] args) {
-        Jt.title("Jeamlit with JBang Dependencies!").use();
+        Jt.title("Javelit with JBang Dependencies!").use();
         Jt.text("This app uses external dependencies resolved via JBang directives.").use();
         
         // Use Guava

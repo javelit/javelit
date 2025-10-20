@@ -19,14 +19,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.jeamlit</groupId>
-    <artifactId>jeamlit</artifactId>
+    <groupId>io.javelit</groupId>
+    <artifactId>javelit</artifactId>
     <version>0.50.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Jeamlit</name>
+    <name>Javelit</name>
     <description>The fastest way to build data apps in Java.</description>
-    <url>https://github.com/jeamlit/jeamlit</url>
+    <url>https://github.com/javelit/javelit</url>
     <inceptionYear>2025</inceptionYear>
 
     <licenses>
@@ -39,10 +39,10 @@
 
     <developers>
         <developer>
-            <id>Jeamlit</id>
-            <name>jeamlit</name>
+            <id>Javelit</id>
+            <name>javelit</name>
             <email>cdecatheu@hey.com</email>
-            <url>https://github.com/jeamlit</url>
+            <url>https://github.com/javelit</url>
         </developer>
         <developer>
             <id>cyrilou242</id>
@@ -63,7 +63,7 @@
     </properties>
 
     <scm>
-        <url>https://github.com/jeamlit/jeamlit.git</url>
+        <url>https://github.com/javelit/javelit.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <tag>HEAD</tag>
@@ -480,7 +480,7 @@
                         <configuration>
                             <target>
                                 <replaceregexp match="\s+" replace="" flags="g">
-                                    <fileset dir="${project.basedir}/src/main/resources/static/_jeamlit/components/chart">
+                                    <fileset dir="${project.basedir}/src/main/resources/static/_javelit/components/chart">
                                         <include name="echarts_theme_*.json" />
                                     </fileset>
                                 </replaceregexp>
@@ -516,12 +516,12 @@
                         <configuration>
                             <testClassesDirectory>${project.build.testOutputDirectory}</testClassesDirectory>
                             <includes>
-                                <include>io/jeamlit/e2e/helpers/*.class</include>
+                                <include>io/javelit/e2e/helpers/*.class</include>
                             </includes>
                             <excludes>
-                                <exclude>io/jeamlit/e2e/core/**</exclude>
-                                <exclude>io/jeamlit/e2e/components/**</exclude>
-                                <exclude>io/jeamlit/core/**</exclude>
+                                <exclude>io/javelit/e2e/core/**</exclude>
+                                <exclude>io/javelit/e2e/components/**</exclude>
+                                <exclude>io/javelit/core/**</exclude>
                                 <exclude>multifile-test/**</exclude>
                                 <exclude>multipage-test/**</exclude>
                             </excludes>
@@ -547,7 +547,7 @@
                             <shadedClassifierName>all</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>io.jeamlit.cli.Cli</mainClass>
+                                    <mainClass>io.javelit.cli.Cli</mainClass>
                                     <manifestEntries>
                                         <Implementation-Version>${project.version}</Implementation-Version>
                                         <Implementation-Title>${project.name}</Implementation-Title>
@@ -637,7 +637,7 @@
                     <!-- activating the release profile explicitly -->
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
-                    <tagNameFormat>jeamlit-@{project.version}</tagNameFormat>
+                    <tagNameFormat>javelit-@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
 
@@ -699,7 +699,7 @@
                                 </goals>
                                 <configuration>
                                     <includes>
-                                        <include>io/jeamlit/e2e/helpers/**</include>
+                                        <include>io/javelit/e2e/helpers/**</include>
                                     </includes>
                                 </configuration>
                             </execution>
@@ -747,12 +747,12 @@
                                     <goal>javadoc-no-fork</goal>
                                 </goals>
                                 <configuration>
-                                    <doclet>io.jeamlit.doclet.JsonDoclet</doclet>
+                                    <doclet>io.javelit.doclet.JsonDoclet</doclet>
                                     <!--suppress MavenModelInspection --><!-- the doclet.classpath variable is set dynamically by the plugin above -->
                                     <docletPath>${project.build.outputDirectory}:${doclet.classpath}</docletPath>
                                     <useStandardDocletOptions>false</useStandardDocletOptions>
                                     <sourcepath>${project.build.sourceDirectory}</sourcepath>
-                                    <subpackages>io.jeamlit.core:io.jeamlit.components</subpackages>
+                                    <subpackages>io.javelit.core:io.javelit.components</subpackages>
                                     <quiet>true</quiet>
                                 </configuration>
                             </execution>

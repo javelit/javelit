@@ -27,7 +27,7 @@ OR: need to make this generic for Jt.dataframe too.
 transformations are replaced
 
 transform at row, transform at column, transform at index --> will inject div containers
-2 kind of runnables: void --> should be a valid jeamlit snippet that will produce some component
+2 kind of runnables: void --> should be a valid javelit snippet that will produce some component
                      returns something --> the output will be used
 
 - markdown should be supported in all cells

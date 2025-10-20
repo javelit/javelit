@@ -3,7 +3,7 @@ package pages;
 import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.UserMessage;
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class ClassificationPage {
 

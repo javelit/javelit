@@ -1,11 +1,11 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
 
 
 
-import io.jeamlit.components.chart.EchartsComponent;import io.jeamlit.core.Jt;import org.icepear.echarts.Bar;
+import io.javelit.components.chart.EchartsComponent;import io.javelit.core.Jt;import org.icepear.echarts.Bar;
 import org.icepear.echarts.Gauge;
 import org.icepear.echarts.Line;
 import org.icepear.echarts.charts.bar.BarSeries;

@@ -322,7 +322,7 @@
 
             this.selectedIndex = index;
             this.closeDropdown();
-            window.jeamlit.sendComponentUpdate(this.componentKey, index);
+            window.javelit.sendComponentUpdate(this.componentKey, index);
         }
 
         handleSearchInput(e) {
@@ -335,7 +335,7 @@
                 // Capture value before closing dropdown
                 const valueToSend = this.searchValue.trim();
                 this.closeDropdown();
-                window.jeamlit.sendComponentUpdate(this.componentKey, valueToSend);
+                window.javelit.sendComponentUpdate(this.componentKey, valueToSend);
                 e.preventDefault();
             } else if (e.key === 'Escape') {
                 this.closeDropdown();
@@ -411,7 +411,7 @@
                                          @click="${() => {
                                              const valueToSend = this.searchValue.trim();
                                              this.closeDropdown();
-                                             window.jeamlit.sendComponentUpdate(this.componentKey, valueToSend);
+                                             window.javelit.sendComponentUpdate(this.componentKey, valueToSend);
                                          }}">
                                         Add: "${this.searchValue}"
                                     </div>

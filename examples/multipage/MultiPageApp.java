@@ -3,10 +3,10 @@
 
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtContainer;import pages.DashboardPage;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;import pages.DashboardPage;
 import pages.SettingsPage;
 import pages.TestQueryPage;
 import pages.UsersPage;

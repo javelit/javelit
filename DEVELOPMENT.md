@@ -1,6 +1,6 @@
 # Developer developer developer 
 
-This section may lack crucial details. Don't hesitate to reach out on the [forum](https://github.com/jeamlit/jeamlit/discussions)!
+This section may lack crucial details. Don't hesitate to reach out on the [forum](https://github.com/javelit/javelit/discussions)!
 
 ## Common operations
 *In commands below, `clean` is optional*.

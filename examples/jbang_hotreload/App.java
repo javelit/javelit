@@ -1,14 +1,14 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
 
 import java.nio.file.Path;
 
-import io.jeamlit.core.Server;
+import io.javelit.core.Server;
 
 // run with jbang App.java
-// jeamlit hot-reload available
+// javelit hot-reload available
 public class App {
 
     public static void main(String[] args) {

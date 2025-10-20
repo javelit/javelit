@@ -214,7 +214,7 @@ Pros:
         window.history.pushState({}, '', url);
 
         // Send to backend
-        window.jeamlit.emit(navigationComponentKey, {
+        window.javelit.emit(navigationComponentKey, {
             page: pageName,
             params: params
         });
@@ -233,7 +233,7 @@ Pros:
 
     2. Server-side Routing:
 
-    Since Jeamlit serves a single HTML page, you'll need to handle all paths:
+    Since Javelit serves a single HTML page, you'll need to handle all paths:
 
     // In Server.java
     .addPrefixPath("/", new HttpHandler() {
@@ -354,7 +354,7 @@ The streamlit reference is here:
 https://docs.streamlit.io/develop/api-reference/widgets/st.page_link
 
 if external link: no execution --> behaves like a normal <a> link, and the link is opened in a new tab
-if pageApp class Class<?> is passed --> when clicked, the component sends a window.jeamlit.sendPathUpdate message with the new path.
+if pageApp class Class<?> is passed --> when clicked, the component sends a window.javelit.sendPathUpdate message with the new path.
 
 For the page app case, the logic implementation uses a StateManager.getNavigationComponent()
 and NavigationCOmponent.getPageFor to get the link that corresponds to the page app class.

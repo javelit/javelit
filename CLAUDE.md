@@ -4,12 +4,12 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-**Jeamlit** is a Streamlit-like framework for building data apps in Java.
+**Javelit** is a Streamlit-like framework for building data apps in Java.
 
 - **Type**: Java application
 - **Build System**: Maven
 - **Java Version**: 21 (configured in pom.xml, runs on Java 21+)
-- **Package Structure**: `io.jeamlit`
+- **Package Structure**: `io.javelit`
 
 ## Build Commands
 
@@ -21,10 +21,10 @@ This file provides guidance to Claude Code when working with this repository.
 ```
 
 ### Running
-To run Jeamlit applications, use the CLI:
+To run Javelit applications, use the CLI:
 ```bash
 ./mvnw package -DskipTests         # Build JAR first
-java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
+java -jar target/javelit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
 ```
 
 ### Testing
@@ -36,12 +36,12 @@ java -jar target/jeamlit-1.0-SNAPSHOT.jar run examples/PageLinkExample.java
 ```
 
 **IMPORTANT**: Do NOT use `java -cp target/classes ...` to test components. Use the proper CLI or write proper tests.
-**IMPORTANT**: NEVER launch a server with java -jar jeamlit.jar run TestApp.java
+**IMPORTANT**: NEVER launch a server with java -jar javelit.jar run TestApp.java
 **IMPORTANT**: Instead, write E2E tests
 
 ### Generate JSON Documentation
 
-To generate the `jeamlit.json` file with API documentation:
+To generate the `javelit.json` file with API documentation:
 
 ```bash
 ./mvnw clean package -Prelease -DskipTests
@@ -51,7 +51,7 @@ This command:
 - Cleans the project
 - Builds the project with the release profile
 - Skips tests
-- Triggers the JsonDoclet execution which generates `jeamlit.json`
+- Triggers the JsonDoclet execution which generates `javelit.json`
 
 The JSON file will be created in the project root directory and contains documentation for:
 - All public methods in the `Jt` class
@@ -61,7 +61,7 @@ The JSON file will be created in the project root directory and contains documen
 ## JsonDoclet
 
 The custom JsonDoclet implementation:
-- Processes only `io.jeamlit.core.Jt` and `io.jeamlit.components.*` classes
+- Processes only `io.javelit.core.Jt` and `io.javelit.components.*` classes
 - For methods in the `Jt` class that return component builders, extracts the actual component return type from the component's `JtComponent<T>` generic parameter
 - Uses Jackson for JSON serialization
 - Outputs in streamlit.json compatible format
@@ -69,7 +69,7 @@ The custom JsonDoclet implementation:
 ## Project Structure
 
 ```
-src/main/java/io/jeamlit  # Main application code
+src/main/java/io/javelit  # Main application code
 src/main/resources/         # Application resources
 src/test/java/              # Unit tests
 ```
@@ -77,8 +77,8 @@ src/test/java/              # Unit tests
 ## Configuration
 
 **pom.xml** - Maven configuration
-- Group ID: `io.jeamlit`
-- Artifact ID: `jeamlit`
+- Group ID: `io.javelit`
+- Artifact ID: `javelit`
 
 ## Development Notes
 
@@ -95,7 +95,7 @@ src/test/java/              # Unit tests
 - use the same color effects and animations as streamlit components
 - Ensure things compile regularly
 - always use lit. To defined components
-- when implementing frontend components: do not re-create window.jeamlit and a function to send messages via websocket. Just assume window.jeamlit.emit is available (thanks to index.html) 
+- when implementing frontend components: do not re-create window.javelit and a function to send messages via websocket. Just assume window.javelit.emit is available (thanks to index.html) 
 - again make sure to follow the same spec as streamlit
 - There is 1 exception to this: do not add args/kwargs equivalent (varargs and Map parameters). Just put a comment instead, saying it's not implemented.
 - For a component that will have to support use_container_width:
@@ -124,7 +124,7 @@ Here is an example:
     @Test
     void testBasicCodeDisplay() {
         final @Language("java") String app = """
-            import io.jeamlit.core.Jt;
+            import io.javelit.core.Jt;
             
             public class TestApp {
                 public static void main(String[] args) {

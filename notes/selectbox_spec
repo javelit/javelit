@@ -11,7 +11,7 @@ So consider each values is a html snippet, same as for label above.
 
 index: The index of the preselected option on first render. If null, initialize with no pre-selected option.
 
-help: A tooltip that gets displayed next to the widget label. Jeamlit only displays
+help: A tooltip that gets displayed next to the widget label. Javelit only displays
 the tooltip when label_visibility="visible". If this is None (default), no tooltip is
 displayed. The help string  is NOT markdown. In the frontend, use the same
 implementation as in the ButtonComponent.
@@ -26,8 +26,8 @@ disabled: boolean: An optional boolean that disables the toggle if set to True. 
 default is False.
 
 label_visibility: The visibility of the label. The default is "visible". If this is
-"hidden", jeamlit displays an empty spacer instead of the label, which can help keep
-the widget aligned with other widgets. If this is "collapsed", jeamlit displays no
+"hidden", javelit displays an empty spacer instead of the label, which can help keep
+the widget aligned with other widgets. If this is "collapsed", javelit displays no
 label or spacer.  the same implementation as in the TextAreaComponent
 
 accept_new_options: boolean: Whether the user can add a selection that isn't included in options.

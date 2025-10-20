@@ -1,13 +1,13 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtComponent;
-import io.jeamlit.core.JtContainer;
+import io.javelit.core.Jt;
+import io.javelit.core.JtComponent;
+import io.javelit.core.JtContainer;
 
 // chat app example
 public class ChatApp {
@@ -78,7 +78,7 @@ public class ChatApp {
         } else if (input.contains("how are you")) {
             return "I'm doing great, thanks for asking!";
         } else if (input.contains("name")) {
-            return "I'm Jeamlit Chat Bot, a demo application built with Jeamlit!";
+            return "I'm Javelit Chat Bot, a demo application built with Javelit!";
         } else if (input.contains("bye") || input.contains("goodbye")) {
             return "Goodbye! Have a great day!";
         } else {

@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 //DEPS tech.tablesaw:tablesaw-core:0.44.4
 
 import java.io.BufferedReader;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.zip.GZIPInputStream;
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 import org.icepear.echarts.Bar;
 import org.icepear.echarts.Option;
 import org.icepear.echarts.charts.scatter.ScatterSeries;
@@ -95,13 +95,13 @@ public class App {
                                    .setSymbolSize(5)
                                    .setItemStyle(new ItemStyle().setColor("#b02a02").setOpacity(0.6)));
         // plot the chart
-        String mapBaseGeoJson = "https://raw.githubusercontent.com/jeamlit/public_assets/refs/heads/main/examples/manhattan.geo.json";
+        String mapBaseGeoJson = "https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/examples/manhattan.geo.json";
         Jt.echarts(mapOption).withMap("manhattan", URI.create(mapBaseGeoJson)).height(600).border(true).use();
     }
 
     static Table loadData(int nrows) {
         final String DATE_COLUMN = "date/time";
-        final String DATA_URL = "https://github.com/jeamlit/public_assets/raw/refs/heads/main/examples/uber-raw-data-sep14.csv.gz";
+        final String DATA_URL = "https://github.com/javelit/public_assets/raw/refs/heads/main/examples/uber-raw-data-sep14.csv.gz";
         try (InputStream in = URI.create(DATA_URL).toURL().openStream();
              GZIPInputStream gzipIn = new GZIPInputStream(in);
              InputStreamReader reader = new InputStreamReader(gzipIn);

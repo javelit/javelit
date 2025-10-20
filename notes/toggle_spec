@@ -7,7 +7,7 @@ label: from the backend component, it's an html string because it's converted fr
 markdown to html. In the frontend, use the same logic to inject the html as in 
 ButtonComponent. 
 
-help: A tooltip that gets displayed next to the widget label. Jeamlit only displays
+help: A tooltip that gets displayed next to the widget label. Javelit only displays
 the tooltip when label_visibility="visible". If this is None (default), no tooltip is 
 displayed. The help string  is NOT markdown. In the frontend, use the same 
 implementation as in the ButtonComponent.
@@ -16,8 +16,8 @@ disabled: boolean: An optional boolean that disables the toggle if set to True. 
 default is False. 
 
 label_visibility: The visibility of the label. The default is "visible". If this is 
-"hidden", jeamlit displays an empty spacer instead of the label, which can help keep 
-the widget aligned with other widgets. If this is "collapsed", jeamlit displays no 
+"hidden", javelit displays an empty spacer instead of the label, which can help keep
+the widget aligned with other widgets. If this is "collapsed", javelit displays no
 label or spacer.  the same implementation as in the TextAreaComponent 
 
 width: String: "content", "stretch" or an int string. Use the same implementation as 

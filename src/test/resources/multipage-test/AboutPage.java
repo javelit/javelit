@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class AboutPage {
     public static void main(String[] args) {

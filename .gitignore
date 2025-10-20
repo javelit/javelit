@@ -43,7 +43,7 @@ playwright-recordings/
 notes/docs
 
 # used for dev debugging
-src/main/java/io/jeamlit/core/ToDelete.java
+src/main/java/io/javelit/core/ToDelete.java
 examples/TestApp.java
 examples/debug
 

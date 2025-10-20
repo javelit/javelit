@@ -1,6 +1,6 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 //DEPS dev.langchain4j:langchain4j:0.36.2
 //DEPS dev.langchain4j:langchain4j-ollama:0.36.2
 
@@ -9,9 +9,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtPage;
-import io.jeamlit.core.Shared;
+import io.javelit.core.Jt;
+import io.javelit.core.JtPage;
+import io.javelit.core.Shared;
 import pages.ChatPage;
 import pages.ClassificationPage;
 

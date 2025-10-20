@@ -21,9 +21,9 @@ There will be an upload endpoint
  /<SOME_RESERVED_STUFF>/upload/{componentKey} endpoint needs to know which session to update.
 
 
-Cookies are cross page, so this is not what we want, because each page is a different session in jeamlit.
+Cookies are cross page, so this is not what we want, because each page is a different session in javelit.
 We want something accessible via javascript.
-Eg it will be put in window.jeamlit.session_id
+Eg it will be put in window.javelit.session_id
 It should be secured.
 
 To be secured, we will also use a xsrf cookie.
@@ -37,7 +37,7 @@ then it's a match and we can continue.
     Requirements:
 
     1. Page-specific: Each page gets its own session ID
-    2. JavaScript accessible: window.jeamlit.sessionId
+    2. JavaScript accessible: window.javelit.sessionId
     3. Secure: Not predictable/guessable
     4. Server-generated: Controlled by server
 
@@ -72,7 +72,7 @@ then it's a match and we can continue.
 
     index.html.mustache:
     <script>
-        window.jeamlit = {
+        window.javelit = {
             sessionId: "{{ SESSION_ID }}", // Server-injected secure session ID
             // ... other properties
             sendMessage: function(message) {
@@ -86,7 +86,7 @@ then it's a match and we can continue.
             // Authenticate WebSocket with session ID
             ws.send(JSON.stringify({
                 type: 'auth',
-                sessionId: window.jeamlit.sessionId
+                sessionId: window.javelit.sessionId
             }));
         };
     </script>
@@ -120,7 +120,7 @@ then it's a match and we can continue.
     File Upload Endpoint:
     .post("/upload/{componentKey}").handler(exchange -> {
         // Get session ID from custom header
-        String sessionId = exchange.getRequestHeaders().getFirst("X-Jeamlit-Session");
+        String sessionId = exchange.getRequestHeaders().getFirst("X-Javelit-Session");
 
         if (sessionId == null) {
             exchange.setStatusCode(401).endExchange();
@@ -145,7 +145,7 @@ then it's a match and we can continue.
         const response = await fetch(`/upload/${this.componentKey}`, {
             method: 'POST',
             headers: {
-                'X-Jeamlit-Session': window.jeamlit.sessionId  // Secure session ID
+                'X-Javelit-Session': window.javelit.sessionId  // Secure session ID
             },
             body: formData
         });
@@ -163,7 +163,7 @@ then it's a match and we can continue.
     Session Lifecycle:
 
     1. Page load → Server generates secure session ID → Injects into HTML
-    2. JavaScript starts → window.jeamlit.sessionId available immediately
+    2. JavaScript starts → window.javelit.sessionId available immediately
     3. WebSocket connects → Authenticates with session ID
     4. File uploads → Use same session ID in headers
     5. Page refresh/navigation → New session ID generated

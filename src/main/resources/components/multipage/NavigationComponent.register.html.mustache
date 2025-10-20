@@ -186,7 +186,7 @@
         
         handlePopState(event) {
             // Browser back/forward pressed - send path_update to backend
-            window.jeamlit.sendPathUpdate();
+            window.javelit.sendPathUpdate();
         }
         
         updateURL(page, addToHistory = true) {
@@ -210,7 +210,7 @@
         handleNavClick(page, event) {
             event.preventDefault();
             this.updateURL(page, true);
-            window.jeamlit.sendPathUpdate();
+            window.javelit.sendPathUpdate();
         }
         
         isActivePage(page) {

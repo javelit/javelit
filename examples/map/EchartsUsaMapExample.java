@@ -1,14 +1,14 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 // NOTE: this example is a work in progress - the echarts-java project support for maps is limited at the moment
 package map;
 
 import java.net.URI;
 import java.util.Map;
 
-import io.jeamlit.components.chart.EchartsComponent;
-import io.jeamlit.core.Jt;
+import io.javelit.components.chart.EchartsComponent;
+import io.javelit.core.Jt;
 import org.icepear.echarts.Option;
 import org.icepear.echarts.charts.scatter.ScatterSeries;
 import org.icepear.echarts.components.series.ItemStyle;

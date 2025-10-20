@@ -5,8 +5,8 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
-import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtContainer;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
 
 public class ChatPage {
 

@@ -1,12 +1,12 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class TableExample {
     public record Info(int age, String size) {

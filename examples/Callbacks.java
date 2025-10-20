@@ -1,9 +1,9 @@
 
 
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
-import java.util.function.Consumer;import io.jeamlit.core.Jt;
+import java.util.function.Consumer;import io.javelit.core.Jt;
 
 public class Callbacks {
     public static void main(String[] args) {

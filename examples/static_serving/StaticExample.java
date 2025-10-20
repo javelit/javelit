@@ -1,7 +1,7 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 package static_serving;
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class StaticExample  {
     public static void main(String[] args) {

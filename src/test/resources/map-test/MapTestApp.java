@@ -18,7 +18,7 @@
 import java.net.URI;
 import java.util.Map;
 
-import io.jeamlit.components.chart.EchartsComponent;import io.jeamlit.core.Jt;
+import io.javelit.components.chart.EchartsComponent;import io.javelit.core.Jt;
 
 public class MapTestApp {
 

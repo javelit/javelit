@@ -1,12 +1,12 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
 
 
 
-import java.util.List;import io.jeamlit.components.layout.ColumnsComponent;import io.jeamlit.core.Jt;
-import io.jeamlit.core.JtContainer;
+import java.util.List;import io.javelit.components.layout.ColumnsComponent;import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
 
 public class MyApp {
 
@@ -14,8 +14,8 @@ public class MyApp {
         // Button with session state
         Jt.sessionState().putIfAbsent("clicks", 0);
 
-        Jt.title("Jeamlit Demo App").use();
-        Jt.text("Welcome to Jeamlit - Streamlit for Java!").use();
+        Jt.title("Javelit Demo App").use();
+        Jt.text("Welcome to Javelit - Streamlit for Java!").use();
         Jt.text("This demo shows basic components and state management.").use();
 
         var containerDebug = Jt.container()

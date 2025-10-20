@@ -348,8 +348,8 @@
                 const response = await fetch('/_/upload', {
                     method: 'PUT',
                     headers: {
-                        'X-XSRF-TOKEN': window.jeamlit.xsrfToken,
-                        'X-Session-ID': window.jeamlit.sessionId,
+                        'X-XSRF-TOKEN': window.javelit.xsrfToken,
+                        'X-Session-ID': window.javelit.sessionId,
                         'X-Component-Key': this.componentKey
                     },
                     body: formData
@@ -386,7 +386,7 @@
             this.value = newValue;
 
             // Send empty array if all files removed
-            window.jeamlit.sendComponentUpdate(this.componentKey, newValue);
+            window.javelit.sendComponentUpdate(this.componentKey, newValue);
             this.requestUpdate();
         }
 

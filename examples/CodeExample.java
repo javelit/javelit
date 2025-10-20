@@ -1,13 +1,13 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.jeamlit:jeamlit:0.49.0
+//DEPS io.javelit:javelit:0.49.0
 
 
-import io.jeamlit.core.Jt;
+import io.javelit.core.Jt;
 
 public class CodeExample {
     public static void main(String[] args) {
         Jt.title("# Code Component Showcase").use();
-        Jt.markdown("This demo showcases all the capabilities of the `st.code` component in Jeamlit.").use();
+        Jt.markdown("This demo showcases all the capabilities of the `st.code` component in Javelit.").use();
 
         // Language highlighting examples
         Jt.title("## Language Highlighting").use();
@@ -247,7 +247,7 @@ public class CodeExample {
         Jt.markdown("### JSON Configuration").use();
         Jt.code("""
                 {
-                  "name": "jeamlit-demo",
+                  "name": "javelit-demo",
                   "version": "1.0.0",
                   "description": "A comprehensive demo of code component capabilities",
                   "dependencies": {
@@ -265,7 +265,7 @@ public class CodeExample {
                     },
                     "logging": {
                       "level": {
-                        "io.jeamlit": "DEBUG",
+                        "io.javelit": "DEBUG",
                         "org.springframework": "INFO"
                       }
                     }
