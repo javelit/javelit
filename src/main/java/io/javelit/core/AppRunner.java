@@ -173,7 +173,7 @@ final class AppRunner {
         if (message == null) {
             return false;
         }
-        final String loaderPattern = "of loader " + FileReloader.HotClassLoader.class.getName();
+        final String loaderPattern = "of loader " + FileReloader.HierarchicalClassLoader.class.getName();
         // Check if the pattern appears twice (two different HotClassLoader instances)
         int firstIndex = message.indexOf(loaderPattern);
         if (firstIndex == -1) {

@@ -24,10 +24,12 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -35,6 +37,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
+import com.google.common.collect.Lists;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
 import jakarta.annotation.Nonnull;
@@ -58,8 +61,7 @@ class FileReloader extends Reloader {
     private static @Nullable String lastDependencyClasspath;
     // this classloader contains dependencies - it will only be reloaded if dependencies change
     private static @Nullable URLClassLoader dependenciesClassloader;
-    // this classloader contains the app files - it is always reloaded on file change
-    private @Nullable HotClassLoader appClassloader;
+    private @Nonnull List<HierarchicalClassLoader> appClassloaders = new ArrayList<>();
 
     /**
      * Recompile the app class. Returns the Class.
@@ -84,8 +86,10 @@ class FileReloader extends Reloader {
         final String currentClasspath = buildClasspath(providedClasspath, javaFile);
         final @Nonnull List<JavaFileObject> classFiles = compileJavaFile(this.javaFile, currentClasspath);
         final @Nullable JavaFileObject mainClassFile = classFiles.stream()
-                // inner classes may appear before the main class in the list
-                .filter(e -> !e.getName().contains("$")).findFirst().orElse(null);
+                                                                 // inner classes may appear before the main class in the list
+                                                                 .filter(e -> !e.getName().contains("$"))
+                                                                 .findFirst()
+                                                                 .orElse(null);
         if (mainClassFile == null) {
             throw new CompilationException(
                     "Could not determine class name in file %s. File is empty, invalid or there are only inner classes?".formatted(
@@ -101,31 +105,90 @@ class FileReloader extends Reloader {
                 // it's the responsibility of the app to manage cache init properly when the cache is cleared - this should be fine
                 StateManager.getCache().clear();
                 closeClassLoader(dependenciesClassloader, "dependencies");
-                LOG.info("App dependencies changed. Reloading the dependencies. Jt.cache() was cleared to avoid ClassLoader conflicts.");
+                LOG.info(
+                        "App dependencies changed. Reloading the dependencies. Jt.cache() was cleared to avoid ClassLoader conflicts.");
             }
             LOG.info("Using classpath {}", currentClasspath);
             final URL[] dependencyUrls = createClassPathUrls(currentClasspath);
             dependenciesClassloader = new URLClassLoader(dependencyUrls, getClass().getClassLoader());
+            clearAppClassloaders(0);
             lastDependencyClasspath = currentClasspath;
         }
 
-        // Always reload app code classloader
-        closeClassLoader(appClassloader, "user code");
-        Method mainMethod = null;
         try {
-            appClassloader = new HotClassLoader(dependenciesClassloader);
-            for (final JavaFileObject classFile : classFiles) {
-                final String className = classNameFor(classFile);
-                final byte[] classBytes = loadClassBytes(classFile);
-                final Class<?> appClass = appClassloader.defineClass(className, classBytes);
-                if (classFile == mainClassFile) {
-                    mainMethod = appClass.getMethod("main", String[].class);
+            final List<List<JavaFileObject>> groupedClassFiles = getGroupedClassFiles(classFiles);
+            boolean cacheMiss = groupedClassFiles.size() != appClassloaders.size();
+            HierarchicalClassLoader hierarchicalClassLoader = null;
+            for (int i = 0; i < groupedClassFiles.size(); i++) {
+                final List<JavaFileObject> classFilesGroup = groupedClassFiles.get(i);
+                final List<String> classNames = classFilesGroup.stream().map(FileReloader::classNameFor).toList();
+                final List<byte[]> classesBytes = classFilesGroup.stream().map(FileReloader::loadClassBytes).toList();
+                if (!cacheMiss) {
+                    final HierarchicalClassLoader lastClassloader = appClassloaders.get(i);
+                    if (lastClassloader.sourceEquals(classNames, classesBytes)) {
+                        hierarchicalClassLoader = lastClassloader;
+                        continue;
+                    } else {
+                        cacheMiss = true;
+                        clearAppClassloaders(i);
+                    }
                 }
+                hierarchicalClassLoader = new HierarchicalClassLoader(hierarchicalClassLoader != null ?
+                                                                              hierarchicalClassLoader :
+                                                                              dependenciesClassloader,
+                                                                      classNames,
+                                                                      classesBytes);
+                appClassloaders.add(hierarchicalClassLoader);
             }
+            final String name = classNameFor(mainClassFile);
+            final Class<?> mainClass = hierarchicalClassLoader.loadClass(name);
+            return mainClass.getMethod("main", String[].class);
         } catch (NoSuchMethodException e) {
             throw new CompilationException(e);
+        } catch (ClassNotFoundException e) {
+            LOG.error("Implementation error. Please reach out to support.", e);
+            throw new CompilationException(e);
+        } catch (Exception e) {
+            // classloader ops could fail for many reason - generic catching for the moment
+            LOG.error("Unexpected error. If this happens too much, please reach out to support with the error details", e);
+            throw new CompilationException(e);
         }
-        return mainMethod;
+    }
+
+    private static @NotNull List<List<JavaFileObject>> getGroupedClassFiles(@NotNull List<JavaFileObject> classFiles) {
+        // group classFiles by parent outer class: inner classes must be defined in the same classloader as the parent (cl means classloader below)
+        final LinkedHashMap<String, List<JavaFileObject>> clKeyToClassFiles = new LinkedHashMap<>();
+        // run in inverse order --> will have entrypoint last, it's the file most likely to be changed
+        for (final JavaFileObject javaFileObject : classFiles.reversed()) {
+            final String clKey = clKey(javaFileObject);
+            if (!clKeyToClassFiles.containsKey(clKey)) {
+                clKeyToClassFiles.put(clKey, new ArrayList<>());
+            }
+            clKeyToClassFiles.get(clKey).add(javaFileObject);
+        }
+        // each group will have its own classloader
+        return clKeyToClassFiles.values().stream().toList();
+    }
+
+    private void clearAppClassloaders(final int idx) {
+        // close outdated classloaders from index then remove them
+        final List<HierarchicalClassLoader> toRemove = appClassloaders.subList(idx, appClassloaders.size());
+        toRemove.forEach(e -> closeClassLoader(e, "appClassloader"));
+        toRemove.clear();
+    }
+
+    // NOTE: $ in classnames is supported but may result in suboptimal groups
+    // eg: MyLib$Utils.java, MyLib$Helper.java --> both will end up in the same group MyLib
+    private static String clKey(final JavaFileObject classFile) {
+        // App, App$Message, App$1Class, etc... should have the same key
+        final String name = classFile.getName().replace(".class", "");
+        final int fileNameStart = name.lastIndexOf(File.separatorChar);
+        final int dollarIndex = name.indexOf("$", Math.max(fileNameStart, 0));
+        if (dollarIndex == -1) {
+            return name;
+        } else {
+            return name.substring(0, dollarIndex);
+        }
     }
 
     private static void closeClassLoader(final URLClassLoader classLoader, final @Nullable String classLoaderName) {
@@ -172,7 +235,7 @@ class FileReloader extends Reloader {
                     .noneMatch(d -> d.getKind() == Diagnostic.Kind.ERROR);
             if (success) {
                 LOG.info("Successfully compiled {}", javaFile);
-                return StreamSupport.stream(generated.spliterator(), false).toList();
+                return Lists.newArrayList(generated);
             } else {
                 final String errorMessage = diagnosticsCollector.getDiagnostics().stream()
                         .map(d -> String.format("[%s] %s:%d:%d %s",
@@ -196,7 +259,7 @@ class FileReloader extends Reloader {
         }
     }
 
-    private @Nonnull byte[] loadClassBytes(final @Nonnull JavaFileObject classFile) {
+    private static @Nonnull byte[] loadClassBytes(final @Nonnull JavaFileObject classFile) {
         try {
             final Path classFilePath = Paths.get(classFile.toUri());
             if (!Files.exists(classFilePath)) {
@@ -237,16 +300,43 @@ class FileReloader extends Reloader {
         return urls;
     }
 
-
     // visible for classloader ClassCast exception detection - see AppRunner
-    static final class HotClassLoader extends URLClassLoader {
+    static final class HierarchicalClassLoader extends URLClassLoader {
 
-        private HotClassLoader(final ClassLoader parent) {
+        private final List<String> definedNames = new ArrayList<>();
+        private final List<byte[]> definedBytes = new ArrayList<>();
+
+        private HierarchicalClassLoader(final ClassLoader parent,
+                                        final List<String> classesNames,
+                                        final List<byte[]> classesBytes) {
             super(new URL[]{}, parent);
+            for (int i = 0; i < classesNames.size(); i++) {
+                String className = classesNames.get(i);
+                byte[] classBytes = classesBytes.get(i);
+                defineClass(className, classBytes, 0, classBytes.length);
+                definedNames.add(className);
+                definedBytes.add(classBytes);
+            }
         }
 
-        private Class<?> defineClass(String name, byte[] bytes) {
-            return defineClass(name, bytes, 0, bytes.length);
+        public boolean sourceEquals(final List<String> otherNames, final List<byte[]> otherBytes) {
+            if (otherNames.size() != definedNames.size()) {
+                return false;
+            }
+            for (int i = 0; i < otherNames.size(); i++) {
+                if (!definedNames.get(i).equals(otherNames.get(i))) {
+                    return false;
+                }
+                // this comparison could be improved - it's taking the full class bytes, so it contains debugging bytes
+                // because line numbers are part of the debugging, line changes can result in a cache miss
+                // for instance, a comment on a new line will result in a cache miss
+                // do not deactivate debugging info with "-g:none", it will break the debug support of run file in the IDEs
+                // ignoring debugging bytes from the class bytes is a bit involved, will be done later (or never)
+                if (!Arrays.equals(definedBytes.get(i), otherBytes.get(i))) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
@@ -278,7 +368,8 @@ class FileReloader extends Reloader {
             if (e instanceof CompilationException ce) {
                 throw ce;
             }
-            throw new CompilationException("Failed to resolve %s dependencies: %s".formatted(buildSystem, e.getMessage()), e);
+            throw new CompilationException("Failed to resolve %s dependencies: %s".formatted(buildSystem,
+                                                                                             e.getMessage()), e);
         }
         return cp.toString();
     }
@@ -291,6 +382,6 @@ class FileReloader extends Reloader {
      */
     private static String classNameFor(final @Nonnull JavaFileObject classFile) {
         return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
-                .replace(File.separatorChar, '.').replace(".class", "");
+                                     .replace(File.separatorChar, '.').replace(".class", "");
     }
 }
