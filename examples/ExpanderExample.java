@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.51.0
+//DEPS io.javelit:javelit:0.52.0
 
 
 import io.javelit.core.Jt;
