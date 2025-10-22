@@ -18,7 +18,7 @@ package pages;
 import io.javelit.core.Jt;
 
 public class SettingsPage {
-    public static void main(String[] args) {
+    public static void app() {
         Jt.title("⚙️ Settings").use();
         Jt.text("Configure your application settings.").use();
         
@@ -42,5 +42,8 @@ public class SettingsPage {
                 Jt.text("Theme: " + theme).use();
             }
         }
+    }
+
+    private SettingsPage() {
     }
 }

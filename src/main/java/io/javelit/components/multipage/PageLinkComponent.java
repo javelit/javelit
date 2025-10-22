@@ -87,20 +87,19 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         private String width = "content"; // content, stretch, or pixel value
 
         // Constructor for internal page links
-        public Builder(final @Nullable Class<?> pageClass) {
+        public Builder(final @Nullable String pagePath) {
             this.isExternal = false;
 
             final NavigationComponent nav = getNavigationComponent();
             checkArgument(nav != null,
                           "No navigation component found in the app. Cannot create a link to an app page when Jt.navigation is not used. Use a direct String link or introduce Jt.navigation in your app.");
-            final JtPage page = nav.getPageFor(pageClass);
+            final JtPage page = nav.getPageFor(pagePath);
             checkArgument(page != null,
-                          "Unknown page for pageClass %s. Please provide a class that is used as a page in Jt.navigation(...).",
-                          pageClass);
+                          "Unknown page for pagePath %s. Please provide a path that is used as a page in Jt.navigation(...), or null to link to the home page.",
+                          pagePath);
             this.label = page.title();
             this.url = page.urlPath();
             this.isHomePage = page.isHome();
-
         }
 
         // Constructor for external links

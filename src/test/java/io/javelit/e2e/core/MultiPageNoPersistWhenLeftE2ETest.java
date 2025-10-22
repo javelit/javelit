@@ -40,8 +40,8 @@ public class MultiPageNoPersistWhenLeftE2ETest {
             public class TestApp {
                 public static void main(String[] args) {
                     var currentPage = Jt.navigation(
-                        Jt.page(Page1.class).home().noPersistWhenLeft(),
-                        Jt.page(Page2.class)
+                        Jt.page("/page-1", TestApp::page1).home().noPersistWhenLeft(),
+                        Jt.page("/page-2", TestApp::page2)
                     ).use();
 
                     currentPage.run();
@@ -49,16 +49,12 @@ public class MultiPageNoPersistWhenLeftE2ETest {
                     Jt.textInput("shared text input").use();
                 }
 
-                public static class Page1 {
-                    public static void main(String[] args) {
-                        Jt.textInput("page 1 text input").key("key1").use();
-                    }
+                public static void page1() {
+                    Jt.textInput("page 1 text input").key("key1").use();
                 }
 
-                public static class Page2 {
-                    public static void main(String[] args) {
-                        Jt.textInput("page 2 text input").key("key1").use();
-                    }
+                public static void page2() {
+                    Jt.textInput("page 2 text input").key("key1").use();
                 }
             }
             """;

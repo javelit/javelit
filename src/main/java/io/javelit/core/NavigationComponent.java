@@ -18,9 +18,7 @@ package io.javelit.core;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,8 +37,6 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     final List<JtPage> pages;
     final JtPage home;
     NavigationPosition position;
-
-    private final Map<String, Class<?>> classNameToClass = new HashMap<>();
 
     public enum NavigationPosition {
         SIDEBAR,
@@ -65,17 +61,35 @@ public final class NavigationComponent extends JtComponent<JtPage> {
             throw new IllegalArgumentException(
                     "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
                             ", ",
-                            homePages.stream().map(e -> e.page().getSimpleName()).toList())));
+                            homePages.stream().filter(JtPage.Builder::isHome).map(JtPage.Builder::urlPath).toList())));
 
         }
-        builder.pageBuilders.forEach(e -> classNameToClass.put(e.page().getName(), e.page()));
         this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
-        this.home = this.pages.stream().filter(JtPage::isHome).findFirst().orElseThrow(() -> new RuntimeException("Home page not found. Implementation error. Please reach out to support."));
+        this.home = this.pages
+                .stream()
+                .filter(JtPage::isHome)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(
+                        "Home page not found. Implementation error. Please reach out to support."));
         this.position = builder.position;
 
         // Set initial page based on current URL, not always home
         final String currentPath = getCurrentPath();
-        this.currentValue = getPageFor(currentPath);
+        JtPage page = getPageFor(currentPath);
+        if (page == null) {
+            page = build404(currentPath);
+        }
+
+        this.currentValue = page;
+    }
+
+    private static @NotNull JtPage build404(String currentPath) {
+        return JtPage.builder(currentPath, () -> {
+            Jt.title("Page Not Found.").use();
+            if (Jt.button("Go to home").use()) {
+                Jt.switchPage(null);
+            }
+        }).title("Page not found").build();
     }
 
     public JtPage getHome() {
@@ -86,8 +100,8 @@ public final class NavigationComponent extends JtComponent<JtPage> {
      * Determines the initial page based on current URL path.
      * Falls back to home page if no URL match is found.
      */
-    private JtPage getPageFor(final @Nonnull String urlPath) {
-        if (urlPath.isBlank() || "/".equals(urlPath)) {
+    public @Nullable JtPage getPageFor(final @Nullable String urlPath) {
+        if (urlPath == null || urlPath.isBlank() || "/".equals(urlPath)) {
             return home;
         }
         for (final JtPage page : pages) {
@@ -95,20 +109,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
                 return page;
             }
         }
-        // 404
-        return JtPage.builder(NotFoundPageApp.class).title("Page not found").urlPath(urlPath).build();
-    }
-
-    public @Nullable JtPage getPageFor(final @Nullable Class<?> pageApp) {
-        if (pageApp == null) {
-            return home;
-        }
-        for (final JtPage page : pages) {
-            if (page.pageApp().equals(pageApp)) {
-                return page;
-            }
-        }
-        // unknow app
+        // unknown
         return null;
     }
 
@@ -136,7 +137,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
          * but no navigation UI will be displayed. Useful for programmatic navigation or single-page apps.
          */
         public Builder hidden() {
-            position = NavigationPosition.HIDDEN;
+            position = NavigationComponent.NavigationPosition.HIDDEN;
             return this;
         }
 
@@ -147,7 +148,8 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
         @Override
         public Builder key(final @NotNull String key) {
-            throw new UnsupportedOperationException("The key of the navigation component cannot be modified. It is JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY");
+            throw new UnsupportedOperationException(
+                    "The key of the navigation component cannot be modified. It is JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY");
         }
 
         @Override
@@ -196,25 +198,6 @@ public final class NavigationComponent extends JtComponent<JtPage> {
         }
     }
 
-//    @Override
-//    protected JtPage convert(Object rawValue) {
-//        try {
-//            final FrontendJtPage frontendJtPage = Shared.OBJECT_MAPPER.convertValue(rawValue, FrontendJtPage.class);
-//            final Class<?> pageApp = classNameToClass.get(frontendJtPage.fullyQualifiedName());
-//            if (pageApp != null) {
-//                return getPageFor(pageApp);
-//            } else {
-//                // 404
-//                return JtPage.builder(NotFoundPageApp.class).title("Page not found").build();
-//            }
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(
-//                    "Failed to parse input widget value coming from the app. Please reach out to support.",
-//                    e);
-//        }
-//    }
-
     public String getPagesJson() {
         try {
             return Shared.OBJECT_MAPPER.writeValueAsString(pages.stream().map(FrontendJtPage::from).toList());
@@ -232,27 +215,16 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     }
 
 
-    private record FrontendJtPage(@Nonnull String fullyQualifiedName, @Nonnull String title, @Nonnull String icon,
+    private record FrontendJtPage(@Nonnull String title, @Nonnull String icon,
                                   @Nonnull String urlPath, boolean isHome,
                                   // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
                                   List<String> section) {
         private static FrontendJtPage from(final @Nonnull JtPage page) {
-            return new FrontendJtPage(page.pageApp().getName(),
-                                      page.title(),
+            return new FrontendJtPage(page.title(),
                                       page.icon(),
                                       page.urlPath(),
                                       page.isHome(),
                                       page.section());
-        }
-    }
-
-    public static class NotFoundPageApp {
-
-        public static void main(String[] args) {
-            Jt.title("Page Not Found.").use();
-            if (Jt.button("Go to home").use()) {
-                Jt.switchPage(null);
-            }
         }
     }
 }

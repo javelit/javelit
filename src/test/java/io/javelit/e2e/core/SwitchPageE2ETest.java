@@ -36,47 +36,41 @@ class SwitchPageE2ETest {
             public class TestApp {
                 public static void main(String[] args) {
                     var currentPage = Jt.navigation(
-                        Jt.page(HomePage.class).home(),
-                        Jt.page(ProductsPage.class).urlPath("/products")
+                        Jt.page("/home", TestApp::home).title("Home Page").home(),
+                        Jt.page("/products", TestApp::products)
                     ).use();
             
                     currentPage.run();
                     Jt.text("Footer - always visible").use();
                 }
             
-                public static class HomePage {
-                    public static void main(String[] args) {
-                        Jt.title("The Home Page").use();
-                        Jt.text("Welcome to the home page!").use();
-            
-                        // Test programmatic switch to Products page
-                        if (Jt.button("Go to Products").use()) {
-                            Jt.switchPage(ProductsPage.class);
-                        }
-            
-                        // This should throw since ContactPage is not registered
-                        if (Jt.button("Switch to Unregistered Page").use()) {
-                            Jt.switchPage(ContactPage.class);
-                        }
+                public static void home() {
+                    Jt.title("The Home Page").use();
+                    Jt.text("Welcome to the home page!").use();
+        
+                    // Test programmatic switch to Products page
+                    if (Jt.button("Go to Products").use()) {
+                        Jt.switchPage("/products");
+                    }
+        
+                    // This should throw since ContactPage is not registered
+                    if (Jt.button("Switch to Unregistered Page").use()) {
+                        Jt.switchPage("/unregistered");
                     }
                 }
-            
-                public static class ProductsPage {
-                    public static void main(String[] args) {
-                        Jt.title("Products Page").use();
-                        Jt.text("Browse our amazing products!").use();
-            
-                        // Test programmatic switch back to Home page
-                        if (Jt.button("Back to Home").use()) {
-                            Jt.switchPage(HomePage.class);
-                        }
+        
+                public static void products() {
+                    Jt.title("Products Page").use();
+                    Jt.text("Browse our amazing products!").use();
+        
+                    // Test programmatic switch back to Home page
+                    if (Jt.button("Back to Home").use()) {
+                        Jt.switchPage("/home");
                     }
                 }
-            
-                public static class ContactPage {
-                    public static void main(String[] args) {
-                        Jt.text("This class is not registered in the multipage app.").use();
-                    }
+        
+                public static void contact() {
+                    Jt.text("This class is not registered in the multipage app.").use();
                 }
             }
             """;
@@ -85,7 +79,7 @@ class SwitchPageE2ETest {
             // Wait for app to load and verify we're on HomePage
             assertThat(page.getByText("The Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertTrue(page.url().endsWith("/HomePage"));
+            assertTrue(page.url().endsWith("/home"));
             
             // Test programmatic switch to Products page via button click
             page.getByText("Go to Products", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
@@ -101,7 +95,7 @@ class SwitchPageE2ETest {
             // Verify we're back on Home page
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertTrue(page.url().endsWith("/HomePage"));
+            assertTrue(page.url().endsWith("/home"));
             
             // Verify footer is persistent across all page switches
             assertThat(page.getByText("Footer - always visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -110,10 +104,10 @@ class SwitchPageE2ETest {
             page.getByText("Switch to Unregistered Page", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             // Verify error message appears
             assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("IllegalArgumentException")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("This page is not registered")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("IllegalArgumentException").first()).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("This page is not registered").first()).isVisible(WAIT_1_SEC_MAX);
             // page did not change
-            assertTrue(page.url().endsWith("/HomePage"));
+            assertTrue(page.url().endsWith("/home"));
         });
     }
 }

@@ -22,9 +22,10 @@ public class HiddenNavApp {
     public static void main(String[] args) {
         // Navigation with hidden() - no sidebar should appear
         final JtPage currentPage = Jt.navigation(
-            Jt.page(HomePage.class).title("Home").icon("🏠").home(),
-            Jt.page(SettingsPage.class).title("Settings").icon("⚙️"),
-            Jt.page(AboutPage.class).title("About").icon("ℹ️")
+                Jt.page("/home", HomePage::app).icon("🏠").home(),
+            Jt.page("/settings", SettingsPage::app).title("Settings Page").icon("⚙️"),
+            Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
+
         ).hidden().use();  // Call hidden() to hide navigation
 
         currentPage.run();

@@ -18,7 +18,7 @@ package pages;
 import io.javelit.core.Jt;
 
 public class UsersPage {
-    public static void main(String[] args) {
+    public static void app() {
         Jt.title("👥 User Management").use();
         Jt.text("Manage your users here.").use();
         
@@ -30,5 +30,8 @@ public class UsersPage {
         if (Jt.button("Add User").use() && !name.isEmpty()) {
             Jt.text("✅ User '" + name + "' added!").use();
         }
+    }
+
+    private UsersPage() {
     }
 }

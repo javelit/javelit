@@ -27,7 +27,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import static io.javelit.core.utils.EmojiUtils.ensureIsValidIcon;
 
 public final class JtPage {
-    @Nonnull private final Class<?> pageApp;
+    @Nonnull private final Runnable pageApp;
     @Nonnull private final String title;
     @Nonnull private final String icon;
     @Nonnull private final String urlPath;
@@ -45,15 +45,8 @@ public final class JtPage {
         this.section = builder.section;
     }
 
-    public static Builder builder(@Nonnull Class<?> page) {
-        return new Builder(page);
-    }
-
-    // for the moment there is no known public case for getting this field
-    // the user should call run() instead
-    @Nonnull
-    Class<?> pageApp() {
-        return pageApp;
+    public static Builder builder(final @Nonnull String path, final @Nonnull Runnable page) {
+        return new Builder(path, page);
     }
 
     @Nonnull
@@ -86,7 +79,7 @@ public final class JtPage {
     public void run() {
         try {
             StateManager.setPageContext(this);
-            callMainMethod(pageApp);
+            pageApp.run();
         } finally {
             StateManager.clearPageContext();
         }
@@ -118,8 +111,9 @@ public final class JtPage {
         return Objects.equals(this.pageApp, that.pageApp) && Objects.equals(this.title, that.title) && Objects.equals(
                 this.icon,
                 that.icon) && Objects.equals(this.urlPath,
-                                             that.urlPath) && this.isHome == that.isHome && this.noPersistWhenLeft == that.noPersistWhenLeft && Objects.equals(this.section,
-                                                                                                           that.section);
+                                             that.urlPath) && this.isHome == that.isHome && this.noPersistWhenLeft == that.noPersistWhenLeft && Objects.equals(
+                this.section,
+                that.section);
     }
 
     @Override
@@ -134,18 +128,34 @@ public final class JtPage {
 
 
     public static final class Builder {
-        private final @Nonnull Class<?> pageApp;
+        private final @Nonnull Runnable pageApp;
+        private final String urlPath;
         private String title;
         private String icon;
-        private String urlPath;
         private boolean isHome;
         private boolean noPersistWhenLeft;
         private List<String> section;
 
-        public Builder(@Nonnull Class<?> pageApp) {
+        private Builder(final @Nonnull String path, final @Nonnull Runnable pageApp) {
+            this.urlPath = cleanPath(path);
             this.pageApp = pageApp;
+            this.title = pathToTitle(this.urlPath);
         }
 
+        private String cleanPath(final @Nonnull String urlPath) {
+            String cleanedUrl = urlPath.trim();
+            if (!cleanedUrl.startsWith("/")) {
+                cleanedUrl = "/" + urlPath;
+            }
+            if (cleanedUrl.endsWith("/")) {
+                cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length() - 1);
+            }
+            return cleanedUrl;
+        }
+
+        /**
+         * The display title of the page. If not passed, the title is inferred from the path.
+         */
         public Builder title(final @Nonnull String title) {
             this.title = title;
             return this;
@@ -165,21 +175,8 @@ public final class JtPage {
             return this;
         }
 
-        public Builder urlPath(final @Nonnull String urlPath) {
-            String cleanedUrl = urlPath.trim();
-            if (!cleanedUrl.startsWith("/")) {
-                cleanedUrl = "/" + urlPath;
-            }
-            if (cleanedUrl.endsWith("/")) {
-                cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length() - 1);
-            }
-            this.urlPath = cleanedUrl;
-
-            return this;
-        }
-
         /**
-         * make the page the default homepage
+         * Make the page the default homepage
          */
         public Builder home() {
             this.isHome = true;
@@ -208,31 +205,43 @@ public final class JtPage {
         }
 
         JtPage build() {
-            if (title == null) {
-                title = camelCaseToTitle(pageApp.getSimpleName());
-            }
-            if (urlPath == null) {
-                urlPath = "/" + pageApp.getSimpleName();
-            }
+            // FIXME CYRIL some paths are reserved - make sure they are not taken
             return new JtPage(this);
         }
 
         @VisibleForTesting
-        static String camelCaseToTitle(String camelCase) {
-            return camelCase
-                .replaceAll("([a-z0-9])([A-Z])", "$1 $2")// lowercase/digit followed by uppercase
-                .replaceAll("([a-zA-Z])([0-9])", "$1 $2")// letter followed by digit
-                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1 $2");  // CAPS followed by Caps
+        static String pathToTitle(final @Nonnull String path) {
+            final String cleaned = path.startsWith("/") ? path.substring(1) : path;
+            if (cleaned.isEmpty()) {
+                return "Home";
+            }
+            // Split by - and _, filter empty, capitalize each word
+            String[] words = cleaned.split("[-_]+");
+            StringBuilder result = new StringBuilder();
+
+            for (final String word : words) {
+                if (!word.isEmpty()) {
+                    if (!result.isEmpty()) {
+                        result.append(" ");
+                    }
+                    result.append(Character.toUpperCase(word.charAt(0)));
+                    if (word.length() > 1) {
+                        result.append(word.substring(1));
+                    }
+                }
+            }
+
+            return result.toString();
         }
+
 
         // used internally by the navigation component to modify some pages if necessary
         boolean isHome() {
             return isHome;
         }
 
-
-        Class<?> page() {
-            return this.pageApp;
+        String urlPath() {
+            return urlPath;
         }
     }
 }

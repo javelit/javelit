@@ -168,11 +168,11 @@ public final class Jt {
      *}
      * <p>
      *
-     * @param key The key of the component (as set via {@code .key()})
+     * @param key   The key of the component (as set via {@code .key()})
      * @param value The new value to set
      * @throws IllegalArgumentException if userKey is null or the provided key does not match an existing component
-     * @throws IllegalStateException if component has already been rendered in the current execution
-     * @throws ClassCastException if value type does not match component type
+     * @throws IllegalStateException    if component has already been rendered in the current execution
+     * @throws ClassCastException       if value type does not match component type
      */
     public static void setComponentState(final @Nonnull String key, final @Nullable Object value) {
         StateManager.handleUserCodeComponentUpdate(key, value);
@@ -1465,6 +1465,14 @@ public final class Jt {
         return new SelectBoxComponent.Builder<>(label, options);
     }
 
+    public static JtPage.Builder page(final @Nonnull Class<?> pageApp) {
+        final String simpleName = pageApp.getSimpleName();
+        throw new RuntimeException("""
+                                           Sorry, this method is not supported anymore. Use page(String path, Runnable page) instead. \s
+                                           To quickfix: replace `Jt.page(%s.class)` with `Jt.page("/%s", %s::main)`
+                                           """.formatted(simpleName, pageApp.getSimpleName(), pageApp.getSimpleName()));
+    }
+
     /**
      * Create a page for {@code Jt.navigation} in a multipage app.
      * <p>
@@ -1474,31 +1482,28 @@ public final class Jt {
      * import io.javelit.core.Jt;
      *
      * public class NavigationApp {
-     *     public static class FirstPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("First Page").use();
-     *         }
-     *     }
+ *         public static void page1() {
+ *             Jt.title("First Page").use();
+ *         }
      *
-     *     public static class SecondPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Second Page").use();
-     *         }
-     *     }
+ *         public static void page2() {
+ *             Jt.title("Second Page").use();
+ *         }
      *
      *     public static void main(String[] args) {
      *         var page = Jt
-     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
-     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .navigation(Jt.page("page1", NavigationApp::page1).title("First page").icon("🔥"),
+     *                             Jt.page("page2", NavigationApp::page2).title("Second page").icon(":favorite:"))
      *                 .use();
      *     }
      * }
      *}
      *
-     * @param pageApp The class containing the main method for this page
+     * @param path The url path where the page should be found
+     * @param page The page app logic
      */
-    public static JtPage.Builder page(final @Nonnull Class<?> pageApp) {
-        return new JtPage.Builder(pageApp);
+    public static JtPage.Builder page(final @Nonnull String path, final @Nonnull Runnable page) {
+        return JtPage.builder(path, page);
     }
 
     /**
@@ -1561,7 +1566,7 @@ public final class Jt {
      * {@snippet :
      * import io.javelit.core.Jt;
      *
-     * public class ToDelete {
+     * public class PageLinkApp {
      *
      *     public static class FirstPage {
      *         public static void main(String[] args) {
@@ -1584,7 +1589,7 @@ public final class Jt {
      *                 .hidden()
      *                 .use();
      *
-     *         Jt.divider().use();
+     *         Jt.divider("divider").use();
      *         Jt.pageLink(FirstPage.class).use();
      *         Jt.pageLink(SecondPage.class).use();
      *         Jt.pageLink("https://github.com/javelit/javelit", "Github project").icon(":link:").use();
@@ -1592,10 +1597,10 @@ public final class Jt {
      * }
      *}
      *
-     * @param pageClass The class of the page to link to in a multipage app. If null, target the home page.
+     * @param pagePath The path of the page to link to in a multipage app. If null, target the home page.
      */
-    public static PageLinkComponent.Builder pageLink(final @jakarta.annotation.Nullable Class<?> pageClass) {
-        return new PageLinkComponent.Builder(pageClass);
+    public static PageLinkComponent.Builder pageLink(final @jakarta.annotation.Nullable String pagePath) {
+        return new PageLinkComponent.Builder(pagePath);
     }
 
     /**
@@ -1906,7 +1911,7 @@ public final class Jt {
      * }
      *}
      *
-     * @param cols  A map where keys are column names and values are collections of column data
+     * @param cols A map where keys are column names and values are collections of column data
      */
     public static TableComponent.Builder tableFromListColumns(final @Nonnull Map<@NotNull String, @NotNull List<Object>> cols) {
         return TableComponent.Builder.ofColumnsLists(cols);
@@ -1960,17 +1965,15 @@ public final class Jt {
      * }
      *}
      *
-     * @param pageApp The target page. If {@code null}, target the home page.
+     * @param path The target page path. If {@code null}, target the home page.
      */
-    public static void switchPage(final @jakarta.annotation.Nullable Class<?> pageApp) {
+    public static void switchPage(final @jakarta.annotation.Nullable String path) {
         // note: the design here is pretty hacky
         final NavigationComponent nav = StateManager.getNavigationComponent();
         checkState(nav != null,
                    "No navigation component found in app. switchPage only works with multipage app. Make sure switchPage is called after Jt.navigation().[...].use().");
-        final JtPage newPage = nav.getPageFor(pageApp);
-        checkArgument(newPage != null,
-                      "Invalid page %s. This page is not registered in Jt.navigation().",
-                      pageApp != null ? pageApp.getName() : "null (home page) - Please reach out to support.");
+        final JtPage newPage = nav.getPageFor(path);
+        checkArgument(newPage != null, "Invalid page %s. This page is not registered in Jt.navigation().", path);
         final UrlContext urlContext = new UrlContext(newPage.urlPath(),
                                                      Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));

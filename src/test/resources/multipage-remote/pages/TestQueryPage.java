@@ -18,7 +18,7 @@ package pages;
 import io.javelit.core.Jt;
 
 public class TestQueryPage {
-    public static void main(String[] args) {
+    public static void app() {
         final var l = Jt.urlQueryParameters().get("name");
         var name = "unknown visitor";
         if (l != null && !l.isEmpty()) {
@@ -27,5 +27,8 @@ public class TestQueryPage {
 
         Jt.title("🔍 Query Parameter Test").use();
         Jt.text("Hello %s!".formatted(name)).use();
+    }
+
+    private TestQueryPage() {
     }
 }

@@ -25,44 +25,60 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JtPageTest {
 
-    private static Stream<Arguments> camelCaseToTitleTestCases() {
+    private static Stream<Arguments> pathToTitleTestCases() {
         return Stream.of(
-                // Simple camelCase
-                Arguments.of("SimpleName", "Simple Name"),
+                // Simple paths with hyphens
+                Arguments.of("/my-dashboard", "My Dashboard"),
+                Arguments.of("/user-profile", "User Profile"),
+                Arguments.of("/api-endpoint", "Api Endpoint"),
+
+                // Simple paths with underscores
+                Arguments.of("/user_profile", "User Profile"),
+                Arguments.of("/my_page", "My Page"),
+
+                // Mixed separators
+                Arguments.of("/my-awesome_page", "My Awesome Page"),
+                Arguments.of("/user_profile-settings", "User Profile Settings"),
 
                 // With numbers
-                Arguments.of("Page1", "Page 1"),
-                Arguments.of("MyPage2", "My Page 2"),
-                Arguments.of("App123", "App 123"),
-                Arguments.of("Test2Page", "Test 2 Page"),
+                Arguments.of("/page-2", "Page 2"),
+                Arguments.of("/api-v2", "Api V2"),
+                Arguments.of("/version-123-beta", "Version 123 Beta"),
 
-                // Consecutive caps (acronyms)
-                Arguments.of("HTTPServer", "HTTP Server"),
+                // Multiple consecutive separators
+                Arguments.of("/my--page", "My Page"),
+                Arguments.of("/user__profile", "User Profile"),
+                Arguments.of("/mixed-_-separators", "Mixed Separators"),
 
-                // Mixed patterns
-                Arguments.of("MyHTTPServer", "My HTTP Server"),
-                Arguments.of("HTTPServer2", "HTTP Server 2"),
-                Arguments.of("MyXMLParser123", "My XML Parser 123"),
+                // Single word
+                Arguments.of("/dashboard", "Dashboard"),
+                Arguments.of("/settings", "Settings"),
 
-                // Edge cases - single word
-                Arguments.of("Page", "Page"),
-                Arguments.of("ABC", "ABC"),
-                Arguments.of("a", "a"),
+                // Without leading slash
+                Arguments.of("my-page", "My Page"),
+                Arguments.of("dashboard", "Dashboard"),
 
-                // Empty string
-                Arguments.of("", ""),
+                // Empty or root path
+                Arguments.of("/", "Home"),
+                Arguments.of("", "Home"),
 
-                // Lowercase start
-                Arguments.of("myClass", "my Class"),
+                // Already capitalized
+                Arguments.of("/MyPage", "MyPage"),
+                Arguments.of("/ALLCAPS", "ALLCAPS"),
 
-                // Multiple consecutive numbers
-                Arguments.of("Version123Beta", "Version 123 Beta")
+                // Long paths
+                Arguments.of("/this-is-a-very-long-page-title", "This Is A Very Long Page Title"),
+
+                // Edge cases
+                Arguments.of("/-", ""),
+                Arguments.of("/_", ""),
+                Arguments.of("/--", "")
         );
     }
 
     @ParameterizedTest
-    @MethodSource("camelCaseToTitleTestCases")
-    public void testCamelCaseToTitle(final String input, final String expected) {
-        assertThat(JtPage.Builder.camelCaseToTitle(input)).isEqualTo(expected);
+    @MethodSource("pathToTitleTestCases")
+    public void testPathToTitle(final String input, final String expected) {
+        assertThat(JtPage.Builder.pathToTitle(input)).isEqualTo(expected);
     }
 }

@@ -17,8 +17,11 @@
 import io.javelit.core.Jt;
 
 public class HomePage {
-    public static void main(String[] args) {
+    public static void app() {
         Jt.title("Home Page").use();
         Jt.text("Welcome to the home page").use();
+    }
+
+    private HomePage() {
     }
 }
