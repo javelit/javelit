@@ -12,12 +12,14 @@ import io.javelit.core.Server;
 public class App {
 
     public static void main(String[] args) {
-        var server = Server.builder(() -> {
-            Jt.text("Hello World").use();
-        }, 8888).build();
+        var server = Server.builder(() -> app(), 8888).build();
 
         // start the server - this is non-blocking, user thread
         server.start();
+    }
+
+    private static void app() {
+        Jt.text("Hello World").use();
     }
 
     private App() {
