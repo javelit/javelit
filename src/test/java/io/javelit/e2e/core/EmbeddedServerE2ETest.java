@@ -26,8 +26,12 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 public class EmbeddedServerE2ETest {
 
+    // do not convert to local variable
+    private final String instanceString = "Hello";
+
+    @Deprecated
     @Test
-    public void testEmbeddedServerE2E(final TestInfo testInfo) {
+    public void testEmbeddedServerFromClassE2E(final TestInfo testInfo) {
         PlaywrightUtils.runInDedicatedBrowser(testInfo, TestApp.class, page -> {
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
@@ -35,6 +39,8 @@ public class EmbeddedServerE2ETest {
         });
     }
 
+
+    @Deprecated
     public static class TestApp {
         public static void main(String[] args) {
             if (Jt.button("Click me").use()) {
@@ -42,4 +48,42 @@ public class EmbeddedServerE2ETest {
             }
         }
     }
+
+    @Test
+    public void testEmbeddedServerE2E(final TestInfo testInfo) {
+        final Runnable app = () -> {
+            if (Jt.button("Click me").use()) {
+                Jt.text("I was clicked!").use();
+            }
+        };
+        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+            assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
+            page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
+            assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
+        });
+    }
+
+    @Test
+    public void testEmbeddedServerWithParametrizedStaticRunnableE2E(final TestInfo testInfo) {
+        PlaywrightUtils.runInSharedBrowser(testInfo, () -> app1("Hello"), page -> {
+            assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
+        });
+    }
+
+
+    public static void app1(String text) {
+        Jt.text(text).use();
+    }
+
+    @Test
+    public void testEmbeddedServerWithParametrizedNonStaticRunnableE2E(final TestInfo testInfo) {
+        PlaywrightUtils.runInSharedBrowser(testInfo, this::app2, page -> {
+            assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
+        });
+    }
+
+    public void app2() {
+        Jt.text(instanceString).use();
+    }
+
 }

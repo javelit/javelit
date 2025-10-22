@@ -82,7 +82,7 @@ class FileReloader extends Reloader {
     }
 
     @Override
-    Method reload() {
+    AppEntrypoint reload() {
         final String currentClasspath = buildClasspath(providedClasspath, javaFile);
         final @Nonnull List<JavaFileObject> classFiles = compileJavaFile(this.javaFile, currentClasspath);
         final @Nullable JavaFileObject mainClassFile = classFiles.stream()
@@ -142,7 +142,8 @@ class FileReloader extends Reloader {
             }
             final String name = classNameFor(mainClassFile);
             final Class<?> mainClass = hierarchicalClassLoader.loadClass(name);
-            return mainClass.getMethod("main", String[].class);
+            Method main = mainClass.getMethod("main", String[].class);
+            return AppEntrypoint.of(main, hierarchicalClassLoader);
         } catch (NoSuchMethodException e) {
             throw new CompilationException(e);
         } catch (ClassNotFoundException e) {

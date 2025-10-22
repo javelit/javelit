@@ -19,7 +19,8 @@ import java.lang.reflect.Method;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-// compatible with JRE only
+// use RunnableReloader instead
+@Deprecated()
 public class ClassReloader extends Reloader {
 
     private final String appClassName;
@@ -31,14 +32,17 @@ public class ClassReloader extends Reloader {
     }
 
     @Override
-    Method reload() {
+    AppEntrypoint reload() {
+        // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
+        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        final Method method;
         try {
-            // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
-            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
             final Class<?> appClass = Class.forName(appClassName, true, cl);
-            return appClass.getMethod("main", String[].class);
+            method =  appClass.getMethod("main", String[].class);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new PageRunException(e);
+            throw new CompilationException(e);
         }
+
+        return AppEntrypoint.of(method, cl);
     }
 }

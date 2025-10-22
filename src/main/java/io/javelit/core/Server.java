@@ -117,6 +117,7 @@ public final class Server implements StateManager.RenderServer {
     public static final class Builder {
         final @Nullable Path appPath;
         final @Nullable Class<?> appClass;
+        final @Nullable Runnable appRunnable;
         final int port;
         @Nullable String classpath;
         @Nullable String headersFile;
@@ -125,12 +126,24 @@ public final class Server implements StateManager.RenderServer {
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
             this.appClass = null;
+            this.appRunnable = null;
             this.port = port;
         }
 
+        // use a Builder(Runnable appRunnable, int port) instead
+        @Deprecated(forRemoval = true)
         private Builder(final @Nonnull Class<?> appClass, final int port) {
             this.appPath = null;
             this.appClass = appClass;
+            this.appRunnable = null;
+            this.port = port;
+            this.buildSystem = BuildSystem.RUNTIME;
+        }
+
+        private Builder(final @Nonnull Runnable appRunnable, final int port) {
+            this.appPath = null;
+            this.appClass = null;
+            this.appRunnable = appRunnable;
             this.port = port;
             this.buildSystem = BuildSystem.RUNTIME;
         }
@@ -163,8 +176,14 @@ public final class Server implements StateManager.RenderServer {
         return new Builder(appPath, port);
     }
 
+    // use a builder(Runnable app, int port) instead
+    @Deprecated(forRemoval = true)
     public static Builder builder(final @Nonnull Class<?> appClass, final int port) {
         return new Builder(appClass, port);
+    }
+
+    public static Builder builder(final @Nonnull Runnable app, final int port) {
+        return new Builder(app, port);
     }
 
     private Server(final Builder builder) {

@@ -70,19 +70,17 @@ Once you're ready to go further, look at the [fundamental concepts](https://docs
    ```
 2. Launch the server in your project
    ```java
-   void startJavelitServer() {
-    // the Javelit webapp class
-    class MyApp {
-      public static void main(String[] args) {
-        Jt.text("Hello World").use();
-        }
-      }
-    
-      // prepare a Javelit server
-      var server = Server.builder(MyApp.class, 8888).build();
+   void startServer() {
+     // prepare a Javelit server
+     var server = Server.builder(() -> app(), 8888).build();
     
      // start the server - this is non-blocking, user thread
      server.start();
+   }
+   
+   // the Javelit webapp
+   void  app() {
+     Jt.text("Hello World").use();
    }
    ```
 

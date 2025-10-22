@@ -71,9 +71,23 @@ public final class JavelitTestHelper {
      * @param appClass class of the app
      * @return The started Server instance
      */
+    @Deprecated(forRemoval = true)
     public static Server startEmbeddedServer(final @Nonnull Class<?> appClass) {
         final int port = PortAllocator.getNextAvailablePort();
         final Server server = Server.builder(appClass, port).build();
+        return startServer(server);
+    }
+
+
+    /**
+     * Start a Javelit embedded server for the given Runnable
+     *
+     * @param app runnable of the app
+     * @return The started Server instance
+     */
+    public static Server startEmbeddedServer(final @Nonnull Runnable app) {
+        final int port = PortAllocator.getNextAvailablePort();
+        final Server server = Server.builder(app, port).build();
         return startServer(server);
     }
 

@@ -16,7 +16,6 @@
 package io.javelit.core;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,7 +38,7 @@ final class AppRunner {
     private static final Logger LOG = LoggerFactory.getLogger(AppRunner.class);
     private static final Pattern CLASSLOADER_MISMATCH_CLASSNAME_P = Pattern.compile("class (.*?) cannot be cast to");
 
-    private final @Nonnull AtomicReference<Method> mainMethod = new AtomicReference<>();
+    private final @Nonnull AtomicReference<Reloader.AppEntrypoint> entrypointRef = new AtomicReference<>();
     private final @Nonnull Semaphore reloadAvailable = new Semaphore(1, true);
     private final @Nonnull Reloader reloader;
 
@@ -50,6 +49,8 @@ final class AppRunner {
             this.reloader = new FileReloader(builder);
         } else if (builder.appClass != null) {
             this.reloader = new ClassReloader(builder);
+        } else if (builder.appRunnable != null) {
+            this.reloader = new RunnableReloader(builder);
         } else {
             throw new IllegalArgumentException(
                     "Either appPath or appClass should be provided. Please reach out to support.");
@@ -57,7 +58,7 @@ final class AppRunner {
         new Thread(() -> {
             try {
                 reloadAvailable.acquire();
-                if (mainMethod.get() == null) {
+                if (entrypointRef.get() == null) {
                     LOG.info("Compiling the app for the first time.");
                     reload();
                     LOG.info("First time compilation successful.");
@@ -73,7 +74,7 @@ final class AppRunner {
     }
 
     void reload() {
-        mainMethod.set(reloader.reload());
+        entrypointRef.set(reloader.reload());
     }
 
     /**
@@ -81,13 +82,13 @@ final class AppRunner {
      */
     void runApp(final String sessionId) {
         // if necessary: load the app for the first time
-        if (mainMethod.get() == null) {
+        if (entrypointRef.get() == null) {
             StateManager.beginExecution(sessionId);
             try {
                 reloadAvailable.acquire();
-                if (mainMethod.get() == null) {
+                if (entrypointRef.get() == null) {
                     LOG.warn("Pre-compilation of the app failed the first time. Attempting first compilation again.");
-                    mainMethod.set(reloader.reload());
+                    entrypointRef.set(reloader.reload());
                 }
             } catch (InterruptedException e) {
                 Jt.error("Compilation interrupted.").use();
@@ -112,14 +113,16 @@ final class AppRunner {
             // impact on the case where the mainMethod is passed directly
             final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
             try {
-                final Method method = mainMethod.get();
-                Thread.currentThread().setContextClassLoader(method.getDeclaringClass().getClassLoader());
-                method.invoke(null, new Object[]{new String[]{}});
+                final Reloader.AppEntrypoint entrypoint = entrypointRef.get();
+                Thread.currentThread().setContextClassLoader(entrypoint.classLoader());
+                entrypoint.runnable().run();
+            } catch (Exception e) {
+                throw new PageRunException(e);
             } finally {
                 Thread.currentThread().setContextClassLoader(originalClassLoader);
             }
         } catch (Exception e) {
-            if (!(e instanceof InvocationTargetException || e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
+            if (!(e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
             }
             if (e.getCause() instanceof BreakAndReloadAppException u) {
@@ -219,10 +222,10 @@ final class AppRunner {
     }
 
     private static Throwable unwrapException(Throwable error) {
-        if (error instanceof PageRunException) {
+        if (error instanceof PageRunException && error.getCause() != null) {
             error = error.getCause();
         }
-        if (error instanceof InvocationTargetException) {
+        if (error instanceof InvocationTargetException  && error.getCause() != null) {
             error = error.getCause();
         }
         return error;
