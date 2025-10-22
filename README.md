@@ -2,7 +2,7 @@
 
 Welcome! 
 ## What is Javelit ? 
-Javelit is a **Java** *lightning fast* data app development framework, heavily inspired by (*drumroll…* 🥁) Streamlit!  
+Javelit is a **Java** *lightning fast* data app development framework, heavily inspired by Streamlit.  
 
 Javelit makes it dead simple to create data apps **in minutes**. 
 Build dashboards, back-offices, generate reports, showcase APIS, etc...   
