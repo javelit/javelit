@@ -13,20 +13,21 @@ The API will look like the following:
 public class MultiPageApp {
 
     public static void main(String[] args) throws InterruptedException {
-        Jt.navigation()
-                .pages(
-                Jt.page("Display Name for Page 1", Page1.class).build(),
-                Jt.page("Display Name for Page 2", Page2.class).build(),
-                Jt.page("Display Name for Page 3", Page3.class).build(),
-                )
-                .home(Page1.class)
-                .use(JtContainer.SIDEBAR).use();
+        Jt.navigation(
+                Jt.page("/page1", Page1::app).title("Display Name for Page 1").home(),
+                Jt.page("/page2", Page2::app).title("Display Name for Page 2"),
+                Jt.page("/page3", Page3::app).title("Display Name for Page 3")
+        ).use();
+    }
+
+    public static class Page1 {
+        public static void app() {
+            // page logic
+        }
     }
 }
 
-Jt.page returns a simple record
-
-record JtPage(String displayName, Class<?> pageClazz)
+Jt.page takes a path and a Runnable (typically a method reference like PageClass::app)
 
 A navigationComponent generates a a table of content style thing.
 When a link is clicked, the value of the Jt.navigation is updated.
@@ -37,19 +38,12 @@ In the frontend, it is actually the NavigationComponent that updates the page ti
 This can be done later by adding some other fields to the JtPage record.
 
 The navigation Component uses afterUse() to run the current page.
-It runs it runnning the main class, with something like this:
+It runs by calling the Runnable provided (typically PageClass::app).
 
- public void callMainWithMethodHandle(Class<?> clazz) throws Throwable {
-      MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-      MethodType methodType = MethodType.methodType(void.class, String[].class);
-
-      MethodHandle mainHandle = lookup.findStatic(clazz, "main", methodType);
-
-      String[] args = new String[0];
-      mainHandle.invoke(args);
-  }
-
-Why using a class versus just using a function ? Because it makes it easy to debug pages one by one ?
+Why using method references?
+- Easy to debug pages individually
+- Clean syntax with method references
+- No String[] args parameter needed since pages don't use it
 
 There can only be one Jt.navigation. So we can use a static key ? Let's use THERE_CAN_ONLY_BE_ONE_NAVIGATION_COMPONENT.
 
@@ -64,22 +58,11 @@ States are shared between pages. I think it's okay. Will it break things in some
 
 
 For the navigation:
-Jt.navigateTo(Page1.Class, Map.of("cars", carId, "drivers", "driverId")) will be possible.
-This will work in coordination with the Navigation component in the frontend.
-Not sure how yet, most likely --> find the jt-navigation component, set some value, then the Navigation component
-runs its update logic.
-Page1.class is more comfortable, but this would have to be resolved internally to the correct key - maybe a redesign will be necessary here
+Jt.switchPage("/page1") switches to a page by path.
+Query parameters can be passed via the URL: Jt.switchPage("/page1?userId=123&view=details")
 
-Path and path parameters only should be used. I don't want arguments.
-A utility will be provided to parse string args to Maps in main(String[] args)
-Eg
-toMap(String[] args) {
-  // ensure even number
-  m = new HashMap()
-  for (int i=0; i=i+2; i<args.length) {
-    m.put(arg[i], args[i+1])
-  }
-}
+Query parameters are used for dynamic page data.
+Pages access them via: Jt.urlQueryParameters().get("paramName")
 
 Design note:
 Are the path params used to re-use the same class for multiple pages, or to make a page dynamic by path params ?
@@ -121,11 +104,8 @@ Pros:
   2. Navigation with Query Params:
 
   // Navigate with parameters
-  Jt.navigateTo(UserProfile.class, Map.of(
-      "userId", "123",
-      "view", "details"
-  ));
-  // Results in: /UserProfile?Profile&userId=123&view=details
+  Jt.switchPage("/user-profile?userId=123&view=details");
+  // Results in: /user-profile?userId=123&view=details
 
   3. URL Structure:
 
@@ -269,21 +249,18 @@ Pros:
     4. Java API Usage:
 
     public class UserDetailsPage {
-        public static void main(String[] args) {
-            // URL would be: /UserDetails?userId=123&view=profile
+        public static void app() {
+            // URL would be: /user-details?userId=123&view=profile
 
-            String userId = Jt.queryParams().get("userId");
-            String view = Jt.queryParams().get("view", "profile"); // with default
+            String userId = Jt.urlQueryParameters().get("userId").getFirst();
+            String view = Jt.urlQueryParameters().getOrDefault("view", List.of("profile")).getFirst();
 
             Jt.title("User " + userId).use();
 
             // Navigate to another page
             if (Jt.button("View Orders").use()) {
-                Jt.navigateTo(OrdersPage.class, Map.of(
-                    "userId", userId,
-                    "status", "pending"
-                ));
-                // Results in: /OrdersPage?userId=123&status=pending
+                Jt.switchPage("/orders?userId=" + userId + "&status=pending");
+                // Results in: /orders?userId=123&status=pending
             }
         }
     }
@@ -354,19 +331,14 @@ The streamlit reference is here:
 https://docs.streamlit.io/develop/api-reference/widgets/st.page_link
 
 if external link: no execution --> behaves like a normal <a> link, and the link is opened in a new tab
-if pageApp class Class<?> is passed --> when clicked, the component sends a window.javelit.sendPathUpdate message with the new path.
+if page path String is passed --> when clicked, the component sends a window.javelit.sendPathUpdate message with the new path.
 
-For the page app case, the logic implementation uses a StateManager.getNavigationComponent()
-and NavigationCOmponent.getPageFor to get the link that corresponds to the page app class.
+For the page path case, the logic implementation uses StateManager.getNavigationComponent()
+and NavigationComponent.getPageFor to get the page that corresponds to the path.
 
-In Java we cannot have the page argument of the builder String OR Class<?>
-So we will use the following instead:
-- appPage()
-- externalPage()
-in the builder, there will be one field for the external case and one for app page
-The builder will have 2 constructors:
-- PageLinkComponent.Builder(final @Nonnull Class<?> pageApp)
-- PageLinkComponent.Builder(final @NonNull String pageLink, final @NonNull String label) // label is mandatory for external pages. It is not for internal ones.
+The PageLinkComponent.Builder has 2 constructors:
+- PageLinkComponent.Builder(final @Nonnull String pagePath) // for internal page links
+- PageLinkComponent.Builder(final @NonNull String url, final @NonNull String label) // for external links, label is mandatory
 
 The link can have an icon and a help, similar to the other components like the button.
 The link can be disabled.

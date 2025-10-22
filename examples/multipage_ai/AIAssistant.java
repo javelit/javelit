@@ -31,8 +31,8 @@ public class AIAssistant {
 
         // Define navigation with multiple pages
         JtPage currentPage = Jt
-                .navigation(Jt.page(ClassificationPage.class).title("Classification").home(),
-                            Jt.page(ChatPage.class).title("Chat"))
+                .navigation(Jt.page("/classification", ClassificationPage::app).title("Classification").home(),
+                            Jt.page("/chat", ChatPage::app).title("Chat"))
                 .use();
 
         // Model selector

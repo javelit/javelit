@@ -262,22 +262,20 @@ public final class Jt {
      *
      * public class PathApp {
      *     public static void main(String[] args) {
-     *         Jt.navigation(Jt.page(HomePage.class), Jt.page(DetailsPage.class)).use();
+     *         Jt.navigation(
+     *                  Jt.page("/home", () -> home()),
+     *                  Jt.page("/details", () -> details())).use();
      *
      *         Jt.text("The current path is: " + Jt.urlPath()).use();
      *     }
      *
-     *     public static class HomePage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Home Page").use();
-     *         }
-     *     }
-     *
-     *     public static class DetailsPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Details Page").use();
-     *         }
-     *     }
+ *         public static void home() {
+ *             Jt.title("Home Page").use();
+ *         }
+ *
+ *         public static void details() {
+ *             Jt.title("Details Page").use();
+ *         }
      * }
      *}
      */
@@ -1524,22 +1522,18 @@ public final class Jt {
      * import io.javelit.core.Jt;
      *
      * public class NavigationApp {
-     *     public static class FirstPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("First Page").use();
-     *         }
+     *     public static void firstPage() {
+     *         Jt.title("First Page").use();
      *     }
      *
-     *     public static class SecondPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Second Page").use();
-     *         }
+     *     public static void secondPage() {
+     *         Jt.title("Second Page").use();
      *     }
      *
      *     public static void main(String[] args) {
      *         var page = Jt
-     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
-     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .navigation(Jt.page("/page1", () -> firstPage()).title("First page").icon("🔥"),
+     *                             Jt.page("/page2", () -> secondPage()).title("Second page").icon(":favorite:"))
      *                 .use();
      *     }
      * }
@@ -1568,30 +1562,26 @@ public final class Jt {
      *
      * public class PageLinkApp {
      *
-     *     public static class FirstPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("First Page").use();
-     *             Jt.text("first page content").use();
-     *         }
+     *     public static void firstPage() {
+     *         Jt.title("First Page").use();
+     *         Jt.text("first page content").use();
      *     }
      *
-     *     public static class SecondPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Second Page").use();
-     *             Jt.text("Second page content").use();
-     *         }
+     *     public static void secondPage() {
+     *         Jt.title("Second Page").use();
+     *         Jt.text("Second page content").use();
      *     }
      *
      *     public static void main(String[] args) {
      *         var page = Jt
-     *                 .navigation(Jt.page(FirstPage.class).title("First page").icon("🔥"),
-     *                             Jt.page(SecondPage.class).title("Second page").icon(":favorite:"))
+     *                 .navigation(Jt.page("/page1", () -> firstPage()).title("First page").icon("🔥"),
+     *                             Jt.page("/page2", () -> secondPage()).title("Second page").icon(":favorite:"))
      *                 .hidden()
      *                 .use();
      *
      *         Jt.divider("divider").use();
-     *         Jt.pageLink(FirstPage.class).use();
-     *         Jt.pageLink(SecondPage.class).use();
+     *         Jt.pageLink("/page1").use();
+     *         Jt.pageLink("/page2").use();
      *         Jt.pageLink("https://github.com/javelit/javelit", "Github project").icon(":link:").use();
      *     }
      * }
@@ -1931,34 +1921,30 @@ public final class Jt {
      * import io.javelit.core.Jt;
      *
      * public class SwitchPageApp {
-     *     public static class WelcomePage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Welcome Page").use();
-     *             Jt.text("Please complete the requirements below to proceed:").use();
+     *     public static void welcome() {
+     *         Jt.title("Welcome Page").use();
+     *         Jt.text("Please complete the requirements below to proceed:").use();
      *
-     *             boolean agreedToTerms = Jt.checkbox("I agree with Bob").use();
-     *             boolean confirmedAge = Jt.checkbox("I agree with Alice").use();
+     *         boolean agreedToTerms = Jt.checkbox("I agree with Bob").use();
+     *         boolean confirmedAge = Jt.checkbox("I agree with Alice").use();
      *
-     *             if (agreedToTerms && confirmedAge) {
-     *                 Jt.text("All requirements met! Redirecting to dashboard...").use();
-     *                 Jt.switchPage(DashboardPage.class);
-     *             } else {
-     *                 Jt.text("Please check both boxes to continue.").use();
-     *             }
+     *         if (agreedToTerms && confirmedAge) {
+     *             Jt.text("All requirements met! Redirecting to dashboard...").use();
+     *             Jt.switchPage("/dashboard");
+     *         } else {
+     *             Jt.text("Please check both boxes to continue.").use();
      *         }
      *     }
      *
-     *     public static class DashboardPage {
-     *         public static void main(String[] args) {
-     *             Jt.title("Dashboard").use();
-     *             Jt.text("Welcome to your dashboard!").use();
-     *             Jt.text("You have successfully completed the requirements.").use();
-     *         }
+     *     public static void dashboard() {
+     *         Jt.title("Dashboard").use();
+     *         Jt.text("Welcome to your dashboard!").use();
+     *         Jt.text("You have successfully completed the requirements.").use();
      *     }
      *
      *     public static void main(String[] args) {
-     *         Jt.navigation(Jt.page(WelcomePage.class).title("Welcome").icon("👋").home(),
-     *                       Jt.page(DashboardPage.class).title("Dashboard").icon("📊"))
+     *         Jt.navigation(Jt.page("/welcome", () -> welcome()).title("Welcome").icon("👋").home(),
+     *                       Jt.page("/dashboard", () -> dashboard()).title("Dashboard").icon("📊"))
      *           .hidden()
      *           .use();
      *     }

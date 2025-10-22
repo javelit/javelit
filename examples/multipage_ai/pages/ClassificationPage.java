@@ -20,7 +20,7 @@ public class ClassificationPage {
         Sentiment analyzeSentimentOf(String text);
     }
 
-    public static void main(String[] args) {
+    public static void app() {
         Jt.title("🏷️ Sentiment Classification").use();
 
         Jt.markdown("""
@@ -97,5 +97,8 @@ public class ClassificationPage {
                 }
             }
         }
+    }
+
+    private ClassificationPage() {
     }
 }

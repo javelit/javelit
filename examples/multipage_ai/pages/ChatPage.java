@@ -17,7 +17,7 @@ public class ChatPage {
         String chat(@V("question") String question);
     }
 
-    public static void main(String[] args) {
+    public static void app() {
         Jt.title("💬 Chat Assistant").use();
 
         Jt.markdown("""
@@ -75,5 +75,8 @@ public class ChatPage {
                 }
             }
         }
+    }
+
+    private ChatPage() {
     }
 }
