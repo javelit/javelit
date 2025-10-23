@@ -428,7 +428,7 @@ public final class Jt {
      * {@snippet :
      * import io.javelit.core.Jt;
      *
-     * public class TitleApp {
+     * public class HeaderApp {
      *     public static void main(String[] args) {
      *         // Basic header
      *         Jt.header("This is a title").use();
@@ -453,7 +453,7 @@ public final class Jt {
      * {@snippet :
      * import io.javelit.core.Jt;
      *
-     * public class TitleApp {
+     * public class SubHeaderApp {
      *     public static void main(String[] args) {
      *         // Basic subheader
      *         Jt.subheader("This is a title").use();
