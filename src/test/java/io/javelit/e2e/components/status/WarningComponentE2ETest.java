@@ -23,41 +23,23 @@ import org.junit.jupiter.api.TestInfo;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
-public class ErrorComponentE2ETest {
+public class WarningComponentE2ETest {
 
     @Test
-    void testErrorDisplayOnException(TestInfo testInfo) {
-        final @Language("java") String app = """
-                
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        throw new RuntimeException("Something went wrong");
-                    }
-                }
-                """;
-
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
-            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Something went wrong").first()).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
-
-    @Test
-    void testErrorDisplay(TestInfo testInfo) {
+    void testWarningDisplay(TestInfo testInfo) {
         final @Language("java") String app = """
                 import io.javelit.core.Jt;
                 
                 public class TestApp {
                     public static void main(String[] args) {
-                        Jt.error("User generated error").use();
+                        Jt.warning("This is a warning message").use();
                     }
                 }
                 """;
 
         PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("User generated error")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.getByText("This is a warning message")).isVisible(WAIT_1_SEC_MAX);
         });
     }
 }

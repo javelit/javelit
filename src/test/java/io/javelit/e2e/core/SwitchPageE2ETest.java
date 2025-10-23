@@ -103,7 +103,7 @@ class SwitchPageE2ETest {
             // Click the button that tries to switch to an unregistered page
             page.getByText("Switch to Unregistered Page", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             // Verify error message appears
-            assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("IllegalArgumentException").first()).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This page is not registered").first()).isVisible(WAIT_1_SEC_MAX);
             // page did not change

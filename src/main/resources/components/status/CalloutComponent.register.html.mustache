@@ -16,7 +16,7 @@
 <script type="module">
     import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
 
-    class JtError extends LitElement {
+    class JtCallout extends LitElement {
         static styles = css`
             :host {
                 display: block;
@@ -32,12 +32,11 @@
             }
 
             :host([width]:not([width="stretch"]):not([width="content"])) {
-                width: var(--error-width);
+                width: var(--callout-width);
                 max-width: 100%;
             }
 
-            .error-container {
-                background-color: var(--jt-bg-error);
+            .callout-container {
                 border-radius: var(--jt-border-radius-lg);
                 padding: var(--jt-spacing-md);
                 display: flex;
@@ -45,14 +44,34 @@
                 gap: var(--jt-spacing-sm);
             }
 
-            .error-icon {
+            .callout-container.ERROR {
+                background-color: var(--jt-bg-error);
+                color: var(--jt-error-color);
+            }
+
+            .callout-container.SUCCESS {
+                background-color: var(--jt-bg-success);
+                color: var(--jt-success-color);
+            }
+
+            .callout-container.INFO {
+                background-color: var(--jt-bg-info);
+                color: var(--jt-info-color);
+            }
+
+            .callout-container.WARNING {
+                background-color: var(--jt-bg-warning);
+                color: var(--jt-warning-color);
+            }
+
+            .callout-icon {
                 flex-shrink: 0;
                 font-size: var(--jt-font-size-lg);
-                color: var(--jt-danger-color);
+                color: inherit;
                 line-height: 1.2;
             }
 
-            .error-icon.material-icon {
+            .callout-icon.material-icon {
                 font-family: 'Material Symbols Rounded';
                 font-weight: normal;
                 font-style: normal;
@@ -66,7 +85,7 @@
                 direction: ltr;
             }
 
-            .error-body {
+            .callout-body {
                 min-width: 0;
                 overflow-x: auto;
                 white-space: nowrap;
@@ -74,7 +93,7 @@
                 font-family: var(--jt-font-family);
                 font-size: var(--jt-font-size-base);
                 line-height: var(--jt-line-height-normal);
-                color: var(--jt-error-color);
+                color: inherit;
                 margin: 0;
                 padding: 0;
             }
@@ -97,7 +116,8 @@
         static properties = {
             icon: { type: String },
             width: { type: String },
-            body: { type: String }
+            body: { type: String },
+            type: { type: String }
         };
 
         constructor() {
@@ -105,14 +125,15 @@
             this.icon = null;
             this.width = 'stretch';
             this.body = '';
+            this.type = 'ERROR';
         }
 
         render() {
             // Set width CSS variable if width is specified and is a pixel value
             if (this.width && /^\d+$/.test(this.width)) {
-                this.style.setProperty('--error-width', `${this.width}px`);
+                this.style.setProperty('--callout-width', `${this.width}px`);
             } else {
-                this.style.removeProperty('--error-width');
+                this.style.removeProperty('--callout-width');
             }
 
             let iconElement = '';
@@ -120,19 +141,17 @@
                 if (this.icon.startsWith(':') && this.icon.endsWith(':') && this.icon.length > 2) {
                     // Material icon format :icon_name:
                     const iconName = this.icon.slice(1, -1);
-                    iconElement = html`<span class="error-icon material-icon">${iconName}</span>`;
+                    iconElement = html`<span class="callout-icon material-icon">${iconName}</span>`;
                 } else if (this.icon.length <= 2) {
                     // Single emoji character
-                    iconElement = html`<span class="error-icon">${this.icon}</span>`;
+                    iconElement = html`<span class="callout-icon">${this.icon}</span>`;
                 }
             }
 
-            console.log(this.body);
-
             return html`
-                <div class="error-container">
+                <div class="callout-container ${this.type}">
                     ${iconElement}
-                    <div class="error-body">
+                    <div class="callout-body">
                         <div class="markdown-content">
                             ${unsafeHTML(this.body)}
                         </div>
@@ -142,5 +161,5 @@
         }
     }
 
-    customElements.define('jt-error', JtError);
+    customElements.define('jt-callout', JtCallout);
 </script>

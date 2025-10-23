@@ -27,29 +27,56 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 
-public final class ErrorComponent extends JtComponent<JtComponent.NONE> {
+public final class CalloutComponent extends JtComponent<JtComponent.NONE> {
+
+    private enum Type {
+        ERROR,
+        SUCCESS,
+        INFO,
+        WARNING,
+    }
+
     // visible to the template engine
     final String body;
     final String icon;
     final String width;
+    final Type type;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/status/ErrorComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/status/ErrorComponent.render.html.mustache");
+        registerTemplate = mf.compile("components/status/CalloutComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/status/CalloutComponent.render.html.mustache");
     }
 
     @SuppressWarnings("unused")
-    public static class Builder extends JtComponentBuilder<NONE, ErrorComponent, Builder> {
+    public static class Builder extends JtComponentBuilder<NONE, CalloutComponent, Builder> {
         private @Language("markdown") @Nonnull String body;
         private @Nullable String icon;
         private String width = "stretch";
+        private final Type type;
 
-        public Builder(final @Language("markdown") @Nonnull String body) {
+        public static Builder newError(final @Language("markdown") @Nonnull String body) {
+            return new Builder(body, Type.ERROR);
+        }
+
+        public static  Builder newInfo(final @Language("markdown") @Nonnull String body) {
+            return new Builder(body, Type.INFO);
+        }
+
+        public static Builder newWarning(final @Language("markdown") @Nonnull String body) {
+            return new Builder(body, Type.WARNING);
+        }
+
+        public static Builder newSuccess(final @Language("markdown") @Nonnull String body) {
+            return new Builder(body, Type.SUCCESS);
+        }
+
+        private Builder(final @Language("markdown") @Nonnull String body, final @Nonnull Type type) {
             this.body = body;
+            this.type = type;
         }
 
         /**
@@ -101,16 +128,17 @@ public final class ErrorComponent extends JtComponent<JtComponent.NONE> {
         }
 
         @Override
-        public ErrorComponent build() {
-            return new ErrorComponent(this);
+        public CalloutComponent build() {
+            return new CalloutComponent(this);
         }
     }
 
-    private ErrorComponent(Builder builder) {
+    private CalloutComponent(Builder builder) {
         super(builder, NONE.NONE_VALUE, null);
         this.body = markdownToHtml(builder.body, false);
         this.icon = builder.icon;
         this.width = builder.width;
+        this.type = builder.type;
     }
 
     @Override

@@ -41,7 +41,7 @@ import io.javelit.components.layout.PopoverComponent;
 import io.javelit.components.layout.TabsComponent;
 import io.javelit.components.media.FileUploaderComponent;
 import io.javelit.components.multipage.PageLinkComponent;
-import io.javelit.components.status.ErrorComponent;
+import io.javelit.components.status.CalloutComponent;
 import io.javelit.components.text.CodeComponent;
 import io.javelit.components.text.HtmlComponent;
 import io.javelit.components.text.MarkdownComponent;
@@ -593,8 +593,122 @@ public final class Jt {
      *
      * @param body The error text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
-    public static ErrorComponent.Builder error(final @Language("markdown") @Nonnull String body) {
-        return new ErrorComponent.Builder(body);
+    public static CalloutComponent.Builder error(final @Language("markdown") @Nonnull String body) {
+        return CalloutComponent.Builder.newError(body);
+    }
+
+    /**
+     * Display warning message.
+     * <p>
+     * Examples:
+     * Simple warning message
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class WarningApp {
+     *     public static void main(String[] args) {
+     *         String username = Jt.textInput("Username").use();
+     *
+     *         if (username.isEmpty()) {
+     *             Jt.warning("Username is required!").use();
+     *         } else if (username.length() < 3) {
+     *             Jt.warning("Username must be at least 3 characters long.").use();
+     *         }
+     *     }
+     * }
+     *}
+     * <p>
+     * Warning with markdown formatting
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class FormattedWarningApp {
+     *     public static void main(String[] args) {
+     *         Jt.warning("**Connection Failed**: Unable to connect to the database. Please check your settings.").use();
+     *     }
+     * }
+     *}
+     *
+     * @param body The warning text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
+     */
+    public static CalloutComponent.Builder warning(final @Language("markdown") @Nonnull String body) {
+        return CalloutComponent.Builder.newWarning(body);
+    }
+
+    /**
+     * Display success message.
+     * <p>
+     * Examples:
+     * Simple success message
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class SuccessApp {
+     *     public static void main(String[] args) {
+     *         String username = Jt.textInput("Username").use();
+     *
+     *         if (username.isEmpty()) {
+     *             Jt.success("Username is required!").use();
+     *         } else if (username.length() > 3) {
+     *             Jt.success("Username is long enough.").use();
+     *         }
+     *     }
+     * }
+     *}
+     * <p>
+     * Success with markdown formatting
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class FormattedSuccessApp {
+     *     public static void main(String[] args) {
+     *         Jt.success("**Connection Success**: Able to connect to the database.").use();
+     *     }
+     * }
+     *}
+     *
+     * @param body The success text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
+     */
+    public static CalloutComponent.Builder success(final @Language("markdown") @Nonnull String body) {
+        return CalloutComponent.Builder.newSuccess(body);
+    }
+
+    /**
+     * Display info message.
+     * <p>
+     * Examples:
+     * Simple info message
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class InfoApp {
+     *     public static void main(String[] args) {
+     *         String username = Jt.textInput("Username").use();
+     *
+     *         if (username.isEmpty()) {
+     *             Jt.info("Username is required!").use();
+     *         } else if (username.length() < 3) {
+     *             Jt.info("Username must be at least 3 characters long.").use();
+     *         }
+     *     }
+     * }
+     *}
+     * <p>
+     * Info with markdown formatting
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class FormattedInfoApp {
+     *     public static void main(String[] args) {
+     *         Jt.info("**Connection Success**: Able to connect to the database.").use();
+     *     }
+     * }
+     *}
+     *
+     * @param body The info text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
+     */
+    public static CalloutComponent.Builder info(final @Language("markdown") @Nonnull String body) {
+        return CalloutComponent.Builder.newInfo(body);
     }
 
     /**

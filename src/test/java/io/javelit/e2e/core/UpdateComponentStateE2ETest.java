@@ -72,7 +72,7 @@ public class UpdateComponentStateE2ETest {
             page.getByText("Clear name").click(WAIT_1_SEC_MAX_CLICK);
 
             // Verify an exception is reported with "IllegalArgumentException"
-            assertThat(page.locator("jt-error")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("IllegalArgumentException", new Page.GetByTextOptions().setExact(false)).first()).isVisible(WAIT_1_SEC_MAX);
         });
     }
