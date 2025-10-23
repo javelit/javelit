@@ -70,6 +70,9 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
         return (SELF) this;
     }
 
+    /**
+     * Disable value persistence for **keyed** widgets when the widget is not displayed in an app run.
+     */
     @SuppressWarnings("unchecked")
     public SELF noPersist() {
         this.noPersist = true;
@@ -91,7 +94,7 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
             int numInheritedFields = 1;
             final Object[] values = new Object[fields.length + numInheritedFields];
             int i = 0;
-            for (final Field field: fields) {
+            for (final Field field : fields) {
                 final Object fieldValue = field.get(this);
                 values[i++] = fieldValue;
             }
