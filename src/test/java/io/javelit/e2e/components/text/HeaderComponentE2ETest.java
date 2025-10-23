@@ -24,31 +24,31 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
- * End-to-end tests for TitleComponent.
+ * End-to-end tests for HeaderComponent.
  */
-public class TitleComponentE2ETest {
+public class HeaderComponentE2ETest {
     
     @Test
-    void testTitleDisplay(TestInfo testInfo) {
+    void testHeaderDisplay(TestInfo testInfo) {
         final @Language("java") String app = """
             import io.javelit.core.Jt;
             
             public class TestApp {
                 public static void main(String[] args) {
-                    Jt.title("Main Title").use();
+                    Jt.header("Main Title").use();
                     Jt.text("Some content under the title").use();
                 }
             }
             """;
 
         PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
-            // Wait for title to be visible
+            // Wait for header component to be visible
             assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
-            // Verify it renders as h1
-            assertThat(page.locator("jt-title h1")).isVisible(WAIT_1_SEC_MAX);
-            // Check title is rendered
+            // Verify it renders as h2
+            assertThat(page.locator("jt-title h2")).isVisible(WAIT_1_SEC_MAX);
+            // Check header is rendered
             assertThat(page.getByText("Main Title")).isVisible(WAIT_1_SEC_MAX);
-            // Check content after title
+            // Check content after header
             assertThat(page.getByText("Some content under the title")).isVisible(WAIT_1_SEC_MAX);
         });
     }

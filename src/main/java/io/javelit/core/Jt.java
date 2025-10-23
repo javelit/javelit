@@ -417,7 +417,57 @@ public final class Jt {
      * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
      */
     public static TitleComponent.Builder title(@Language("markdown") final @Nonnull String body) {
-        return new TitleComponent.Builder(body);
+        return new TitleComponent.Builder(body, 1);
+    }
+
+    /**
+     * Display text in header formatting.
+     * <p>
+     * Examples:
+     * Basic header and header with markdown formatting and styling
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class TitleApp {
+     *     public static void main(String[] args) {
+     *         // Basic header
+     *         Jt.header("This is a title").use();
+     *
+     *         // Header with Markdown and styling
+     *         Jt.header("_Javelit_ is **cool** :sunglasses:").use();
+     *     }
+     * }
+     *}
+     *
+     * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
+     */
+    public static TitleComponent.Builder header(@Language("markdown") final @Nonnull String body) {
+        return new TitleComponent.Builder(body, 2);
+    }
+
+    /**
+     * Display text in subheader formatting.
+     * <p>
+     * Examples:
+     * Basic subheader and subheader with markdown formatting and styling
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class TitleApp {
+     *     public static void main(String[] args) {
+     *         // Basic subheader
+     *         Jt.subheader("This is a title").use();
+     *
+     *         // Subheader with Markdown and styling
+     *         Jt.subheader("_Javelit_ is **cool** :sunglasses:").use();
+     *     }
+     * }
+     *}
+     *
+     * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
+     */
+    public static TitleComponent.Builder subheader(@Language("markdown") final @Nonnull String body) {
+        return new TitleComponent.Builder(body, 3);
     }
 
     /**

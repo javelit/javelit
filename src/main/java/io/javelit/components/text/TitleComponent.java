@@ -28,12 +28,15 @@ import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public final class TitleComponent extends JtComponent<JtComponent.NONE> {
     // protected to be visible to the template engine
     final @Nonnull String body;
     final String anchor;
     final String help;
     final String width;
+    final int level;
 
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
@@ -50,11 +53,13 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         this.anchor = builder.anchor;
         this.help = builder.help;
         this.width = builder.width;
+        this.level = builder.level;
     }
 
     @SuppressWarnings("unused")
     public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
         @Language("markdown") private final @Nonnull String body;
+        private final int level;
         private String anchor;
         private String help;
         private String width = "stretch";
@@ -62,7 +67,9 @@ public final class TitleComponent extends JtComponent<JtComponent.NONE> {
         /**
          * The text to display. Markdown is supported, see {@link io.javelit.core.Jt#markdown(String)} for more details.
          */
-        public Builder(final @Language("markdown") @NotNull String body) {
+        public Builder(final @Language("markdown") @NotNull String body, final int level) {
+            checkArgument(level == 1 || level == 2 || level == 3, "Invalid level %s. Accepted values: 1,2,3", level);
+            this.level = level;
             this.body = body;
         }
 

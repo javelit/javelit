@@ -33,7 +33,6 @@
 
             .title {
                 margin: 0;
-                font-size: var(--jt-font-size-4xl);
                 font-weight: var(--jt-font-weight-bold);
                 line-height: var(--jt-line-height-tight);
                 color: var(--jt-text-primary);
@@ -41,6 +40,18 @@
                 display: flex;
                 align-items: center;
                 gap: var(--jt-spacing-sm);
+            }
+
+            h1.title {
+                font-size: var(--jt-font-size-4xl);
+            }
+
+            h2.title {
+                font-size: var(--jt-font-size-3xl);
+            }
+
+            h3.title {
+                font-size: var(--jt-font-size-2xl);
             }
 
             .title.width-content {
@@ -85,7 +96,8 @@
             body: {type: String},
             anchor: {type: String},
             help: {type: String},
-            width: {type: String}
+            width: {type: String},
+            level: {type: Number}
         };
 
         generateAnchor(body) {
@@ -130,6 +142,7 @@
             const widthClass = this.getValidatedWidth();
             const widthStyle = this.getWidthStyle();
             const formattedText = this.body;
+            const level = this.level || 1;
 
             // Handle anchor logic
             let anchorId = '';
@@ -149,19 +162,32 @@
                 showAnchorLink = !!anchorId;
             }
 
+            // Heading content template
+            const headingContent = html`
+                <span class="markdown-content">${unsafeHTML(this.body)}</span>
+                ${showAnchorLink ? html`
+                    <a href="#${anchorId}" class="anchor-link"
+                       title="Link to this section">
+                        #
+                    </a>
+                ` : ''}
+            `;
+
             return html`
                 <div class="title-container">
-                    <h1 class="title ${widthClass}"
-                        id="${anchorId}"
-                        style="${widthStyle}">
-                        <span class="markdown-content">${unsafeHTML(this.body)}</span>
-                        ${showAnchorLink ? html`
-                            <a href="#${anchorId}" class="anchor-link"
-                               title="Link to this section">
-                                #
-                            </a>
-                        ` : ''}
-                    </h1>
+                    ${level === 1 ? html`
+                        <h1 class="title ${widthClass}" id="${anchorId}" style="${widthStyle}">
+                            ${headingContent}
+                        </h1>
+                    ` : level === 2 ? html`
+                        <h2 class="title ${widthClass}" id="${anchorId}" style="${widthStyle}">
+                            ${headingContent}
+                        </h2>
+                    ` : html`
+                        <h3 class="title ${widthClass}" id="${anchorId}" style="${widthStyle}">
+                            ${headingContent}
+                        </h3>
+                    `}
                     ${this.help ? html`
                         <jt-tooltip text="${this.help}"></jt-tooltip>
                     ` : ''}
