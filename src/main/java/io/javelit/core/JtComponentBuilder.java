@@ -71,7 +71,8 @@ public abstract class JtComponentBuilder<B, T extends JtComponent<B>, SELF exten
     }
 
     /**
-     * Disable value persistence for **keyed** widgets when the widget is not displayed in an app run.
+     * Only applies to input widgets that have a provided {@code .key()}.
+     * Disable the persistence of this widget value across runs where the widget does not appear.
      */
     @SuppressWarnings("unchecked")
     public SELF noPersist() {
