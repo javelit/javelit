@@ -301,6 +301,15 @@ public abstract class JtComponent<T> {
     }
 
     /**
+     * Returns a key that allows to skip sending the register() content if the content has already been sent
+     * This default implementation does not depend on the JtComponent fields.
+     * If a Component could return different register() values based its fields, make sure to override this method.
+     */
+    protected String frontendRegistrationKey() {
+        return this.getClass().getName();
+    }
+
+    /**
      * identifies a T type of a JtComponent as not to be stored in the session state
      * anything that is not a state should implement this interface
      * see also [NONE]
@@ -341,17 +350,6 @@ public abstract class JtComponent<T> {
         return MarkdownUtils.markdownToHtml(markdown, removeWrap);
     }
 
-
-
-    /**
-     * Returns a key that allows to skip sending the register() content if the content has already been sent
-     * This default implementation does not depend on the JtComponent fields.
-     * If a Component could return different register() values based its fields, make sure to override this method.
-     */
-    protected String frontendRegistrationKey() {
-        return this.getClass().getName();
-    }
-
     // StateManager wrappers.
     //  The methods below are simply wrapping StateManager methods
     //  this is because the JtComponent class is part of the component developer API, and we will try to not break it
@@ -366,6 +364,10 @@ public abstract class JtComponent<T> {
 
     protected static @Nullable NavigationComponent getNavigationComponent() {
         return StateManager.getNavigationComponent();
+    }
+
+    protected static String registerMedia(final @Nonnull MediaEntry mediaEntry) {
+        return StateManager.registerMedia(mediaEntry);
     }
     // end of StateManager wrappers
 }

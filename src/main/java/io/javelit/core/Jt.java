@@ -39,6 +39,7 @@ import io.javelit.components.layout.FormComponent;
 import io.javelit.components.layout.FormSubmitButtonComponent;
 import io.javelit.components.layout.PopoverComponent;
 import io.javelit.components.layout.TabsComponent;
+import io.javelit.components.media.AudioComponent;
 import io.javelit.components.media.FileUploaderComponent;
 import io.javelit.components.multipage.PageLinkComponent;
 import io.javelit.components.status.CalloutComponent;
@@ -2127,6 +2128,23 @@ public final class Jt {
         final UrlContext urlContext = new UrlContext(newPage.urlPath(),
                                                      Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
+    }
+
+    // TODO DOCUMENT
+    public static AudioComponent.Builder audio(final @Nonnull String url) {
+        return new AudioComponent.Builder(url);
+    }
+
+    public static AudioComponent.Builder audio(final @Nonnull byte[] data) {
+        return new AudioComponent.Builder(data);
+    }
+
+    public static AudioComponent.Builder audio(final @Nonnull Path filePath) {
+        return AudioComponent.Builder.of(filePath);
+    }
+
+    public static AudioComponent.Builder audio(final @Nonnull JtUploadedFile uploadedFile) {
+        return AudioComponent.Builder.of(uploadedFile);
     }
 
     /**

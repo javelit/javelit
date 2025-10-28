@@ -1,0 +1,110 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtAudio extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--audio-width);
+                max-width: 100%;
+            }
+
+            .audio-container {
+                width: 100%;
+            }
+
+            audio {
+                width: 100%;
+                outline: none;
+            }
+
+            audio:focus {
+                outline: none;
+            }
+        `;
+
+        static properties = {
+            url: { type: String },
+            format: { type: String },
+            startTimeMillis: { type: Number, attribute: 'start-time-millis' },
+            endTimeMillis: { type: Number, attribute: 'end-time-millis' },
+            loop: { type: Boolean },
+            autoplay: { type: Boolean },
+            width: { type: String, reflect: true }
+        };
+
+        constructor() {
+            super();
+            this.url = '';
+            this.format = '';
+            this.startTimeMillis = null;
+            this.endTimeMillis = null;
+            this.loop = false;
+            this.autoplay = false;
+            this.width = 'stretch';
+        }
+
+        updated(changedProperties) {
+            // Update width CSS variable
+            if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
+                this.style.setProperty('--audio-width', `${this.width}px`);
+            } else if (this.width === 'stretch') {
+                this.style.removeProperty('--audio-width');
+            }
+        }
+
+        buildMediaFragmentUri() {
+            if (this.startTimeMillis === null && this.endTimeMillis === null) {
+                return '';
+            }
+
+            const startSeconds = this.startTimeMillis !== null ? (this.startTimeMillis / 1000).toFixed(3) : (0).toFixed(3);
+
+            if (this.endTimeMillis === null) {
+                return `#t=${startSeconds}`;
+            }
+
+            const endSeconds = (this.endTimeMillis / 1000).toFixed(3);
+            return `#t=${startSeconds},${endSeconds}`;
+        }
+
+        render() {
+            const srcWithFragment = this.url + this.buildMediaFragmentUri();
+
+            return html`
+                <div class="audio-container">
+                    <audio
+                        controls
+                        ?loop="${this.loop}"
+                        ?autoplay="${this.autoplay}"
+                        preload="metadata"
+                    >
+                        <source src="${srcWithFragment}" type="${this.format}" />
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-audio', JtAudio);
+</script>

@@ -69,6 +69,8 @@ final class InternalSessionState {
     // this set maintains the registered components
     private final Set<String> registeredInFrontend = new HashSet<>();
 
+    private final Map<String, MediaEntry> media = new ConcurrentHashMap<>();
+
     private String callbackComponentKey;
 
     // whether this is a developer session
@@ -187,5 +189,9 @@ final class InternalSessionState {
 
     public Set<String> getRegisteredInFrontend() {
         return registeredInFrontend;
+    }
+
+    public Map<String, MediaEntry> getMedia() {
+        return media;
     }
 }
