@@ -15,6 +15,7 @@
  */
 package io.javelit.core;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.javelit.components.layout.FormComponent;
 import io.javelit.components.layout.FormSubmitButtonComponent;
 import io.javelit.datastructure.TypedMap;
@@ -33,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static io.javelit.core.Server.SESSION_ID_QUERY_PARAM;
 
 // no api here should ever be exposed
 // users should use Jt
@@ -41,6 +45,7 @@ import static com.google.common.base.Preconditions.checkState;
 final class StateManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateManager.class);
+    private static final HashFunction HF = Hashing.murmur3_128(31);
 
     private static class AppExecution {
         private final String sessionId;
@@ -278,6 +283,31 @@ final class StateManager {
         SESSIONS.get(sessionId).setCallbackComponentKey(componentKey);
     }
 
+    static @Nonnull String registerMedia(final MediaEntry mediaEntry) {
+        final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+        checkState(currentExecution != null, "No active execution context. Please reach out to support.");
+        final InternalSessionState sessionState = SESSIONS.get(currentExecution.sessionId);
+        final String hash = HF
+                .newHasher()
+                .putBytes(mediaEntry.bytes())
+                .putString(mediaEntry.format(), StandardCharsets.UTF_8)
+                .hash()
+                .toString();
+        sessionState.getMedia().put(hash, mediaEntry);
+
+        // /_/media/{hash}?sid={sessionId}
+        return Server.MEDIA_PATH + hash + "?" + SESSION_ID_QUERY_PARAM + "=" + currentExecution.sessionId;
+    }
+
+    static @Nullable MediaEntry getMedia(final String sessionId, final String hash) {
+        final InternalSessionState sessionState = SESSIONS.get(sessionId);
+        // we don't throw if the session is not found - we return null, and let the server return a 404 (for security purpose)
+        if (sessionState == null) {
+            return null;
+        }
+        return sessionState.getMedia().get(hash);
+    }
+
     /**
      * Usage:
      * - beginExecution
@@ -291,9 +321,13 @@ final class StateManager {
         CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
         renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN, null);
 
-        // run callback before everything else
         final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId,
                                                                                    k -> new InternalSessionState());
+
+        // clean-up media - does not happen in endExecution because media need to be available between executions
+        internalSessionState.getMedia().clear();
+
+        // run callback before everything else
         final String callbackComponentKey = internalSessionState.getCallbackComponentKey();
         if (callbackComponentKey != null) {
             final JtComponent<?> jtComponent = LAST_EXECUTIONS.get(sessionId)

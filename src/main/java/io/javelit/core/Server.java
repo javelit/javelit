@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +69,7 @@ import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionAttachmentHandler;
 import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.server.session.SessionManager;
+import io.undertow.util.ByteRange;
 import io.undertow.util.Headers;
 import io.undertow.util.Sessions;
 import io.undertow.util.StatusCodes;
@@ -92,6 +95,11 @@ import static io.javelit.core.utils.LangUtils.optional;
 
 public final class Server implements StateManager.RenderServer {
     private static final String SESSION_XSRF_ATTRIBUTE = "XSRF_TOKEN";
+    private static final String XSRF_COOKIE_KEY = "javelit-xsrf";
+
+    // visible for StateManager
+    static final String MEDIA_PATH = "/_/media/";
+    static final String SESSION_ID_QUERY_PARAM = "sid";
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     @VisibleForTesting public final int port;
@@ -200,8 +208,10 @@ public final class Server implements StateManager.RenderServer {
 
     public void start() {
         HttpHandler app = new PathHandler()
-                .addExactPath("/_/ws", Handlers.websocket(new WebSocketHandler()).addExtension(new PerMessageDeflateHandshake()))
+                .addExactPath("/_/ws",
+                              Handlers.websocket(new WebSocketHandler()).addExtension(new PerMessageDeflateHandshake()))
                 .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
+                .addPrefixPath(MEDIA_PATH, new BlockingHandler(new MediaHandler()))
                 // internal static files
                 .addPrefixPath("/_/static",
                                resource(new ClassPathResourceManager(getClass().getClassLoader(), "static")))
@@ -316,7 +326,6 @@ public final class Server implements StateManager.RenderServer {
 
     // Separate XSRF validation handler
     private class XsrfValidationHandler implements HttpHandler {
-        private static final String XSRF_COOKIE_KEY = "javelit-xsrf";
 
         private final HttpHandler next;
 
@@ -450,6 +459,96 @@ public final class Server implements StateManager.RenderServer {
                 exchange.setStatusCode(StatusCodes.INTERNAL_SERVER_ERROR);
                 exchange.getResponseSender().send("Upload failed:  " + e.getMessage());
             }
+        }
+    }
+
+    private class MediaHandler implements HttpHandler {
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            if ("GET".equalsIgnoreCase(exchange.getRequestMethod().toString())) {
+                handleGets(exchange);
+            } else {
+                // invalid endpoint / method
+                exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                exchange.getResponseSender().send("bad request.");
+            }
+        }
+
+        private void handleGets(final @Nonnull HttpServerExchange exchange) {
+            // security checks - it's not possible to read a media from a different xsrf token
+            final String sessionId = optional(exchange.getQueryParameters().get(SESSION_ID_QUERY_PARAM))
+                    .map(Deque::getFirst)
+                    .orElse(null);
+            if (sessionId == null) {
+                exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                exchange.getResponseSender().send("Missing session ID");
+                return;
+            }
+            final String cookieProvidedToken = optional(exchange.getRequestCookie(XSRF_COOKIE_KEY))
+                    .map(Cookie::getValue)
+                    .orElse(null);
+
+            final String sessionXsrf = session2Xsrf.get(sessionId);
+            if (sessionXsrf == null || !sessionXsrf.equals(cookieProvidedToken)) {
+                exchange.setStatusCode(StatusCodes.FORBIDDEN);
+                exchange.getResponseSender().send("XSRF token mismatch");
+                return;
+            }
+
+            final String hash = exchange.getRelativePath().substring(1);
+            final MediaEntry media = StateManager.getMedia(sessionId, hash);
+            writeResponse(exchange, media, hash);
+        }
+
+        private void writeResponse(final @NotNull HttpServerExchange exchange,
+                                   final @Nullable MediaEntry media,
+                                   final @Nonnull String hash) {
+            if (media == null || hash.isBlank()) {
+                exchange.setStatusCode(StatusCodes.NOT_FOUND);
+                return;
+            }
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, media.format());
+            exchange.getResponseHeaders().put(Headers.ACCEPT_RANGES, "bytes");
+            exchange.getResponseHeaders().put(Headers.ETAG, hash);
+            exchange.getResponseHeaders().put(Headers.CACHE_CONTROL, "private, max-age=3600, must-revalidate");
+            final byte[] data = media.bytes();
+            final String rangeHeader = exchange.getRequestHeaders().getFirst(Headers.RANGE);
+            final ByteRange range = ByteRange.parse(rangeHeader);
+            if (range == null) {
+                // no range header, or invalid / unsupported range format (e.g., multi-range)
+                writeFullContent(exchange, data);
+                return;
+            }
+            final ByteRange.RangeResponseResult result = range.getResponseResult(
+                    data.length,
+                    exchange.getRequestHeaders().getFirst(Headers.IF_RANGE),
+                    null, // lastModified
+                    hash
+            );
+            if (result.getStatusCode() == StatusCodes.REQUEST_RANGE_NOT_SATISFIABLE) {
+                exchange.setStatusCode(StatusCodes.REQUEST_RANGE_NOT_SATISFIABLE);
+                exchange.getResponseHeaders().put(Headers.CONTENT_RANGE, "bytes */" + data.length);
+                return;
+            }
+            if (result.getStatusCode() == StatusCodes.OK) {
+                // Range not satisfiable for some reason (e.g., If-Range mismatch) - serve full content
+                writeFullContent(exchange, data);
+                return;
+            }
+            // Handle partial content (206)
+            final long start = result.getStart();
+            final long end = result.getEnd();
+            final int length = (int) (end - start + 1);
+            exchange.setStatusCode(StatusCodes.PARTIAL_CONTENT);
+            exchange.getResponseHeaders().put(Headers.CONTENT_RANGE, result.getContentRange());
+            exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, length);
+            exchange.getResponseSender().send(ByteBuffer.wrap(data, (int) start, length));
+        }
+
+        private void writeFullContent(final @Nonnull HttpServerExchange exchange, final byte[] data) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, data.length);
+            exchange.getResponseSender().send(ByteBuffer.wrap(data));
         }
     }
 
