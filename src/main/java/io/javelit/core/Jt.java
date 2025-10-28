@@ -39,6 +39,7 @@ import io.javelit.components.layout.FormComponent;
 import io.javelit.components.layout.FormSubmitButtonComponent;
 import io.javelit.components.layout.PopoverComponent;
 import io.javelit.components.layout.TabsComponent;
+import io.javelit.components.media.AudioComponent;
 import io.javelit.components.media.FileUploaderComponent;
 import io.javelit.components.multipage.PageLinkComponent;
 import io.javelit.components.status.CalloutComponent;
@@ -269,13 +270,13 @@ public final class Jt {
      *         Jt.text("The current path is: " + Jt.urlPath()).use();
      *     }
      *
- *         public static void home() {
- *             Jt.title("Home Page").use();
- *         }
- *
- *         public static void details() {
- *             Jt.title("Details Page").use();
- *         }
+     *     public static void home() {
+     *         Jt.title("Home Page").use();
+     *     }
+     *
+     *     public static void details() {
+     *         Jt.title("Details Page").use();
+     *     }
      * }
      *}
      */
@@ -1644,20 +1645,20 @@ public final class Jt {
      * import io.javelit.core.Jt;
      *
      * public class NavigationApp {
- *         public static void page1() {
- *             Jt.title("First Page").use();
- *         }
+     *    public static void page1() {
+     *        Jt.title("First Page").use();
+     *    }
      *
- *         public static void page2() {
- *             Jt.title("Second Page").use();
- *         }
+     *    public static void page2() {
+     *        Jt.title("Second Page").use();
+     *    }
      *
-     *     public static void main(String[] args) {
-     *         var page = Jt
-     *                 .navigation(Jt.page("page1", NavigationApp::page1).title("First page").icon("🔥"),
-     *                             Jt.page("page2", NavigationApp::page2).title("Second page").icon(":favorite:"))
+     *    public static void main(String[] args) {
+     *        var page = Jt.navigation(
+     *                      Jt.page("page1", NavigationApp::page1).title("First page").icon("🔥"),
+     *                      Jt.page("page2", NavigationApp::page2).title("Second page").icon(":favorite:"))
      *                 .use();
-     *     }
+     *    }
      * }
      *}
      *
@@ -2127,6 +2128,104 @@ public final class Jt {
         final UrlContext urlContext = new UrlContext(newPage.urlPath(),
                                                      Map.of());
         throw new BreakAndReloadAppException(sessionId -> StateManager.setUrlContext(sessionId, urlContext));
+    }
+
+    /**
+     * Display an audio player.
+     * <p>
+     * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
+     * directly with {@code .format()} is necessary.
+     * <p>
+     * Examples:
+     * Audio from external URL
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class UrlAudioApp {
+     *     public static void main(String[] args) {
+     *         Jt.audio("https://github.com/javelit/public_assets/raw/refs/heads/main/audio/piano-chords.mp3").use();
+     *     }
+     * }
+     *}
+     * Audio from static resource
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class UrlAudioApp {
+     *     public static void main(String[] args) {
+     *          // assume static/piano-chords.mp3 is present in the working directory
+     *         Jt.audio("app/static/piano-chords.mp3").use();
+     *     }
+     * }
+     *}
+     *
+     * @param url A URL for a hosted audio file.
+     */
+    public static AudioComponent.Builder audio(final @Nonnull String url) {
+        return new AudioComponent.Builder(url);
+    }
+
+
+    /**
+     * Display an audio player.
+     * <p>
+     * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
+     * directly with {@code .format()} is necessary.
+     * <p>
+     * Audio from raw data
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class UrlAudioApp {
+     *     public static void main(String[] args) {
+     *         // a method that generates wav raw data - find one at https://github.com/javelit/javelit/blob/main/examples/audio/AudioExample.java
+     *         byte[] beepWav = generateBeepWavBytes(2);
+     *         Jt.audio(beepWav).format("audio/wav").use();
+     *     }
+     * }
+     *}
+     *
+     * @param data Raw audio data.
+     */
+    public static AudioComponent.Builder audio(final @Nonnull byte[] data) {
+        return new AudioComponent.Builder(data);
+    }
+
+    /**
+     * Display an audio player.
+     * <p>
+     * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
+     * directly with {@code .format()} is necessary.
+     * <p>
+     * Audio from local file
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class UrlAudioApp {
+     *     public static void main(String[] args) {
+     *          // assume piano-chords.mp3 is present in the working directory
+     *          Jt.audio(Path.of("piano-chords.mp3")).use();
+     *     }
+     * }
+     *}
+     *
+     * @param filePath A path to a local audio file. The path can be absolute or relative to the working directory.
+     */
+    public static AudioComponent.Builder audio(final @Nonnull Path filePath) {
+        return new AudioComponent.Builder(filePath);
+    }
+
+    /**
+     * Display an audio player.
+     * <p>
+     * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
+     * directly with {@code .format()} is necessary.
+     *
+     * @param uploadedFile An uploaded file.
+     */
+    // TODO add an example once audio input is implemented
+    public static AudioComponent.Builder audio(final @Nonnull JtUploadedFile uploadedFile) {
+        return AudioComponent.Builder.of(uploadedFile);
     }
 
     /**
