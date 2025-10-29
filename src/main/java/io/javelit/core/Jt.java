@@ -41,6 +41,7 @@ import io.javelit.components.layout.PopoverComponent;
 import io.javelit.components.layout.TabsComponent;
 import io.javelit.components.media.AudioComponent;
 import io.javelit.components.media.FileUploaderComponent;
+import io.javelit.components.media.ImageComponent;
 import io.javelit.components.multipage.PageLinkComponent;
 import io.javelit.components.status.CalloutComponent;
 import io.javelit.components.text.CodeComponent;
@@ -2228,6 +2229,124 @@ public final class Jt {
     // TODO add an example once audio input is implemented
     public static AudioComponent.Builder audio(final @Nonnull JtUploadedFile uploadedFile) {
         return AudioComponent.Builder.of(uploadedFile);
+    }
+
+    /**
+     * Display an image.
+     * <p>
+     * Examples:
+     * Image from external URL
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class UrlImageApp {
+     *     public static void main(String[] args) {
+     *         Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg").use();
+     *     }
+     * }
+     *}
+     * Image from static resource
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class StaticImageApp {
+     *     public static void main(String[] args) {
+     *          // assume static/mountains.jpg is present in the working directory
+     *         Jt.image("app/static/mountains.jpg").use();
+     *     }
+     * }
+     *}
+     *
+     * @param url A URL for a hosted image file.
+     */
+    public static ImageComponent.Builder image(final @Nonnull String url) {
+        return ImageComponent.Builder.of(url);
+    }
+
+    /**
+     * Display an image.
+     * <p>
+     * Examples:
+     * Image from raw data
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * import java.io.IOException;
+     * import java.nio.file.Files;
+     * import java.nio.file.Path;
+     *
+     * public class ByteImageApp {
+     *     public static void main(String[] args) throws IOException {
+     *         // a method that generates image byte - find one at https://github.com/javelit/javelit/blob/main/examples/image/ImageExample.java
+     *         byte[] imageBytes = generateImage();
+     *         Jt.image(imageBytes).use();
+     *     }
+     * }
+     *}
+     *
+     * @param data Raw image data.
+     */
+    public static ImageComponent.Builder image(final @Nonnull byte[] data) {
+        return ImageComponent.Builder.of(data);
+    }
+
+    /**
+     * Display an image.
+     * <p>
+     * Examples:
+     * Image from local file
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * import java.nio.file.Path;
+     *
+     * public class FileImageApp {
+     *     public static void main(String[] args) {
+     *          // assume mountains.jpg is present in the working directory
+     *          Jt.image(Path.of("mountains.jpg")).use();
+     *     }
+     * }
+     *}
+     *
+     * @param filePath A path to a local image file. The path can be absolute or relative to the working directory.
+     */
+    public static ImageComponent.Builder image(final @Nonnull Path filePath) {
+        return ImageComponent.Builder.of(filePath);
+    }
+
+    /**
+     * Display an image.
+     *
+     * @param uploadedFile An uploaded file.
+     */
+    // TODO add an example once image input is implemented
+    public static ImageComponent.Builder image(final @Nonnull JtUploadedFile uploadedFile) {
+        return ImageComponent.Builder.of(uploadedFile);
+    }
+
+    /**
+     * Display an image.
+     * <p>
+     * Examples:
+     * From an SVG image
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class SvgImageApp {
+     *     public static void main(String[] args) {
+     *         String svg = """
+     *                 <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+     *                     <circle cx="100" cy="100" r="80" fill="#4CAF50" />
+     *                     <path d="M 60 100 L 90 130 L 140 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+     *                 </svg>
+     *                 """;
+     *         Jt.imageFromSvg(svg).use();
+     *     }
+     * }
+     *}
+     */
+    public static ImageComponent.Builder imageFromSvg(final @Language("html") @Nonnull String svg) {
+        return ImageComponent.Builder.ofSvg(svg);
     }
 
     /**

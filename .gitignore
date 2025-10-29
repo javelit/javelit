@@ -41,6 +41,7 @@ build/
 playwright-recordings/
 
 notes/docs
+spec.txt
 
 # used for dev debugging
 src/main/java/io/javelit/core/ToDelete.java

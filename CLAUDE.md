@@ -102,7 +102,13 @@ src/test/java/              # Unit tests
     - Main containers (:host in lit css) should always be in display block
     - Then :host([use-container-width]) .[REPLACE_BY_SOME_INTERNAL_CLASS] { width: 100%; }
 - Main containers (:host in lit css) should always be in display block
-- **IMPORTANT**:  in the render template, do not use triple brackets `{{{` to inject values, always use double brackets `{{`
+- **CRITICAL - Mustache Escaping for @Language("html") Fields**:
+  - When a Java component field is annotated with `@Language("html")` (e.g., `final @Language("html") @Nullable String caption;`), it means the field contains HTML content that was already processed in Java (typically via `markdownToHtml()`)
+  - In the `.render.html.mustache` template, when passing this field as an HTML attribute to a web component, **ALWAYS** use double brackets `{{fieldName}}`, **NEVER** triple brackets `{{{fieldName}}}`
+  - Correct example: `<jt-image caption="{{caption}}"></jt-image>`
+  - Wrong example: `<jt-image caption="{{{caption}}}"></jt-image>`
+  - Reason: Double brackets properly escape the HTML for safe insertion into the attribute value. The web component will then use `unsafeHTML(this.caption)` in its register template to render the HTML content.
+  - Triple brackets `{{{` should ONLY be used in `.register.html.mustache` templates for injecting CSS (e.g., `{{{ MARKDOWN_CSS }}}`)
 - **CRITICAL - Markdown CSS Class**: When rendering markdown content in Lit components, ALWAYS use the class name `markdown-content`, NEVER `markdown-body`. This is the correct class name for markdown styling in this project.
 - **Width method pattern**: Whenever a ComponentBuilder has a `width(String)` method, it must also include a `width(int)` overload for pixel values:
 ```java
