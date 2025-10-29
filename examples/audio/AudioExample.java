@@ -1,9 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.javelit:javelit:0.56.0
 
-
-
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
