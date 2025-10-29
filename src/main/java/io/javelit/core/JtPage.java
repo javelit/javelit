@@ -15,8 +15,6 @@
  */
 package io.javelit.core;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
@@ -82,20 +80,6 @@ public final class JtPage {
             pageApp.run();
         } finally {
             StateManager.clearPageContext();
-        }
-    }
-
-    private static void callMainMethod(final @Nonnull Class<?> clazz) {
-        final Method pageMethod;
-        try {
-            pageMethod = clazz.getMethod("main", String[].class);
-        } catch (NoSuchMethodException e) {
-            throw new PageRunException(e);
-        }
-        try {
-            pageMethod.invoke(null, new Object[]{new String[]{}});
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new PageRunException(e);
         }
     }
 
