@@ -131,7 +131,7 @@ public final class JavelitTestHelper {
      * @param port The port to check
      */
     public static void waitForServerReady(int port) {
-        int maxAttempts = 30;
+        int maxAttempts = 60;
         for (int i = 0; i < maxAttempts; i++) {
             try {
                 // Try to connect to the server
@@ -141,7 +141,7 @@ public final class JavelitTestHelper {
             } catch (IOException e) {
                 // Server not ready yet
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Interrupted while waiting for server", ie);
