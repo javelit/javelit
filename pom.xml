@@ -497,6 +497,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.3</version>
                 <configuration>
+                    <argLine>-Djava.awt.headless=true</argLine>
                     <parallel>all</parallel>
                     <threadCount>64</threadCount>
                     <perCoreThreadCount>false</perCoreThreadCount>
