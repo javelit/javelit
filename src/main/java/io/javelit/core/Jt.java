@@ -2172,11 +2172,12 @@ public final class Jt {
      * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
      * directly with {@code .format()} is necessary.
      * <p>
+     * Examples:
      * Audio from raw data
      * {@snippet :
      * import io.javelit.core.Jt;
      *
-     * public class UrlAudioApp {
+     * public class RawDataAudioApp {
      *     public static void main(String[] args) {
      *         // a method that generates wav raw data - find one at https://github.com/javelit/javelit/blob/main/examples/audio/AudioExample.java
      *         byte[] beepWav = generateBeepWavBytes(2);
@@ -2197,11 +2198,12 @@ public final class Jt {
      * Javelit attempts to infer the format (MIME type) from  the input. If format inference fails, passing the format
      * directly with {@code .format()} is necessary.
      * <p>
+     * Examples:
      * Audio from local file
      * {@snippet :
      * import io.javelit.core.Jt;
      *
-     * public class UrlAudioApp {
+     * public class FileAudioApp {
      *     public static void main(String[] args) {
      *          // assume piano-chords.mp3 is present in the working directory
      *          Jt.audio(Path.of("piano-chords.mp3")).use();
