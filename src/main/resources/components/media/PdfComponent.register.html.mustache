@@ -1,0 +1,271 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtPdf extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([height="stretch"]) {
+                height: 100%;
+            }
+
+            :host([height]:not([height="stretch"])) {
+                height: var(--pdf-height);
+            }
+
+            .pdf-container {
+                width: 100%;
+                height: 100%;
+                border-radius: var(--jt-border-radius-lg);
+                overflow: hidden;
+            }
+
+            /* Firefox-only border - Firefox's PDF viewer has gray background */
+            @supports (-moz-appearance: none) {
+                .pdf-container {
+                    border: 1px solid var(--jt-border-color);
+                }
+            }
+
+            iframe {
+                width: 100%;
+                height: 100%;
+                display: block;
+                border: none;
+            }
+
+            .error-container {
+                padding: var(--jt-spacing-xl);
+                text-align: center;
+                background-color: rgba(255, 43, 43, 0.05);
+                border-radius: var(--jt-border-radius-lg);
+                font-family: "Source Sans Pro", sans-serif;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .error-container .error-title {
+                margin: 0 0 var(--jt-spacing-sm) 0;
+                color: rgb(255, 43, 43);
+                font-weight: 600;
+                font-size: 1rem;
+            }
+
+            .error-container .error-message {
+                margin: 0 0 var(--jt-spacing-md) 0;
+                color: var(--jt-text-secondary);
+                font-size: 0.875rem;
+            }
+
+            .error-container .error-url {
+                display: block;
+                margin: var(--jt-spacing-sm) 0;
+                padding: var(--jt-spacing-sm);
+                background-color: var(--jt-background-secondary);
+                border-radius: var(--jt-border-radius-sm);
+                font-family: monospace;
+                font-size: 0.8rem;
+                word-break: break-all;
+                color: var(--jt-text-primary);
+                max-width: 600px;
+            }
+
+            .error-container a {
+                color: var(--jt-primary-color);
+                text-decoration: none;
+                font-weight: 600;
+                display: inline-block;
+                margin: 0 var(--jt-spacing-xs);
+            }
+
+            .error-container a:hover {
+                text-decoration: underline;
+            }
+
+            .error-container .fallback-separator {
+                color: var(--jt-text-secondary);
+                margin: 0 var(--jt-spacing-xs);
+            }
+        `;
+
+        static properties = {
+            url: { type: String },
+            height: { type: String, reflect: true },
+            loadError: { type: Boolean, state: true },
+            loaded: { type: Boolean, state: true },
+            errorType: { type: String, state: true },
+            suggestedUrl: { type: String, state: true }
+        };
+
+        constructor() {
+            super();
+            this.loadError = false;
+            this.loaded = false;
+            this.errorType = null; // 'octet-stream', 'network', or null
+            this.loadTimeout = null;
+            this.suggestedUrl = null;
+        }
+
+        convertGitHubRawToJsDelivr(url) {
+            // Pattern: https://raw.githubusercontent.com/{user}/{repo}/{branch}/{path}
+            // Convert to: https://cdn.jsdelivr.net/gh/{user}/{repo}@{branch}/{path}
+            const githubRawPattern = /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/;
+            const match = url.match(githubRawPattern);
+
+            if (match) {
+                const [, user, repo, branch, path] = match;
+                return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${path}`;
+            }
+
+            return null; // Not a GitHub raw URL
+        }
+
+        async checkContentType(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                const contentType = response.headers.get('content-type');
+
+                if (contentType && contentType.includes('application/octet-stream')) {
+                    this.errorType = 'octet-stream';
+                    // Check if this is a GitHub raw URL and suggest jsDelivr alternative
+                    this.suggestedUrl = this.convertGitHubRawToJsDelivr(url);
+                    return false; // Don't load in iframe
+                }
+
+                return true; // OK to load in iframe
+            } catch (error) {
+                // CORS or network error - let iframe try anyway with timeout fallback
+                console.warn('Failed to check Content-Type via HEAD request:', error);
+                return true; // Proceed with iframe attempt
+            }
+        }
+
+        async firstUpdated() {
+            // Check Content-Type before loading in iframe
+            const canLoad = await this.checkContentType(this.url);
+
+            if (!canLoad) {
+                // octet-stream detected - don't attempt iframe load
+                this.loadError = true;
+                return;
+            }
+
+            // Proceed with iframe loading
+            const iframe = this.shadowRoot.querySelector('iframe');
+            if (iframe) {
+                // Set a timeout to detect if the PDF doesn't load
+                this.loadTimeout = setTimeout(() => {
+                    if (!this.loaded) {
+                        this.loadError = true;
+                        this.errorType = 'network';
+                    }
+                }, 5000); // 5 second timeout
+
+                iframe.addEventListener('load', () => {
+                    clearTimeout(this.loadTimeout);
+                    this.loaded = true;
+                    this.loadError = false;
+                    this.errorType = null;
+                });
+            }
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            if (this.loadTimeout) {
+                clearTimeout(this.loadTimeout);
+            }
+        }
+
+        updated(changedProperties) {
+            if (changedProperties.has('url')) {
+                // Reset state when URL changes
+                this.loadError = false;
+                this.loaded = false;
+                this.errorType = null;
+                this.suggestedUrl = null;
+                if (this.loadTimeout) {
+                    clearTimeout(this.loadTimeout);
+                }
+                // Restart check and timeout for new URL
+                this.firstUpdated();
+            }
+        }
+
+        render() {
+            // Set height CSS variable if height is specified and is a pixel value
+            if (this.height && /^\d+$/.test(this.height)) {
+                this.style.setProperty('--pdf-height', `${this.height}px`);
+            } else {
+                this.style.removeProperty('--pdf-height');
+            }
+
+            // If there was an error loading the PDF, show error message
+            if (this.loadError) {
+                const isOctetStream = this.errorType === 'octet-stream';
+                const errorTitle = isOctetStream ? 'Cannot display PDF' : 'Failed to load PDF';
+
+                let errorMessage;
+                if (isOctetStream && this.suggestedUrl) {
+                    errorMessage = 'GitHub serves raw files as downloads (Content-Type: application/octet-stream). Try using jsDelivr CDN instead:';
+                } else if (isOctetStream) {
+                    errorMessage = 'This URL serves the PDF as a download file (Content-Type: application/octet-stream), not for inline display. Please use a CDN like jsDelivr or host the file with proper Content-Type headers.';
+                } else {
+                    errorMessage = 'The PDF file could not be loaded. This could be due to an invalid URL, network error, or CORS issue.';
+                }
+
+                return html`
+                    <div class="pdf-container">
+                        <div class="error-container">
+                            <div class="error-title">${errorTitle}</div>
+                            <div class="error-message">${errorMessage}</div>
+                            <code class="error-url">${this.suggestedUrl || this.url}</code>
+                            <div>
+                                ${this.suggestedUrl ? html`
+                                    <a href="${this.suggestedUrl}" target="_blank" rel="noopener noreferrer">Try jsDelivr URL</a>
+                                    <span class="fallback-separator">or</span>
+                                ` : ''}
+                                <a href="${this.url}" target="_blank" rel="noopener noreferrer">Open PDF in new tab</a>
+                                <span class="fallback-separator">or</span>
+                                <a href="${this.url}" download>Download PDF</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return html`
+                <div class="pdf-container">
+                    <iframe
+                        src="${this.url}"
+                        type="application/pdf"
+                        title="PDF Viewer">
+                    </iframe>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-pdf', JtPdf);
+</script>

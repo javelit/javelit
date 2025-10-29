@@ -42,6 +42,7 @@ import io.javelit.components.layout.TabsComponent;
 import io.javelit.components.media.AudioComponent;
 import io.javelit.components.media.FileUploaderComponent;
 import io.javelit.components.media.ImageComponent;
+import io.javelit.components.media.PdfComponent;
 import io.javelit.components.multipage.PageLinkComponent;
 import io.javelit.components.status.CalloutComponent;
 import io.javelit.components.text.CodeComponent;
@@ -2347,6 +2348,86 @@ public final class Jt {
      */
     public static ImageComponent.Builder imageFromSvg(final @Language("html") @Nonnull String svg) {
         return ImageComponent.Builder.ofSvg(svg);
+    }
+
+    /**
+     * Display a PDF viewer.
+     * <p>
+     * Examples:
+     * Display PDF from URL
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class PdfApp {
+     *     public static void main(String[] args) {
+     *         Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf").use();
+     *     }
+     * }
+     *}
+     *
+     * @param url A URL for a hosted PDF, or a path to a PDF in the static folder.
+     */
+    public static PdfComponent.Builder pdf(final @Nonnull String url) {
+        return PdfComponent.Builder.of(url);
+    }
+
+    /**
+     * Display a PDF viewer.
+     * <p>
+     * Examples:
+     * PDF from raw data
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * import java.io.IOException;
+     * import java.nio.file.Files;
+     * import java.nio.file.Path;
+     *
+     * public class BytePdfApp {
+     *     public static void main(String[] args) throws IOException {
+     *         byte[] pdfBytes = Files.readAllBytes(Path.of("document.pdf"));
+     *         Jt.pdf(pdfBytes).use();
+     *     }
+     * }
+     *}
+     *
+     * @param data Raw PDF data.
+     */
+    public static PdfComponent.Builder pdf(final @Nonnull byte[] data) {
+        return PdfComponent.Builder.of(data);
+    }
+
+    /**
+     * Display a PDF viewer.
+     * <p>
+     * Examples:
+     * PDF from local file
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * import java.nio.file.Path;
+     *
+     * public class FilePdfApp {
+     *     public static void main(String[] args) {
+     *          // assume document.pdf is present in the working directory
+     *          Jt.pdf(Path.of("document.pdf")).use();
+     *     }
+     * }
+     *}
+     *
+     * @param filePath A path to a local PDF file. The path can be absolute or relative to the working directory.
+     */
+    public static PdfComponent.Builder pdf(final @Nonnull Path filePath) {
+        return PdfComponent.Builder.of(filePath);
+    }
+
+    /**
+     * Display a PDF from an uploaded file.
+     *
+     * @param uploadedFile An uploaded PDF file from {@link #fileUploader}
+     */
+    public static PdfComponent.Builder pdf(final @Nonnull JtUploadedFile uploadedFile) {
+        return PdfComponent.Builder.of(uploadedFile);
     }
 
     /**
