@@ -30,6 +30,8 @@ import dev.jbang.dependencies.ModularClassPath;
 import dev.jbang.source.Project;
 import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import static io.javelit.core.utils.LangUtils.optional;
 
@@ -38,7 +40,11 @@ import static io.javelit.core.utils.LangUtils.optional;
 public enum BuildSystem {
     FATJAR_AND_JBANG() {
 
+        private static final String JAVELIT_DEP = "io.javelit:javelit:";
         private static final Method DEPENDENCY_COLLECT_REFLECTION;
+
+        private static final String VERSION = optional(BuildSystem.class.getPackage())
+                .map(Package::getImplementationVersion).orElse(null);
 
         static {
             try {
@@ -79,10 +85,9 @@ public enum BuildSystem {
             final Project jbangProject = Project.builder().build(javaFilePath);
             final Source mainSource = jbangProject.getMainSource();
             List<String> dependencies = getDependenciesFrom(mainSource);
-            // remove the javelit dependencies - it's added to help the IDE plugins but it's not necessary, the FATJAR injects itself
-            dependencies = dependencies.stream().filter(e -> !e.startsWith("io.javelit:javelit:")).toList();
-            if (!dependencies.isEmpty()) {
-                final ModularClassPath modularClasspath = DependencyUtil.resolveDependencies(new ArrayList<>(dependencies),
+            final List<String> cleanedDependencies = cleanedDependencies(dependencies);
+            if (!cleanedDependencies.isEmpty()) {
+                final ModularClassPath modularClasspath = DependencyUtil.resolveDependencies(cleanedDependencies,
                                                    // default to maven central
                                                    List.of(),
                                                    false,
@@ -96,12 +101,57 @@ public enum BuildSystem {
             return cp.toString();
         }
 
+        private @NotNull List<String> cleanedDependencies(List<String> dependencies) {
+            final List<String> cleanedDependencies = new ArrayList<>(dependencies.size());
+            for (final String dep : dependencies) {
+                if (!dep.startsWith(JAVELIT_DEP)) {
+                    // filter the javelit dependencies - it's added to help the IDE plugins but it's not necessary, the FATJAR injects itself
+                    cleanedDependencies.add(dep);
+                } else if (VERSION != null) {
+                    // if running in CLI, ensure the CLI version is greater than the
+                    final String requestedVersion = extractJavelitVersion(dep);
+                    if (isVersionGreater(requestedVersion, VERSION)) {
+                        throw new CompilationException(versionMismatchText(requestedVersion));
+                    }
+                }
+            }
+            return cleanedDependencies;
+        }
+
+        private @NotNull String versionMismatchText(String requestedVersion) {
+            return """
+                    Incompatible Javelit versions: version of the CLI is smaller than the version declared in //DEPS.
+                    Javelit version of the CLI is %s
+                    Javelit version declared in //DEPS is %s
+                    
+                    Please upgrade the CLI with:
+                      jbang app install --fresh --force javelit@javelit
+                    or install a specific version with:
+                      jbang app install --force io.javelit:javelit:%s:all@fatjar
+                    
+                    If you are not using jbang to install the CLI, download a more recent Jar with
+                      curl -L -o javelit.jar https://repo1.maven.org/maven2/io/javelit/javelit/%s/javelit-%s-all.jar
+                    
+                    Or consider downgrading the version declared in //DEPS to %s.
+                    """.formatted(VERSION, requestedVersion, requestedVersion, requestedVersion, requestedVersion, VERSION);
+        }
+
         private static List<String> getDependenciesFrom(final Source mainSource) {
             try {
                 return (List<String>) DEPENDENCY_COLLECT_REFLECTION.invoke(mainSource);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        private static @NotNull String extractJavelitVersion(final @Nonnull String dep) {
+            String requestedVersion = dep.substring(JAVELIT_DEP.length());
+            // Remove classifier/type if present (e.g., ":all@fatjar" or ":classifier")
+            int colonIndex = requestedVersion.indexOf(':');
+            if (colonIndex != -1) {
+                requestedVersion = requestedVersion.substring(0, colonIndex);
+            }
+            return requestedVersion;
         }
     },
     RUNTIME() {
@@ -134,5 +184,32 @@ public enum BuildSystem {
         }
 
         return BuildSystem.RUNTIME;
+    }
+
+    /**
+     * Compare two semantic version strings.
+     * @param v1 First version string (e.g., "1.0.0" or "1.0.0-SNAPSHOT")
+     * @param v2 Second version string (e.g., "0.58.0" or "0.58.0-SNAPSHOT")
+     * @return true if v1 is greater than v2, false otherwise
+     */
+    @VisibleForTesting
+    static boolean isVersionGreater(String v1, String v2) {
+        // Remove qualifiers like -SNAPSHOT for comparison
+        String[] parts1 = v1.split("-")[0].split("\\.");
+        String[] parts2 = v2.split("-")[0].split("\\.");
+
+        for (int i = 0; i < Math.min(parts1.length, parts2.length); i++) {
+            int num1 = Integer.parseInt(parts1[i]);
+            int num2 = Integer.parseInt(parts2[i]);
+            if (num1 > num2) {
+                return true;
+            }
+            if (num1 < num2) {
+                return false;
+            }
+        }
+
+        // If equal up to this point, longer version is greater
+        return parts1.length > parts2.length;
     }
 }
