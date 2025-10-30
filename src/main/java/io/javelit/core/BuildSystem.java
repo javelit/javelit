@@ -120,7 +120,7 @@ public enum BuildSystem {
 
         private @NotNull String versionMismatchText(String requestedVersion) {
             return """
-                    Incompatible Javelit versions: version of the CLI is smaller than the version declared in //DEPS.
+                    Incompatible Javelit versions: the version of the CLI is smaller than the version declared in //DEPS.
                     Javelit version of the CLI is %s
                     Javelit version declared in //DEPS is %s
                     
