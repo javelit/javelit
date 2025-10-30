@@ -16,5 +16,6 @@
 
 package io.javelit.core;
 
+@SuppressWarnings("ArrayRecordComponent")
 public record MediaEntry(byte[] bytes, String format) {
 }
