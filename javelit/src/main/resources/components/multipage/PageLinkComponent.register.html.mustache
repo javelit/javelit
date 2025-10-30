@@ -1,0 +1,270 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
+
+    class JtPageLink extends LitElement {
+        static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
+            :host {
+                display: block;
+                margin: var(--jt-spacing-sm) 0;
+            }
+
+            .pagelink-container {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .pagelink {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--jt-spacing-sm);
+
+                padding: var(--jt-spacing-xs) var(--jt-spacing-md);
+                border: 1px solid transparent;
+                border-radius: var(--jt-border-radius);
+
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                font-weight: normal;
+                line-height: var(--jt-line-height-tight);
+                text-decoration: none;
+                white-space: nowrap;
+
+                cursor: pointer;
+                transition: all var(--jt-transition-fast);
+
+                background-color: transparent;
+                color: var(--jt-text-primary);
+            }
+
+            /* Width options */
+            .pagelink.width-content {
+                width: auto;
+            }
+
+            .pagelink.width-stretch {
+                width: 100%;
+            }
+
+            .pagelink.width-custom {
+                /* Width set via inline style */
+            }
+
+            .pagelink:hover:not(.disabled) {
+                background-color: var(--jt-bg-tertiary);
+            }
+
+            .pagelink:active:not(.disabled) {
+                background-color: var(--jt-bg-tertiary);
+            }
+
+            .pagelink:focus {
+                // outline: 2px solid var(--jt-primary-color);
+                //outline-offset: 2px;
+                outline: none;
+            }
+
+            /* Active state - when current page matches link target */
+            .pagelink.active {
+                background-color: var(--jt-bg-tertiary);
+                font-weight: var(--jt-font-weight-semibold);
+                cursor: default;
+            }
+
+            .pagelink.active:hover:not(.disabled) {
+                background-color: var(--jt-bg-tertiary);
+            }
+
+            /* Disabled state */
+            .pagelink.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+
+            /* External link indicator - not made available yet - will be a boolean */
+            /*
+            .pagelink.external::after {
+                content: "\\e89e"; // Material Symbol: open_in_new *
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-sm);
+                margin-left: var(--jt-spacing-xs);
+                opacity: 0.7;
+            }
+            */
+
+            /* Icon styling */
+            .icon {
+                font-size: var(--jt-font-size-lg);
+                font-family: 'Material Symbols Rounded';
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+
+            .emoji-icon {
+                font-size: var(--jt-font-size-base);
+            }
+
+            /* PageLink-specific markdown overrides */
+            .pagelink code {
+                background-color: rgba(0, 0, 0, 0.1);
+            }
+
+            .pagelink.active code {
+                background-color: rgba(255, 255, 255, 0.3);
+            }
+
+            .pagelink a {
+                color: inherit;
+                text-decoration: underline;
+            }
+        `;
+
+        static properties = {
+            label: {type: String},
+            url: {type: String},
+            isExternal: {type: Boolean, attribute: 'is-external'},
+            icon: {type: String},
+            help: {type: String},
+            disabled: {type: Boolean},
+            width: {type: String},
+            isActive: {type: Boolean, attribute: 'is-active'},
+            componentKey: {type: String, attribute: 'component-key'}
+        };
+
+        constructor() {
+            super();
+            this.isExternal = false;
+            this.disabled = false;
+            this.width = 'content';
+            this.isActive = false;
+        }
+
+        isEmoji(str) {
+            // Simple emoji detection
+            return str && str.length <= 2 && /\p{Emoji}/u.test(str);
+        }
+
+        isMaterialIcon(str) {
+            return str && str.startsWith(':') && str.endsWith(':') && str.length > 2;
+        }
+
+        getMaterialIconName(str) {
+            if (!this.isMaterialIcon(str)) return '';
+            return str.slice(1, -1);  // Remove leading and trailing colons
+        }
+
+        getValidatedWidth() {
+            if (!this.width) return '';
+
+            // Check for valid width values
+            if (this.width === 'stretch' || this.width === 'content') {
+                return `width-${this.width}`;
+            }
+
+            // Check for integer (pixels)
+            if (/^\d+$/.test(this.width)) {
+                return 'width-custom';
+            }
+
+            // Invalid width, default to empty
+            return '';
+        }
+
+        getWidthStyle() {
+            if (!this.width) return '';
+            
+            // Handle numeric width as pixels
+            if (/^\d+$/.test(this.width)) {
+                return `width: ${this.width}px;`;
+            }
+            
+            return '';
+        }
+
+        handleClick(e) {
+            if (this.disabled) return;
+
+            if (this.isExternal) {
+                // External link - let browser handle navigation
+                // Link will open in new tab due to target="_blank"
+                return;
+            }
+
+            // Internal page link - prevent default and send path update
+            e.preventDefault();
+            
+            if (this.url) {
+                // Update URL in browser
+                window.history.pushState({}, '', this.url);
+                
+                // Send path update to trigger page navigation
+                window.javelit.sendPathUpdate();
+            }
+        }
+
+        render() {
+            const iconContent = this.icon ? (
+                this.isEmoji(this.icon) ?
+                    html`<span class="emoji-icon">${this.icon}</span>` :
+                    this.isMaterialIcon(this.icon) ?
+                        html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
+                        null
+            ) : null;
+
+            const widthClass = this.getValidatedWidth();
+            const widthStyle = this.getWidthStyle();
+            const linkClass = `pagelink ${widthClass} ${this.isActive ? 'active' : ''} ${this.disabled ? 'disabled' : ''} ${this.isExternal ? 'external' : ''}`;
+
+            const linkContent = html`
+                ${iconContent}
+                <div class="markdown-content">${unsafeHTML(this.label)}</div>
+            `;
+
+            return html`
+                <div class="pagelink-container">
+                    ${this.isExternal ? 
+                        html`<a
+                            class="${linkClass}"
+                            href="${this.url}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="${widthStyle}"
+                            @click="${this.handleClick}">
+                            ${linkContent}
+                        </a>` :
+                        html`<a
+                            class="${linkClass}"
+                            href="${this.url || '#'}"
+                            style="${widthStyle}"
+                            @click="${this.handleClick}">
+                            ${linkContent}
+                        </a>`
+                    }
+                    ${this.help ? html`
+                        <jt-tooltip text="${this.help}"></jt-tooltip>
+                    ` : ''}
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-page-link', JtPageLink);
+</script>

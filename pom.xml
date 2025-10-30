@@ -20,11 +20,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.javelit</groupId>
-    <artifactId>javelit</artifactId>
+    <artifactId>javelit-parent</artifactId>
     <version>0.59.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>Javelit</name>
+    <name>Javelit Parent</name>
     <description>The fastest way to build data apps in Java.</description>
     <url>https://github.com/javelit/javelit</url>
     <inceptionYear>2025</inceptionYear>
@@ -52,6 +52,12 @@
         </developer>
     </developers>
 
+    <modules>
+        <module>javelit-core</module>
+        <module>javelit-servlet</module>
+        <module>javelit</module>
+    </modules>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -60,6 +66,8 @@
         <flexmark.version>0.64.8</flexmark.version>
         <jackson.version>2.20.0</jackson.version>
         <sonatype.url>https://ossrh-staging-api.central.sonatype.com</sonatype.url>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+        <jakarta.websocket.version>2.1.0</jakarta.websocket.version>
     </properties>
 
     <scm>
@@ -84,6 +92,19 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Internal modules -->
+            <dependency>
+                <groupId>io.javelit</groupId>
+                <artifactId>javelit-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.javelit</groupId>
+                <artifactId>javelit-servlet</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Third-party dependencies -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -115,6 +136,16 @@
                 <version>${undertow.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
+                <version>${jakarta.websocket.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.methvin</groupId>
                 <artifactId>directory-watcher</artifactId>
                 <version>0.19.1</version>
@@ -134,20 +165,16 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.19.0</version>
             </dependency>
-            <!-- JBang for dependency resolution. -->
-            <!-- TODO brings tons of dependency. Some could be excluded. -->
             <dependency>
                 <groupId>dev.jbang</groupId>
                 <artifactId>jbang-cli</artifactId>
                 <version>0.127.18</version>
             </dependency>
-            <!-- need to add this one which is runtimeOnly in jbang https://github.com/jbangdev/jbang/blob/d69682ca032fc7784ef42f3918802ddad8ab6150/build.gradle#L145 -->
             <dependency>
                 <groupId>eu.maveniverse.maven.mima.runtime</groupId>
                 <artifactId>standalone-static</artifactId>
                 <version>2.4.20</version>
             </dependency>
-            <!-- need to add this one too -->
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-xml</artifactId>
@@ -162,7 +189,6 @@
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>26.0.2</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>info.picocli</groupId>
@@ -209,11 +235,12 @@
                 <artifactId>echarts-java</artifactId>
                 <version>1.1.0</version>
             </dependency>
+
+            <!-- Testing dependencies -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>5.13.4</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.playwright</groupId>
@@ -238,333 +265,95 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <!-- included in fat jar, but not as a transitive dependency for users of the thin jar-->
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Undertow Web Server -->
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
-        </dependency>
-
-        <!-- File Watching -->
-        <dependency>
-            <groupId>io.methvin</groupId>
-            <artifactId>directory-watcher</artifactId>
-        </dependency>
-
-        <!-- JSON Processing -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
-        <!-- System utils -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-        <!-- JBang for dependency resolution. -->
-        <!-- TODO brings tons of dependency. Some could be excluded. -->
-        <dependency>
-            <groupId>dev.jbang</groupId>
-            <artifactId>jbang-cli</artifactId>
-        </dependency>
-        <!-- need to add this one which is runtimeOnly in jbang https://github.com/jbangdev/jbang/blob/d69682ca032fc7784ef42f3918802ddad8ab6150/build.gradle#L145 -->
-        <dependency>
-            <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-            <artifactId>standalone-static</artifactId>
-        </dependency>
-        <!-- need to add this one too -->
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-xml</artifactId>
-        </dependency>
-
-        <!-- template engine for the main index file and the components -->
-        <dependency>
-            <groupId>com.github.spullara.mustache.java</groupId>
-            <artifactId>compiler</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- CLI - could be in another submodule -->
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-        </dependency>
-
-        <!-- optional tablesaw dep -->
-        <dependency>
-            <groupId>tech.tablesaw</groupId>
-            <artifactId>tablesaw-core</artifactId>
-            <!-- included in fat jar, but not as a transitive dependency for users of the thin jar-->
-            <optional>true</optional>
-        </dependency>
-
-
-        <!--markdown rendering -->
-        <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark-ext-emoji</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark-ext-tables</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark-ext-gfm-strikethrough</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladsch.flexmark</groupId>
-            <artifactId>flexmark-ext-autolink</artifactId>
-        </dependency>
-
-        <!-- emoji checks -->
-        <dependency>
-            <groupId>net.fellbaum</groupId>
-            <artifactId>jemoji</artifactId>
-        </dependency>
-
-        <!-- charting -->
-        <!-- echart wrapper -->
-        <dependency>
-            <groupId>org.icepear.echarts</groupId>
-            <artifactId>echarts-java</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.jknack</groupId>
-                    <artifactId>handlebars</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
-        <!-- testing dependencies -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-
-    </dependencies>
-
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.14.0</version>
+                    <configuration>
+                        <source>21</source>
+                        <target>21</target>
+                        <encoding>UTF-8</encoding>
+                        <fork>true</fork>
+                        <compilerArgs>
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
+                            <arg>-Xplugin:ErrorProne</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                        </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>2.42.0</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.4.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.11.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.7.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>4.6</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
-            <plugin>
-                <groupId>org.openrewrite.maven</groupId>
-                <artifactId>rewrite-maven-plugin</artifactId>
-                <version>6.16.0</version>
-                <configuration>
-                    <activeRecipes>
-                        <recipe>org.openrewrite.staticanalysis.CodeCleanup</recipe>
-                    </activeRecipes>
-                    <checkstyleConfigFile>checkstyle.xml</checkstyleConfigFile>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.openrewrite.recipe</groupId>
-                        <artifactId>rewrite-static-analysis</artifactId>
-                        <version>2.19.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <encoding>UTF-8</encoding>
-                    <fork>true</fork>
-                    <compilerArgs>
-                        <arg>-XDcompilePolicy=simple</arg>
-                        <arg>--should-stop=ifError=FLOW</arg>
-                        <arg>-Xplugin:ErrorProne</arg>
-                        <!-- see https://errorprone.info/docs/installation - to be future-proof -->
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
-                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>com.google.errorprone</groupId>
-                            <artifactId>error_prone_core</artifactId>
-                            <version>2.42.0</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <!-- minify some jsons -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>minify-echarts-themes</id>
-                        <!-- not assigned to a phase - please run manually with ./mvnw antrun:run@minify-echarts-themes
-                        <phase>process-resources</phase>
-                        -->
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <replaceregexp match="\s+" replace="" flags="g">
-                                    <fileset dir="${project.basedir}/src/main/resources/static/_javelit/components/chart">
-                                        <include name="echarts_theme_*.json" />
-                                    </fileset>
-                                </replaceregexp>
-                                <echo message="Minified ECharts theme files" />
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Configure test execution -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
-                <configuration>
-                    <argLine>-Djava.awt.headless=true</argLine>
-                    <!-- tests are not flaky but they are run in parallel - see junit-platform.properties - parallel + timeouts may introduce flakyness -->
-                    <!-- parallel + a few retries is faster than sequential -->
-                    <rerunFailingTestsCount>5</rerunFailingTestsCount>
-                </configuration>
-            </plugin>
-
-            <!-- Create test jar with E2E utilities -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                        <configuration>
-                            <testClassesDirectory>${project.build.testOutputDirectory}</testClassesDirectory>
-                            <includes>
-                                <include>io/javelit/e2e/helpers/*.class</include>
-                            </includes>
-                            <excludes>
-                                <exclude>io/javelit/e2e/core/**</exclude>
-                                <exclude>io/javelit/e2e/components/**</exclude>
-                                <exclude>io/javelit/core/**</exclude>
-                                <exclude>multifile-test/**</exclude>
-                                <exclude>multipage-test/**</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Main executable JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>all</shadedClassifierName>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>io.javelit.cli.Cli</mainClass>
-                                    <manifestEntries>
-                                        <Implementation-Version>${project.version}</Implementation-Version>
-                                        <Implementation-Title>${project.name}</Implementation-Title>
-                                    </manifestEntries>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- License plugin to add Apache 2.0 headers -->
+            <!-- License plugin applied to all modules -->
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>4.6</version>
                 <configuration>
                     <properties>
                         <owner>Cyril de Catheu</owner>
@@ -579,6 +368,7 @@
                                 <exclude>**/README.md</exclude>
                                 <exclude>**/LICENSE</exclude>
                                 <exclude>**/*.json</exclude>
+                                <exclude>**/*.mp3</exclude>
                                 <exclude>**/*.properties</exclude>
                                 <exclude>.mvn/**</exclude>
                                 <exclude>mvnw</exclude>
@@ -605,64 +395,23 @@
                 </executions>
             </plugin>
 
-            <!-- make parsedVersion available in maven release-plugin -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.6.1</version>
-                <executions>
-                    <execution>
-                        <id>parse-versions-for-release</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <configuration>
-                            <propertyPrefix>parsedVersion</propertyPrefix>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Maven Release Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.1.1</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <goals>deploy</goals>
-                    <developmentVersion>
-                        ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT
-                    </developmentVersion>
-                    <!-- activating the release profile explicitly -->
                     <useReleaseProfile>false</useReleaseProfile>
                     <releaseProfiles>release</releaseProfiles>
                     <tagNameFormat>javelit-@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
 
-            <!-- makes project metadata available in other plugin configs -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                            <goal>create-metadata</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- Nexus Staging Plugin -->
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.7.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
@@ -678,99 +427,10 @@
             <id>release</id>
             <build>
                 <plugins>
-                    <!-- Source JAR -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                                <configuration>
-                                    <includePom>true</includePom>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>attach-test-sources</id>
-                                <goals>
-                                    <goal>test-jar-no-fork</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>
-                                        <include>io/javelit/e2e/helpers/**</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- Build classpath for doclet -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <version>3.8.1</version>
-                        <executions>
-                            <execution>
-                                <id>build-doclet-classpath</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>build-classpath</goal>
-                                </goals>
-                                <configuration>
-                                    <outputProperty>doclet.classpath</outputProperty>
-                                    <includeScope>compile</includeScope>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- Javadoc JAR and JSON Documentation Generation -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.3</version>
-                        <executions>
-                            <!-- Standard Javadoc JAR -->
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                            <!-- JSON Documentation Generation -->
-                            <execution>
-                                <id>generate-json-docs</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>javadoc-no-fork</goal>
-                                </goals>
-                                <configuration>
-                                    <doclet>io.javelit.doclet.JsonDoclet</doclet>
-                                    <!--suppress MavenModelInspection --><!-- the doclet.classpath variable is set dynamically by the plugin above -->
-                                    <docletPath>${project.build.outputDirectory}:${doclet.classpath}</docletPath>
-                                    <useStandardDocletOptions>false</useStandardDocletOptions>
-                                    <sourcepath>${project.build.sourceDirectory}</sourcepath>
-                                    <subpackages>io.javelit.core:io.javelit.components</subpackages>
-                                    <quiet>true</quiet>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <!-- Global configuration applied to both executions -->
-                        <configuration>
-                            <doclint>none</doclint>
-                            <source>21</source>
-                            <quiet>true</quiet>
-                        </configuration>
-                    </plugin>
-
                     <!-- GPG Signing -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

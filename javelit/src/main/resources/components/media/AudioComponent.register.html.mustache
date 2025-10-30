@@ -1,0 +1,126 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtAudio extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--audio-width);
+                max-width: 100%;
+            }
+
+            .audio-container {
+                width: 100%;
+            }
+
+            audio {
+                width: 100%;
+            }
+        `;
+
+        static properties = {
+            url: { type: String },
+            format: { type: String },
+            startTimeMillis: { type: Number, attribute: 'start-time-millis' },
+            endTimeMillis: { type: Number, attribute: 'end-time-millis' },
+            loop: { type: Boolean },
+            autoplay: { type: Boolean },
+            width: { type: String, reflect: true }
+        };
+
+        constructor() {
+            super();
+            this.startTimeMillis = null;
+            this.endTimeMillis = null;
+        }
+
+        updated(changedProperties) {
+            // Update width CSS variable
+            if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
+                this.style.setProperty('--audio-width', `${this.width}px`);
+            } else if (this.width === 'stretch') {
+                this.style.removeProperty('--audio-width');
+            }
+        }
+
+        handleLoadedMetadata(e) {
+            const audio = e.target;
+            // Set initial playback position to start time if specified
+            if (this.startTimeMillis !== null) {
+                audio.currentTime = this.startTimeMillis / 1000;
+            }
+        }
+
+        handlePlay(e) {
+            const audio = e.target;
+            // If user clicks play while at/beyond endTime, reset to startTime
+            if (this.endTimeMillis !== null && audio.currentTime >= this.endTimeMillis / 1000) {
+                audio.currentTime = this.startTimeMillis !== null ? this.startTimeMillis / 1000 : 0;
+            }
+        }
+
+        handleTimeUpdate(e) {
+            const audio = e.target;
+
+            // clamp starTime
+            if (this.startTimeMillis !== null && audio.currentTime < this.startTimeMillis / 1000) {
+                audio.currentTime = this.startTimeMillis / 1000;
+            }
+
+            // clamp endTime - if loop, go back to startTime
+            if (this.endTimeMillis !== null && audio.currentTime >= this.endTimeMillis / 1000) {
+                if (this.loop) {
+                    // Loop back to start time (or beginning if no start time)
+                    audio.currentTime = this.startTimeMillis !== null ? this.startTimeMillis / 1000 : 0;
+                } else {
+                    // Pause at end time
+                    audio.pause();
+                    audio.currentTime = this.endTimeMillis / 1000;
+                }
+            }
+        }
+
+        render() {
+            // Only use native loop when no time constraints exist
+            const hasTimeConstraints = this.startTimeMillis !== null || this.endTimeMillis !== null;
+
+            return html`
+                <div class="audio-container">
+                    <audio
+                        controls
+                        ?loop="${this.loop && !hasTimeConstraints}"
+                        ?autoplay="${this.autoplay}"
+                        preload="metadata"
+                        @loadedmetadata="${this.handleLoadedMetadata}"
+                        @play="${this.handlePlay}"
+                        @timeupdate="${this.handleTimeUpdate}"
+                    >
+                        <source src="${this.url}" type="${this.format}" />
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-audio', JtAudio);
+</script>

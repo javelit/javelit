@@ -1,0 +1,201 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+        {{{ PRISM_SETUP_SNIPPET }}}
+
+    class JtCode extends LitElement {
+        static styles = [
+            css`
+                {{{ PRISM_CSS }}}
+
+                :host {
+                    display: block;
+                    margin: var(--jt-spacing-md) 0;
+                    position: relative;
+                }
+
+                :host([width="content"]) {
+                    width: auto;
+                    display: inline-block;
+                }
+
+                :host([height="stretch"]) {
+                    height: 100%;
+
+                    .code-container {
+                        height: 100%;
+                    }
+
+                }
+
+                :host([width]:not([width="stretch"]):not([width="content"])) {
+                    width: var(--code-width);
+                    max-width: 100%;
+                }
+
+                :host([height]:not([height="content"]):not([height="stretch"])) {
+                    height: var(--code-height);
+
+                    .code-container {
+                        height: 100%;
+                        overflow: auto;
+                    }
+                }
+
+                .code-container {
+                    position: relative;
+                    border-radius: var(--jt-border-radius-lg);
+                    overflow: scroll;
+                    background: #f5f2f0;
+                    border: 1px solid var(--jt-border-color);
+                }
+
+                .copy-button {
+                    position: absolute;
+                    top: var(--jt-spacing-sm);
+                    right: var(--jt-spacing-sm);
+                    background: var(--jt-bg-primary);
+                    border: 1px solid var(--jt-border-color);
+                    border-radius: var(--jt-border-radius);
+                    padding: var(--jt-spacing-xs);
+                    cursor: pointer;
+                    opacity: 0;
+                    transition: opacity var(--jt-transition-fast);
+                    font-family: 'Material Symbols Rounded', sans-serif;
+                    font-size: var(--jt-font-size-sm);
+                    color: var(--jt-text-secondary);
+                    z-index: 2;
+                }
+
+                :host(:hover) .copy-button {
+                    opacity: 1;
+                }
+
+                .copy-button:hover {
+                    background: var(--jt-bg-secondary);
+                    color: var(--jt-text-primary);
+                }
+
+                .copy-button:active {
+                    transform: scale(0.95);
+                }
+
+                :host([wrap-lines]) pre {
+                    white-space: pre-wrap;
+                    word-break: break-word;
+                }
+
+                :host([wrap-lines]) code {
+                    white-space: pre-wrap;
+                }
+            `];
+
+        static properties = {
+            body: {type: String},
+            language: {type: String},
+            lineNumbers: {type: Boolean, attribute: 'line-numbers'},
+            wrapLines: {type: Boolean, attribute: 'wrap-lines'},
+            height: {type: String, reflect: true},
+            width: {type: String, reflect: true}
+        };
+
+        constructor() {
+            super();
+            this.body = '';
+            this.lineNumbers = false;
+            this.wrapLines = false;
+        }
+
+        updated(changedProperties) {
+
+            // Set height CSS variable if height is specified and is a pixel value
+            if (changedProperties.has('height')) {
+                if (this.height && /^\d+$/.test(this.height)) {
+                    this.style.setProperty('--code-height', `${this.height}px`);
+                } else {
+                    this.style.removeProperty('--code-height');
+                }
+            }
+
+            // Set width CSS variable if width is specified and is a pixel value
+            if (changedProperties.has('width')) {
+                if (this.width && /^\d+$/.test(this.width)) {
+                    this.style.setProperty('--code-width', `${this.width}px`);
+                } else {
+                    this.style.removeProperty('--code-width');
+                }
+            }
+
+            // Trigger Prism highlighting after DOM update
+            if (Prism) {
+                Prism.highlightAllUnder(this.shadowRoot);
+            } else {
+                console.warn("prism not available");
+            }
+        }
+
+        async handleCopy() {
+            try {
+                await navigator.clipboard.writeText(this.body);
+
+                // Brief visual feedback
+                const button = this.shadowRoot.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'check';
+                button.style.color = 'var(--jt-color-success)';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.color = '';
+                }, 1000);
+
+            } catch (error) {
+                console.warn('Failed to copy code to clipboard:', error);
+
+                // Fallback visual feedback for failure
+                const button = this.shadowRoot.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'error';
+                button.style.color = 'var(--jt-color-danger)';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.color = '';
+                }, 1000);
+            }
+        }
+
+        render() {
+            const languageClass = this.language ? `language-${this.language}` : 'language-none';
+            const preClasses = [
+                this.lineNumbers ? 'line-numbers' : '',
+                this.wrapLines ? 'wrap-lines' : ''
+            ].filter(Boolean).join(' ');
+
+            return html`
+                <button class="copy-button" @click="${this.handleCopy}" title="Copy code">
+                    content_copy
+                </button>
+                <div id="code-container" class="code-container">
+                    <pre class="${preClasses}"><code class="${languageClass}">${this.body}</code></pre>
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-internal-code', JtCode);
+</script>

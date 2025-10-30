@@ -1,0 +1,242 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+class JtToolbarMenu extends LitElement {
+    static styles = css`
+        :host {
+            display: inline-block;
+            position: relative;
+        }
+
+        .menu-button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: var(--jt-border-radius-lg);
+            color: var(--jt-text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all var(--jt-transition-fast);
+        }
+
+        .menu-button:hover {
+            background: var(--jt-bg-tertiary);
+            color: var(--jt-text-primary);
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: var(--jt-spacing-sm);
+            background: var(--jt-bg-primary);
+            border: 1px solid var(--jt-border-color);
+            border-radius: var(--jt-border-radius-lg);
+            box-shadow: var(--jt-shadow-lg);
+            min-width: 200px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--jt-transition-fast);
+        }
+
+        .menu-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: var(--jt-spacing-md) var(--jt-spacing-lg);
+            color: var(--jt-text-primary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color var(--jt-transition-fast);
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            font-family: var(--jt-font-family);
+            font-size: var(--jt-font-size-sm);
+            gap: var(--jt-spacing-md);
+        }
+
+        .menu-item:hover {
+            background: var(--jt-bg-tertiary);
+        }
+
+        .menu-item:first-child {
+            border-radius: var(--jt-border-radius-lg) var(--jt-border-radius-lg) 0 0;
+        }
+
+        .menu-item:last-child {
+            border-radius: 0 0 var(--jt-border-radius-lg) var(--jt-border-radius-lg);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--jt-border-color);
+            margin: 0 0;
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: var(--jt-text-secondary);
+        }
+
+        .menu-label {
+            flex: 1;
+        }
+
+        .menu-shortcut {
+            font-size: var(--jt-font-size-xs);
+            color: var(--jt-text-secondary);
+            margin-left: auto;
+        }
+
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+        }
+
+        .menu-section-label {
+            padding: var(--jt-spacing-xs) var(--jt-spacing-md);
+            font-size: var(--jt-font-size-xs);
+        }
+
+        .developer-section {
+            background: var(--jt-bg-secondary);
+        }
+    `;
+
+    static properties = {
+        showMenu: { type: Boolean, state: true },
+        isLocalhost: { type: Boolean, state: true }
+    };
+
+    constructor() {
+        super();
+        this.showMenu = false;
+        this.isLocalhost = false;
+        this.handleOutsideClick = this.handleOutsideClick.bind(this);
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        document.addEventListener('click', this.handleOutsideClick);
+        // Check if running on localhost
+        this.isLocalhost = window.javelit && window.javelit.isLocalhost;
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        document.removeEventListener('click', this.handleOutsideClick);
+    }
+
+    handleOutsideClick(e) {
+        if (!this.contains(e.target)) {
+            this.showMenu = false;
+        }
+    }
+
+    toggleMenu(e) {
+        e.stopPropagation();
+        this.showMenu = !this.showMenu;
+    }
+
+    handleMenuItemClick(action, e) {
+        e.stopPropagation();
+        this.showMenu = false;
+        
+        switch(action) {
+            case 'rerun':
+                // Send reload message to backend
+                if (window.javelit && window.javelit.sendMessage) {
+                    window.javelit.sendMessage({ type: 'reload' });
+                }
+                break;
+            case 'settings':
+                // Open settings modal
+                const settingsModal = document.getElementById('settings-modal');
+                if (settingsModal) {
+                    settingsModal.show = true;
+                }
+                break;
+            case 'clear-cache':
+                // Send clear cache message to backend (only works on localhost)
+                if (window.javelit && window.javelit.sendMessage) {
+                    window.javelit.sendMessage({ type: 'clear_cache' });
+                }
+                break;
+        }
+    }
+
+    render() {
+        return html`
+            <button 
+                class="menu-button" 
+                @click="${this.toggleMenu}"
+                aria-label="Menu"
+                aria-expanded="${this.showMenu}"
+            >
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+            <div class="menu-dropdown ${this.showMenu ? 'show' : ''}">
+                <button
+                    class="menu-item"
+                    @click="${(e) => this.handleMenuItemClick('rerun', e)}"
+                >
+                    <span class="material-symbols-rounded menu-icon">refresh</span>
+                    <span class="menu-label">Rerun</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button
+                    class="menu-item"
+                    @click="${(e) => this.handleMenuItemClick('settings', e)}"
+                >
+                    <span class="material-symbols-rounded menu-icon">settings</span>
+                    <span class="menu-label">Settings</span>
+                </button>
+                ${this.isLocalhost ? html`
+                    <div class="menu-divider"></div>
+                    <div class="developer-section">
+                        <div class="menu-section-label">Developer Options</div>
+                        <button
+                                class="menu-item"
+                                @click="${(e) => this.handleMenuItemClick('clear-cache', e)}"
+                        >
+                            <span class="material-symbols-rounded menu-icon">delete</span>
+                            <span class="menu-label">Clear cache</span>
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+}
+
+customElements.define('jt-toolbar-menu', JtToolbarMenu);
+</script>

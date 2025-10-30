@@ -1,0 +1,218 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    
+    class JtPopover extends LitElement {
+        static styles = css`
+            {{{ MARKDOWN_CSS }}}
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+                position: relative;
+            }
+            
+            :host([use-container-width]) .popover-button {
+                width: 100%;
+            }
+            
+            :host([use-container-width]) .popover-content {
+                width: 100%;
+            }
+            
+            :host(:not([use-container-width])) .popover-content {
+                width: max-content;
+            }
+            
+            .popover-container {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+            
+            .popover-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--jt-spacing-sm);
+                
+                padding: var(--jt-spacing-sm) var(--jt-spacing-lg);
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius);
+                background-color: var(--jt-bg-primary);
+                
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-normal);
+                color: var(--jt-text-primary);
+                text-decoration: none;
+                white-space: nowrap;
+                
+                cursor: pointer;
+                transition: all var(--jt-transition-fast);
+            }
+            
+            .popover-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            
+            .popover-button:hover:not(:disabled) {
+                border-color: var(--jt-theme-color);
+                color: var(--jt-theme-color);
+            }
+            
+            .popover-button:hover:not(:disabled) .chevron {
+                color: var(--jt-theme-color);
+            }
+            
+            
+            .label {
+                flex: 1;
+                text-align: left;
+            }
+            
+            .chevron {
+                font-family: 'Material Symbols Rounded';
+                font-size: var(--jt-font-size-lg);
+                color: var(--jt-text-primary);
+                transition: transform var(--jt-transition-fast), color var(--jt-transition-fast);
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            }
+            
+            .chevron.open {
+                transform: rotate(180deg);
+            }
+            
+            .popover-content {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                max-width: 100%;
+                z-index: 1000;
+                
+                background-color: var(--jt-bg-primary);
+                border: 1px solid var(--jt-border-color);
+                border-radius: var(--jt-border-radius-popover);
+                box-shadow: var(--jt-shadow-popover);
+                
+                margin-top: var(--jt-spacing-xs);
+                padding: var(--jt-spacing-lg);
+                
+                display: none;
+                box-sizing: border-box;
+            }
+            
+            .popover-content.open {
+                display: block;
+            }
+            
+            
+            ::slotted(*) {
+                display: block;
+            }
+        `;
+        
+        static properties = {
+            label: {type: String},
+            help: {type: String},
+            disabled: {type: Boolean, reflect: true},
+            useContainerWidth: {type: Boolean, attribute: 'use-container-width'}
+        };
+        
+        constructor() {
+            super();
+            this.label = '';
+            this.help = '';
+            this.disabled = false;
+            this.useContainerWidth = false;
+            this.isOpen = false;
+        }
+        
+        connectedCallback() {
+            super.connectedCallback();
+            document.addEventListener('click', this.handleOutsideClick.bind(this));
+        }
+        
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            document.removeEventListener('click', this.handleOutsideClick.bind(this));
+        }
+        
+        formatText(label) {
+            if (!label) return '';
+            
+            // Markdown formatting
+            return label
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+        }
+        
+        handleButtonClick(e) {
+            if (this.disabled) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            this.isOpen = !this.isOpen;
+            this.requestUpdate();
+        }
+        
+        handleOutsideClick(e) {
+            // Only keep popover open if click is inside the popover content
+            const popoverContent = this.shadowRoot.querySelector('.popover-content');
+            if (this.isOpen && popoverContent && !popoverContent.contains(e.target)) {
+                this.isOpen = false;
+                this.requestUpdate();
+            }
+        }
+        
+        handleContentClick(e) {
+            // Prevent clicks inside the popover content from closing it
+            e.stopPropagation();
+        }
+        
+        render() {
+            const formattedLabel = this.formatText(this.label || '');
+            
+            return html`
+                <div class="popover-container">
+                    <button
+                        class="popover-button"
+                        ?disabled="${this.disabled}"
+                        @click="${this.handleButtonClick}"
+                        type="button">
+                        <div class="label markdown-content" .innerHTML="${formattedLabel}"></div>
+                        <span class="chevron ${this.isOpen ? 'open' : ''}">expand_more</span>
+                    </button>
+                    ${this.help ? html`
+                        <jt-tooltip text="${this.help}"></jt-tooltip>
+                    ` : ''}
+                </div>
+                <div class="popover-content ${this.isOpen ? 'open' : ''}" @click="${this.handleContentClick}">
+                    <slot></slot>
+                </div>
+            `;
+        }
+    }
+    
+    customElements.define('jt-popover', JtPopover);
+</script>

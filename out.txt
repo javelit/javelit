@@ -1,0 +1,535 @@
+====
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+====
+
+ Simple Servlet Extraction for Javelit - Phase 1
+
+ Goal
+
+ Extract a reusable servlet from current Undertow-based Server.java that can be:
+ 1. Used by external servlet containers (Tomcat, Jetty, Spring Boot)
+ 2. Reused by standalone Undertow server (if possible)
+ 3. Future-proof for Quarkus integration
+
+ Keep it simple: Minimal refactoring, maximum reuse.
+
+ ---
+ Architecture
+
+ javelit/
+ ├── javelit-core/              # Existing (unchanged)
+ │   ├── StateManager.java
+ │   ├── AppRunner.java
+ │   ├── Jt.java
+ │   └── components/
+ ├── javelit-servlet/           # NEW - Simple servlet implementation
+ │   ├── JavelitServlet.java          # Main HTTP servlet
+ │   └── JavelitWebSocketEndpoint.java # WebSocket endpoint
+ └── javelit-server/            # MINIMAL CHANGES - Undertow standalone
+     └── Server.java                   # Tries to reuse servlet if possible
+
+ ---
+ Phase 1: Create javelit-servlet Module
+
+ Step 1: New Maven Module javelit-servlet
+
+ pom.xml:
+ <project>
+     <artifactId>javelit-servlet</artifactId>
+     <packaging>jar</packaging>
+
+     <dependencies>
+         <dependency>
+             <groupId>io.javelit</groupId>
+             <artifactId>javelit-core</artifactId>
+         </dependency>
+
+         <!-- Jakarta Servlet API (provided scope) -->
+         <dependency>
+             <groupId>jakarta.servlet</groupId>
+             <artifactId>jakarta.servlet-api</artifactId>
+             <version>6.0.0</version>
+             <scope>provided</scope>
+         </dependency>
+
+         <!-- Jakarta WebSocket API (provided scope) -->
+         <dependency>
+             <groupId>jakarta.websocket</groupId>
+             <artifactId>jakarta.websocket-api</artifactId>
+             <version>2.1.0</version>
+             <scope>provided</scope>
+         </dependency>
+     </dependencies>
+ </project>
+
+ ---
+ Step 2: JavelitServlet.java (Extract from Server.java)
+
+ package io.javelit.servlet;
+
+ import io.javelit.core.*;
+ import jakarta.servlet.*;
+ import jakarta.servlet.annotation.*;
+ import jakarta.servlet.http.*;
+ import java.io.IOException;
+ import java.util.*;
+
+ /**
+  * Servlet that exposes Javelit apps in any servlet container.
+  * 
+  * Usage:
+  * 1. Set "javelit.app" init parameter to JtRunnable instance
+  * 2. Map servlet to desired URL pattern
+  * 3. WebSocket endpoint auto-discovered at /ws
+  */
+ @MultipartConfig(
+     maxFileSize = 200 * 1024 * 1024L,
+     maxRequestSize = 200 * 1024 * 1024L
+ )
+ public class JavelitServlet extends HttpServlet {
+
+     private JtRunnable app;
+     private AppRunner appRunner;
+
+     // Shared state - used by both servlet and WebSocket endpoint
+     static final Map<String, JavelitWebSocketEndpoint.WsSession> SESSIONS = new ConcurrentHashMap<>();
+
+     @Override
+     public void init() throws ServletException {
+         // Get app from servlet context attribute (set externally)
+         app = (JtRunnable) getServletContext().getAttribute("javelit.app");
+
+         if (app == null) {
+             throw new ServletException(
+                 "JtRunnable app not found. Set 'javelit.app' attribute in ServletContext."
+             );
+         }
+
+         // Create AppRunner with send callback
+         appRunner = new AppRunner(app, this::sendToWebSocket);
+     }
+
+     @Override
+     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+             throws ServletException, IOException {
+
+         String path = req.getRequestURI();
+
+         if (path.startsWith("/_/media/")) {
+             handleMedia(req, resp);
+         } else if (path.equals("/") || path.isEmpty()) {
+             handleIndex(req, resp);
+         } else {
+             // Static files handled by container or another servlet
+             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+         }
+     }
+
+     @Override
+     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+             throws ServletException, IOException {
+
+         if (req.getRequestURI().equals("/_/upload")) {
+             handleUpload(req, resp);
+         } else {
+             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+         }
+     }
+
+     private void handleIndex(HttpServletRequest req, HttpServletResponse resp) 
+             throws IOException {
+
+         HttpSession session = req.getSession(true);
+         String sessionId = session.getId();
+
+         // Generate XSRF token
+         String xsrfToken = (String) session.getAttribute("XSRF_TOKEN");
+         if (xsrfToken == null) {
+             xsrfToken = generateToken();
+             session.setAttribute("XSRF_TOKEN", xsrfToken);
+         }
+
+         // Set XSRF cookie
+         Cookie xsrfCookie = new Cookie("javelit-xsrf", xsrfToken);
+         xsrfCookie.setHttpOnly(false);
+         xsrfCookie.setPath("/");
+         xsrfCookie.setAttribute("SameSite", "Strict");
+         resp.addCookie(xsrfCookie);
+
+         // Render index.html (reuse logic from Server.java)
+         String html = renderIndexHtml(sessionId, xsrfToken);
+
+         resp.setContentType("text/html; charset=UTF-8");
+         resp.getWriter().write(html);
+     }
+
+     private void handleUpload(HttpServletRequest req, HttpServletResponse resp) 
+             throws ServletException, IOException {
+
+         String sessionId = req.getHeader("X-Session-ID");
+         String xsrfToken = req.getHeader("X-XSRF-TOKEN");
+
+         // Validate
+         if (!validateXsrf(sessionId, xsrfToken)) {
+             resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid XSRF token");
+             return;
+         }
+
+         // Parse multipart
+         Map<String, String> fileHashes = new HashMap<>();
+         for (Part part : req.getParts()) {
+             if (part.getSubmittedFileName() != null) {
+                 String hash = StateManager.storeMedia(
+                     sessionId,
+                     part.getSubmittedFileName(),
+                     part.getContentType(),
+                     part.getInputStream().readAllBytes()
+                 );
+                 fileHashes.put(part.getSubmittedFileName(), hash);
+             }
+         }
+
+         // Return JSON
+         resp.setContentType("application/json");
+         resp.getWriter().write(toJson(fileHashes));
+     }
+
+     private void handleMedia(HttpServletRequest req, HttpServletResponse resp) 
+             throws IOException {
+
+         String path = req.getRequestURI();
+         String hash = path.substring("/_/media/".length());
+         String sessionId = req.getParameter("sid");
+
+         String xsrfCookie = getCookie(req, "javelit-xsrf");
+
+         if (sessionId == null || xsrfCookie == null) {
+             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+             return;
+         }
+
+         // Validate and get media
+         if (!validateMediaAccess(sessionId, xsrfCookie)) {
+             resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+             return;
+         }
+
+         StateManager.MediaEntry media = StateManager.getMedia(sessionId, hash);
+         if (media == null) {
+             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+             return;
+         }
+
+         // Serve with range support
+         resp.setContentType(media.format());
+         resp.setHeader("Accept-Ranges", "bytes");
+         resp.getOutputStream().write(media.bytes());
+     }
+
+     // Helper: Send message to WebSocket
+     private void sendToWebSocket(String sessionId, String html, ...) {
+         JavelitWebSocketEndpoint.WsSession wsSession = SESSIONS.get(sessionId);
+         if (wsSession != null && wsSession.isOpen()) {
+             wsSession.send(html);
+         }
+     }
+
+     // Helper methods (copy from Server.java)
+     private String renderIndexHtml(String sessionId, String xsrfToken) { /* ... */ }
+     private boolean validateXsrf(String sessionId, String token) { /* ... */ }
+     private boolean validateMediaAccess(String sessionId, String xsrf) { /* ... */ }
+     private String generateToken() { /* ... */ }
+     private String getCookie(HttpServletRequest req, String name) { /* ... */ }
+     private String toJson(Object obj) { /* ... */ }
+ }
+
+ ---
+ Step 3: JavelitWebSocketEndpoint.java
+
+ package io.javelit.servlet;
+
+ import io.javelit.core.*;
+ import jakarta.websocket.*;
+ import jakarta.websocket.server.ServerEndpoint;
+ import java.io.IOException;
+
+ /**
+  * WebSocket endpoint for Javelit real-time communication.
+  * Auto-discovered by servlet containers.
+  */
+ @ServerEndpoint("/_/ws")
+ public class JavelitWebSocketEndpoint {
+
+     private String sessionId;
+     private Session wsSession;
+
+     @OnOpen
+     public void onOpen(Session session, EndpointConfig config) {
+         this.wsSession = session;
+
+         // Extract session ID from query params
+         Map<String, List<String>> params = session.getRequestParameterMap();
+         this.sessionId = params.containsKey("sid")
+             ? params.get("sid").get(0)
+             : java.util.UUID.randomUUID().toString();
+
+         // Register session
+         JavelitServlet.SESSIONS.put(sessionId, new WsSession(session));
+
+         // Send session init
+         try {
+             String initHtml = createSessionInit(sessionId);
+             session.getBasicRemote().sendText(initHtml);
+         } catch (IOException e) {
+             onError(session, e);
+         }
+     }
+
+     @OnMessage
+     public void onMessage(String message, Session session) {
+         try {
+             // Parse message and handle
+             ClientMessage msg = parseClientMessage(message);
+
+             switch (msg.type()) {
+                 case "component_update" -> handleComponentUpdate(sessionId, msg);
+                 case "path_update" -> handlePathUpdate(sessionId, msg);
+                 case "rerun" -> handleRerun(sessionId);
+             }
+         } catch (Exception e) {
+             LOG.error("Error handling WebSocket message", e);
+             sendErrorModal(sessionId, e);
+         }
+     }
+
+     @OnClose
+     public void onClose(Session session, CloseReason closeReason) {
+         JavelitServlet.SESSIONS.remove(sessionId);
+         StateManager.cleanupSession(sessionId);
+     }
+
+     @OnError
+     public void onError(Session session, Throwable throwable) {
+         LOG.error("WebSocket error", throwable);
+         JavelitServlet.SESSIONS.remove(sessionId);
+     }
+
+     // Helper: Message handling (copy from Server.java)
+     private void handleComponentUpdate(String sessionId, ClientMessage msg) { /* ... */ }
+     private void handlePathUpdate(String sessionId, ClientMessage msg) { /* ... */ }
+     private void handleRerun(String sessionId) { /* ... */ }
+     private ClientMessage parseClientMessage(String json) { /* ... */ }
+     private String createSessionInit(String sessionId) { /* ... */ }
+     private void sendErrorModal(String sessionId, Exception e) { /* ... */ }
+
+     // Wrapper for WebSocket session
+     static class WsSession {
+         private final Session session;
+
+         WsSession(Session session) { this.session = session; }
+
+         void send(String message) {
+             try {
+                 session.getBasicRemote().sendText(message);
+             } catch (IOException e) {
+                 throw new RuntimeException(e);
+             }
+         }
+
+         boolean isOpen() { return session.isOpen(); }
+     }
+ }
+
+ ---
+ Phase 2: Minimal Server.java Changes
+
+ Option A: Keep Server.java as-is (SIMPLEST)
+
+ Don't change Server.java at all - it stays Undertow-based for standalone mode.
+
+ Pros:
+ - Zero risk
+ - No refactoring needed
+ - Undertow and Servlet can coexist
+
+ Cons:
+ - Some code duplication between Server.java and JavelitServlet.java
+
+ ---
+ Option B: Extract Shared Logic (MEDIUM EFFORT)
+
+ Create shared utility class for common code:
+
+ package io.javelit.core;
+
+ /**
+  * Shared logic between Server.java and JavelitServlet.java
+  */
+ public class JavelitHttpHandlers {
+
+     public static String renderIndexHtml(String sessionId, String xsrfToken) {
+         // Shared index rendering logic
+     }
+
+     public static boolean validateXsrf(String sessionId, String token) {
+         // Shared XSRF validation
+     }
+
+     public static boolean validateMediaAccess(String sessionId, String xsrf) {
+         // Shared media access validation
+     }
+
+     public static String generateToken() {
+         // Shared token generation
+     }
+ }
+
+ Then both use it:
+ // In Server.java
+ String html = JavelitHttpHandlers.renderIndexHtml(sessionId, xsrfToken);
+
+ // In JavelitServlet.java
+ String html = JavelitHttpHandlers.renderIndexHtml(sessionId, xsrfToken);
+
+ Pros:
+ - Reduces duplication
+ - Single source of truth for logic
+
+ Cons:
+ - Requires refactoring Server.java
+
+ ---
+ Option C: Undertow Consumes Servlet (FUTURE - Complex)
+
+ Make Undertow's Server.java use JavelitServlet internally via undertow-servlet module.
+
+ Skip this for Phase 1 - too complex, save for later.
+
+ ---
+ Phase 3: Usage Examples
+
+ Standalone Mode (Unchanged)
+
+ java -jar javelit.jar run MyApp.java
+ # Uses Server.java with Undertow
+
+ ---
+ Servlet Container (Tomcat, Jetty)
+
+ web.xml:
+ <web-app>
+     <servlet>
+         <servlet-name>javelit</servlet-name>
+         <servlet-class>io.javelit.servlet.JavelitServlet</servlet-class>
+     </servlet>
+
+     <servlet-mapping>
+         <servlet-name>javelit</servlet-name>
+         <url-pattern>/</url-pattern>
+     </servlet-mapping>
+ </web-app>
+
+ ServletContextListener to set app:
+ @WebListener
+ public class MyAppListener implements ServletContextListener {
+     @Override
+     public void contextInitialized(ServletContextEvent sce) {
+         JtRunnable app = () -> {
+             Jt.text("Hello from Servlet!").use();
+         };
+         sce.getServletContext().setAttribute("javelit.app", app);
+     }
+ }
+
+ ---
+ Spring Boot
+
+ @Configuration
+ public class JavelitConfig {
+
+     @Bean
+     public ServletRegistrationBean<JavelitServlet> javelitServlet() {
+         JtRunnable app = () -> {
+             Jt.text("Hello from Spring Boot!").use();
+         };
+
+         ServletRegistrationBean<JavelitServlet> bean =
+             new ServletRegistrationBean<>(new JavelitServlet(), "/*");
+
+         bean.getServletContext().setAttribute("javelit.app", app);
+         return bean;
+     }
+ }
+
+ Note: WebSocket endpoint auto-discovered by Spring Boot.
+
+ ---
+ Quarkus (Future-Proof)
+
+ Quarkus can run servlets via quarkus-undertow extension:
+
+ <dependency>
+     <groupId>io.quarkus</groupId>
+     <artifactId>quarkus-undertow</artifactId>
+ </dependency>
+
+ Then use same servlet approach. For native Vert.x integration, we'd create javelit-quarkus module later (Phase 2).
+
+ ---
+ Implementation Plan
+
+ Week 1: Create javelit-servlet Module
+
+ - Create Maven module javelit-servlet
+ - Copy relevant code from Server.java to JavelitServlet.java
+ - Implement JavelitWebSocketEndpoint.java
+ - Test in standalone Tomcat
+
+ Week 2: Extract Shared Logic (Optional)
+
+ - Create JavelitHttpHandlers utility class
+ - Refactor Server.java to use shared utilities
+ - Refactor JavelitServlet to use shared utilities
+
+ Week 3: Documentation & Examples
+
+ - Document servlet usage
+ - Create example: Plain servlet container
+ - Create example: Spring Boot integration
+ - Test with Tomcat, Jetty, Undertow servlet mode
+
+ ---
+ Decision Needed
+
+ For Phase 1, should we:
+ 1. Option A: Keep Server.java unchanged (accept some duplication)
+ 2. Option B: Extract shared logic into JavelitHttpHandlers
+
+ Recommendation: Start with Option A (simplest, lowest risk), then refactor to Option B in Phase 2 if duplication becomes painful.
+
+ ---
+ Success Criteria
+
+ ✅ javelit-servlet module compiles independently✅ JavelitServlet works in standalone Tomcat✅ JavelitWebSocketEndpoint connects successfully✅ File upload works via servlet✅ Media serving works via
+ servlet✅ Spring Boot example runs successfully✅ Standalone Server.java still works unchanged✅ All E2E tests pass
+
+ ---
+ Timeline
+
+ - Week 1: Implement javelit-servlet
+ - Week 2: Shared logic extraction (optional)
+ - Week 3: Testing & docs
+
+ Total: 2-3 weeks

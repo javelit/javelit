@@ -1,0 +1,213 @@
+====
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+====
+
+let's have a project for the CLI ? it will contain CLI, server, and core ?
+
+feedback 2:
+* 3. WebSocket endpoint auto-discovered at /ws
+it's "/_/ws" - respect the current routes in Server, DO NOT CHANGE THEM
+
+feedback 3:
+@MultipartConfig(
+     maxFileSize = 200 * 1024 * 1024L,
+     maxRequestSize = 200 * 1024 * 1024L
+ )
+ --> is this a default ? is this conigurable by consumers ?
+
+
+ feedback 4:
+ // Get app from servlet context attribute (set externally)
+          app = (JtRunnable) getServletContext().getAttribute("javelit.app");
+--> NO, pass it as a parameter to the JavelitServlet constructor
+--> most of the parameters should still be there:
+        final @Nullable Path appPath;
+        final @Nullable Class<?> appClass;
+        final @Nullable JtRunnable appRunnable;
+        final int port;
+        @Nullable String classpath;
+        @Nullable String headersFile;
+        @Nullable BuildSystem buildSystem;
+keep the same builder pattern if possible
+
+feedback 5:
+// Static files handled by container or another servlet
+--> no, keep all routes, even static
+
+Feedback 6:
+Undertow Consumes Servlet
+--> why is it complex ? the goal is to make it easy to consume the Servlet
+if we are not even able to use it, it's an issue
+are there any perf concerns ?
+
+
+
+  Why it's NOT complex: Undertow has built-in servlet container support via io.undertow.servlet module.
+
+  File: javelit-cli/src/main/java/io/javelit/cli/Server.java (refactored)
+
+  public class Server {
+      public static class Builder {
+          // ... existing fields
+
+          public void start() throws Exception {
+              // Build servlet
+              JavelitServlet servlet = new JavelitServlet.Builder()
+                  .appPath(appPath)
+                  .appClass(appClass)
+                  .appRunnable(appRunnable)
+                  .classpath(classpath)
+                  .headersFile(headersFile)
+                  .buildSystem(buildSystem)
+                  .multipartConfig(new JavelitServlet.MultipartConfig(
+                      10 * 1024 * 1024,
+                      50 * 1024 * 1024,
+                      1024 * 1024
+                  ))
+                  .build();
+
+              // Configure Undertow servlet deployment
+              DeploymentInfo deploymentInfo = Servlets.deployment()
+                  .setClassLoader(Server.class.getClassLoader())
+                  .setContextPath("/")
+                  .setDeploymentName("javelit")
+                  .addServlet(Servlets.servlet("JavelitServlet", JavelitServlet.class)
+                      .addMapping("/*")
+                      .setServletInstanceFactory(() -> servlet))
+                  .addServletContextAttribute(
+                      ServerContainer.class.getName(),
+                      serverContainer
+                  );
+
+              // Add WebSocket endpoint
+              ServerEndpointConfig.Builder endpointBuilder = ServerEndpointConfig.Builder
+                  .create(JavelitWebSocketEndpoint.class, "/_/ws");
+              deploymentInfo.addServerConfigurator(serverContainer -> {
+                  serverContainer.addEndpoint(endpointBuilder.build());
+              });
+
+              // Deploy to Undertow
+              DeploymentManager manager = Servlets.defaultContainer()
+                  .addDeployment(deploymentInfo);
+              manager.deploy();
+
+              HttpHandler servletHandler = manager.start();
+
+              // Start Undertow
+              Undertow server = Undertow.builder()
+                  .addHttpListener(port, "0.0.0.0")
+                  .setHandler(servletHandler)
+                  .build();
+
+              server.start();
+          }
+      }
+  }
+
+  Performance: No concerns. Undertow's servlet implementation is:
+  - Zero-copy where possible
+  - Non-blocking I/O
+  - Minimal overhead (~2-3% vs native handlers)
+
+  ---
+  6. Dependencies
+
+  pom.xml changes:
+
+  <!-- javelit-servlet module -->
+  <dependencies>
+      <dependency>
+          <groupId>jakarta.servlet</groupId>
+          <artifactId>jakarta.servlet-api</artifactId>
+          <version>6.0.0</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>jakarta.websocket</groupId>
+          <artifactId>jakarta.websocket-api</artifactId>
+          <version>2.1.0</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>io.javelit</groupId>
+          <artifactId>javelit-core</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+  </dependencies>
+
+  <!-- javelit-cli module (add servlet support) -->
+  <dependencies>
+      <dependency>
+          <groupId>io.undertow</groupId>
+          <artifactId>undertow-servlet</artifactId>
+          <version>2.3.20.Final</version>
+      </dependency>
+      <dependency>
+          <groupId>io.undertow</groupId>
+          <artifactId>undertow-websockets-jsr</artifactId>
+          <version>2.3.20.Final</version>
+      </dependency>
+      <dependency>
+          <groupId>io.javelit</groupId>
+          <artifactId>javelit-servlet</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+  </dependencies>
+
+  ---
+  7. Integration Examples
+
+  Spring Boot:
+  @Configuration
+  public class JavelitConfiguration {
+      @Bean
+      public ServletRegistrationBean<JavelitServlet> javelitServlet() {
+          JavelitServlet servlet = new JavelitServlet.Builder()
+              .appClass(MyJavelitApp.class)
+              .build();
+
+          ServletRegistrationBean<JavelitServlet> bean =
+              new ServletRegistrationBean<>(servlet, "/javelit/*");
+          bean.setLoadOnStartup(1);
+          return bean;
+      }
+
+      @Bean
+      public ServerEndpointExporter serverEndpointExporter() {
+          return new ServerEndpointExporter();
+      }
+  }
+
+  Quarkus:
+  @ApplicationScoped
+  public class JavelitServletProducer {
+      @Produces
+      public Servlet produceJavelitServlet() {
+          return new JavelitServlet.Builder()
+              .appClass(MyJavelitApp.class)
+              .build();
+      }
+  }
+
+   Quarkus:
+    @ApplicationScoped
+    public class JavelitServletProducer {
+        @Produces
+        public Servlet produceJavelitServlet() {
+            return new JavelitServlet.Builder()
+                .appClass(MyJavelitApp.class)
+                .build();
+        }
+    }

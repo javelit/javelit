@@ -1,0 +1,90 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+    class JtText extends LitElement {
+        static styles = css`
+            :host {
+                display: block;
+                margin: var(--jt-spacing-md) 0;
+            }
+
+            :host([width="content"]) {
+                width: auto;
+            }
+
+            // note: stretch and content are not implemented properly - need to understand what it really means in streamlit first
+            :host([width]:not([width="stretch"]):not([width="content"])) {
+                width: var(--text-width);
+                max-width: 100%;
+            }
+
+            .text-wrapper {
+                position: relative;
+                display: block;
+                width: 100%;
+            }
+
+            .text-content {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-base);
+                line-height: var(--jt-line-height-normal);
+                color: var(--jt-text-primary);
+                margin: 0;
+                padding: 0;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                display: block;
+            }
+
+            .tooltip {
+                position: absolute;
+                top: 0;
+                right: -24px;
+                z-index: 10;
+            }
+        `;
+
+        static properties = {
+            body: { type: String },
+            help: { type: String },
+            width: { type: String }
+        };
+
+        render() {
+            // Set width CSS variable if width is specified and is a pixel value
+            if (this.width && /^\d+$/.test(this.width)) {
+                this.style.setProperty('--text-width', `${this.width}px`);
+            } else {
+                this.style.removeProperty('--text-width');
+            }
+
+            return html`
+                         <div class="text-wrapper">
+                             <div class="text-content">${this.body || ''}</div>
+                             ${this.help ? html`
+                                 <div class="tooltip">
+                                     <jt-tooltip text="${this.help}"></jt-tooltip>
+                                 </div>
+                             ` : ''}
+                         </div>
+                     `;
+        }
+    }
+
+    customElements.define('jt-text', JtText);
+</script>
