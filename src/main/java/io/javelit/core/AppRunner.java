@@ -126,7 +126,7 @@ final class AppRunner {
                 Thread.currentThread().setContextClassLoader(originalClassLoader);
             }
         } catch (Exception e) {
-            if (!(e instanceof DuplicateWidgetIDException || e instanceof BreakAndReloadAppException)) {
+            if (!(e instanceof DuplicateWidgetIDException || e instanceof BreakAndReloadAppException || e instanceof PageRunException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
             }
             if (e instanceof BreakAndReloadAppException u) {
