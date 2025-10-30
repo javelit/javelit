@@ -81,7 +81,7 @@ public final class JavelitTestHelper {
 
 
     /**
-     * Start a Javelit embedded server for the given Runnable
+     * Start a Javelit embedded server for the given JtRunnable
      *
      * @param app runnable of the app
      * @return The started Server instance

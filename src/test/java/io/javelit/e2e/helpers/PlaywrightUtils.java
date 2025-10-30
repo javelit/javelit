@@ -113,7 +113,7 @@ public final class PlaywrightUtils {
 
 
     // run an embedded javelit server
-    // uses Class run - will be removed, use Runnable instead
+    // uses Class run - will be removed, use JtRunnable instead
     @Deprecated
     public static void runInBrowser(final @Nonnull TestInfo testInfo,
                                     final @Nonnull Class<?> appClass,
