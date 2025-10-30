@@ -37,7 +37,7 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Something went wrong").first()).isVisible(WAIT_1_SEC_MAX);
         });
@@ -55,7 +55,7 @@ public class ErrorComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("User generated error")).isVisible(WAIT_1_SEC_MAX);
         });

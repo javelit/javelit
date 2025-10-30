@@ -57,7 +57,14 @@ public class ClassloaderMismatchE2ETest {
 
         Files.writeString(mainFile, initialApp);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
+        // Verify initial state - should display "Message: Bob"
+        // Modify the file to trigger hot reload (add a comment)
+        // After reload, should see ClassCastException (search for unique text from developer feedback)
+        // visible for any user
+        // Should see "Clear cache" button (use getByRole to target the specific button in the error message)
+        // only visible in dev mode (which is the case for tests as it's running on localhost)
+        // After clearing cache, the app should work again
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             try {
                 // Verify initial state - should display "Message: Bob"
                 assertThat(page.getByText("Message: Bob")).isVisible(WAIT_1_SEC_MAX);

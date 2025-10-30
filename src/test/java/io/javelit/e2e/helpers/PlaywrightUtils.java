@@ -61,58 +61,23 @@ public final class PlaywrightUtils {
 
     public static final Page.GetByTextOptions EXACT_MATCH = new Page.GetByTextOptions().setExact(true);
 
-
+    // set this to true in dev to remove HEADLESS browser and add traces
+    private static final boolean DEBUG = false;
     public static final BrowserType.LaunchOptions HEADLESS = new BrowserType.LaunchOptions().setHeadless(true);
-    @SuppressWarnings("unused") // used when editing tests
-    public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
-    private static Browser sharedBrowser;
-
-
-    public static void runInSharedBrowser(final @Nonnull TestInfo testInfo,
-                                          final @Nonnull Path appFile,
-                                          final @Nonnull Consumer<Page> run) {
-        final Browser browser = getSharedBrowser();
-        Server server = null;
-        BrowserContext context = null;
-        try {
-            context = browser.newContext();
-            // Enable tracing for screenshots and snapshots
-            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
-
-            final Page page = context.newPage();
-            server = JavelitTestHelper.startServer(appFile);
-            page.navigate("http://localhost:" + server.port, new Page.NavigateOptions().setTimeout(10000));
-            run.accept(page);
-        } finally {
-            if (context != null) {
-                try {
-                    final String testMethodName = testInfo.getTestMethod().map(Method::getName).orElse("unknown");
-                    final String sanitizedTestName = testMethodName.replaceAll("[^a-zA-Z0-9._-]", "_");
-                    context
-                            .tracing()
-                            .stop(new Tracing.StopOptions().setPath(Paths.get("target/playwright-traces/trace-" + sanitizedTestName + ".zip")));
-                } catch (Exception e) {
-                    // Ignore trace save errors
-                }
-                context.close();
-            }
-            JavelitTestHelper.stopServer(server);
-            JavelitTestHelper.cleanupTempDir(appFile.getParent());
-        }
-    }
-
-    public static void runInDedicatedBrowser(final @Nonnull TestInfo testInfo,
-                                             final @Nonnull Path appFile,
-                                             final @Nonnull Consumer<Page> run) {
+    public static void runInBrowser(final @Nonnull TestInfo testInfo,
+                                    final @Nonnull Path appFile,
+                                    final @Nonnull Consumer<Page> run) {
         Server server = null;
         BrowserContext context = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
-            context = browser.newContext();
-            // Enable tracing for screenshots and snapshots
-            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            if (DEBUG) {
+                // Enable tracing for screenshots and snapshots
+                context = browser.newContext();
+                context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            }
 
             server = JavelitTestHelper.startServer(appFile);
             page.navigate("http://localhost:" + server.port, new Page.NavigateOptions().setTimeout(10000));
@@ -135,33 +100,11 @@ public final class PlaywrightUtils {
         }
     }
 
-    private static synchronized Browser getSharedBrowser() {
-        if (sharedBrowser == null) {
-            final Playwright playwright = Playwright.create();
-            sharedBrowser = playwright.chromium().launch(HEADLESS);
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                if (sharedBrowser != null) {
-                    sharedBrowser.close();
-                }
-                playwright.close();
-            }));
-        }
-        return sharedBrowser;
-    }
-
-
-    public static void runInSharedBrowser(final @Nonnull TestInfo testInfo,
-                                          final @Nonnull String app,
-                                          final @Nonnull Consumer<Page> run) {
+    public static void runInBrowser(final @Nonnull TestInfo testInfo,
+                                    final @Nonnull String app,
+                                    final @Nonnull Consumer<Page> run) {
         final Path appFile = JavelitTestHelper.writeTestApp(app);
-        runInSharedBrowser(testInfo, appFile, run);
-    }
-
-    public static void runInDedicatedBrowser(final @Nonnull TestInfo testInfo,
-                                             final @Nonnull String app,
-                                             final @Nonnull Consumer<Page> run) {
-        final Path appFile = JavelitTestHelper.writeTestApp(app);
-        runInDedicatedBrowser(testInfo, appFile, run);
+        runInBrowser(testInfo, appFile, run);
     }
 
 
@@ -169,17 +112,19 @@ public final class PlaywrightUtils {
     // run an embedded javelit server
     // uses Class run - will be removed, use Runnable instead
     @Deprecated
-    public static void runInDedicatedBrowser(final @Nonnull TestInfo testInfo,
-                                             final @Nonnull Class<?> appClass,
-                                             final @Nonnull Consumer<Page> run) {
+    public static void runInBrowser(final @Nonnull TestInfo testInfo,
+                                    final @Nonnull Class<?> appClass,
+                                    final @Nonnull Consumer<Page> run) {
         Server server = null;
         BrowserContext context = null;
         try (final Playwright playwright = Playwright.create();
              final Browser browser = playwright.chromium().launch(HEADLESS);
              final Page page = browser.newPage()) {
-            context = browser.newContext();
-            // Enable tracing for screenshots and snapshots
-            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            if (DEBUG) {
+                // Enable tracing for screenshots and snapshots
+                context = browser.newContext();
+                context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            }
             server = JavelitTestHelper.startEmbeddedServer(appClass);
             page.navigate("http://localhost:" + server.port);
             run.accept(page);
@@ -200,16 +145,19 @@ public final class PlaywrightUtils {
         }
     }
 
-    public static void runInSharedBrowser(final @Nonnull TestInfo testInfo,
-                                             final @Nonnull Runnable appClass,
-                                             final @Nonnull Consumer<Page> run) {
-        final Browser browser = getSharedBrowser();
+    public static void runInBrowser(final @Nonnull TestInfo testInfo,
+                                    final @Nonnull Runnable appClass,
+                                    final @Nonnull Consumer<Page> run) {
         Server server = null;
         BrowserContext context = null;
-        try (final Page page = browser.newPage()) {
-            context = browser.newContext();
-            // Enable tracing for screenshots and snapshots
-            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+        try (final Playwright playwright = Playwright.create();
+             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Page page = browser.newPage()) {
+            if (DEBUG) {
+                // Enable tracing for screenshots and snapshots
+                context = browser.newContext();
+                context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            }
             server = JavelitTestHelper.startEmbeddedServer(appClass);
             page.navigate("http://localhost:" + server.port);
             run.accept(page);

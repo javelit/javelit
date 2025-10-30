@@ -47,7 +47,11 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify img element exists
+        // Verify src attribute
+        // Verify caption is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -69,7 +73,10 @@ public class ImageComponentE2ETest {
         copyResourceDirectory("image-test", tempDir);
         final Path appFile = tempDir.resolve("ImageStaticTestApp.java");
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Verify image component is rendered
+        // Verify img element exists
+        // Verify src points to static folder
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -96,7 +103,11 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify img element exists
+        // Verify src contains media hash (starts with /_/media/)
+        // Verify caption
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -130,7 +141,11 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify img element exists
+        // Verify src contains media hash (starts with /_/media/)
+        // Verify caption
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -166,7 +181,11 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify img element exists
+        // Verify src is a data URI with SVG
+        // Verify caption
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -196,7 +215,9 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify caption contains markdown formatted elements
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -223,7 +244,9 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify width attribute
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -247,7 +270,9 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify width attribute
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -271,7 +296,9 @@ public class ImageComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify image component is rendered
+        // Verify width attribute
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 

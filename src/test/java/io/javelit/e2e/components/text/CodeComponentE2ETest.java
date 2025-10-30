@@ -47,7 +47,9 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify code component is rendered (filter by content to find the right one)
+        // Verify code content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content to find the right one)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify code content is present
@@ -69,7 +71,10 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify code component is rendered (filter by content)
+        // Verify language-none class is applied to code element in our specific component
+        // Verify content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify language-none class is applied to code element in our specific component
@@ -93,7 +98,10 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify code component is rendered (filter by content)
+        // Verify language-json class is applied to code element in our specific component
+        // Verify content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify language-json class is applied to code element in our specific component
@@ -117,7 +125,10 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify code component is rendered (filter by content)
+        // Verify line-numbers attribute is present on the jt-internal-code element
+        // Verify content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify line-numbers attribute is present on the jt-internal-code element
@@ -141,7 +152,10 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify code component is rendered (filter by content)
+        // Verify wrap-lines attribute is present on the jt-internal-code element
+        // Verify content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify code component is rendered (filter by content)
             assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
             // Verify wrap-lines attribute is present on the jt-internal-code element
@@ -166,7 +180,12 @@ public class CodeComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Find the code component by content
+        // Verify code component is rendered
+        // Verify width and height attributes are set
+        // Verify CSS custom properties are applied (through computed styles)
+        // Verify content is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Find the code component by content
             var theCodeComponent = page.locator("#app jt-internal-code");
             // Verify code component is rendered
@@ -174,15 +193,15 @@ public class CodeComponentE2ETest {
             // Verify width and height attributes are set
             assertThat(page.locator("#app jt-internal-code[width='500']")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-internal-code[height='150']")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Verify CSS custom properties are applied (through computed styles)
             theCodeComponent.waitFor();
             String computedWidth = theCodeComponent.evaluate("el => getComputedStyle(el).getPropertyValue('--code-width')").toString();
             String computedHeight = theCodeComponent.evaluate("el => getComputedStyle(el).getPropertyValue('--code-height')").toString();
-            
+
             assertEquals("500px", computedWidth);
             assertEquals("150px", computedHeight);
-            
+
             // Verify content is present
             assertThat(page.getByText("console.log")).isVisible(WAIT_1_SEC_MAX);
         });

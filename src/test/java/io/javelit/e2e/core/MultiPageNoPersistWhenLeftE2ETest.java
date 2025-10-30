@@ -59,7 +59,19 @@ public class MultiPageNoPersistWhenLeftE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load - should be on home page (Page1)
+        // Fill the shared text input with "forever here"
+        // Fill the page 1 text input with "should not be here for long"
+        // Click on page2
+        // Ensure page 2 text input is here
+        // Ensure page 1 text input is not here
+        // Ensure "forever here" text value in shared input is still here
+        // Fill the "page 2 text input" with value: "should stay here"
+        // Click on page 1
+        // Ensure "page 1 text input" is here and its value is empty string
+        // Click on page 2
+        // Ensure "page 2 text input" is here and its value is "should stay here"
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load - should be on home page (Page1)
             Locator sharedInput = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("shared text input")).locator("input");
             assertThat(sharedInput).isVisible(WAIT_1_SEC_MAX);

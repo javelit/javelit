@@ -55,7 +55,14 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Initial value should be the specified date
+        // July 10, 2024
+        // Click to open calendar
+        // Calendar popup should be visible
+        // Select a different day (day 15 of current month - July)
+        // Verify date changed to July 15, 2024
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -96,7 +103,13 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Should show the default value
+        // Click to open calendar
+        // Change to next month
+        // Select day 20
+        // Verify date changed to July 20, 1990
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -137,7 +150,13 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Should show no date selected initially
+        // Click to open calendar
+        // Select a specific date (August 20, 2024) by clicking on day 20
+        // Verify date is now selected - we selected day 20 of the current visible month
+        // Since we can't be sure which month is shown, just verify that a date was selected
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -178,7 +197,18 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Use the same fixed date as in the app
+        // June 15, 2024
+        // Click to open calendar
+        // Verify that dates before the base date are disabled
+        // Try to click on day 14 (one day before base date) - should be disabled
+        // June 14, 2024
+        // Check if it exists and is disabled
+        // Select a date within the valid range (base date + 7 days = June 22, 2024)
+        // June 22, 2024
+        // Since we're in the middle of June, futureDate will still be in June
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -239,7 +269,13 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // All DateInput components should exist
+        // Check that each format displays correctly in the input field
+        // US format: MM/DD/YYYY
+        // European format: DD/MM/YYYY
+        // ISO format: YYYY-MM-DD
+        // Verify backend still receives standard format
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // All DateInput components should exist
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -280,7 +316,12 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Should show the date value
+        // Input field should have disabled class
+        // Click should not open calendar
+        // Calendar popup should not be visible
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -317,7 +358,16 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Open calendar
+        // Navigate to previous month
+        // Select day 10 from May 2024
+        // Verify date changed to May 10, 2024
+        // Open calendar again
+        // Navigate to next month twice (to July)
+        // Select day 20 from July
+        // Verify date changed to July 20, 2024
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -370,7 +420,14 @@ public class DateInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // DateInput component exists
+        // Open calendar
+        // Change year using year selector
+        // Change month using month selector
+        // December (0-indexed)
+        // Select day 31
+        // Verify date changed to December 31, 2025
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // DateInput component exists
             assertThat(page.locator("jt-date-input .date-input-field").first()).isVisible(WAIT_1_SEC_MAX);
 

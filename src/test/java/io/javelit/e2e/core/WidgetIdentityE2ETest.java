@@ -48,7 +48,21 @@ public class WidgetIdentityE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load
+        // Verify initial state
+        // Get both sliders
+        // "no key" slider
+        // "with key" slider
+        // Set both sliders to value around 20
+        // Change the number input to 1 (click + button or fill with "1")
+        // Verify final state
+        // The first text should show "keyed value before: 20" because the slider without key
+        // gets recreated when minimum changes, so its old value (20) is shown before it's created
+        // Get sliders again after re-render
+        // Both sliders should now have value 1 (slider without key was recreated with new min,
+        // slider with key was updated but reset to min value)
+        // The second text should show "keyed value after: 1"
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load
             assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
 

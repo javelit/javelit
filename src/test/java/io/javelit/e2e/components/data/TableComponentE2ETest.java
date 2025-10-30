@@ -47,15 +47,18 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for table to be visible
+        // Check headers
+        // Check data
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-            
+
             // Check headers
             assertThat(page.locator("jt-table th")).hasCount(2);
             assertThat(page.getByText("name")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("role")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check data
             assertThat(page.getByText("Alice")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Engineer")).isVisible(WAIT_1_SEC_MAX);
@@ -81,20 +84,24 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for table to be visible
+        // Check headers
+        // Check data including null handling
+        // Check null value displays as "—"
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-            
+
             // Check headers
             assertThat(page.locator("jt-table th")).hasCount(2);
             assertThat(page.getByText("name")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("role")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check data including null handling
             assertThat(page.getByText("Alice")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Engineer")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Bob")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check null value displays as "—"
             assertThat(page.locator("jt-table .empty-cell").first()).hasText("null");
         });
@@ -117,15 +124,18 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for table to be visible
+        // Check headers
+        // Check data
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-            
+
             // Check headers
             assertThat(page.locator("jt-table th")).hasCount(2);
             assertThat(page.getByText("Product")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Category")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check data
             assertThat(page.getByText("Laptop")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Electronics")).isVisible(WAIT_1_SEC_MAX);
@@ -152,15 +162,18 @@ public class TableComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for table to be visible
+        // Check headers
+        // Check data (verify table has correct number of rows and basic content)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for table to be visible
             assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-            
+
             // Check headers
             assertThat(page.locator("jt-table th")).hasCount(2);
             assertThat(page.getByText("Name")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Status")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check data (verify table has correct number of rows and basic content)
             assertThat(page.locator("jt-table tbody tr")).hasCount(2);
             assertThat(page.locator("jt-table")).containsText("Alice");

@@ -43,7 +43,8 @@ public class DuplicateWidgetIdE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify that error message appears mentioning duplicate widget
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify that error message appears mentioning duplicate widget
             assertThat(page.getByText("DuplicateWidgetIDException").first()).isVisible(WAIT_1_SEC_MAX);
         });
@@ -63,7 +64,8 @@ public class DuplicateWidgetIdE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify that error message appears mentioning duplicate widget
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify that error message appears mentioning duplicate widget
             assertThat(page.getByText("DuplicateWidgetIDException").first()).isVisible(WAIT_1_SEC_MAX);
         });
@@ -83,7 +85,7 @@ public class DuplicateWidgetIdE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.getByText("DuplicateWidgetIDException").first()).isVisible(WAIT_1_SEC_MAX);
         });
     }

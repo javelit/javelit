@@ -47,7 +47,13 @@ public class ClearCacheE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Test 1: On first load, both texts should be visible (cache miss)
+        // Test 2: Reload the page - cache should hit
+        // Test 3: Click menu and clear cache
+        // Verify developer section is visible (we're on localhost)
+        // Click "Clear cache" button
+        // Test 4: After clearing cache, both texts should be visible again (cache miss)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Test 1: On first load, both texts should be visible (cache miss)
             assertThat(page.getByText("performing long computation")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("the value was computed")).isVisible(WAIT_1_SEC_MAX);

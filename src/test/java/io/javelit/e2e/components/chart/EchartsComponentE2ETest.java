@@ -46,10 +46,12 @@ public class EchartsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for ECharts component to be visible
+        // Check that canvas element exists (ECharts renders to canvas)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for ECharts component to be visible
             assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check that canvas element exists (ECharts renders to canvas)
             assertThat(page.locator("jt-echarts canvas")).isVisible(WAIT_1_SEC_MAX);
         });

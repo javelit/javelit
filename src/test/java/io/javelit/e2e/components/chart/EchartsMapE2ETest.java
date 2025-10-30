@@ -39,7 +39,7 @@ public class EchartsMapE2ETest {
         copyResourceDirectory("map-test", tempDir);
         final Path mainFile = tempDir.resolve("MapTestApp.java");
 
-        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             // Wait for ECharts component to be visible - test the first chart (basic map)
             assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -63,7 +63,7 @@ public class EchartsMapE2ETest {
         copyResourceDirectory("map-test", tempDir);
         final Path mainFile = tempDir.resolve("MapTestApp.java");
 
-        PlaywrightUtils.runInDedicatedBrowser(testInfo, mainFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             // Wait for ECharts component to be visible - there are two charts, check for both
             assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
 

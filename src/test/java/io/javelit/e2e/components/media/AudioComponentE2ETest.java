@@ -47,7 +47,12 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify audio element exists with controls
+        // Verify autoplay attribute
+        // Verify src attribute
+        // Verify duration is 9 seconds (0:09)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -82,7 +87,12 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify audio element exists with controls
+        // Verify no autoplay
+        // Verify src attribute
+        // Verify duration is 9 seconds (0:09)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -110,7 +120,11 @@ public class AudioComponentE2ETest {
         copyResourceDirectory("audio-test", tempDir);
         final Path appFile = tempDir.resolve("AudioStaticTestApp.java");
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Verify audio component is rendered
+        // Verify audio element exists with controls
+        // Verify src points to static folder
+        // Verify duration is 9 seconds (0:09)
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -143,7 +157,11 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify audio element exists with controls
+        // Verify src contains media hash (starts with /_/media/)
+        // Verify duration is 9 seconds (0:09)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -206,7 +224,11 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify audio element exists with controls
+        // Verify src contains media hash (starts with /_/media/)
+        // Verify duration is approximately 2 seconds (generated beep)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -240,7 +262,10 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify loop attribute (native loop when no time constraints)
+        // Verify duration is 9 seconds (0:09)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -269,7 +294,12 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify time attributes are set
+        // Verify no native loop (JavaScript handles time control)
+        // Verify duration is 9 seconds (0:09) - full audio duration
+        // Verify initial currentTime is set to startTime
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 
@@ -310,7 +340,13 @@ public class AudioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify audio component is rendered
+        // Verify time attributes are set
+        // Verify component has loop property (but not native loop attribute when time constraints exist)
+        // Verify no native loop attribute on audio element (JavaScript handles loop with time constraints)
+        // Verify duration is 9 seconds (0:09) - full audio duration
+        // Verify initial currentTime is set to startTime
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify audio component is rendered
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
 

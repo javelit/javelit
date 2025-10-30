@@ -37,7 +37,7 @@ public class InfoComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This is an informational message")).isVisible(WAIT_1_SEC_MAX);
         });

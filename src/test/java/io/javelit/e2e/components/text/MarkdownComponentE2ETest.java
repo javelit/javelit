@@ -43,10 +43,12 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for Markdown component to be visible
+        // Check that markdown content is rendered properly
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check that markdown content is rendered properly
             assertThat(page.locator("jt-markdown h1")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-markdown h1")).hasText("Hello Markdown", WAIT_1_SEC_MAX_TEXT);
@@ -69,13 +71,16 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for Markdown component to be visible
+        // Check width attribute is set
+        // Check content is rendered
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check width attribute is set
             assertThat(page.locator("jt-markdown")).hasAttribute("width", "500", WAIT_1_SEC_MAX_ATTRIBUTE);
-            
+
             // Check content is rendered
             assertThat(page.locator("jt-markdown h2")).hasText("Markdown with width", WAIT_1_SEC_MAX_TEXT);
         });
@@ -93,10 +98,12 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for Markdown component to be visible
+        // Check that help tooltip is present
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check that help tooltip is present
             assertThat(page.locator("jt-markdown jt-tooltip")).isVisible(WAIT_1_SEC_MAX);
         });
@@ -128,10 +135,12 @@ public class MarkdownComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for Markdown component to be visible
+        // Check various markdown elements
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for Markdown component to be visible
             assertThat(page.locator("jt-markdown")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check various markdown elements
             assertThat(page.locator("jt-markdown h1")).hasText("Main Title", WAIT_1_SEC_MAX_TEXT);
             assertThat(page.locator("jt-markdown h2")).hasText("Code Example", WAIT_1_SEC_MAX_TEXT);

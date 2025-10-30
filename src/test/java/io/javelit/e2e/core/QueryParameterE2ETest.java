@@ -50,13 +50,16 @@ public class QueryParameterE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // First verify no query params
+        // Navigate with query parameters
+        // Verify query parameters are displayed
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // First verify no query params
             assertThat(page.getByText("No query parameters")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Navigate with query parameters
             page.navigate(page.url() + "?name=Alice&id=456");
-            
+
             // Verify query parameters are displayed
             assertThat(page.getByText("Name: Alice")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("ID: 456")).isVisible(WAIT_1_SEC_MAX);

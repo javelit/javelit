@@ -48,7 +48,14 @@ public class PopoverComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for popover to be visible
+        // Check popover trigger is visible
+        // Check content outside popover is visible
+        // Click to open popover
+        // Check that popover content is now visible
+        // click outside
+        // Check that popover content is not visible anymore
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for popover to be visible
             assertThat(page.locator("jt-popover")).isVisible(WAIT_1_SEC_MAX);
             // Check popover trigger is visible

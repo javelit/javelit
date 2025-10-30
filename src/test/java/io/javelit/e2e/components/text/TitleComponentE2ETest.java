@@ -41,7 +41,11 @@ public class TitleComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for title to be visible
+        // Verify it renders as h1
+        // Check title is rendered
+        // Check content after title
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for title to be visible
             assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
             // Verify it renders as h1

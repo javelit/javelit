@@ -89,7 +89,10 @@ public class ClientMessageProcessingErrorE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for the app to load
+        // Click the button
+        // Assert that the error modal appears with the expected text
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for the app to load
             assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
 

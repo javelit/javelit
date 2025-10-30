@@ -48,7 +48,8 @@ public class CompilationErrorE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, invalidApp, page ->
+        // Verify app loads correctly first
+        PlaywrightUtils.runInBrowser(testInfo, invalidApp, page ->
                 // Verify app loads correctly first
                 assertThat(page.getByText("';' expected")).isVisible(WAIT_1_SEC_MAX));
     }
@@ -69,7 +70,10 @@ public class CompilationErrorE2ETest {
 
         final Path appFile = JavelitTestHelper.writeTestApp(validApp);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Verify app loads correctly first
+        // Delete the app file
+        // Verify error message appears
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Verify app loads correctly first
             assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This app is running.")).isVisible();
@@ -111,7 +115,14 @@ public class CompilationErrorE2ETest {
 
         final Path appFile = JavelitTestHelper.writeTestApp(validApp);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Step 1: Verify app loads correctly
+        // Step 2: Introduce compilation error by removing semicolon
+        // Step 3: Verify error message appears
+        // Step 4: Reload the page
+        // Step 5: Verify error message persists after reload
+        // Step 6: Fix the error by adding semicolon back
+        // Step 7: Verify error disappears and app recovers
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Step 1: Verify app loads correctly
             assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
 

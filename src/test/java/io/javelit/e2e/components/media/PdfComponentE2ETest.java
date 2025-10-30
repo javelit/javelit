@@ -45,7 +45,10 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify iframe element exists
+        // Verify src attribute points to PDF URL
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -63,7 +66,10 @@ public class PdfComponentE2ETest {
         copyResourceDirectory("pdf-test", tempDir);
         final Path appFile = tempDir.resolve("PdfStaticTestApp.java");
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Verify PDF component is rendered
+        // Verify iframe element exists
+        // Verify src points to static folder
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -89,7 +95,10 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify iframe element exists
+        // Verify src contains media hash (starts with /_/media/)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -118,7 +127,10 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify iframe element exists
+        // Verify src contains media hash (starts with /_/media/)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -144,7 +156,9 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify default height attribute is 500
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -167,7 +181,9 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify height attribute is stretch
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -190,7 +206,9 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify PDF component is rendered
+        // Verify height attribute is 300
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 

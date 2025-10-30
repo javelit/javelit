@@ -43,7 +43,12 @@ public class NumberInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // number input exists
+        // number input text is correct
+        // Enter a value in the number input
+        // Press Enter to submit
+        // Verify the value is displayed
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
 
             // number input exists
             assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
@@ -75,7 +80,11 @@ public class NumberInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // button exists
+        // Initial value should be 5
+        // Click the + button --> value should increment
+        // Click the - button twice - value should decrement
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
 
             // button exists
             assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);

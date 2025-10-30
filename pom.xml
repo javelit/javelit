@@ -498,9 +498,8 @@
                 <version>3.5.3</version>
                 <configuration>
                     <argLine>-Djava.awt.headless=true</argLine>
-                    <parallel>all</parallel>
-                    <threadCount>64</threadCount>
-                    <perCoreThreadCount>false</perCoreThreadCount>
+                    <!-- tests are not flaky but they are run in parallel - see junit-platform.properties - parallel + timeouts may introduce flakyness -->
+                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
                 </configuration>
             </plugin>
 

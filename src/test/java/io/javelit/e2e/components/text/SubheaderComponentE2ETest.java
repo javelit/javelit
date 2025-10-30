@@ -41,7 +41,11 @@ public class SubheaderComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for subheader component to be visible
+        // Verify it renders as h3
+        // Check header is rendered
+        // Check content after subheader
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for subheader component to be visible
             assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
             // Verify it renders as h3

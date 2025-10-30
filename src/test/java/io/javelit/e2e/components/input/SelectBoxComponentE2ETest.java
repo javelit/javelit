@@ -49,7 +49,12 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // First option is selected by default (index 0)
+        // Click to open dropdown
+        // Select Green option
+        // Verify selection changed to Green
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option is selected by default (index 0)
@@ -82,7 +87,12 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // Second option (Medium) is selected by default
+        // Click to open dropdown
+        // Select Large option
+        // Verify selection changed to Large
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // Second option (Medium) is selected by default
@@ -117,7 +127,12 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // No option selected initially
+        // Click to open dropdown
+        // Select Option B
+        // Verify selection changed to Option B
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // No option selected initially
@@ -159,7 +174,12 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // First option (Alice) is selected by default
+        // Click to open dropdown and verify formatted options
+        // Select Bob option
+        // Verify selection changed to Bob
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option (Alice) is selected by default
@@ -195,7 +215,12 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // First option (Java) is selected by default
+        // Test selecting existing option
+        // Test typing custom value
+        // Verify custom value is displayed
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // First option (Java) is selected by default
@@ -237,7 +262,11 @@ public class SelectBoxComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // SelectBox component exists
+        // No tag selected initially
+        // Type custom value
+        // Verify custom value is displayed
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // SelectBox component exists
             assertThat(page.locator("jt-selectbox")).isVisible(WAIT_1_SEC_MAX);
             // No tag selected initially

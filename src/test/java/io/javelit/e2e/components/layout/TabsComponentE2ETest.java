@@ -58,8 +58,12 @@ public class TabsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
-            
+        // Wait for tabs to be visible
+        // Check tab headers are visible
+        // Initially, Tab 1 content should be visible
+        // Click on Tab 2
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+
             // Wait for tabs to be visible
             assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
             // Check tab headers are visible
@@ -76,7 +80,7 @@ public class TabsComponentE2ETest {
             assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
             assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
-            
+
         });
     }
 }

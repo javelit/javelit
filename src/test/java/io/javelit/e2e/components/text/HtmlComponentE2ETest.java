@@ -41,10 +41,12 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for HTML component to be visible
+        // Check that HTML content is rendered (should contain h2 and p elements)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check that HTML content is rendered (should contain h2 and p elements)
             assertThat(page.locator("jt-html h2")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-html h2")).hasText("Hello HTML", WAIT_1_SEC_MAX_TEXT);
@@ -65,10 +67,12 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for HTML component to be visible
+        // Check width attribute is set
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check width attribute is set
             assertThat(page.locator("jt-html")).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
@@ -86,13 +90,16 @@ public class HtmlComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for HTML component to be visible
+        // Check that safe content is rendered
+        // Check that script tag is NOT present (sanitized)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for HTML component to be visible
             assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Check that safe content is rendered
             assertThat(page.locator("jt-html p")).hasText("Safe content", WAIT_1_SEC_MAX_TEXT);
-            
+
             // Check that script tag is NOT present (sanitized)
             assertThat(page.locator("jt-html script")).isHidden(WAIT_10_MS_MAX_HIDDEN);
         });

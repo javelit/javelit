@@ -47,7 +47,11 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Radio component exists
+        // First option is selected by default (index 0)
+        // Click on Green radio button
+        // Verify selection changed to Green
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // First option is selected by default (index 0)
@@ -77,7 +81,11 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Radio component exists
+        // Second option (Medium) is selected by default
+        // Click on Large radio button
+        // Verify selection changed to Large
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Second option (Medium) is selected by default
@@ -109,7 +117,11 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Radio component exists
+        // No option selected initially
+        // Click on Option B radio button
+        // Verify selection changed to Option B
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // No option selected initially
@@ -148,7 +160,12 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Radio component exists
+        // Verify formatted options are displayed
+        // First option is selected by default
+        // Click on Bob radio button
+        // Verify selection changed to Bob
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Verify formatted options are displayed
@@ -181,7 +198,12 @@ public class RadioComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Radio component exists
+        // Verify captions are displayed
+        // First option (Basic) is selected by default
+        // Click on Pro radio button
+        // Verify selection changed to Pro
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Radio component exists
             assertThat(page.locator("jt-radio")).isVisible(WAIT_1_SEC_MAX);
             // Verify captions are displayed

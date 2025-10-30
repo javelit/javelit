@@ -73,7 +73,13 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify page links are visible
+        // Navigate to About page
+        // Test internal navigation - click Home link
+        // Test icons are present
+        // Test external link has correct attributes
+        // Test disabled link
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify page links are visible
             assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
@@ -86,16 +92,16 @@ public class PageLinkComponentE2ETest {
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("🏠 Home")).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Home page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page).hasURL(Pattern.compile(".*/home"));
-            
+
             // Test icons are present
             assertThat(page.locator("jt-page-link .emoji-icon").first()).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Test external link has correct attributes
             assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
                 .hasAttribute("href", "https://example.com");
             assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
                 .hasAttribute("target", "_blank");
-            
+
             // Test disabled link
             assertThat(page.locator("jt-page-link[disabled]")).isVisible(WAIT_1_SEC_MAX);
         });
@@ -128,27 +134,34 @@ public class PageLinkComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Start on home page
+        // Home link should have active state
+        // Navigate to About page
+        // Should be on about page with correct active state
+        // Now About link should be active, Home link should not be
+        // Navigate back to Home
+        // Should be back on root URL with Home active again
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Start on home page
             assertThat(page).hasURL(Pattern.compile(".*/home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Home link should have active state
             assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
-            
+
             // Navigate to About page
             page.getByText("ℹ️ About", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             // Should be on about page with correct active state
             assertThat(page).hasURL(Pattern.compile(".*/about"));
             assertThat(page.getByText("About page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Now About link should be active, Home link should not be
             assertThat(page.locator("jt-page-link").last()).hasAttribute("is-active", "");
             assertThat(page.locator("jt-page-link").first()).not().hasAttribute("is-active", "");
-            
+
             // Navigate back to Home
             page.getByText("🏠 Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
-            
+
             // Should be back on root URL with Home active again
             assertThat(page).hasURL(Pattern.compile(".*/home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);

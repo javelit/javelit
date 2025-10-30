@@ -54,7 +54,12 @@ public class FormComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // used to get out of inputs easily
+        // Fill name form input
+        // ensure the change did not apply yet because the form was not submitted
+        // Fill email form input
+        // Click submit button
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // used to get out of inputs easily
             final Locator textUtilLocator = page.locator("jt-text", new Page.LocatorOptions().setHasText("used to get out of form"));
             assertThat(textUtilLocator).isVisible(WAIT_1_SEC_MAX);
@@ -71,7 +76,7 @@ public class FormComponentE2ETest {
             emailInput.fill("john@example.com");
             textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Click submit button
             page.locator("jt-form-submit-button button").click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Name: " + "John" + ", Email: " + "john@example.com")).isVisible(WAIT_1_SEC_MAX);

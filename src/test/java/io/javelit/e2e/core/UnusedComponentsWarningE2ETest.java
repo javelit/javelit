@@ -40,7 +40,8 @@ public class UnusedComponentsWarningE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify warning text appears
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify warning text appears
             assertThat(page.getByText("The following components were created but never used")).isVisible(WAIT_1_SEC_MAX);
         });

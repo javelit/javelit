@@ -56,7 +56,12 @@ public class UpdateComponentStateE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load
+        // Enter a name
+        // Verify initial greeting
+        // Click "Clear name" button - this should trigger an error
+        // Verify an exception is reported with "IllegalArgumentException"
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load
             assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 
@@ -101,7 +106,12 @@ public class UpdateComponentStateE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load
+        // Enter a name
+        // Verify initial greeting
+        // Click "Clear name" button
+        // Verify name was cleared
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load
             assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 
@@ -145,7 +155,12 @@ public class UpdateComponentStateE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load
+        // Enter a name
+        // Verify initial greeting
+        // Click "Clear name" button
+        // Verify name was cleared
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load
             assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 
@@ -193,7 +208,12 @@ public class UpdateComponentStateE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load
+        // Enter a name
+        // Verify initial greeting
+        // Click "Clear name" button
+        // Verify name was cleared
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load
             assertThat(page.locator("jt-text-input")).isVisible(WAIT_1_SEC_MAX);
 

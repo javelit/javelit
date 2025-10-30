@@ -32,7 +32,7 @@ public class EmbeddedServerE2ETest {
     @Deprecated
     @Test
     public void testEmbeddedServerFromClassE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInDedicatedBrowser(testInfo, TestApp.class, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, TestApp.class, page -> {
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
             assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
@@ -56,7 +56,7 @@ public class EmbeddedServerE2ETest {
                 Jt.text("I was clicked!").use();
             }
         };
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
             page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
             assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
@@ -65,7 +65,7 @@ public class EmbeddedServerE2ETest {
 
     @Test
     public void testEmbeddedServerWithParametrizedStaticRunnableE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInSharedBrowser(testInfo, () -> app1("Hello"), page -> {
+        PlaywrightUtils.runInBrowser(testInfo, () -> app1("Hello"), page -> {
             assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
         });
     }
@@ -77,7 +77,7 @@ public class EmbeddedServerE2ETest {
 
     @Test
     public void testEmbeddedServerWithParametrizedNonStaticRunnableE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInSharedBrowser(testInfo, this::app2, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, this::app2, page -> {
             assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
         });
     }

@@ -63,7 +63,9 @@ public class StaticServingE2ETest {
         final Path appFile = tempDir.resolve("TestApp.java");
         Files.writeString(appFile, app);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Verify the app loads correctly
+        // Test direct access to static file
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Verify the app loads correctly
             assertThat(page.getByText("Static file serving test")).isVisible(WAIT_1_SEC_MAX);
 
@@ -91,7 +93,11 @@ public class StaticServingE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Verify the app loads correctly
+        // Test access to non-existent static file when no static directory exists
+        // When no static directory exists, /app/static/* requests fall through to IndexHandler
+        // which serves the main app, so we expect a 200 response with the app content
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Verify the app loads correctly
             assertThat(page.getByText("Static file 404 test")).isVisible(WAIT_1_SEC_MAX);
 
@@ -131,7 +137,11 @@ public class StaticServingE2ETest {
         final Path appFile = tempDir.resolve("TestApp.java");
         Files.writeString(appFile, app);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Test text file
+        // Test CSS file
+        // Test JS file
+        // Test JSON file
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
 
             // Test text file
@@ -182,7 +192,9 @@ public class StaticServingE2ETest {
         final Path appFile = tempDir.resolve("TestApp.java");
         Files.writeString(appFile, app);
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Try to access the static directory directly
+        // Should get 403 Forbidden or 404 Not Found (directory listing disabled)
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             // Try to access the static directory directly
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
             final APIResponse response = page.request().get(baseUrl + "/app/static/");

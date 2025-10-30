@@ -41,7 +41,11 @@ public class HeaderComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for header component to be visible
+        // Verify it renders as h2
+        // Check header is rendered
+        // Check content after header
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for header component to be visible
             assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
             // Verify it renders as h2

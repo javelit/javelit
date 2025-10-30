@@ -43,7 +43,13 @@ public class TextInputComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // text input is visible
+        // greating has an empty name
+        // Type text in the input
+        // Press Enter to submit
+        // Wait for update
+        // Test clearing and entering new text
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // text input is visible
             page.waitForSelector("jt-text-input", new Page.WaitForSelectorOptions().setTimeout(5000));
             // greating has an empty name

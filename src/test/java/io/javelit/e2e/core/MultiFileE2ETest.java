@@ -38,7 +38,9 @@ public class MultiFileE2ETest {
         final Path tempDir = Files.createTempDirectory("javelit-multifile-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
-        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
+        // Verify that Car.BLUE is rendered (from model/Car.java)
+        // Verify that Owner.BOSS is rendered (from model/Owner.java)
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             // Verify that Car.BLUE is rendered (from model/Car.java)
             assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
             // Verify that Owner.BOSS is rendered (from model/Owner.java)
@@ -51,8 +53,10 @@ public class MultiFileE2ETest {
         final Path tempDir = Files.createTempDirectory("javelit-multifile-reload-test-");
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
-        
-        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
+
+        // Verify initial state - Car.BLUE is displayed
+        // Verify the change is reflected - RED should now be displayed
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
@@ -73,22 +77,26 @@ public class MultiFileE2ETest {
         copyResourceDirectory("multifile-test", tempDir);
         final Path mainFile = tempDir.resolve("Test.java");
         final Path carFile = tempDir.resolve("model/Car.java");
-        
-        PlaywrightUtils.runInSharedBrowser(testInfo, mainFile, page -> {
+
+        // Verify initial state - Car.BLUE is displayed
+        // Modify the dependency file to change BLUE to GREEN
+        // Also update the main file to use GREEN instead of BLUE
+        // Verify the change is reflected - GREEN should now be displayed
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
             try {
                 // Verify initial state - Car.BLUE is displayed
                 assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
-                
+
                 // Modify the dependency file to change BLUE to GREEN
                 final String originalCarContent = Files.readString(carFile);
                 final String modifiedCarContent = originalCarContent.replace("BLUE", "GREEN");
                 Files.writeString(carFile, modifiedCarContent);
-                
+
                 // Also update the main file to use GREEN instead of BLUE
                 final String originalMainContent = Files.readString(mainFile);
                 final String modifiedMainContent = originalMainContent.replace("Car.BLUE", "Car.GREEN");
                 Files.writeString(mainFile, modifiedMainContent);
-                
+
                 // Verify the change is reflected - GREEN should now be displayed
                 assertThat(page.getByText("GREEN")).isVisible(WAIT_1_SEC_MAX);
             } catch (IOException e) {

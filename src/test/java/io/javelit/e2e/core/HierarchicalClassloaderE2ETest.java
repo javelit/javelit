@@ -43,7 +43,21 @@ public class HierarchicalClassloaderE2ETest {
         final Path appFile = tempDir.resolve("App.java");
         final Path messageFile = tempDir.resolve("Message.java");
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, appFile, page -> {
+        // Step 1: Verify initial state - both Message and Warning should be visible
+        // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
+        // Both should still be visible
+        // Step 3: Edit App.java by adding a comment
+        // This triggers App reload (including inner Warning class) Message.java should hit cache
+        // Should see ClassCastException (Warning from old classloader)
+        // Step 4: Click "Clear cache" button to recover
+        // After clearing cache, both should be visible again
+        // Step 5: Edit Message.java (add a comment on a new line)
+        // This reloads Message.class - by hierarchy App and Warning should reload too
+        // Should see ClassCastException
+        // Message and Warning should NOT be visible (error occurred early)
+        // Step 6: Click "Clear cache" button again to recover
+        // After clearing cache, both should be visible again
+        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
             try {
                 // Step 1: Verify initial state - both Message and Warning should be visible
                 assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);

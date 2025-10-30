@@ -56,7 +56,20 @@ public class NoRenderStatePersistenceE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for page to load - view1 should be selected by default
+        // Find the three text inputs using class selectors and nth()
+        // Verify all three inputs are visible
+        // Enter distinct text in each input
+        // Click on "view2" radio button (second option)
+        // Verify that the text inputs are no longer visible
+        // Click back on "view1" radio button (first option)
+        // Wait for inputs to reappear
+        // Re-locate the inputs (they were re-rendered)
+        // Verify state persistence behavior:
+        // 1. First input (with .key("text1")) should still have its value
+        // 2. Second input (no .key()) should be empty
+        // 3. Third input (with .noPersist()) should be empty
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for page to load - view1 should be selected by default
             assertThat(page.getByText("☝️ Enter some text, then click on view2 above")).isVisible(WAIT_1_SEC_MAX);
 
@@ -130,7 +143,19 @@ public class NoRenderStatePersistenceE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Step 1: Launch app (view1 selected by default)
+        // Step 2: Verify first text displays "null", second text displays "default value"
+        // Step 3: Click view2 radio button
+        // Step 4: Verify first text displays "default value", second text displays "0.0"
+        // Step 5: Click view1 radio button
+        // Step 6: Verify first text displays "0.0", second text displays "default value"
+        // Step 7: Edit text input to "new text"
+        // Step 8: Verify both texts display "new text"
+        // Step 9: Click view2 radio button
+        // Step 10: Verify first text displays "new text", second text displays "0.0"
+        // Step 11: Click number input plus button
+        // Step 12: Verify both texts display "0.01"
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Step 1: Launch app (view1 selected by default)
             Locator firstText = page.locator("jt-text").nth(0);
             Locator secondText = page.locator("jt-text").nth(1);

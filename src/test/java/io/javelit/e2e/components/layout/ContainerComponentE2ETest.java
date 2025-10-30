@@ -49,7 +49,11 @@ public class ContainerComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for container to be visible
+        // Check content before container
+        // Check content inside container
+        // Check content after container
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for container to be visible
             assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
             // Check content before container
@@ -61,7 +65,7 @@ public class ContainerComponentE2ETest {
             // Check content after container
             assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("After container"))).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container"))).not().isVisible(WAIT_50_MS_MAX);
-            
+
         });
     }
 }

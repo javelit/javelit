@@ -44,19 +44,25 @@ public class ToolbarE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Test 1: Loading spinner should be visible initially
+        // Test 2: Spinner should disappear after 1500ms max (add some buffer)
+        // Test 3: Menu button should be visible
+        // Test 4: Clicking rerun should show spinner again
+        // Wait for rerun to complete
+        // Test 5: Settings modal functionality
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Test 1: Loading spinner should be visible initially
             assertThat(page.locator("jt-status-widget")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator(".status-spinner")).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Test 2: Spinner should disappear after 1500ms max (add some buffer)
             assertThat(page.locator("jt-status-widget")).isHidden(new LocatorAssertions.IsHiddenOptions().setTimeout(2000));
-            
+
             // Test 3: Menu button should be visible
             assertThat(page.locator("jt-toolbar-menu")).isVisible(WAIT_1_SEC_MAX);
             Locator menuButton = page.locator(".menu-button");
             assertThat(menuButton).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Test 4: Clicking rerun should show spinner again
             menuButton.click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.locator(".menu-dropdown.show")).isVisible(WAIT_1_SEC_MAX);
@@ -64,7 +70,7 @@ public class ToolbarE2ETest {
             assertThat(page.locator("jt-status-widget")).isVisible(WAIT_1_SEC_MAX);
             // Wait for rerun to complete
             assertThat(page.locator("jt-status-widget")).isHidden(new LocatorAssertions.IsHiddenOptions().setTimeout(2000));
-            
+
             // Test 5: Settings modal functionality
             page.locator(".menu-button").click(WAIT_1_SEC_MAX_CLICK);
             page.locator("#toolbar-menu").getByText("Settings", new Locator.GetByTextOptions().setExact(true)).click(WAIT_1_SEC_MAX_CLICK);

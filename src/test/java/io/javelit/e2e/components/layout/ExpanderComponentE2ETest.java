@@ -47,7 +47,12 @@ public class ExpanderComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for expander to be visible
+        // Check expander header is visible
+        // Initially, content should be hidden (collapsed)
+        // Click to expand
+        // Check that content is now visible
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for expander to be visible
             final Locator expanderLocator = page.locator("jt-expander");
             assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);

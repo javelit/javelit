@@ -48,7 +48,11 @@ public class TextAreaComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // text area input is visible
+        // current message is empty
+        // Type multi-line text in the textarea
+        // Press Cmd/Ctrl+Enter to submit (TextArea's default submit behavior)
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // text area input is visible
             assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
             // current message is empty

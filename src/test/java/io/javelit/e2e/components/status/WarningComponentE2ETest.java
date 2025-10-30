@@ -37,7 +37,7 @@ public class WarningComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This is a warning message")).isVisible(WAIT_1_SEC_MAX);
         });

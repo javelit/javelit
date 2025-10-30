@@ -47,7 +47,13 @@ public class ToggleComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Toggle component exists
+        // Initial state shows "disabled" message
+        // "Enabled" message is not visible initially
+        // Wait for toggle input to be visible and click it
+        // "Enabled" message is now visible
+        // "Disabled" message is no longer visible
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Toggle component exists
             assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
             // Initial state shows "disabled" message
@@ -80,7 +86,13 @@ public class ToggleComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Toggle component exists
+        // Initial state shows "enabled" message
+        // "disabled" message is not visible initially
+        // Wait for toggle input to be visible and click it
+        // "Disabled" message is now visible
+        // "Enabled" message is no longer visible
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Toggle component exists
             assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
             // Initial state shows "enabled" message

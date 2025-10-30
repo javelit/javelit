@@ -46,7 +46,11 @@ public class SliderComponentE2ETest {
                 }
                 """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // slider exists
+        // intial value is 50
+        // change the slider value to 25
+        // text is updated
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // slider exists
             assertThat(page.locator("jt-slider")).isVisible(WAIT_1_SEC_MAX);
             // intial value is 50

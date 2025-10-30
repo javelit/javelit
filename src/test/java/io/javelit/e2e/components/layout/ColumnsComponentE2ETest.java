@@ -51,7 +51,11 @@ public class ColumnsComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInSharedBrowser(testInfo, app, page -> {
+        // Wait for columns component to be visible
+        // there are 2 columns
+        // ensure content is in correct column for col 0
+        // ensure content is in correct column for col 1
+        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for columns component to be visible
             assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
             // there are 2 columns
@@ -64,7 +68,7 @@ public class ColumnsComponentE2ETest {
             assertThat(secondCol).isVisible();
             assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Column 1 Content"))).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Button 1"))).isVisible(WAIT_1_SEC_MAX);
-            
+
         });
     }
 }
