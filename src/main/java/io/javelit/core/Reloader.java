@@ -23,7 +23,7 @@ abstract class Reloader {
 
     abstract AppEntrypoint reload();
 
-    record AppEntrypoint(Runnable runnable, ClassLoader classLoader) {
+    record AppEntrypoint(JtRunnable runnable, ClassLoader classLoader) {
 
         static  AppEntrypoint of(Method method, ClassLoader classLoader) {
             return new AppEntrypoint(() -> {

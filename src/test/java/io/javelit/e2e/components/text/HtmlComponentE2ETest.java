@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.text;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,78 +31,36 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT;
 public class HtmlComponentE2ETest {
 
     @Test
-    void testHtml_SimpleHtmlString(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
+    void testHtmlVariations(TestInfo testInfo) {
+        JtRunnable app = () -> {
+            // Test 1: Simple HTML string
+            Jt.html("<h2>Hello HTML</h2><p>This is a <strong>test</strong>!</p>").use();
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.html("<h2>Hello HTML</h2><p>This is a <strong>test</strong>!</p>").use();
-                }
-            }
-            """;
+            // Test 2: With width
+            Jt.html("<div>Content with width</div>").width(400).use();
 
-        // Wait for HTML component to be visible
-        // Check that HTML content is rendered (should contain h2 and p elements)
+            // Test 3: Script sanitization
+            Jt.html("<p>Safe content</p><script>alert('dangerous');</script>").use();
+        };
+
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for HTML component to be visible
-            assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
+            // Verify all 3 HTML components are rendered
+            assertThat(page.locator("jt-html").nth(0)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-html").nth(1)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-html").nth(2)).isVisible(WAIT_1_SEC_MAX);
 
-            // Check that HTML content is rendered (should contain h2 and p elements)
-            assertThat(page.locator("jt-html h2")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-html h2")).hasText("Hello HTML", WAIT_1_SEC_MAX_TEXT);
-            assertThat(page.locator("jt-html p")).hasText("This is a test!", WAIT_1_SEC_MAX_TEXT);
-            assertThat(page.locator("jt-html strong")).hasText("test", WAIT_1_SEC_MAX_TEXT);
-        });
-    }
+            // Test 1: Simple HTML string
+            assertThat(page.locator("jt-html").nth(0).locator("h2")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("jt-html").nth(0).locator("h2")).hasText("Hello HTML", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("jt-html").nth(0).locator("p")).hasText("This is a test!", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("jt-html").nth(0).locator("strong")).hasText("test", WAIT_1_SEC_MAX_TEXT);
 
-    @Test
-    void testHtml_WithWidth(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
+            // Test 2: With width
+            assertThat(page.locator("jt-html").nth(1)).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.html("<div>Content with width</div>").width(400).use();
-                }
-            }
-            """;
-
-        // Wait for HTML component to be visible
-        // Check width attribute is set
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for HTML component to be visible
-            assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
-
-            // Check width attribute is set
-            assertThat(page.locator("jt-html")).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testHtml_ScriptSanitization(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.html("<p>Safe content</p><script>alert('dangerous');</script>").use();
-                }
-            }
-            """;
-
-        // Wait for HTML component to be visible
-        // Check that safe content is rendered
-        // Check that script tag is NOT present (sanitized)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for HTML component to be visible
-            assertThat(page.locator("jt-html")).isVisible(WAIT_1_SEC_MAX);
-
-            // Check that safe content is rendered
-            assertThat(page.locator("jt-html p")).hasText("Safe content", WAIT_1_SEC_MAX_TEXT);
-
-            // Check that script tag is NOT present (sanitized)
-            assertThat(page.locator("jt-html script")).isHidden(WAIT_10_MS_MAX_HIDDEN);
+            // Test 3: Script sanitization
+            assertThat(page.locator("jt-html").nth(2).locator("p")).hasText("Safe content", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("jt-html").nth(2).locator("script")).isHidden(WAIT_10_MS_MAX_HIDDEN);
         });
     }
 }

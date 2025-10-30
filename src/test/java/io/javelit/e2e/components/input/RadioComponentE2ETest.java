@@ -15,9 +15,12 @@
  */
 package io.javelit.e2e.components.input;
 
+import java.util.List;
+
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -33,19 +36,12 @@ public class RadioComponentE2ETest {
 
     @Test
     void testBasicRadioWithStrings(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String color = Jt.radio("Select color", List.of("Red", "Green", "Blue")).use();
-                    if (color != null) {
-                        Jt.text("Selected: " + color).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String color = Jt.radio("Select color", List.of("Red", "Green", "Blue")).use();
+            if (color != null) {
+                Jt.text("Selected: " + color).use();
             }
-            """;
+        };
 
         // Radio component exists
         // First option is selected by default (index 0)
@@ -65,21 +61,14 @@ public class RadioComponentE2ETest {
 
     @Test
     void testRadioWithSecondValueSelected(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String size = Jt.radio("Select size", List.of("Small", "Medium", "Large"))
-                            .index(1)  // Select "Medium" (index 1)
-                            .use();
-                    if (size != null) {
-                        Jt.text("Size: " + size).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String size = Jt.radio("Select size", List.of("Small", "Medium", "Large"))
+                    .index(1)// Select "Medium" (index 1)
+                    .use();
+            if (size != null) {
+                Jt.text("Size: " + size).use();
             }
-            """;
+        };
 
         // Radio component exists
         // Second option (Medium) is selected by default
@@ -99,23 +88,16 @@ public class RadioComponentE2ETest {
 
     @Test
     void testRadioWithNullIndex(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String option = Jt.radio("Select option", List.of("Option A", "Option B", "Option C"))
-                            .index(null)  // No default selection
-                            .use();
-                    if (option != null) {
-                        Jt.text("Selected: " + option).use();
-                    } else {
-                        Jt.text("No option selected").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String option = Jt.radio("Select option", List.of("Option A", "Option B", "Option C"))
+                    .index(null)// No default selection
+                    .use();
+            if (option != null) {
+                Jt.text("Selected: " + option).use();
+            } else {
+                Jt.text("No option selected").use();
             }
-            """;
+        };
 
         // Radio component exists
         // No option selected initially
@@ -135,30 +117,23 @@ public class RadioComponentE2ETest {
 
     @Test
     void testRadioWithObjectsAndFormatFunction(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
+        JtRunnable app = () -> {
+            record Person(String name, int age) {}
 
-            public class TestApp {
-                record Person(String name, int age) {}
+            List<Person> people = List.of(
+                new Person("Alice", 25),
+                new Person("Bob", 30),
+                new Person("Charlie", 35)
+            );
 
-                public static void main(String[] args) {
-                    List<Person> people = List.of(
-                        new Person("Alice", 25),
-                        new Person("Bob", 30),
-                        new Person("Charlie", 35)
-                    );
+            Person selected = Jt.radio("Select person", people)
+                    .formatFunction(p -> p.name() + " (" + p.age() + " years)")
+                    .use();
 
-                    Person selected = Jt.radio("Select person", people)
-                            .formatFunction(p -> p.name() + " (" + p.age() + " years)")
-                            .use();
-
-                    if (selected != null) {
-                        Jt.text("Selected: " + selected.name()).use();
-                    }
-                }
+            if (selected != null) {
+                Jt.text("Selected: " + selected.name()).use();
             }
-            """;
+        };
 
         // Radio component exists
         // Verify formatted options are displayed
@@ -182,21 +157,14 @@ public class RadioComponentE2ETest {
 
     @Test
     void testRadioWithCaptions(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String plan = Jt.radio("Select plan", List.of("Basic", "Pro", "Enterprise"))
-                            .captions(List.of("$0/month", "$10/month", "$50/month"))
-                            .use();
-                    if (plan != null) {
-                        Jt.text("Plan: " + plan).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String plan = Jt.radio("Select plan", List.of("Basic", "Pro", "Enterprise"))
+                    .captions(List.of("$0/month", "$10/month", "$50/month"))
+                    .use();
+            if (plan != null) {
+                Jt.text("Plan: " + plan).use();
             }
-            """;
+        };
 
         // Radio component exists
         // Verify captions are displayed

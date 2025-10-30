@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 // compatible with IDE hot-reload
 public class RunnableReloader extends Reloader {
 
-    private final Runnable runnable;
+    private final JtRunnable runnable;
 
     public RunnableReloader(Server.Builder builder) {
         checkArgument(builder.buildSystem == BuildSystem.RUNTIME,

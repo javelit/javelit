@@ -1633,7 +1633,7 @@ public final class Jt {
     public static JtPage.Builder page(final @Nonnull Class<?> pageApp) {
         final String simpleName = pageApp.getSimpleName();
         throw new RuntimeException("""
-                                           Sorry, this method is not supported anymore. Use page(String path, Runnable page) instead. \s
+                                           Sorry, this method is not supported anymore. Use page(String path, JtRunnable page) instead. \s
                                            To quickfix: replace `Jt.page(%s.class)` with `Jt.page("/%s", %s::main)`
                                            """.formatted(simpleName, pageApp.getSimpleName(), pageApp.getSimpleName()));
     }
@@ -1667,7 +1667,7 @@ public final class Jt {
      * @param path The url path where the page should be found
      * @param page The page app logic
      */
-    public static JtPage.Builder page(final @Nonnull String path, final @Nonnull Runnable page) {
+    public static JtPage.Builder page(final @Nonnull String path, final @Nonnull JtRunnable page) {
         return JtPage.builder(path, page);
     }
 

@@ -125,7 +125,7 @@ public final class Server implements StateManager.RenderServer {
     public static final class Builder {
         final @Nullable Path appPath;
         final @Nullable Class<?> appClass;
-        final @Nullable Runnable appRunnable;
+        final @Nullable JtRunnable appRunnable;
         final int port;
         @Nullable String classpath;
         @Nullable String headersFile;
@@ -138,7 +138,7 @@ public final class Server implements StateManager.RenderServer {
             this.port = port;
         }
 
-        // use a Builder(Runnable appRunnable, int port) instead
+        // use a Builder(JtRunnable appRunnable, int port) instead
         @Deprecated(forRemoval = true)
         private Builder(final @Nonnull Class<?> appClass, final int port) {
             this.appPath = null;
@@ -148,7 +148,7 @@ public final class Server implements StateManager.RenderServer {
             this.buildSystem = BuildSystem.RUNTIME;
         }
 
-        private Builder(final @Nonnull Runnable appRunnable, final int port) {
+        private Builder(final @Nonnull JtRunnable appRunnable, final int port) {
             this.appPath = null;
             this.appClass = null;
             this.appRunnable = appRunnable;
@@ -184,13 +184,13 @@ public final class Server implements StateManager.RenderServer {
         return new Builder(appPath, port);
     }
 
-    // use a builder(Runnable app, int port) instead
+    // use a builder(JtRunnable app, int port) instead
     @Deprecated(forRemoval = true)
     public static Builder builder(final @Nonnull Class<?> appClass, final int port) {
         return new Builder(appClass, port);
     }
 
-    public static Builder builder(final @Nonnull Runnable app, final int port) {
+    public static Builder builder(final @Nonnull JtRunnable app, final int port) {
         return new Builder(app, port);
     }
 
@@ -718,7 +718,7 @@ public final class Server implements StateManager.RenderServer {
         if (registrationHtml != null && !registrationHtml.isBlank()) {
             message.put("registrations", List.of(registrationHtml));
         }
-        LOG.debug("Sending delta: {}", message);
+        LOG.debug("Sending delta to session {}: {}", sessionId, message);
         sendMessage(sessionId, message);
     }
 

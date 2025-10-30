@@ -16,8 +16,10 @@
 package io.javelit.e2e.components.layout;
 
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,25 +31,18 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  * End-to-end tests for ContainerComponent.
  */
 public class ContainerComponentE2ETest {
-    
+
     @Test
     void testContainerContent(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.core.JtContainer;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.text("Before container").use();
-            
-                    JtContainer container = Jt.container().use();
-                    Jt.text("Inside container").use(container);
-                    Jt.button("Container Button").use(container);
-            
-                    Jt.text("After container").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Jt.text("Before container").use();
+
+            JtContainer container = Jt.container().use();
+            Jt.text("Inside container").use(container);
+            Jt.button("Container Button").use(container);
+
+            Jt.text("After container").use();
+        };
 
         // Wait for container to be visible
         // Check content before container

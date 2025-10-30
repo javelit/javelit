@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.status;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -27,15 +28,9 @@ public class SuccessComponentE2ETest {
 
     @Test
     void testSuccessDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        Jt.success("Operation completed successfully").use();
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            Jt.success("Operation completed successfully").use();
+        };
 
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);

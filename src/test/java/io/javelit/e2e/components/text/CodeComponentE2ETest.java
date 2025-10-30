@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.text;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,171 +31,76 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CodeComponentE2ETest {
 
     @Test
-    void testBasicCodeDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code(\"""
-                        public class HelloWorld {
-                            public static void main(String[] args) {
-                                System.out.println("Hello, World!");
-                            }
-                        }
-                        \""").use();
+    void testCodeVariations(TestInfo testInfo) {
+        JtRunnable app = () -> {
+            // Test 1: Basic code display
+            Jt.code("""
+                public class HelloWorld {
+                    public static void main(String[] args) {
+                        System.out.println("Hello, World!");
+                    }
                 }
-            }
-            """;
+                """).use();
 
-        // Verify code component is rendered (filter by content to find the right one)
-        // Verify code content is present
+            // Test 2: Language null
+            Jt.code("function example() { return 'no highlighting'; }")
+                .language(null)
+                .use();
+
+            // Test 3: Language JSON
+            Jt.code("{\"name\": \"test\", \"value\": 123}")
+                .language("json")
+                .use();
+
+            // Test 4: Line numbers enabled
+            Jt.code("line 1\nline 2\nline 3")
+                .lineNumbers(true)
+                .use();
+
+            // Test 5: Wrap lines enabled
+            Jt.code("This is a very long line that should wrap when wrap lines is enabled and demonstrates the line wrapping functionality")
+                .wrapLines(true)
+                .use();
+
+            // Test 6: Custom dimensions
+            Jt.code("console.log('Custom dimensions test');")
+                .width(500)
+                .height(150)
+                .use();
+        };
+
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify code component is rendered (filter by content to find the right one)
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify code content is present
+            // Verify all 6 code components are rendered
+            assertThat(page.locator("#app jt-internal-code").nth(0)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-internal-code").nth(1)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-internal-code").nth(2)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-internal-code").nth(3)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-internal-code").nth(4)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-internal-code").nth(5)).isVisible(WAIT_1_SEC_MAX);
+
+            // Test 1: Basic code display
             assertThat(page.getByText("public class HelloWorld")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
 
-    @Test
-    void testLanguageNull(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code("function example() { return 'no highlighting'; }")
-                        .language(null)
-                        .use();
-                }
-            }
-            """;
-
-        // Verify code component is rendered (filter by content)
-        // Verify language-none class is applied to code element in our specific component
-        // Verify content is present
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify code component is rendered (filter by content)
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify language-none class is applied to code element in our specific component
-            assertThat(page.locator("#app jt-internal-code").locator("pre code.language-none")).isVisible(WAIT_1_SEC_MAX);
-            // Verify content is present
+            // Test 2: Language null
+            assertThat(page.locator("#app jt-internal-code").nth(1).locator("pre code.language-none")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("function example()")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
 
-    @Test
-    void testLanguageJson(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code("{\\"name\\": \\"test\\", \\"value\\": 123}")
-                        .language("json")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify code component is rendered (filter by content)
-        // Verify language-json class is applied to code element in our specific component
-        // Verify content is present
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify code component is rendered (filter by content)
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify language-json class is applied to code element in our specific component
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify content is present
+            // Test 3: Language JSON
             assertThat(page.getByText("123")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
 
-    @Test
-    void testLineNumbersEnabled(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code("line 1\\nline 2\\nline 3")
-                        .lineNumbers(true)
-                        .use();
-                }
-            }
-            """;
-
-        // Verify code component is rendered (filter by content)
-        // Verify line-numbers attribute is present on the jt-internal-code element
-        // Verify content is present
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify code component is rendered (filter by content)
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify line-numbers attribute is present on the jt-internal-code element
-            assertThat(page.locator("#app jt-internal-code[line-numbers]")).isVisible(WAIT_1_SEC_MAX);
-            // Verify content is present
+            // Test 4: Line numbers enabled
+            assertThat(page.locator("#app jt-internal-code").nth(3)).hasAttribute("line-numbers", "");
             assertThat(page.getByText("line 2")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
 
-    @Test
-    void testWrapLinesEnabled(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code("This is a very long line that should wrap when wrap lines is enabled and demonstrates the line wrapping functionality")
-                        .wrapLines(true)
-                        .use();
-                }
-            }
-            """;
-
-        // Verify code component is rendered (filter by content)
-        // Verify wrap-lines attribute is present on the jt-internal-code element
-        // Verify content is present
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify code component is rendered (filter by content)
-            assertThat(page.locator("#app jt-internal-code")).isVisible(WAIT_1_SEC_MAX);
-            // Verify wrap-lines attribute is present on the jt-internal-code element
-            assertThat(page.locator("#app jt-internal-code[wrap-lines]")).isVisible(WAIT_1_SEC_MAX);
-            // Verify content is present
+            // Test 5: Wrap lines enabled
+            assertThat(page.locator("#app jt-internal-code").nth(4)).hasAttribute("wrap-lines", "");
             assertThat(page.getByText("This is a very long line")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
 
-    @Test
-    void testCustomDimensions(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
+            // Test 6: Custom dimensions
+            var theCodeComponent = page.locator("#app jt-internal-code").nth(5);
+            assertThat(theCodeComponent).hasAttribute("width", "500");
+            assertThat(theCodeComponent).hasAttribute("height", "150");
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.code("console.log('Custom dimensions test');")
-                        .width(500)
-                        .height(150)
-                        .use();
-                }
-            }
-            """;
-
-        // Find the code component by content
-        // Verify code component is rendered
-        // Verify width and height attributes are set
-        // Verify CSS custom properties are applied (through computed styles)
-        // Verify content is present
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Find the code component by content
-            var theCodeComponent = page.locator("#app jt-internal-code");
-            // Verify code component is rendered
-            assertThat(theCodeComponent).isVisible(WAIT_1_SEC_MAX);
-            // Verify width and height attributes are set
-            assertThat(page.locator("#app jt-internal-code[width='500']")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("#app jt-internal-code[height='150']")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify CSS custom properties are applied (through computed styles)
             theCodeComponent.waitFor();
             String computedWidth = theCodeComponent.evaluate("el => getComputedStyle(el).getPropertyValue('--code-width')").toString();
             String computedHeight = theCodeComponent.evaluate("el => getComputedStyle(el).getPropertyValue('--code-height')").toString();
@@ -202,7 +108,6 @@ public class CodeComponentE2ETest {
             assertEquals("500px", computedWidth);
             assertEquals("150px", computedHeight);
 
-            // Verify content is present
             assertThat(page.getByText("console.log")).isVisible(WAIT_1_SEC_MAX);
         });
     }

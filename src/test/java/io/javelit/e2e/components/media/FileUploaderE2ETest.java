@@ -19,10 +19,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import com.microsoft.playwright.FileChooser;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -42,23 +44,16 @@ public class FileUploaderE2ETest {
         final Path tempDir = Files.createTempDirectory("fileuploader-test");
         final Path csvFile = tempDir.resolve("test-data.csv");
         Files.writeString(csvFile, csvContent, StandardCharsets.UTF_8);
-        
+
         // Calculate expected file size in bytes
         final int expectedSize = csvContent.getBytes(StandardCharsets.UTF_8).length;
 
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-                        import java.util.List;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.fileUploader("Upload CSV file")
-                        .type(List.of(".csv"))
-                        .help("Please upload a CSV file")
-                        .use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Jt.fileUploader("Upload CSV file")
+                .type(List.of(".csv"))
+                .help("Please upload a CSV file")
+                .use();
+        };
 
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             try {

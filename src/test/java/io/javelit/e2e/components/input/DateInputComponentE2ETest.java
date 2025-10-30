@@ -20,8 +20,9 @@ import java.util.regex.Pattern;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -38,22 +39,15 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testBasicDateInput(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    // Start with a specific date for deterministic testing
-                    LocalDate date = Jt.dateInput("Select date")
-                            .value(LocalDate.of(2024, 7, 10))  // July 10, 2024
-                            .use();
-                    if (date != null) {
-                        Jt.text("Selected: " + date).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            // Start with a specific date for deterministic testing
+            LocalDate date = Jt.dateInput("Select date")
+                    .value(LocalDate.of(2024, 7, 10))// July 10, 2024
+                    .use();
+            if (date != null) {
+                Jt.text("Selected: " + date).use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Initial value should be the specified date
@@ -87,21 +81,14 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputWithDefaultValue(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date = Jt.dateInput("Birth date")
-                            .value(LocalDate.of(1990, 6, 15))
-                            .use();
-                    if (date != null) {
-                        Jt.text("Birth date: " + date).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            LocalDate date = Jt.dateInput("Birth date")
+                    .value(LocalDate.of(1990, 6, 15))
+                    .use();
+            if (date != null) {
+                Jt.text("Birth date: " + date).use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Should show the default value
@@ -132,23 +119,16 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputWithNullValue(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date = Jt.dateInput("Optional date")
-                            .value(null)
-                            .use();
-                    if (date != null) {
-                        Jt.text("Date selected: " + date).use();
-                    } else {
-                        Jt.text("No date selected").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            LocalDate date = Jt.dateInput("Optional date")
+                    .value(null)
+                    .use();
+            if (date != null) {
+                Jt.text("Date selected: " + date).use();
+            } else {
+                Jt.text("No date selected").use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Should show no date selected initially
@@ -177,25 +157,18 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputWithMinMaxConstraints(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    // Use a fixed date to make tests deterministic
-                    LocalDate baseDate = LocalDate.of(2024, 6, 15);  // June 15, 2024 - middle of month to avoid edge cases
-                    LocalDate date = Jt.dateInput("Appointment date")
-                            .value(baseDate)
-                            .minValue(baseDate)
-                            .maxValue(baseDate.plusMonths(1))
-                            .use();
-                    if (date != null) {
-                        Jt.text("Appointment: " + date).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            // Use a fixed date to make tests deterministic
+            LocalDate baseDate = LocalDate.of(2024, 6, 15);  // June 15, 2024 - middle of month to avoid edge cases
+            LocalDate date = Jt.dateInput("Appointment date")
+                    .value(baseDate)
+                    .minValue(baseDate)
+                    .maxValue(baseDate.plusMonths(1))
+                    .use();
+            if (date != null) {
+                Jt.text("Appointment: " + date).use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Use the same fixed date as in the app
@@ -241,33 +214,26 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputWithDifferentFormats(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
+        JtRunnable app = () -> {
+            LocalDate date1 = Jt.dateInput("US format")
+                    .format("MM/DD/YYYY")
+                    .value(LocalDate.of(2024, 12, 25))
+                    .use();
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date1 = Jt.dateInput("US format")
-                            .format("MM/DD/YYYY")
-                            .value(LocalDate.of(2024, 12, 25))
-                            .use();
+            LocalDate date2 = Jt.dateInput("European format")
+                    .format("DD/MM/YYYY")
+                    .value(LocalDate.of(2024, 12, 25))
+                    .use();
 
-                    LocalDate date2 = Jt.dateInput("European format")
-                            .format("DD/MM/YYYY")
-                            .value(LocalDate.of(2024, 12, 25))
-                            .use();
+            LocalDate date3 = Jt.dateInput("ISO format")
+                    .format("YYYY-MM-DD")
+                    .value(LocalDate.of(2024, 12, 25))
+                    .use();
 
-                    LocalDate date3 = Jt.dateInput("ISO format")
-                            .format("YYYY-MM-DD")
-                            .value(LocalDate.of(2024, 12, 25))
-                            .use();
-
-                    Jt.text("US: " + date1).use();
-                    Jt.text("EU: " + date2).use();
-                    Jt.text("ISO: " + date3).use();
-                }
-            }
-            """;
+            Jt.text("US: " + date1).use();
+            Jt.text("EU: " + date2).use();
+            Jt.text("ISO: " + date3).use();
+        };
 
         // All DateInput components should exist
         // Check that each format displays correctly in the input field
@@ -301,20 +267,13 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDisabledDateInput(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date = Jt.dateInput("Locked date")
-                            .value(LocalDate.of(2024, 1, 1))
-                            .disabled(true)
-                            .use();
-                    Jt.text("Locked date: " + date).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            LocalDate date = Jt.dateInput("Locked date")
+                    .value(LocalDate.of(2024, 1, 1))
+                    .disabled(true)
+                    .use();
+            Jt.text("Locked date: " + date).use();
+        };
 
         // DateInput component exists
         // Should show the date value
@@ -342,21 +301,14 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputCalendarNavigation(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date = Jt.dateInput("Navigate calendar")
-                            .value(LocalDate.of(2024, 6, 15))
-                            .use();
-                    if (date != null) {
-                        Jt.text("Selected: " + date).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            LocalDate date = Jt.dateInput("Navigate calendar")
+                    .value(LocalDate.of(2024, 6, 15))
+                    .use();
+            if (date != null) {
+                Jt.text("Selected: " + date).use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Open calendar
@@ -402,23 +354,16 @@ public class DateInputComponentE2ETest {
 
     @Test
     void testDateInputWithYearMonthSelectors(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.time.LocalDate;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    LocalDate date = Jt.dateInput("Select any date")
-                            .value(LocalDate.of(2024, 1, 1))
-                            .minValue(LocalDate.of(2020, 1, 1))
-                            .maxValue(LocalDate.of(2030, 12, 31))
-                            .use();
-                    if (date != null) {
-                        Jt.text("Selected: " + date).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            LocalDate date = Jt.dateInput("Select any date")
+                    .value(LocalDate.of(2024, 1, 1))
+                    .minValue(LocalDate.of(2020, 1, 1))
+                    .maxValue(LocalDate.of(2030, 12, 31))
+                    .use();
+            if (date != null) {
+                Jt.text("Selected: " + date).use();
             }
-            """;
+        };
 
         // DateInput component exists
         // Open calendar

@@ -16,8 +16,9 @@
 package io.javelit.e2e.components.text;
 
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -28,19 +29,13 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  * End-to-end tests for TextComponent.
  */
 public class TextComponentE2ETest {
-    
+
     @Test
     void testTextDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.text("A first text").use();
-                    Jt.text("A second text").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Jt.text("A first text").use();
+            Jt.text("A second text").use();
+        };
 
         // Wait for text components to be visible
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {

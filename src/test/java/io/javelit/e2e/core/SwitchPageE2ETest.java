@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.core;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,50 +31,15 @@ class SwitchPageE2ETest {
 
     @Test
     void testProgrammaticPageSwitching(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    var currentPage = Jt.navigation(
-                        Jt.page("/home", TestApp::home).title("Home Page").home(),
-                        Jt.page("/products", TestApp::products)
-                    ).use();
-            
-                    currentPage.run();
-                    Jt.text("Footer - always visible").use();
-                }
-            
-                public static void home() {
-                    Jt.title("The Home Page").use();
-                    Jt.text("Welcome to the home page!").use();
-        
-                    // Test programmatic switch to Products page
-                    if (Jt.button("Go to Products").use()) {
-                        Jt.switchPage("/products");
-                    }
-        
-                    // This should throw since ContactPage is not registered
-                    if (Jt.button("Switch to Unregistered Page").use()) {
-                        Jt.switchPage("/unregistered");
-                    }
-                }
-        
-                public static void products() {
-                    Jt.title("Products Page").use();
-                    Jt.text("Browse our amazing products!").use();
-        
-                    // Test programmatic switch back to Home page
-                    if (Jt.button("Back to Home").use()) {
-                        Jt.switchPage("/home");
-                    }
-                }
-        
-                public static void contact() {
-                    Jt.text("This class is not registered in the multipage app.").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            var currentPage = Jt.navigation(
+                Jt.page("/home", SwitchPageE2ETest::home).title("Home Page").home(),
+                Jt.page("/products", SwitchPageE2ETest::products)
+            ).use();
+
+            currentPage.run();
+            Jt.text("Footer - always visible").use();
+        };
         
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             // Wait for app to load and verify we're on HomePage
@@ -109,5 +75,31 @@ class SwitchPageE2ETest {
             // page did not change
             assertTrue(page.url().endsWith("/home"));
         });
+    }
+
+
+    private static void home() {
+        Jt.title("The Home Page").use();
+        Jt.text("Welcome to the home page!").use();
+
+        // Test programmatic switch to Products page
+        if (Jt.button("Go to Products").use()) {
+            Jt.switchPage("/products");
+        }
+
+        // This should throw since ContactPage is not registered
+        if (Jt.button("Switch to Unregistered Page").use()) {
+            Jt.switchPage("/unregistered");
+        }
+    }
+
+    private static void products() {
+        Jt.title("Products Page").use();
+        Jt.text("Browse our amazing products!").use();
+
+        // Test programmatic switch back to Home page
+        if (Jt.button("Back to Home").use()) {
+            Jt.switchPage("/home");
+        }
     }
 }

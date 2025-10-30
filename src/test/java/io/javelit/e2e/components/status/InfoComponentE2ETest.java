@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.status;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -27,15 +28,9 @@ public class InfoComponentE2ETest {
 
     @Test
     void testInfoDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        Jt.info("This is an informational message").use();
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            Jt.info("This is an informational message").use();
+        };
 
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);

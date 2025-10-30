@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.status;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -27,15 +28,9 @@ public class ErrorComponentE2ETest {
 
     @Test
     void testErrorDisplayOnException(TestInfo testInfo) {
-        final @Language("java") String app = """
-                
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        throw new RuntimeException("Something went wrong");
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            throw new RuntimeException("Something went wrong");
+        };
 
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
@@ -45,15 +40,9 @@ public class ErrorComponentE2ETest {
 
     @Test
     void testErrorDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        Jt.error("User generated error").use();
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            Jt.error("User generated error").use();
+        };
 
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
             assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);

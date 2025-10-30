@@ -17,8 +17,10 @@ package io.javelit.e2e.components.layout;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.javelit.components.layout.ColumnsComponent;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,27 +31,20 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  * End-to-end tests for ColumnsComponent.
  */
 public class ColumnsComponentE2ETest {
-    
+
     @Test
     void testColumnsLayout(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.components.layout.ColumnsComponent;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    ColumnsComponent.Columns cols = Jt.columns(2).use();
-            
-                    // Add content to first column
-                    Jt.text("Column 0 Content").use(cols.col(0));
-                    Jt.button("Button 0").use(cols.col(0));
-            
-                    // Add content to second column
-                    Jt.text("Column 1 Content").use(cols.col(1));
-                    Jt.button("Button 1").use(cols.col(1));
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            ColumnsComponent.Columns cols = Jt.columns(2).use();
+
+            // Add content to first column
+            Jt.text("Column 0 Content").use(cols.col(0));
+            Jt.button("Button 0").use(cols.col(0));
+
+            // Add content to second column
+            Jt.text("Column 1 Content").use(cols.col(1));
+            Jt.button("Button 1").use(cols.col(1));
+        };
 
         // Wait for columns component to be visible
         // there are 2 columns

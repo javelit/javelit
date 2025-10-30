@@ -15,10 +15,13 @@
  */
 package io.javelit.e2e.components.input;
 
+import java.util.List;
+
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -33,21 +36,14 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testBasicSelectBoxWithStrings(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String color = Jt.selectbox("Select color", List.of("Red", "Green", "Blue")).use();
-                    if (color != null) {
-                        Jt.text("Selected: " + color).use();
-                    } else {
-                        Jt.text("No color selected").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String color = Jt.selectbox("Select color", List.of("Red", "Green", "Blue")).use();
+            if (color != null) {
+                Jt.text("Selected: " + color).use();
+            } else {
+                Jt.text("No color selected").use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // First option is selected by default (index 0)
@@ -71,21 +67,14 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testSelectBoxWithSecondValueSelected(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String size = Jt.selectbox("Select size", List.of("Small", "Medium", "Large"))
-                            .index(1)  // Select "Medium" (index 1)
-                            .use();
-                    if (size != null) {
-                        Jt.text("Size: " + size).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String size = Jt.selectbox("Select size", List.of("Small", "Medium", "Large"))
+                    .index(1)// Select "Medium" (index 1)
+                    .use();
+            if (size != null) {
+                Jt.text("Size: " + size).use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // Second option (Medium) is selected by default
@@ -109,23 +98,16 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testSelectBoxWithNullIndex(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String option = Jt.selectbox("Select option", List.of("Option A", "Option B", "Option C"))
-                            .index(null)  // No default selection
-                            .use();
-                    if (option != null) {
-                        Jt.text("Selected: " + option).use();
-                    } else {
-                        Jt.text("No option selected").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String option = Jt.selectbox("Select option", List.of("Option A", "Option B", "Option C"))
+                    .index(null)// No default selection
+                    .use();
+            if (option != null) {
+                Jt.text("Selected: " + option).use();
+            } else {
+                Jt.text("No option selected").use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // No option selected initially
@@ -149,30 +131,23 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testSelectBoxWithObjectsAndFormatFunction(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
+        JtRunnable app = () -> {
+            record Person(String name, int age) {}
 
-            public class TestApp {
-                record Person(String name, int age) {}
+            List<Person> people = List.of(
+                new Person("Alice", 25),
+                new Person("Bob", 30),
+                new Person("Charlie", 35)
+            );
 
-                public static void main(String[] args) {
-                    List<Person> people = List.of(
-                        new Person("Alice", 25),
-                        new Person("Bob", 30),
-                        new Person("Charlie", 35)
-                    );
+            Person selected = Jt.selectbox("Select person", people)
+                    .formatFunction(p -> p.name() + " (" + p.age() + " years)")
+                    .use();
 
-                    Person selected = Jt.selectbox("Select person", people)
-                            .formatFunction(p -> p.name() + " (" + p.age() + " years)")
-                            .use();
-
-                    if (selected != null) {
-                        Jt.text("Selected: " + selected.name()).use();
-                    }
-                }
+            if (selected != null) {
+                Jt.text("Selected: " + selected.name()).use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // First option (Alice) is selected by default
@@ -199,21 +174,14 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testSelectBoxWithAcceptNewOptionsAndExistingList(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String skill = Jt.selectbox("Select or enter skill", List.of("Java", "Python", "JavaScript"))
-                            .acceptNewOptions(true)
-                            .use();
-                    if (skill != null) {
-                        Jt.text("Skill: " + skill).use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String skill = Jt.selectbox("Select or enter skill", List.of("Java", "Python", "JavaScript"))
+                    .acceptNewOptions(true)
+                    .use();
+            if (skill != null) {
+                Jt.text("Skill: " + skill).use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // First option (Java) is selected by default
@@ -244,23 +212,16 @@ public class SelectBoxComponentE2ETest {
 
     @Test
     void testSelectBoxWithEmptyListAndAcceptNewOptions(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String tag = Jt.selectbox("Enter new tag", List.<String>of())
-                            .acceptNewOptions(true)
-                            .use();
-                    if (tag != null) {
-                        Jt.text("Tag: " + tag).use();
-                    } else {
-                        Jt.text("No tag entered").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            String tag = Jt.selectbox("Enter new tag", List.<String>of())
+                    .acceptNewOptions(true)
+                    .use();
+            if (tag != null) {
+                Jt.text("Tag: " + tag).use();
+            } else {
+                Jt.text("No tag entered").use();
             }
-            """;
+        };
 
         // SelectBox component exists
         // No tag selected initially

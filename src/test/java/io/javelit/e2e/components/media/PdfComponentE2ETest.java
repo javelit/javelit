@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
@@ -33,30 +35,64 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PdfComponentE2ETest {
 
     @Test
-    void testPublicUrl(TestInfo testInfo) {
+    void testPdfVariations(TestInfo testInfo) {
         final @Language("java") String app = """
             import io.javelit.core.Jt;
+            import java.nio.file.Path;
 
             public class TestApp {
                 public static void main(String[] args) {
+                    // Test 1: Public URL
                     Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
+                        .use();
+
+                    // Test 2: Local file
+                    Jt.pdf(Path.of("examples/pdf/sample.pdf"))
+                        .use();
+
+                    // Test 3: Height default
+                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
+                        .key("diff")
+                        .use();
+
+                    // Test 4: Height stretch
+                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
+                        .height("stretch")
+                        .use();
+
+                    // Test 5: Height pixels
+                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
+                        .height(300)
                         .use();
                 }
             }
             """;
 
-        // Verify PDF component is rendered
-        // Verify iframe element exists
-        // Verify src attribute points to PDF URL
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify PDF component is rendered
-            assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
+            // Verify all 5 PDF components are rendered
+            assertThat(page.locator("#app jt-pdf").nth(0)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-pdf").nth(1)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-pdf").nth(2)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-pdf").nth(3)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-pdf").nth(4)).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify iframe element exists
-            assertThat(page.locator("#app jt-pdf iframe")).isVisible(WAIT_1_SEC_MAX);
+            // Test 1: Public URL
+            assertThat(page.locator("#app jt-pdf").nth(0).locator("iframe")).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-pdf").nth(0).locator("iframe")).hasAttribute("src", "https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf");
 
-            // Verify src attribute points to PDF URL
-            assertThat(page.locator("#app jt-pdf iframe")).hasAttribute("src", "https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf");
+            // Test 2: Local file
+            assertThat(page.locator("#app jt-pdf").nth(1).locator("iframe")).isVisible(WAIT_1_SEC_MAX);
+            String src2 = page.locator("#app jt-pdf").nth(1).locator("iframe").getAttribute("src");
+            assertTrue(src2.startsWith("/_/media/"), "PDF src should start with /_/media/, got: " + src2);
+
+            // Test 3: Height default
+            assertThat(page.locator("#app jt-pdf").nth(2)).hasAttribute("height", "500", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+            // Test 4: Height stretch
+            assertThat(page.locator("#app jt-pdf").nth(3)).hasAttribute("height", "stretch", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+            // Test 5: Height pixels
+            assertThat(page.locator("#app jt-pdf").nth(4)).hasAttribute("height", "300", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 
@@ -82,55 +118,16 @@ public class PdfComponentE2ETest {
     }
 
     @Test
-    void testLocalFile(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.nio.file.Path;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.pdf(Path.of("examples/pdf/sample.pdf"))
-                        .use();
-                }
-            }
-            """;
-
-        // Verify PDF component is rendered
-        // Verify iframe element exists
-        // Verify src contains media hash (starts with /_/media/)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify PDF component is rendered
-            assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify iframe element exists
-            assertThat(page.locator("#app jt-pdf iframe")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify src contains media hash (starts with /_/media/)
-            String src = page.locator("#app jt-pdf iframe").getAttribute("src");
-            assertTrue(src.startsWith("/_/media/"), "PDF src should start with /_/media/, got: " + src);
-        });
-    }
-
-    @Test
     void testGeneratedBytes(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.nio.file.Files;
-            import java.nio.file.Path;
-
-            public class TestApp {
-                public static void main(String[] args) throws Exception {
-                    byte[] pdfBytes = Files.readAllBytes(Path.of("examples/pdf/sample.pdf"));
-                    Jt.pdf(pdfBytes)
-                        .use();
-                }
-            }
-            """;
-
-        // Verify PDF component is rendered
-        // Verify iframe element exists
-        // Verify src contains media hash (starts with /_/media/)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        JtRunnable runnable = () -> {
+            byte[] pdfBytes = null;
+            pdfBytes = Files.readAllBytes(Path.of("examples/pdf/sample.pdf"));
+            Jt.pdf(pdfBytes)
+              .use();
+        };
+        PlaywrightUtils.runInBrowser(testInfo,
+                                     runnable,
+                                     page -> {
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -140,80 +137,6 @@ public class PdfComponentE2ETest {
             // Verify src contains media hash (starts with /_/media/)
             String src = page.locator("#app jt-pdf iframe").getAttribute("src");
             assertTrue(src.startsWith("/_/media/"), "PDF src should start with /_/media/, got: " + src);
-        });
-    }
-
-    @Test
-    void testHeightDefault(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify PDF component is rendered
-        // Verify default height attribute is 500
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify PDF component is rendered
-            assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify default height attribute is 500
-            assertThat(page.locator("#app jt-pdf")).hasAttribute("height", "500", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testHeightStretch(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
-                        .height("stretch")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify PDF component is rendered
-        // Verify height attribute is stretch
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify PDF component is rendered
-            assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify height attribute is stretch
-            assertThat(page.locator("#app jt-pdf")).hasAttribute("height", "stretch", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testHeightPixels(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf")
-                        .height(300)
-                        .use();
-                }
-            }
-            """;
-
-        // Verify PDF component is rendered
-        // Verify height attribute is 300
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify PDF component is rendered
-            assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify height attribute is 300
-            assertThat(page.locator("#app jt-pdf")).hasAttribute("height", "300", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 }

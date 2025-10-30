@@ -118,16 +118,21 @@ final class AppRunner {
                 final Reloader.AppEntrypoint entrypoint = entrypointRef.get();
                 Thread.currentThread().setContextClassLoader(entrypoint.classLoader());
                 entrypoint.runnable().run();
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
-                throw new PageRunException(e);
+                throw new RuntimeException(e);
             } finally {
                 Thread.currentThread().setContextClassLoader(originalClassLoader);
             }
         } catch (Exception e) {
-            if (!(e instanceof DuplicateWidgetIDException || e instanceof PageRunException)) {
+            if (!(e instanceof DuplicateWidgetIDException)) {
                 LOG.error("Unexpected error type: {}", e.getClass(), e);
             }
-            if (e.getCause() instanceof BreakAndReloadAppException u) {
+            if (e instanceof BreakAndReloadAppException u) {
+                runAfterBreak = u.runAfterBreak;
+                doRerun = true;
+            } else if (e.getCause() instanceof BreakAndReloadAppException u) {
                 runAfterBreak = u.runAfterBreak;
                 doRerun = true;
             } else if (e.getCause() != null && e.getCause()

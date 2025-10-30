@@ -15,8 +15,10 @@
  */
 package io.javelit.e2e.components.chart;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
+import org.icepear.echarts.Bar;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,21 +32,14 @@ public class EchartsComponentE2ETest {
 
     @Test
     void testEcharts_SimpleBarChart(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import org.icepear.echarts.Bar;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Bar chart = new Bar()
-                        .addXAxis(new String[]{"Mon", "Tue", "Wed"})
-                        .addYAxis()
-                        .addSeries("Sales", new Number[]{120, 200, 150});
-            
-                    Jt.echarts(chart).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Bar chart = new Bar()
+                .addXAxis(new String[]{"Mon", "Tue", "Wed"})
+                .addYAxis()
+                .addSeries("Sales", new Number[]{120, 200, 150});
+
+            Jt.echarts(chart).use();
+        };
 
         // Wait for ECharts component to be visible
         // Check that canvas element exists (ECharts renders to canvas)

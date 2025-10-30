@@ -17,8 +17,10 @@ package io.javelit.e2e.components.layout;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -31,21 +33,14 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  * End-to-end tests for ExpanderComponent.
  */
 public class ExpanderComponentE2ETest {
-    
+
     @Test
     void testExpanderToggle(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.core.JtContainer;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    JtContainer expanderContainer = Jt.expander("Click to expand").use();
-                    Jt.text("Hidden content inside expander").use(expanderContainer);
-                    Jt.button("Hidden Button").use(expanderContainer);
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            JtContainer expanderContainer = Jt.expander("Click to expand").use();
+            Jt.text("Hidden content inside expander").use(expanderContainer);
+            Jt.button("Hidden Button").use(expanderContainer);
+        };
 
         // Wait for expander to be visible
         // Check expander header is visible

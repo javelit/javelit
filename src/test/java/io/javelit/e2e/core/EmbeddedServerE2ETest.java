@@ -16,6 +16,7 @@
 package io.javelit.e2e.core;
 
 import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -51,7 +52,7 @@ public class EmbeddedServerE2ETest {
 
     @Test
     public void testEmbeddedServerE2E(final TestInfo testInfo) {
-        final Runnable app = () -> {
+        final JtRunnable app = () -> {
             if (Jt.button("Click me").use()) {
                 Jt.text("I was clicked!").use();
             }
@@ -61,6 +62,10 @@ public class EmbeddedServerE2ETest {
             page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
             assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
         });
+    }
+
+    public static void test() {
+        Jt.text("I was clicked!").use();
     }
 
     @Test

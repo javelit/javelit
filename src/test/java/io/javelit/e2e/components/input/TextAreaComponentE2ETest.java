@@ -16,9 +16,11 @@
 package io.javelit.e2e.components.input;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.components.input.TextAreaComponent;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.OsUtils;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,24 +31,17 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  * End-to-end tests for TextAreaComponent.
  */
 public class TextAreaComponentE2ETest {
-    
+
     @Test
     void testTextAreaInput(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.components.input.TextAreaComponent;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    String text = new TextAreaComponent.Builder("Enter your message")
-                        .placeholder("Type here...")
-                        .height(150)
-                        .build()
-                        .use();
-                    Jt.text("Message: " + text).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            String text = new TextAreaComponent.Builder("Enter your message")
+                .placeholder("Type here...")
+                .height(150)
+                .build()
+                .use();
+            Jt.text("Message: " + text).use();
+        };
 
         // text area input is visible
         // current message is empty

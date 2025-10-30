@@ -16,8 +16,9 @@
 package io.javelit.e2e.components.input;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,19 +30,13 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  * End-to-end tests for NumberInputComponent.
  */
 public class NumberInputComponentE2ETest {
-    
+
     @Test
     void testDirectInput(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    final Number value = Jt.numberInput("Test Input").use();
-                    Jt.text("Value: " + value).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            final Number value = Jt.numberInput("Test Input").use();
+            Jt.text("Value: " + value).use();
+        };
 
         // number input exists
         // number input text is correct
@@ -66,19 +61,13 @@ public class NumberInputComponentE2ETest {
     
     @Test
     void testStepButtons(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Integer value = Jt.numberInput("Counter", Integer.class)
-                        .value(5)
-                        .step(1)
-                        .use();
-                    Jt.text("Count: " + value).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Integer value = Jt.numberInput("Counter", Integer.class)
+                .value(5)
+                .step(1)
+                .use();
+            Jt.text("Count: " + value).use();
+        };
 
         // button exists
         // Initial value should be 5

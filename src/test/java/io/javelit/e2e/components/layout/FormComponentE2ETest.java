@@ -17,8 +17,10 @@ package io.javelit.e2e.components.layout;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,29 +32,22 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  * End-to-end tests for FormComponent and FormSubmitButtonComponent.
  */
 public class FormComponentE2ETest {
-    
+
     @Test
     void testFormSubmission(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-                        import io.javelit.core.JtContainer;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    JtContainer formContainer = Jt.form().use();
-                    Jt.text("used to get out of form").use();
-            
-                    // Add form inputs
-                    String name = Jt.textInput("Your Name").value("NOT_SET").use(formContainer);
-                    String email = Jt.textInput("Your Email").value("NOT_SET").use(formContainer);
-            
-                    // Add submit button
-                    boolean submitted = Jt.formSubmitButton("Submit Form").use(formContainer);
-            
-                    Jt.text("Name: " + name + ", Email: " + email).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            JtContainer formContainer = Jt.form().use();
+            Jt.text("used to get out of form").use();
+
+            // Add form inputs
+            String name = Jt.textInput("Your Name").value("NOT_SET").use(formContainer);
+            String email = Jt.textInput("Your Email").value("NOT_SET").use(formContainer);
+
+            // Add submit button
+            boolean submitted = Jt.formSubmitButton("Submit Form").use(formContainer);
+
+            Jt.text("Name: " + name + ", Email: " + email).use();
+        };
 
         // used to get out of inputs easily
         // Fill name form input

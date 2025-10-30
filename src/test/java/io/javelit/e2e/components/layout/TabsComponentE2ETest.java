@@ -15,9 +15,13 @@
  */
 package io.javelit.e2e.components.layout;
 
+import java.util.List;
+
 import com.microsoft.playwright.Locator;
+import io.javelit.components.layout.TabsComponent;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -31,32 +35,24 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  * End-to-end tests for TabsComponent.
  */
 public class TabsComponentE2ETest {
-    
+
     @Test
     void testTabSwitching(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.components.layout.TabsComponent;
-            import java.util.List;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    TabsComponent.Tabs tabs = Jt.tabs(List.of("Tab 0", "Tab 1", "Tab 2")).use();
-            
-                    // Content for Tab 1
-                    Jt.text("Content of Tab 0").use(tabs.tab(0));
-                    Jt.button("Button in Tab 0").use(tabs.tab(0));
-            
-                    // Content for Tab 2
-                    Jt.text("Content of Tab 1").use(tabs.tab(1));
-                    Jt.button("Button in Tab 1").use(tabs.tab(1));
-            
-                    // Content for Tab 3
-                    Jt.text("Content of Tab 2").use(tabs.tab(2));
-                    Jt.button("Button in Tab 2").use(tabs.tab(2));
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            TabsComponent.Tabs tabs = Jt.tabs(List.of("Tab 0", "Tab 1", "Tab 2")).use();
+
+            // Content for Tab 1
+            Jt.text("Content of Tab 0").use(tabs.tab(0));
+            Jt.button("Button in Tab 0").use(tabs.tab(0));
+
+            // Content for Tab 2
+            Jt.text("Content of Tab 1").use(tabs.tab(1));
+            Jt.button("Button in Tab 1").use(tabs.tab(1));
+
+            // Content for Tab 3
+            Jt.text("Content of Tab 2").use(tabs.tab(2));
+            Jt.button("Button in Tab 2").use(tabs.tab(2));
+        };
 
         // Wait for tabs to be visible
         // Check tab headers are visible

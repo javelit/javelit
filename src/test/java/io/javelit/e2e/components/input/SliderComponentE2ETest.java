@@ -16,8 +16,9 @@
 package io.javelit.e2e.components.input;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -31,20 +32,14 @@ public class SliderComponentE2ETest {
 
     @Test
     void testSliderDrag(TestInfo testInfo) {
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        double value = Jt.slider("Temperature")
-                            .min(0)
-                            .max(100)
-                            .value(50)
-                            .use();
-                        Jt.text("Temperature: " + value).use();
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            double value = Jt.slider("Temperature")
+                .min(0)
+                .max(100)
+                .value(50)
+                .use();
+            Jt.text("Temperature: " + value).use();
+        };
 
         // slider exists
         // intial value is 50

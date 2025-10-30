@@ -208,8 +208,8 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public boolean containsKey(Object key) {
-        if (key instanceof String) {
-            return delegate.containsKey(prefixKey((String) key));
+        if (key instanceof String sKey) {
+            return delegate.containsKey(prefixKey(sKey));
         }
         return delegate.containsKey(key);
     }
@@ -221,8 +221,8 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public Object get(Object key) {
-        if (key instanceof String) {
-            return delegate.get(prefixKey((String) key));
+        if (key instanceof String sKey) {
+            return delegate.get(prefixKey(sKey));
         }
         return delegate.get(key);
     }
@@ -234,8 +234,8 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public Object remove(Object key) {
-        if (key instanceof String) {
-            return delegate.remove(prefixKey((String) key));
+        if (key instanceof String sKey) {
+            return delegate.remove(prefixKey(sKey));
         }
         return delegate.remove(key);
     }
@@ -309,8 +309,8 @@ public class TypedMap implements Map<String, Object> {
 
     @Override
     public boolean remove(Object key, Object value) {
-        if (key instanceof String) {
-            return delegate.remove(prefixKey((String) key), value);
+        if (key instanceof String sKey) {
+            return delegate.remove(prefixKey(sKey), value);
         }
         return delegate.remove(key, value);
     }

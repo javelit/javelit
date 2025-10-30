@@ -16,8 +16,9 @@
 package io.javelit.e2e.core;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -34,30 +35,16 @@ public class MultiPageNoPersistWhenLeftE2ETest {
 
     @Test
     void testNoPersistWhenLeftBehavior(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
+        JtRunnable app = () -> {
+            var currentPage = Jt.navigation(
+                Jt.page("/page-1", MultiPageNoPersistWhenLeftE2ETest::page1).home().noPersistWhenLeft(),
+                Jt.page("/page-2", MultiPageNoPersistWhenLeftE2ETest::page2)
+            ).use();
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    var currentPage = Jt.navigation(
-                        Jt.page("/page-1", TestApp::page1).home().noPersistWhenLeft(),
-                        Jt.page("/page-2", TestApp::page2)
-                    ).use();
+            currentPage.run();
 
-                    currentPage.run();
-
-                    Jt.textInput("shared text input").use();
-                }
-
-                public static void page1() {
-                    Jt.textInput("page 1 text input").key("key1").use();
-                }
-
-                public static void page2() {
-                    Jt.textInput("page 2 text input").key("key1").use();
-                }
-            }
-            """;
+            Jt.textInput("shared text input").use();
+        };
 
         // Wait for page to load - should be on home page (Page1)
         // Fill the shared text input with "forever here"
@@ -123,5 +110,13 @@ public class MultiPageNoPersistWhenLeftE2ETest {
             assertEquals("should stay here", page2InputAgain.inputValue(),
                 "Page2 without noPersistWhenLeft should persist its state");
         });
+    }
+
+    private static void page1() {
+        Jt.textInput("page 1 text input").key("key1").use();
+    }
+
+    private static void page2() {
+        Jt.textInput("page 2 text input").key("key1").use();
     }
 }

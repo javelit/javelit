@@ -15,10 +15,13 @@
  */
 package io.javelit.e2e.core;
 
+import java.util.List;
+
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -37,24 +40,17 @@ public class NoRenderStatePersistenceE2ETest {
 
     @Test
     void testStatePersistenceBasedOnUserKey(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    var view = Jt.radio("View", List.of("view1", "view2")).use();
-                    if ("view1".equals(view)) {
-                        Jt.textInput("Persisted text").key("text1").use();
-                        Jt.textInput("Not persisted text because no user key").use();
-                        Jt.textInput("Not persisted text because noPersist").key("text3").noPersist().use();
-                        Jt.text("☝️ Enter some text, then click on view2 above").use();
-                    } else if ("view2".equals(view)) {
-                        Jt.text("☝️ Now go back to view1 and see if your text is still there").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            var view = Jt.radio("View", List.of("view1", "view2")).use();
+            if ("view1".equals(view)) {
+                Jt.textInput("Persisted text").key("text1").use();
+                Jt.textInput("Not persisted text because no user key").use();
+                Jt.textInput("Not persisted text because noPersist").key("text3").noPersist().use();
+                Jt.text("☝️ Enter some text, then click on view2 above").use();
+            } else if ("view2".equals(view)) {
+                Jt.text("☝️ Now go back to view1 and see if your text is still there").use();
             }
-            """;
+        };
 
         // Wait for page to load - view1 should be selected by default
         // Find the three text inputs using class selectors and nth()
@@ -125,23 +121,16 @@ public class NoRenderStatePersistenceE2ETest {
 
     @Test
     void testKeyReuseAcrossDifferentWidgetTypes(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.List;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    var view = Jt.radio("View", List.of("view1", "view2")).use();
-                    Jt.text(String.valueOf(Jt.componentsState().get("lol1"))).key("bro").use();
-                    if ("view1".equals(view)) {
-                        Jt.textInput("some text").value("default value").key("lol1").use();
-                    } else {
-                        Jt.numberInput("some number", Double.class).key("lol1").use();
-                    }
-                    Jt.text(String.valueOf(Jt.componentsState().get("lol1"))).use();
-                }
+        JtRunnable app = () -> {
+            var view = Jt.radio("View", List.of("view1", "view2")).use();
+            Jt.text(String.valueOf(Jt.componentsState().get("lol1"))).key("bro").use();
+            if ("view1".equals(view)) {
+                Jt.textInput("some text").value("default value").key("lol1").use();
+            } else {
+                Jt.numberInput("some number", Double.class).key("lol1").use();
             }
-            """;
+            Jt.text(String.valueOf(Jt.componentsState().get("lol1"))).use();
+        };
 
         // Step 1: Launch app (view1 selected by default)
         // Step 2: Verify first text displays "null", second text displays "default value"

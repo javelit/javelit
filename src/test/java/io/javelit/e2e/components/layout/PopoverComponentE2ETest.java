@@ -16,8 +16,10 @@
 package io.javelit.e2e.components.layout;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.core.Jt;
+import io.javelit.core.JtContainer;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,23 +32,16 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  * End-to-end tests for PopoverComponent.
  */
 public class PopoverComponentE2ETest {
-    
+
     @Test
     void testPopoverToggle(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import io.javelit.core.JtContainer;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    JtContainer popoverContainer = Jt.popover("Click me").use();
-                    Jt.text("Content inside popover").use(popoverContainer);
-                    Jt.button("Popover Button").use(popoverContainer);
-            
-                    Jt.text("Content outside popover").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            JtContainer popoverContainer = Jt.popover("Click me").use();
+            Jt.text("Content inside popover").use(popoverContainer);
+            Jt.button("Popover Button").use(popoverContainer);
+
+            Jt.text("Content outside popover").use();
+        };
 
         // Wait for popover to be visible
         // Check popover trigger is visible

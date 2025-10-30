@@ -34,36 +34,102 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ImageComponentE2ETest {
 
     @Test
-    void testPublicUrl(TestInfo testInfo) {
+    void testImageVariations(TestInfo testInfo) {
         final @Language("java") String app = """
             import io.javelit.core.Jt;
+            import java.nio.file.Path;
 
             public class TestApp {
                 public static void main(String[] args) {
+                    // Test 1: Public URL
                     Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
                         .caption("Mountain landscape from Unsplash")
+                        .use();
+
+                    // Test 2: Local file
+                    Jt.image(Path.of("examples/image/mountains.jpg"))
+                        .caption("Mountains from local file")
+                        .use();
+
+                    // Test 3: SVG
+                    String svg = \"""
+                        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="80" fill="#4CAF50" />
+                            <path d="M 60 100 L 90 130 L 140 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        \""";
+                    Jt.imageFromSvg(svg)
+                        .caption("Simple SVG checkmark icon")
+                        .use();
+
+                    // Test 4: Caption with markdown
+                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
+                        .caption("**Beautiful mountains** in *stunning* detail. [Learn more](https://unsplash.com)")
+                        .use();
+
+                    // Test 5: Width content
+                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
+                        .width("content")
+                        .caption("Content width (natural size)")
+                        .use();
+
+                    // Test 6: Width stretch
+                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
+                        .width("stretch")
+                        .caption("Stretched to full width")
+                        .use();
+
+                    // Test 7: Width pixels
+                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
+                        .width(400)
+                        .caption("Fixed width: 400px")
                         .use();
                 }
             }
             """;
 
-        // Verify image component is rendered
-        // Verify img element exists
-        // Verify src attribute
-        // Verify caption is present
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
+            // Verify all 7 image components are rendered
+            assertThat(page.locator("#app jt-image").nth(0)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(1)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(2)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(3)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(4)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(5)).isVisible(WAIT_1_SEC_MAX);
+            assertThat(page.locator("#app jt-image").nth(6)).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify img element exists
-            assertThat(page.locator("#app jt-image img")).isVisible(WAIT_1_SEC_MAX);
+            // Test 1: Public URL
+            assertThat(page.locator("#app jt-image").nth(0).locator("img")).isVisible(WAIT_1_SEC_MAX);
+            String src1 = page.locator("#app jt-image").nth(0).locator("img").getAttribute("src");
+            assertTrue(src1.contains("mountains2.jpg"), "Image src should contain mountains2.jpg, got: " + src1);
+            assertThat(page.locator("#app jt-image").nth(0).locator(".caption")).hasText("Mountain landscape from Unsplash", WAIT_1_SEC_MAX_TEXT);
 
-            // Verify src attribute
-            String src = page.locator("#app jt-image img").getAttribute("src");
-            assertTrue(src.contains("mountains2.jpg"), "Image src should contain mountains2.jpg, got: " + src);
+            // Test 2: Local file
+            assertThat(page.locator("#app jt-image").nth(1).locator("img")).isVisible(WAIT_1_SEC_MAX);
+            String src2 = page.locator("#app jt-image").nth(1).locator("img").getAttribute("src");
+            assertTrue(src2.startsWith("/_/media/"), "Image src should start with /_/media/, got: " + src2);
+            assertThat(page.locator("#app jt-image").nth(1).locator(".caption")).hasText("Mountains from local file", WAIT_1_SEC_MAX_TEXT);
 
-            // Verify caption is present
-            assertThat(page.locator("#app jt-image .caption")).hasText("Mountain landscape from Unsplash", WAIT_1_SEC_MAX_TEXT);
+            // Test 3: SVG
+            assertThat(page.locator("#app jt-image").nth(2).locator("img")).isVisible(WAIT_1_SEC_MAX);
+            String src3 = page.locator("#app jt-image").nth(2).locator("img").getAttribute("src");
+            assertTrue(src3.startsWith("data:image/svg+xml,"), "Image src should be SVG data URI, got: " + src3);
+            assertThat(page.locator("#app jt-image").nth(2).locator(".caption")).hasText("Simple SVG checkmark icon", WAIT_1_SEC_MAX_TEXT);
+
+            // Test 4: Caption with markdown
+            assertThat(page.locator("#app jt-image").nth(3).locator(".caption strong")).hasText("Beautiful mountains", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("#app jt-image").nth(3).locator(".caption em")).hasText("stunning", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("#app jt-image").nth(3).locator(".caption a")).hasText("Learn more", WAIT_1_SEC_MAX_TEXT);
+            assertThat(page.locator("#app jt-image").nth(3).locator(".caption a")).hasAttribute("href", "https://unsplash.com", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+            // Test 5: Width content
+            assertThat(page.locator("#app jt-image").nth(4)).hasAttribute("width", "content", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+            // Test 6: Width stretch
+            assertThat(page.locator("#app jt-image").nth(5)).hasAttribute("width", "stretch", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+            // Test 7: Width pixels
+            assertThat(page.locator("#app jt-image").nth(6)).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 
@@ -85,41 +151,6 @@ public class ImageComponentE2ETest {
 
             // Verify src points to static folder
             assertThat(page.locator("#app jt-image img")).hasAttribute("src", "app/static/mountains.jpg", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testLocalFile(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.nio.file.Path;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.image(Path.of("examples/image/mountains.jpg"))
-                        .caption("Mountains from local file")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify img element exists
-        // Verify src contains media hash (starts with /_/media/)
-        // Verify caption
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify img element exists
-            assertThat(page.locator("#app jt-image img")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify src contains media hash (starts with /_/media/)
-            String src = page.locator("#app jt-image img").getAttribute("src");
-            assertTrue(src.startsWith("/_/media/"), "Image src should start with /_/media/, got: " + src);
-
-            // Verify caption
-            assertThat(page.locator("#app jt-image .caption")).hasText("Mountains from local file", WAIT_1_SEC_MAX_TEXT);
         });
     }
 
@@ -158,152 +189,6 @@ public class ImageComponentE2ETest {
 
             // Verify caption
             assertThat(page.locator("#app jt-image .caption")).hasText("Programmatically generated hexagon (800x400)", WAIT_1_SEC_MAX_TEXT);
-        });
-    }
-
-    @Test
-    void testSvg(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    String svg = \"\"\"
-                        <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="100" cy="100" r="80" fill="#4CAF50" />
-                            <path d="M 60 100 L 90 130 L 140 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        \"\"\";
-                    Jt.imageFromSvg(svg)
-                        .caption("Simple SVG checkmark icon")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify img element exists
-        // Verify src is a data URI with SVG
-        // Verify caption
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify img element exists
-            assertThat(page.locator("#app jt-image img")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify src is a data URI with SVG
-            String src = page.locator("#app jt-image img").getAttribute("src");
-            assertTrue(src.startsWith("data:image/svg+xml,"), "Image src should be SVG data URI, got: " + src);
-
-            // Verify caption
-            assertThat(page.locator("#app jt-image .caption")).hasText("Simple SVG checkmark icon", WAIT_1_SEC_MAX_TEXT);
-        });
-    }
-
-    @Test
-    void testCaptionWithMarkdown(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
-                        .caption("**Beautiful mountains** in *stunning* detail. [Learn more](https://unsplash.com)")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify caption contains markdown formatted elements
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify caption contains markdown formatted elements
-            assertThat(page.locator("#app jt-image .caption strong")).hasText("Beautiful mountains", WAIT_1_SEC_MAX_TEXT);
-            assertThat(page.locator("#app jt-image .caption em")).hasText("stunning", WAIT_1_SEC_MAX_TEXT);
-            assertThat(page.locator("#app jt-image .caption a")).hasText("Learn more", WAIT_1_SEC_MAX_TEXT);
-            assertThat(page.locator("#app jt-image .caption a")).hasAttribute("href", "https://unsplash.com", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testWidthContent(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
-                        .width("content")
-                        .caption("Content width (natural size)")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify width attribute
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify width attribute
-            assertThat(page.locator("#app jt-image")).hasAttribute("width", "content", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testWidthStretch(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
-                        .width("stretch")
-                        .caption("Stretched to full width")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify width attribute
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify width attribute
-            assertThat(page.locator("#app jt-image")).hasAttribute("width", "stretch", WAIT_1_SEC_MAX_ATTRIBUTE);
-        });
-    }
-
-    @Test
-    void testWidthPixels(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
-                        .width(400)
-                        .caption("Fixed width: 400px")
-                        .use();
-                }
-            }
-            """;
-
-        // Verify image component is rendered
-        // Verify width attribute
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify image component is rendered
-            assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
-
-            // Verify width attribute
-            assertThat(page.locator("#app jt-image")).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 }

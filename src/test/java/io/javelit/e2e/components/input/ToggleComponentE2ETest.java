@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.input;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,23 +30,17 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  * End-to-end tests for ToggleComponent.
  */
 public class ToggleComponentE2ETest {
-    
+
     @Test
     void testSimpleToggleClick(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    boolean toggle = Jt.toggle("Enable notifications").use();
-                    if (toggle) {
-                        Jt.text("Notifications are **enabled**").use();
-                    } else {
-                        Jt.text("Notifications are **disabled**").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            boolean toggle = Jt.toggle("Enable notifications").use();
+            if (toggle) {
+                Jt.text("Notifications are **enabled**").use();
+            } else {
+                Jt.text("Notifications are **disabled**").use();
             }
-            """;
+        };
 
         // Toggle component exists
         // Initial state shows "disabled" message
@@ -71,20 +66,14 @@ public class ToggleComponentE2ETest {
 
     @Test
     void testToggleWithDefaultValueTrue(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    boolean toggle = Jt.toggle("Auto-save").value(true).use();
-                    if (toggle) {
-                        Jt.text("Notifications are **enabled**").use();
-                    } else {
-                        Jt.text("Notifications are **disabled**").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            boolean toggle = Jt.toggle("Auto-save").value(true).use();
+            if (toggle) {
+                Jt.text("Notifications are **enabled**").use();
+            } else {
+                Jt.text("Notifications are **disabled**").use();
             }
-            """;
+        };
 
         // Toggle component exists
         // Initial state shows "enabled" message

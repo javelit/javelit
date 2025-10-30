@@ -19,8 +19,9 @@ import java.util.regex.Pattern;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -36,42 +37,26 @@ public class PageLinkComponentE2ETest {
 
     @Test
     void testBasicFunctionality(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    final var currentPage = Jt.navigation(
-                        Jt.page("/home", TestApp::home).title("Home").home(),
-                        Jt.page("/about", TestApp::about).title("About")
-                    ).use();
-            
-                    currentPage.run();
-            
-                    Jt.text("Navigation Links:").use();
-            
-                    // Internal page links with various configurations
-                    Jt.pageLink("/home").icon("🏠").use();
-                    Jt.pageLink("/about").icon("ℹ️").width("stretch").use();
-            
-                    // External link
-                    Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
-            
-                    // Disabled link
-                    Jt.pageLink("/about").disabled(true).use();
-                }
-            
-                public static void home() {
-                    Jt.text("Home page content").use();
-                    Jt.pageLink("/about").use();
-                }
-            
-                public static void about() {
-                    Jt.text("About page content").use();
-                    Jt.pageLink("/home").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            final var currentPage = Jt.navigation(
+                Jt.page("/home", PageLinkComponentE2ETest::home).title("Home").home(),
+                Jt.page("/about", PageLinkComponentE2ETest::about).title("About")
+            ).use();
+
+            currentPage.run();
+
+            Jt.text("Navigation Links:").use();
+
+            // Internal page links with various configurations
+            Jt.pageLink("/home").icon("🏠").use();
+            Jt.pageLink("/about").icon("ℹ️").width("stretch").use();
+
+            // External link
+            Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
+
+            // Disabled link
+            Jt.pageLink("/about").disabled(true).use();
+        };
 
         // Verify page links are visible
         // Navigate to About page
@@ -107,32 +92,28 @@ public class PageLinkComponentE2ETest {
         });
     }
 
+    private static void home() {
+        Jt.text("Home page content").use();
+        Jt.pageLink("/about").use();
+    }
+
+    private static void about() {
+        Jt.text("About page content").use();
+        Jt.pageLink("/home").use();
+    }
+
     @Test
     void testActiveStateDetection(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    final var currentPage = Jt.navigation(
-                        Jt.page("/home", TestApp::home).title("Home").home(),
-                        Jt.page("/about", TestApp::about).title("About")
-                    ).use();
-            
-                    currentPage.run();
-                    Jt.pageLink("/home").icon("🏠").use();
-                    Jt.pageLink("/about").icon("ℹ️").use();
-                }
-            
-                public static void home() {
-                    Jt.text("Home page").use();
-                }
-        
-                public static void about() {
-                    Jt.text("About page").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            final var currentPage = Jt.navigation(
+                Jt.page("/home", PageLinkComponentE2ETest::home2).title("Home").home(),
+                Jt.page("/about", PageLinkComponentE2ETest::about2).title("About")
+            ).use();
+
+            currentPage.run();
+            Jt.pageLink("/home").icon("🏠").use();
+            Jt.pageLink("/about").icon("ℹ️").use();
+        };
 
         // Start on home page
         // Home link should have active state
@@ -168,5 +149,13 @@ public class PageLinkComponentE2ETest {
             assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
             assertThat(page.locator("jt-page-link").last()).not().hasAttribute("is-active", "");
         });
+    }
+
+    private static void home2() {
+        Jt.text("Home page").use();
+    }
+
+    private static void about2() {
+        Jt.text("About page").use();
     }
 }

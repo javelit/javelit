@@ -15,8 +15,12 @@
  */
 package io.javelit.e2e.core;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.javelit.core.Jt;
+import io.javelit.core.JtComponent;
+import io.javelit.core.JtComponentBuilder;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,65 +33,54 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class ClientMessageProcessingErrorE2ETest {
 
+    // Minimal component with a button that triggers validation error
+    static class MinimalButtonComponent extends JtComponent<Boolean> {
+        private final String key;
+
+        static class Builder extends JtComponentBuilder<Boolean, MinimalButtonComponent, Builder> {
+            @Override
+            public MinimalButtonComponent build() {
+                return null; // Not used
+            }
+        }
+
+        public MinimalButtonComponent(String userKey) {
+            super(new Builder().key(userKey), false, null);
+            this.key = userKey;
+        }
+
+        @Override
+        protected Boolean validate(Boolean value) {
+            throw new RuntimeException("Validation failed!");
+        }
+
+        @Override
+        protected String register() {
+            return null; // No web component needed
+        }
+
+        @Override
+        protected String render() {
+            return "<button onclick=\"window.javelit.sendComponentUpdate('" + getInternalKey() + "', true)\">Click me</button>";
+        }
+
+        @Override
+        protected TypeReference<Boolean> getTypeReference() {
+            return new TypeReference<>() {};
+        }
+
+        @Override
+        protected void resetIfNeeded() {
+            currentValue = false;
+        }
+    }
+
     @Test
     void testValidateErrorShowsModal(TestInfo testInfo) {
-        // App with a minimal component that throws an error in validate()
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                import io.javelit.core.JtComponent;
-                import io.javelit.core.JtComponentBuilder;
-                import com.fasterxml.jackson.core.type.TypeReference;
-
-                public class TestApp {
-
-                    // Minimal component with a button that triggers validation error
-                    static class MinimalButtonComponent extends JtComponent<Boolean> {
-                        private final String key;
-
-                        static class Builder extends JtComponentBuilder<Boolean, MinimalButtonComponent, Builder> {
-                            @Override
-                            public MinimalButtonComponent build() {
-                                return null; // Not used
-                            }
-                        }
-
-                        public MinimalButtonComponent(String userKey) {
-                            super(new Builder().key(userKey), false, null);
-                            this.key = userKey;
-                        }
-
-                        @Override
-                        protected Boolean validate(Boolean value) {
-                            throw new RuntimeException("Validation failed!");
-                        }
-
-                        @Override
-                        protected String register() {
-                            return null; // No web component needed
-                        }
-
-                        @Override
-                        protected String render() {
-                            return "<button onclick=\\"window.javelit.sendComponentUpdate('" + getInternalKey() + "', true)\\">Click me</button>";
-                        }
-
-                        @Override
-                        protected TypeReference<Boolean> getTypeReference() {
-                            return new TypeReference<>() {};
-                        }
-
-                        @Override
-                        protected void resetIfNeeded() {
-                            currentValue = false;
-                        }
-                    }
-
-                    public static void main(String[] args) {
-                        Jt.title("Test App").use();
-                        new MinimalButtonComponent("test-button").use();
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            Jt.title("Test App").use();
+            new MinimalButtonComponent("test-button").use();
+        };
 
         // Wait for the app to load
         // Click the button

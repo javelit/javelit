@@ -15,171 +15,93 @@
  */
 package io.javelit.e2e.components.data;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 /**
  * End-to-end tests for TableComponent.
  */
 public class TableComponentE2ETest {
 
-    @Test
-    void testTable_WithObjectList(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.Arrays;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.table(Arrays.asList(
-                        new Person("Alice", "Engineer"),
-                        new Person("Bob", "Designer")
-                    )).use();
-                }
-
-                public record Person(String name, String role){}
-            }
-            """;
-
-        // Wait for table to be visible
-        // Check headers
-        // Check data
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for table to be visible
-            assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-
-            // Check headers
-            assertThat(page.locator("jt-table th")).hasCount(2);
-            assertThat(page.getByText("name")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("role")).isVisible(WAIT_1_SEC_MAX);
-
-            // Check data
-            assertThat(page.getByText("Alice")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Engineer")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Bob")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Designer")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    record Person(String name, String role) {}
 
     @Test
-    void testTable_WithObjectArray(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
+    void testTableVariations(TestInfo testInfo) {
+        JtRunnable app = () -> {
+            // Test 1: Table with object list
+            Jt.table(Arrays.asList(
+                new Person("Alice", "Engineer"),
+                new Person("Bob", "Designer")
+            )).use();
 
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.table(new Person[] {
-                        new Person("Alice", "Engineer"),
-                        new Person("Bob", null)
-                    }).use();
-                }
+            // Test 2: Table with object array (including null handling)
+            Jt.table(new Person[]{
+                new Person("Charlie", "Manager"),
+                new Person("Diana", null)
+            }).use();
 
-                public record Person(String name, String role){}
-            }
-            """;
+            // Test 3: Table from array columns
+            Map<String, Object[]> arrayColumns = new HashMap<>();
+            arrayColumns.put("Product", new String[]{"Laptop", "Mouse"});
+            arrayColumns.put("Category", new String[]{"Electronics", "Accessories"});
+            Jt.tableFromArrayColumns(arrayColumns).use();
 
-        // Wait for table to be visible
-        // Check headers
-        // Check data including null handling
-        // Check null value displays as "—"
+            // Test 4: Table from list columns
+            Map<String, List<Object>> listColumns = new HashMap<>();
+            listColumns.put("Name", Arrays.asList("Eve", "Frank"));
+            listColumns.put("Status", Arrays.asList("Active", "Inactive"));
+            Jt.tableFromListColumns(listColumns).use();
+        };
+
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for table to be visible
-            assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
+            // Verify all 4 tables are rendered
+            assertThat(page.locator("jt-table")).hasCount(4, new LocatorAssertions.HasCountOptions().setTimeout(1000));
 
-            // Check headers
-            assertThat(page.locator("jt-table th")).hasCount(2);
-            assertThat(page.getByText("name")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("role")).isVisible(WAIT_1_SEC_MAX);
+            // Test 1: Table with object list
+            assertThat(page.locator("jt-table").nth(0).locator("th")).hasCount(2);
+            assertThat(page.locator("jt-table").nth(0)).containsText("name");
+            assertThat(page.locator("jt-table").nth(0)).containsText("role");
+            assertThat(page.locator("jt-table").nth(0)).containsText("Alice");
+            assertThat(page.locator("jt-table").nth(0)).containsText("Engineer");
+            assertThat(page.locator("jt-table").nth(0)).containsText("Bob");
+            assertThat(page.locator("jt-table").nth(0)).containsText("Designer");
 
-            // Check data including null handling
-            assertThat(page.getByText("Alice")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Engineer")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Bob")).isVisible(WAIT_1_SEC_MAX);
+            // Test 2: Table with object array (null handling)
+            assertThat(page.locator("jt-table").nth(1).locator("th")).hasCount(2);
+            assertThat(page.locator("jt-table").nth(1)).containsText("Charlie");
+            assertThat(page.locator("jt-table").nth(1)).containsText("Manager");
+            assertThat(page.locator("jt-table").nth(1)).containsText("Diana");
+            assertThat(page.locator("jt-table").nth(1).locator(".empty-cell").first()).hasText("null");
 
-            // Check null value displays as "—"
-            assertThat(page.locator("jt-table .empty-cell").first()).hasText("null");
-        });
-    }
+            // Test 3: Table from array columns
+            assertThat(page.locator("jt-table").nth(2).locator("th")).hasCount(2);
+            assertThat(page.locator("jt-table").nth(2)).containsText("Product");
+            assertThat(page.locator("jt-table").nth(2)).containsText("Category");
+            assertThat(page.locator("jt-table").nth(2)).containsText("Laptop");
+            assertThat(page.locator("jt-table").nth(2)).containsText("Electronics");
+            assertThat(page.locator("jt-table").nth(2)).containsText("Mouse");
+            assertThat(page.locator("jt-table").nth(2)).containsText("Accessories");
 
-    @Test
-    void testTableFromArrayColumns(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.HashMap;
-            import java.util.Map;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Map<String, Object[]> columns = new HashMap<>();
-                    columns.put("Product", new String[]{"Laptop", "Mouse"});
-                    columns.put("Category", new String[]{"Electronics", "Accessories"});
-                    Jt.tableFromArrayColumns(columns).use();
-                }
-            }
-            """;
-
-        // Wait for table to be visible
-        // Check headers
-        // Check data
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for table to be visible
-            assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-
-            // Check headers
-            assertThat(page.locator("jt-table th")).hasCount(2);
-            assertThat(page.getByText("Product")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Category")).isVisible(WAIT_1_SEC_MAX);
-
-            // Check data
-            assertThat(page.getByText("Laptop")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Electronics")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Mouse")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Accessories")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
-
-    @Test
-    void testTableFromListColumns(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.util.Arrays;
-            import java.util.HashMap;
-            import java.util.Map;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Map<String, java.util.List<Object>> columns = new HashMap<>();
-                    columns.put("Name", Arrays.asList("Alice", "Bob"));
-                    columns.put("Status", Arrays.asList("Active", "Inactive"));
-                    Jt.tableFromListColumns(columns).use();
-                }
-            }
-            """;
-
-        // Wait for table to be visible
-        // Check headers
-        // Check data (verify table has correct number of rows and basic content)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for table to be visible
-            assertThat(page.locator("jt-table")).hasCount(1, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-
-            // Check headers
-            assertThat(page.locator("jt-table th")).hasCount(2);
-            assertThat(page.getByText("Name")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Status")).isVisible(WAIT_1_SEC_MAX);
-
-            // Check data (verify table has correct number of rows and basic content)
-            assertThat(page.locator("jt-table tbody tr")).hasCount(2);
-            assertThat(page.locator("jt-table")).containsText("Alice");
-            assertThat(page.locator("jt-table")).containsText("Active");
-            assertThat(page.locator("jt-table")).containsText("Bob");
-            assertThat(page.locator("jt-table")).containsText("Inactive");
+            // Test 4: Table from list columns
+            assertThat(page.locator("jt-table").nth(3).locator("th")).hasCount(2);
+            assertThat(page.locator("jt-table").nth(3)).containsText("Name");
+            assertThat(page.locator("jt-table").nth(3)).containsText("Status");
+            assertThat(page.locator("jt-table").nth(3).locator("tbody tr")).hasCount(2);
+            assertThat(page.locator("jt-table").nth(3)).containsText("Eve");
+            assertThat(page.locator("jt-table").nth(3)).containsText("Active");
+            assertThat(page.locator("jt-table").nth(3)).containsText("Frank");
+            assertThat(page.locator("jt-table").nth(3)).containsText("Inactive");
         });
     }
 }

@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.input;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -29,20 +30,14 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  * End-to-end tests for ButtonComponent.
  */
 public class ButtonComponentE2ETest {
-    
+
     @Test
     void testButtonClick(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    if (Jt.button("Click Me").use()) {
-                        Jt.text("Button was clicked!").use();
-                    }
-                }
+        JtRunnable app = () -> {
+            if (Jt.button("Click Me").use()) {
+                Jt.text("Button was clicked!").use();
             }
-            """;
+        };
 
         // button exists
         // button text is correct

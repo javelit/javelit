@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import static com.google.common.base.Preconditions.checkArgument;
 
 // use RunnableReloader instead
-@Deprecated()
+@Deprecated
 public class ClassReloader extends Reloader {
 
     private final String appClassName;

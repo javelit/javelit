@@ -25,7 +25,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import static io.javelit.core.utils.EmojiUtils.ensureIsValidIcon;
 
 public final class JtPage {
-    @Nonnull private final Runnable pageApp;
+    @Nonnull private final JtRunnable pageApp;
     @Nonnull private final String title;
     @Nonnull private final String icon;
     @Nonnull private final String urlPath;
@@ -43,7 +43,7 @@ public final class JtPage {
         this.section = builder.section;
     }
 
-    public static Builder builder(final @Nonnull String path, final @Nonnull Runnable page) {
+    public static Builder builder(final @Nonnull String path, final @Nonnull JtRunnable page) {
         return new Builder(path, page);
     }
 
@@ -78,6 +78,10 @@ public final class JtPage {
         try {
             StateManager.setPageContext(this);
             pageApp.run();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             StateManager.clearPageContext();
         }
@@ -112,7 +116,7 @@ public final class JtPage {
 
 
     public static final class Builder {
-        private final @Nonnull Runnable pageApp;
+        private final @Nonnull JtRunnable pageApp;
         private final String urlPath;
         private String title;
         private String icon;
@@ -120,7 +124,7 @@ public final class JtPage {
         private boolean noPersistWhenLeft;
         private List<String> section;
 
-        private Builder(final @Nonnull String path, final @Nonnull Runnable pageApp) {
+        private Builder(final @Nonnull String path, final @Nonnull JtRunnable pageApp) {
             this.urlPath = cleanPath(path);
             this.pageApp = pageApp;
             this.title = pathToTitle(this.urlPath);

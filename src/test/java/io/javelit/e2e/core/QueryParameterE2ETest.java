@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.core;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,25 +31,19 @@ public class QueryParameterE2ETest {
 
     @Test
     void testQueryParameters(TestInfo testInfo) {
-        final @Language("java") String app = """
-                import io.javelit.core.Jt;
-                
-                public class TestApp {
-                    public static void main(String[] args) {
-                        var params = Jt.urlQueryParameters();
-                        Jt.title("Query Parameter Test").use();
-                        if (params.containsKey("name")) {
-                            Jt.text("Name: " + params.get("name").getFirst()).use();
-                        }
-                        if (params.containsKey("id")) {
-                            Jt.text("ID: " + params.get("id").getFirst()).use();
-                        }
-                        if (params.isEmpty()) {
-                            Jt.text("No query parameters").use();
-                        }
-                    }
-                }
-                """;
+        JtRunnable app = () -> {
+            var params = Jt.urlQueryParameters();
+            Jt.title("Query Parameter Test").use();
+            if (params.containsKey("name")) {
+                Jt.text("Name: " + params.get("name").getFirst()).use();
+            }
+            if (params.containsKey("id")) {
+                Jt.text("ID: " + params.get("id").getFirst()).use();
+            }
+            if (params.isEmpty()) {
+                Jt.text("No query parameters").use();
+            }
+        };
 
         // First verify no query params
         // Navigate with query parameters

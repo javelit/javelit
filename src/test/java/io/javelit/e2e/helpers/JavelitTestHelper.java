@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 
 import io.javelit.core.BuildSystem;
+import io.javelit.core.JtRunnable;
 import io.javelit.core.Server;
 import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public final class JavelitTestHelper {
      * @param app runnable of the app
      * @return The started Server instance
      */
-    public static Server startEmbeddedServer(final @Nonnull Runnable app) {
+    public static Server startEmbeddedServer(final @Nonnull JtRunnable app) {
         final int port = PortAllocator.getNextAvailablePort();
         final Server server = Server.builder(app, port).build();
         return startServer(server);

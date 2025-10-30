@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.core;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,15 +31,9 @@ public class UnusedComponentsWarningE2ETest {
 
     @Test
     void testUnusedComponentWarning(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.text("Hello World");
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Jt.text("Hello World");
+        };
 
         // Verify warning text appears
         PlaywrightUtils.runInBrowser(testInfo, app, page -> {

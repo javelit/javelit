@@ -28,6 +28,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Tracing;
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import io.javelit.core.JtRunnable;
 import io.javelit.core.Server;
 import jakarta.annotation.Nonnull;
 import org.junit.jupiter.api.TestInfo;
@@ -36,6 +37,8 @@ public final class PlaywrightUtils {
 
     public static final LocatorAssertions.IsVisibleOptions WAIT_1_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
             1000);
+    public static final LocatorAssertions.IsVisibleOptions WAIT_5_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
+            5000);
     public static final LocatorAssertions.IsVisibleOptions WAIT_100_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
             100);
     public static final LocatorAssertions.IsVisibleOptions WAIT_50_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
@@ -63,7 +66,7 @@ public final class PlaywrightUtils {
 
     // set this to true in dev to remove HEADLESS browser and add traces
     private static final boolean DEBUG = false;
-    public static final BrowserType.LaunchOptions HEADLESS = new BrowserType.LaunchOptions().setHeadless(true);
+    public static final BrowserType.LaunchOptions HEADLESS = new BrowserType.LaunchOptions().setHeadless(!DEBUG);
 
     public static void runInBrowser(final @Nonnull TestInfo testInfo,
                                     final @Nonnull Path appFile,
@@ -146,7 +149,7 @@ public final class PlaywrightUtils {
     }
 
     public static void runInBrowser(final @Nonnull TestInfo testInfo,
-                                    final @Nonnull Runnable appClass,
+                                    final @Nonnull JtRunnable appMethod,
                                     final @Nonnull Consumer<Page> run) {
         Server server = null;
         BrowserContext context = null;
@@ -158,7 +161,7 @@ public final class PlaywrightUtils {
                 context = browser.newContext();
                 context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             }
-            server = JavelitTestHelper.startEmbeddedServer(appClass);
+            server = JavelitTestHelper.startEmbeddedServer(appMethod);
             page.navigate("http://localhost:" + server.port);
             run.accept(page);
         } finally {

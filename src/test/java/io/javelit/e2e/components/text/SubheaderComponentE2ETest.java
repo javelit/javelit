@@ -15,8 +15,9 @@
  */
 package io.javelit.e2e.components.text;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -27,19 +28,13 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  * End-to-end tests for SubheaderComponent.
  */
 public class SubheaderComponentE2ETest {
-    
+
     @Test
     void testSubheaderDisplay(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.subheader("subheader").use();
-                    Jt.text("Some content under the title").use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            Jt.subheader("subheader").use();
+            Jt.text("Some content under the title").use();
+        };
 
         // Wait for subheader component to be visible
         // Verify it renders as h3

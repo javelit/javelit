@@ -16,8 +16,9 @@
 package io.javelit.e2e.core;
 
 import com.microsoft.playwright.Locator;
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -34,19 +35,13 @@ public class WidgetIdentityE2ETest {
 
     @Test
     void testWidgetIdentityWithAndWithoutKey(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    int minimum = Jt.numberInput("mini", Integer.class).minValue(0).maxValue(10).use();
-                    int slider1 = Jt.slider("no key").min(minimum).use().intValue();
-                    Jt.text("keyed value before: " + String.valueOf(Jt.componentsState().get("key1"))).use();
-                    int slider2 = Jt.slider("with key").key("key1").min(minimum).use().intValue();
-                    Jt.text("keyed value after: " + String.valueOf(Jt.componentsState().get("key1"))).use();
-                }
-            }
-            """;
+        JtRunnable app = () -> {
+            int minimum = Jt.numberInput("mini", Integer.class).minValue(0).maxValue(10).use();
+            int slider1 = Jt.slider("no key").min(minimum).use().intValue();
+            Jt.text("keyed value before: " + String.valueOf(Jt.componentsState().get("key1"))).use();
+            int slider2 = Jt.slider("with key").key("key1").min(minimum).use().intValue();
+            Jt.text("keyed value after: " + String.valueOf(Jt.componentsState().get("key1"))).use();
+        };
 
         // Wait for page to load
         // Verify initial state
