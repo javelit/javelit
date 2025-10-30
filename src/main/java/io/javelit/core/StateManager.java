@@ -49,6 +49,7 @@ final class StateManager {
 
     private static class AppExecution {
         private final String sessionId;
+        private final RenderServer renderServer;
         // {container_path: {component_internal_key: component_object}}
         // LinkedHashMap because the insertion order will correspond to the top to bottom order of the app script
         private final Map<JtContainer, LinkedHashMap<String, JtComponent<?>>> containerToComponents = new LinkedHashMap<>();
@@ -68,8 +69,9 @@ final class StateManager {
         // this is used to implement: 1: key isolation by page  2: state persistence across pages when page is changed
         private JtPage executionPage;
 
-        private AppExecution(final String sessionId) {
+        private AppExecution(final @Nonnull String sessionId, final @Nonnull RenderServer renderServer) {
             this.sessionId = sessionId;
+            this.renderServer = renderServer;
         }
     }
 
@@ -80,12 +82,6 @@ final class StateManager {
     private static final Map<String, AppExecution> LAST_EXECUTIONS = new ConcurrentHashMap<>();
     // the cache is shared by all sessions
     private static final TypedMap CACHE = new TypedMap(new ConcurrentHashMap<>());
-
-    /**
-     * A NoOpRenderServer to catch issues without breaking.
-     * This value is supposed to be changed to a proper rendering server with [#setRenderServer(RenderServer)]
-     */
-    private static @Nonnull RenderServer renderServer = new NoOpRenderServer();
 
     enum ExecutionStatus {
         BEGIN,
@@ -104,10 +100,6 @@ final class StateManager {
 
         void sendStatus(final @Nonnull String sessionId, final @Nonnull ExecutionStatus executionStatus,
                         final @Nullable Map<String, Integer> unusedComponents);
-    }
-
-    static void setRenderServer(final @Nonnull RenderServer sender) {
-        renderServer = sender;
     }
 
     private StateManager() {
@@ -315,11 +307,12 @@ final class StateManager {
      * - endExecution
      */
     // Contract: CURRENT_EXECUTION_IN_THREAD value will always be set properly, except if the CURRENT_EXECUTION_IN_THREAD already has a value, which would correspond to an incorrect implementation of the endExecution method
-    static void beginExecution(final String sessionId) {
+    static void beginExecution(final String sessionId, final RenderServer renderServer) {
         checkState(CURRENT_EXECUTION_IN_THREAD.get() == null,
                    "Attempting to get a context without having removed the previous one. Application is in a bad state. Please reach out to support.");
-        CURRENT_EXECUTION_IN_THREAD.set(new AppExecution(sessionId));
-        renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN, null);
+        final AppExecution execution = new AppExecution(sessionId, renderServer);
+        CURRENT_EXECUTION_IN_THREAD.set(execution);
+        execution.renderServer.sendStatus(sessionId, ExecutionStatus.BEGIN, null);
 
         final InternalSessionState internalSessionState = SESSIONS.computeIfAbsent(sessionId,
                                                                                    k -> new InternalSessionState());
@@ -455,7 +448,7 @@ final class StateManager {
         // send the component with clear instruction if needed
         final Set<String> registeredInFrontend =  session.getRegisteredInFrontend();
         final String frontendRegistrationKey = component.frontendRegistrationKey();
-        renderServer.send(currentExecution.sessionId,
+        currentExecution.renderServer.send(currentExecution.sessionId,
                           component.render(),
                           registeredInFrontend.contains(frontendRegistrationKey) ? null : component.register(),
                           container,
@@ -510,7 +503,7 @@ final class StateManager {
                         final LinkedHashMap<String, JtComponent<?>> previousComponents = previousExecution.containerToComponents.get(
                                 containerInPrevious);
                         if (previousComponents.size() > currentComponents.size()) {
-                            renderServer.send(currentExecution.sessionId,
+                            currentExecution.renderServer.send(currentExecution.sessionId,
                                               null,
                                               null,
                                               containerInPrevious,
@@ -519,7 +512,7 @@ final class StateManager {
                         }
                     } else {
                         // some container is not used anymore - empty it - it's the responsibility of the container to not appear when empty
-                        renderServer.send(currentExecution.sessionId, null, null, containerInPrevious, 0, true);
+                        currentExecution.renderServer.send(currentExecution.sessionId, null, null, containerInPrevious, 0, true);
                     }
                 }
             }
@@ -551,7 +544,7 @@ final class StateManager {
                                        "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
                             session.upsertComponentsState(component);
                             // registrationHtml is never necessary here - skipping the check/update of the registeredInFrontend Set
-                            renderServer.send(currentExecution.sessionId, component.render(), null, container, i, false);
+                            currentExecution.renderServer.send(currentExecution.sessionId, component.render(), null, container, i, false);
                         }
                         i++;
                     }
@@ -580,7 +573,7 @@ final class StateManager {
             }
 
             LAST_EXECUTIONS.put(currentExecution.sessionId, currentExecution);
-            renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END, currentExecution.unusedComponents);
+            currentExecution.renderServer.sendStatus(currentExecution.sessionId, ExecutionStatus.END, currentExecution.unusedComponents);
         } catch (Exception e) {
             LOG.error(
                     "Failed to end execution properly. A reload of the app may be necessary. If this happens multiple times, please reach out to support.",
@@ -610,32 +603,6 @@ final class StateManager {
         final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
         checkState(session != null, "No active session. Please reach out to support.");
         return session.getUrlContext();
-    }
-
-    private static class NoOpRenderServer implements RenderServer {
-        @Override
-        public void send(final @Nonnull String sessionId,
-                         final @Nullable String renderHtml,
-                         final @Nullable String registrationHtml,
-                         final @NotNull JtContainer container,
-                         final @Nullable Integer index,
-                         final boolean clearBefore) {
-            LOG.error(
-                    "Cannot send indexed delta for component html {} in container {} at index {} to session {}. No render server is registered.",
-                    renderHtml,
-                    container,
-                    index,
-                    sessionId);
-        }
-
-        @Override
-        public void sendStatus(final @Nonnull String sessionId,
-                               @NotNull StateManager.ExecutionStatus executionStatus,
-                               @Nullable Map<String, Integer> unusedComponents) {
-            LOG.error("Cannot send run status {} to session {}. No render server is registered",
-                      executionStatus,
-                      sessionId);
-        }
     }
 
     static @Nullable NavigationComponent getNavigationComponent() {

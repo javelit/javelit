@@ -41,10 +41,12 @@ final class AppRunner {
     private final @Nonnull AtomicReference<Reloader.AppEntrypoint> entrypointRef = new AtomicReference<>();
     private final @Nonnull Semaphore reloadAvailable = new Semaphore(1, true);
     private final @Nonnull Reloader reloader;
+    private final @Nonnull StateManager.RenderServer renderServer;
 
 
     // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
-    AppRunner(final @Nonnull Server.Builder builder) {
+    AppRunner(final @Nonnull Server.Builder builder, final @Nonnull StateManager.RenderServer renderServer) {
+        this.renderServer = renderServer;
         if (builder.appPath != null) {
             this.reloader = new FileReloader(builder);
         } else if (builder.appClass != null) {
@@ -83,7 +85,7 @@ final class AppRunner {
     void runApp(final String sessionId) {
         // if necessary: load the app for the first time
         if (entrypointRef.get() == null) {
-            StateManager.beginExecution(sessionId);
+            StateManager.beginExecution(sessionId, renderServer);
             try {
                 reloadAvailable.acquire();
                 if (entrypointRef.get() == null) {
@@ -106,7 +108,7 @@ final class AppRunner {
         boolean doRerun = false;
         Consumer<String> runAfterBreak = null;
         try {
-            StateManager.beginExecution(sessionId);
+            StateManager.beginExecution(sessionId, renderServer);
             // Apps may call ServiceLoader.load(SomeClass.class). This would use the current thread context classloader (not set here) or fallback to the System classloader.
             // We need to use the HotClassLoader used to define the mainMethod
             // NOTE: this is only necessary for when the mainMethod is built from a file but this should have no

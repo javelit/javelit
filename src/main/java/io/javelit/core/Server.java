@@ -197,13 +197,10 @@ public final class Server implements StateManager.RenderServer {
     private Server(final Builder builder) {
         this.port = builder.port;
         this.customHeaders = loadCustomHeaders(builder.headersFile);
-        this.appRunner = new AppRunner(builder);
+        this.appRunner = new AppRunner(builder, this);
         this.appPath = builder.appPath;
         this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
         this.buildSystem = builder.buildSystem;
-
-        // register in the state manager
-        StateManager.setRenderServer(this);
     }
 
     public void start() {
