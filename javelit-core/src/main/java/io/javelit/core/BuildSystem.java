@@ -176,7 +176,7 @@ public enum BuildSystem {
     @Nonnull
     abstract String obtainClasspath(@Nonnull Path javaFilePath) throws IOException, InterruptedException;
 
-    static BuildSystem inferBuildSystem() {
+    public static BuildSystem inferBuildSystem() {
         for (BuildSystem buildSystem : BuildSystem.values()) {
             if (buildSystem.isUsed()) {
                 return buildSystem;

@@ -35,10 +35,6 @@
         <!-- Internal dependencies -->
         <dependency>
             <groupId>io.javelit</groupId>
-            <artifactId>javelit-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.javelit</groupId>
             <artifactId>javelit-core</artifactId>
         </dependency>
 

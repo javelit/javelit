@@ -13,15 +13,15 @@ import io.javelit.core.JtUploadedFile;
 public class FileUploaderExample {
     public static void main(String[] args) {
         // Title
-        Jt.title("📁 File Uploader Examples");
+        Jt.title("📁 File Uploader Examples").use();
         
-        Jt.text("This example demonstrates the three file upload modes available in Javelit.");
+        Jt.text("This example demonstrates the three file upload modes available in Javelit.").use();
         
         
         
         // Single File Upload
-        Jt.title("Single File Upload");
-        Jt.text("Upload a single image file (JPG, PNG, or GIF):");
+        Jt.title("Single File Upload").use();
+        Jt.text("Upload a single image file (JPG, PNG, or GIF):").use();
         
         var res = Jt.fileUploader("Upload an image")
                 .type(Arrays.asList(".jpg", ".jpeg", ".png", ".gif"))
@@ -29,15 +29,15 @@ public class FileUploaderExample {
                 .help("Only image files are accepted")
                 .use();
         if (res.isEmpty()) {
-            Jt.text("No image files were uploaded yet");
+            Jt.text("No image files were uploaded yet").use();
         } else {
-            Jt.text("Uploaded image files:");
-            Jt.text(res.getFirst().filename());
+            Jt.text("Uploaded image files:").use();
+            Jt.text(res.getFirst().filename()).use();
         }
         
         // Multiple Files Upload
-        Jt.title("Multiple Files Upload");
-        Jt.text("Upload multiple CSV files:");
+        Jt.title("Multiple Files Upload").use();
+        Jt.text("Upload multiple CSV files:").use();
         
         Jt.fileUploader("Upload CSV files")
                 .type(Arrays.asList(".csv"))
@@ -49,8 +49,8 @@ public class FileUploaderExample {
         
         
         // Directory Upload
-        Jt.title("Directory Upload");
-        Jt.text("Upload an entire folder (all text files will be processed):");
+        Jt.title("Directory Upload").use();
+        Jt.text("Upload an entire folder (all text files will be processed):").use();
         
         Jt.fileUploader("Upload a folder")
                 .type(Arrays.asList(".txt", ".md", ".csv"))
@@ -63,7 +63,7 @@ public class FileUploaderExample {
         List<JtUploadedFile> directoryFiles = null; // TODO: Get from component state
         
         if (directoryFiles != null && !directoryFiles.isEmpty()) {
-            Jt.text("**Directory contents:**");
+            Jt.text("**Directory contents:**").use();
             
             // Group files by extension
             Jt.text("Files by type:");
@@ -76,7 +76,7 @@ public class FileUploaderExample {
                             }
                     ))
                     .forEach((ext, files) -> {
-                        Jt.text(String.format("- %s: %d file(s)", ext, files.size()));
+                        Jt.text(String.format("- %s: %d file(s)", ext, files.size())).use();
                     });
             
             // Show file tree
@@ -84,38 +84,38 @@ public class FileUploaderExample {
             for (JtUploadedFile file : directoryFiles) {
                 Jt.text(String.format("📄 %s (%.1f KB)", 
                     file.filename(), 
-                    file.content().length / 1024.0));
+                    file.content().length / 1024.0)).use();
             }
         }
         
         
         
         // Disabled example
-        Jt.title("Disabled File Uploader");
-        Jt.text("This uploader is disabled:");
+        Jt.title("Disabled File Uploader").use();
+        Jt.text("This uploader is disabled:").use();
         
         Jt.fileUploader("Disabled uploader")
                 .disabled(true)
                 .help("This uploader is currently disabled")
-                .build();
+                .use();
         
         
         
         // No restrictions example
-        Jt.title("Upload Any File Type");
-        Jt.text("This uploader accepts any file type:");
+        Jt.title("Upload Any File Type").use();
+        Jt.text("This uploader accepts any file type:").use();
         
         Jt.fileUploader("Upload any file")
                 .acceptMultipleFiles(FileUploaderComponent.MultipleFiles.TRUE)
                 .help("Any file type is accepted")
                 .width("stretch")// Full width
-                .build();
+                .use();
         
         // Get the uploaded files (this would typically be done through state management)
         List<JtUploadedFile> anyFiles = null; // TODO: Get from component state
         
         if (anyFiles != null && !anyFiles.isEmpty()) {
-            Jt.text(String.format("**Uploaded %d file(s)**", anyFiles.size()));
+            Jt.text(String.format("**Uploaded %d file(s)**", anyFiles.size())).use();
         }
     }
 }
