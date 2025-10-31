@@ -1,0 +1,109 @@
+<!--
+
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<style>
+  /*
+   * Javelit Dark Mode
+   *
+   * This file provides automatic dark mode support based on system preferences.
+   * It overrides Javelit's design system CSS variables when the user's OS/browser
+   * is set to dark mode.
+   *
+   * Usage:
+   *   javelit run --headers-file dark-mode.html YourApp.java
+   *
+   * Or programmatically:
+   *   Server.builder(appPath, 8080)
+   *       .headersFile("dark-mode.html")
+   *       .build()
+   *
+   * Dark mode is not officially supported yet. YMMV.
+   */
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* ========================================
+         Background Colors
+         ======================================== */
+      --jt-bg-primary: #1e1e1e;      /* Main background - dark charcoal */
+      --jt-bg-secondary: #2d2d2d;    /* Secondary surfaces - medium charcoal */
+      --jt-bg-tertiary: #3a3a3a;     /* Tertiary surfaces (cards, panels) */
+      --jt-bg-input: #2a2a2a;        /* Input fields background */
+
+      /* ========================================
+         Text Colors
+         ======================================== */
+      --jt-text-primary: #e8e8e8;    /* Primary text - light gray (high contrast) */
+      --jt-text-secondary: #a0a0a0;  /* Secondary text - medium gray */
+      --jt-text-muted: #707070;      /* Muted text - dark gray */
+      --jt-text-white: #ffffff;      /* Pure white for emphasis */
+
+      /* ========================================
+         Primary Accent Colors
+         ======================================== */
+      --jt-primary-color: #4d9eff;   /* Primary blue - bright and visible */
+      --jt-primary-hover: #66a8ff;   /* Lighter on hover */
+      --jt-primary-active: #3385d6;  /* Darker when active */
+
+      /* ========================================
+         Theme Accent (Streamlit-inspired)
+         ======================================== */
+      --jt-theme-color: #ff6b6b;     /* Theme red - adjusted for dark mode */
+      --jt-theme-hover: #ff8787;     /* Lighter on hover */
+      --jt-theme-active: #ff5252;    /* Darker when active */
+
+      /* ========================================
+         Status Colors
+         ======================================== */
+      --jt-success-color: #4caf50;   /* Success green - good contrast */
+      --jt-danger-color: #ff6b6b;    /* Danger/error red */
+      --jt-warning-color: #ffc107;   /* Warning amber/yellow */
+      --jt-info-color: #4d9eff;      /* Info blue (matches primary) */
+      --jt-error-color: #ff5252;     /* Error red */
+
+      /* ========================================
+         Status Background Colors (Semi-transparent)
+         ======================================== */
+      --jt-bg-error: rgba(255, 107, 107, 0.15);    /* Error background */
+      --jt-bg-success: rgba(76, 175, 80, 0.15);    /* Success background */
+      --jt-bg-info: rgba(77, 158, 255, 0.15);      /* Info background */
+      --jt-bg-warning: rgba(255, 193, 7, 0.15);    /* Warning background */
+
+      /* ========================================
+         Secondary & Tertiary Colors
+         ======================================== */
+      --jt-secondary-color: #888888;  /* Secondary gray */
+      --jt-secondary-hover: #999999;  /* Lighter on hover */
+      --jt-tertiary-color: #3a3a3a;   /* Tertiary surface color */
+      --jt-tertiary-hover: #454545;   /* Lighter on hover */
+
+      /* ========================================
+         Borders & Separators
+         ======================================== */
+      --jt-border-color: #404040;           /* Subtle gray borders */
+      --jt-light-border-color: #2d2d2d;     /* Very subtle borders (for table rows) */
+
+      /* ========================================
+         Shadows (adjusted for dark backgrounds)
+         ======================================== */
+      --jt-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --jt-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+      --jt-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+      --jt-shadow-popover: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+    }
+  }
+</style>
