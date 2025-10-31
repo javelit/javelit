@@ -26,57 +26,57 @@ class JtTable extends LitElement {
         
         .table-container {
             overflow-x: auto;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--jt-border-color);
             border-radius: 0.375rem;
-            background-color: white;
+            background-color: var(--jt-bg-primary);
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
+            background-color: var(--jt-bg-primary);
         }
-        
+
         th {
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: var(--jt-bg-secondary);
+            color: var(--jt-text-primary);
             font-weight: 600;
             text-align: left;
             padding: 0.75rem;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--jt-border-color);
             position: sticky;
             top: 0;
             z-index: 1;
             white-space: nowrap;
         }
-        
+
         td {
             padding: 0.75rem;
-            border-bottom: 1px solid #f1f3f4;
+            border-bottom: 1px solid var(--jt-light-border-color);
             vertical-align: top;
         }
-        
+
         tr:hover {
-            background-color: #f8f9fa;
+            background-color: var(--jt-bg-secondary);
         }
-        
+
         tr:last-child td {
             border-bottom: none;
         }
-        
+
         .empty-cell {
-            color: #6c757d;
+            color: var(--jt-text-secondary);
             font-style: italic;
         }
-        
+
         .null-value {
             opacity: 0.5;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 2rem;
-            color: #6c757d;
+            color: var(--jt-text-secondary);
             font-style: italic;
         }
         
