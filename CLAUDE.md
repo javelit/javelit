@@ -120,6 +120,19 @@ public Builder width(final int widthPixels) {
     return this;
 }
 ```
+- **CRITICAL - CSS Design System Variables**: All component CSS must use design system variables from `design_system.html.mustache`, never hardcoded colors
+  - Always use CSS variables like `var(--jt-text-primary)`, `var(--jt-bg-primary)`, etc.
+  - Never use hardcoded colors like `white`, `black`, `#ffffff`, `rgb(255,255,255)`, etc.
+  - This enables dark mode support and consistent theming across all components
+  - Examples of correct usage:
+    - ✅ `background: var(--jt-bg-primary);`
+    - ✅ `color: var(--jt-text-white);`
+    - ✅ `border: 1px solid var(--jt-border-color);`
+  - Examples of incorrect usage:
+    - ❌ `background: white;`
+    - ❌ `color: #000000;`
+    - ❌ `border: 1px solid rgb(240, 242, 246);`
+  - See TableComponent, RadioComponent, ToggleComponent fixes as reference examples
 
 ### Writing tests
 #### E2E tests
