@@ -1,6 +1,6 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.javelit:javelit:0.58.0
+//DEPS io.javelit:javelit:0.60.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
 
 import io.javelit.core.Jt;
