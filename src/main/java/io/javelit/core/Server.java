@@ -322,7 +322,8 @@ public final class Server implements StateManager.RenderServer {
             final Session currentSession = Sessions.getOrCreateSession(exchange);
             final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-            exchange.getResponseSender().send(getIndexHtml(xsrfToken));
+            final boolean devMode = isLocalClient(exchange.getSourceAddress());
+            exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode));
         }
     }
 
@@ -576,13 +577,28 @@ public final class Server implements StateManager.RenderServer {
         }
     }
 
+    private static boolean isLocalClient(final @Nullable InetSocketAddress inetSocketAddress) {
+        try {
+            return optional(inetSocketAddress)
+                    .map(InetSocketAddress::getAddress)
+                    .map(InetAddress::getHostAddress)
+                    .map(ip -> Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1").contains(ip))
+                    .orElse(false);
+        } catch (Exception e) {
+            LOG.warn(
+                    "Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.",
+                    e);
+            return false;
+        }
+    }
+
     private class WebSocketHandler implements WebSocketConnectionCallback {
 
         @Override
         public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
             final String sessionId = UUID.randomUUID().toString();
             session2WsChannel.put(sessionId, channel);
-            if (isLocalClient(channel)) {
+            if (isLocalClient(channel.getSourceAddress())) {
                 StateManager.registerDeveloperSession(sessionId);
             }
 
@@ -622,21 +638,6 @@ public final class Server implements StateManager.RenderServer {
             });
             // No initial render - wait for path_update message from frontend
             channel.resumeReceives();
-        }
-
-        private boolean isLocalClient(final @Nonnull WebSocketChannel channel) {
-            try {
-                return optional(channel.getSourceAddress())
-                        .map(InetSocketAddress::getAddress)
-                        .map(InetAddress::getHostAddress)
-                        .map(ip -> Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1").contains(ip))
-                        .orElse(false);
-            } catch (Exception e) {
-                LOG.warn(
-                        "Failed to determine whether client is local. Assuming client is not local. dev features will not be activated for this client.",
-                        e);
-                return false;
-            }
         }
 
         @SuppressWarnings("StringSplitter")
@@ -821,7 +822,7 @@ public final class Server implements StateManager.RenderServer {
                                  error, false);
     }
 
-    private String getIndexHtml(final String xsrfToken) {
+    private String getIndexHtml(final String xsrfToken, boolean devMode) {
         final StringWriter writer = new StringWriter();
         indexTemplate.execute(writer,
                               Map.of("MATERIAL_SYMBOLS_CDN",
@@ -837,7 +838,9 @@ public final class Server implements StateManager.RenderServer {
                                      "PRISM_SETUP_SNIPPET",
                                      JtComponent.PRISM_SETUP_SNIPPET,
                                      "PRISM_CSS",
-                                     JtComponent.PRISM_CSS));
+                                     JtComponent.PRISM_CSS,
+                                     "DEV_MODE",
+                                     devMode));
         return writer.toString();
     }
 

@@ -332,10 +332,10 @@
 
     // Localhost detection and XSRF token - available globally
     window.javelit = {
-        isLocalhost: window.location.hostname === 'localhost',
+        isDevMode: {{ DEV_MODE }},
         xsrfToken: "{{ XSRF_TOKEN }}"
     };
-    if (window.javelit.isLocalhost) {
+    if (window.javelit.isDevMode) {
         document.querySelector('.javelit-attribution').style.display = 'none';
     }
 
@@ -593,7 +593,7 @@
         } else {
             alert(`Unknown message type ${message.type}. Please reach out to support.`);
         }
-        if (window.javelit.isLocalhost && message.toastDuration) {
+        if (window.javelit.isDevMode && message.toastDuration) {
             const toast = document.createElement('jt-internal-toast');
             toast.body = message.toastBody ? message.toastBody : "";
             toast.icon = message.toastIcon ? message.toastIcon : "";

@@ -134,13 +134,13 @@ class JtToolbarMenu extends LitElement {
 
     static properties = {
         showMenu: { type: Boolean, state: true },
-        isLocalhost: { type: Boolean, state: true }
+        isDevMode: { type: Boolean, state: true }
     };
 
     constructor() {
         super();
         this.showMenu = false;
-        this.isLocalhost = false;
+        this.isDevMode = false;
         this.handleOutsideClick = this.handleOutsideClick.bind(this);
     }
 
@@ -148,7 +148,7 @@ class JtToolbarMenu extends LitElement {
         super.connectedCallback();
         document.addEventListener('click', this.handleOutsideClick);
         // Check if running on localhost
-        this.isLocalhost = window.javelit && window.javelit.isLocalhost;
+        this.isDevMode = window.javelit && window.javelit.isDevMode;
     }
 
     disconnectedCallback() {
@@ -220,7 +220,7 @@ class JtToolbarMenu extends LitElement {
                     <span class="material-symbols-rounded menu-icon">settings</span>
                     <span class="menu-label">Settings</span>
                 </button>
-                ${this.isLocalhost ? html`
+                ${this.isDevMode ? html`
                     <div class="menu-divider"></div>
                     <div class="developer-section">
                         <div class="menu-section-label">Developer Options</div>
