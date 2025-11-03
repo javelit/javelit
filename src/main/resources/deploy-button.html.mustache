@@ -1,0 +1,106 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script type="module">
+import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+
+class JtDeployButton extends LitElement {
+    static styles = css`
+        :host {
+            display: none;
+        }
+
+        :host([is-dev-mode][is-standalone-mode]) {
+            display: inline-block;
+        }
+
+        .deploy-button {
+            height: 32px;
+            padding: 0 var(--jt-spacing-md);
+            border: none;
+            background: var(--jt-primary);
+            color: var(--jt-text-primary);
+            border-radius: var(--jt-border-radius-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--jt-spacing-xs);
+            font-family: var(--jt-font-family);
+            font-size: var(--jt-font-size-sm);
+            font-weight: var(--jt-font-weight-medium);
+            transition: all var(--jt-transition-fast);
+        }
+
+        .deploy-button:hover {
+            background: var(--jt-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--jt-shadow-sm);
+        }
+
+        .deploy-button:active {
+            transform: translateY(0);
+        }
+
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-size: 18px;
+        }
+    `;
+
+    static properties = {
+        isDevMode: { type: Boolean, reflect: true, attribute: 'is-dev-mode' },
+        isStandaloneMode: { type: Boolean, reflect: true, attribute: 'is-standalone-mode' }
+    };
+
+    constructor() {
+        super();
+        this.isDevMode = false;
+        this.isStandaloneMode = false;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        // Check if running in dev mode and standalone mode
+        this.isDevMode = window.javelit && window.javelit.isDevMode;
+        this.isStandaloneMode = window.javelit && window.javelit.isStandaloneMode;
+    }
+
+    handleClick(e) {
+        e.stopPropagation();
+
+        // Open deploy modal
+        const deployModal = document.getElementById('deploy-modal');
+        if (deployModal) {
+            deployModal.show = true;
+        }
+    }
+
+    render() {
+        return html`
+            <button
+                class="deploy-button"
+                @click="${this.handleClick}"
+                aria-label="Deploy"
+            >
+                <span class="material-symbols-rounded">rocket_launch</span>
+                <span>Deploy</span>
+            </button>
+        `;
+    }
+}
+
+customElements.define('jt-deploy-button', JtDeployButton);
+</script>

@@ -31,6 +31,7 @@ import ch.qos.logback.classic.Level;
 import io.javelit.core.Server;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -97,12 +98,18 @@ public class Cli implements Callable<Integer> {
             }
 
             // Resolve appPath - could be local file or URL
+
+            final boolean isUrl = isUrl(appPath);
             final Path javaFilePath;
-            try {
-                javaFilePath = resolveAppPath(appPath);
-            } catch (IOException e) {
-                LOG.error("Failed to resolve app path: {}", appPath, e);
-                return 1;
+            if (isUrl) {
+                try {
+                    javaFilePath = resolveRemoteUrl(appPath);
+                } catch (IOException e) {
+                    LOG.error("Failed to resolve app path: {}", appPath, e);
+                    return 1;
+                }
+            } else {
+                javaFilePath = Paths.get(appPath);
             }
 
             LOG.info("Starting Javelit on file {}", javaFilePath.toAbsolutePath());
@@ -111,11 +118,16 @@ public class Cli implements Callable<Integer> {
                 return 1;
             }
             // Create server
-            final Server server = Server
+            final Server.Builder builder = Server
                     .builder(javaFilePath, port)
                     .additionalClasspath(classpath)
-                    .headersFile(headersFile)
-                    .build();
+                    .headersFile(headersFile);
+            if (isUrl) {
+                builder.originalUrl(appPath);
+            }
+
+            final Server server = builder.build();
+
 
             // Start everything
             final String url = "http://localhost:" + port;
@@ -144,7 +156,7 @@ public class Cli implements Callable<Integer> {
             boolean parametersAreValid = true;
 
             // Only validate .java extension for local files (not URLs)
-            final boolean isUrl = appPath.startsWith("http://") || appPath.startsWith("https://");
+            final boolean isUrl = isUrl(appPath);
             if (!isUrl && !appPath.endsWith(".java")) {
                 // note: I know a Java file could in theory not end with .java but I want to reduce other issues downstream
                 LOG.error("File {} does not look like a java file. File should end with .java", appPath);
@@ -155,35 +167,34 @@ public class Cli implements Callable<Integer> {
             return parametersAreValid;
         }
 
-        // handle remote files
-        private Path resolveAppPath(final @Nonnull String pathOrUrl) throws IOException {
-            boolean isUrl = pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://");
-            if (isUrl) {
-                LOG.info("Detected remote file URL: {}", pathOrUrl);
-                final Path tempDir = Files.createTempDirectory("javelit-remote-");
-                final Path path = RemoteFileUtils.downloadRemoteFile(pathOrUrl, tempDir);
-                if (watchRemoteSeconds > 0) {
-                    checkArgument(watchRemoteSeconds >= 60,
-                                  "Invalid watch remote interval of %s seconds. Interval should be at least 60 seconds.".formatted(
-                                          watchRemoteSeconds));
-                    // Schedule periodic refresh of remote file
-                    final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-                    scheduler.scheduleAtFixedRate(() -> {
-                        try {
-                            LOG.info("Refreshing remote file from {}", pathOrUrl);
-                            RemoteFileUtils.downloadRemoteFile(pathOrUrl, tempDir);
-                            LOG.info("Successfully refreshed remote file");
-                        } catch (Exception e) {
-                            LOG.error("Failed to refresh remote file", e);
-                        }
-                    }, watchRemoteSeconds, watchRemoteSeconds, TimeUnit.SECONDS);
-                    Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdownNow));
-                    LOG.info("Successfully scheduled remote file/folder refresh every {} seconds.", watchRemoteSeconds);
-                }
+        private static boolean isUrl(final @Nonnull String localPathOrUrl) {
+            return localPathOrUrl.startsWith("http://") || localPathOrUrl.startsWith("https://");
+        }
 
-                return path;
+        private Path resolveRemoteUrl(@NotNull String pathOrUrl) throws IOException {
+            LOG.info("Detected remote file URL: {}", pathOrUrl);
+            final Path tempDir = Files.createTempDirectory("javelit-remote-");
+            final Path path = RemoteFileUtils.downloadRemoteFile(pathOrUrl, tempDir);
+            if (watchRemoteSeconds > 0) {
+                checkArgument(watchRemoteSeconds >= 60,
+                              "Invalid watch remote interval of %s seconds. Interval should be at least 60 seconds.".formatted(
+                                      watchRemoteSeconds));
+                // Schedule periodic refresh of remote file
+                final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+                scheduler.scheduleAtFixedRate(() -> {
+                    try {
+                        LOG.info("Refreshing remote file from {}", pathOrUrl);
+                        RemoteFileUtils.downloadRemoteFile(pathOrUrl, tempDir);
+                        LOG.info("Successfully refreshed remote file");
+                    } catch (Exception e) {
+                        LOG.error("Failed to refresh remote file", e);
+                    }
+                }, watchRemoteSeconds, watchRemoteSeconds, TimeUnit.SECONDS);
+                Runtime.getRuntime().addShutdownHook(new Thread(scheduler::shutdownNow));
+                LOG.info("Successfully scheduled remote file/folder refresh every {} seconds.", watchRemoteSeconds);
             }
-            return Paths.get(pathOrUrl);
+
+            return path;
         }
     }
 
