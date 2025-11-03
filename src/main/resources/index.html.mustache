@@ -517,7 +517,10 @@
     // Connection management functions
     function createWebSocketConnection() {
         try {
-            ws = new WebSocket('ws://localhost:{{ port }}/_/ws');
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            // contains hostname + port
+            const host = window.location.host;
+            ws = new WebSocket(`${protocol}//${host}/_/ws`);
 
             ws.onclose = () => {
                 console.log('WebSocket closed');
