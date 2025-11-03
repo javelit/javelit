@@ -45,17 +45,22 @@ class RemoteFileUtils {
     public static final String INVALID_URL_MESSAGE = """
             Invalid URL format. The URL should be either:
             (1) A direct link to a text/plain .java file (e.g., https://raw.githubusercontent.com/user/repo/branch/file.java)
-            (2) A GitHub folder tree URL (e.g., github.com/user/repo/tree/branch/path/to/folder)
-            (3) A GitHub file blob URL (e.g., github.com/javelit/javelit/blob/main/examples/Callbacks.java)
+            (2) A GitHub repository URL (e.g., https://github.com/user/repo)
+            (3) A GitHub folder tree URL (e.g., github.com/user/repo/tree/branch/path/to/folder)
+            (4) A GitHub file blob URL (e.g., github.com/javelit/javelit/blob/main/examples/Callbacks.java)
             Got: %s
             """;
 
-    static Path downloadRemoteFile(@Nonnull String url) throws IOException {
+    static Path downloadRemoteFile(@Nonnull String url, final @Nonnull Path targetDir) throws IOException {
         if (isGitHubUiWebsite(url)) {
             if (isGitHubTreeUrl(url)) {
-                return downloadGitHubFolder(url);
+                return downloadGitHubFolder(url, targetDir);
             } else if (isGitHubBlob(url)) {
                 url = convertBlobToRaw(url);
+            } else if (isPlainGitHubRepoUrl(url)) {
+                // Convert plain repo URL to tree URL with default branch
+                url = convertPlainRepoToTreeUrl(url);
+                return downloadGitHubFolder(url, targetDir);
             } else {
                 throw new IllegalArgumentException(INVALID_URL_MESSAGE);
             }
@@ -65,7 +70,7 @@ class RemoteFileUtils {
             checkArgument(".java".equals(fileSuffix),
                           "Unsupported file type: %s. Only .java files are supported. " + "If you're trying to run a Java file, make sure the URL ends with .java",
                           fileSuffix);
-            return downloadSingleFile(url);
+            return downloadSingleFile(url, targetDir);
         }
         throw new IllegalArgumentException(INVALID_URL_MESSAGE);
     }
@@ -81,6 +86,77 @@ class RemoteFileUtils {
 
     private static boolean isGitHubUiWebsite(final @Nonnull String url) {
         return url.startsWith("https://github.com/");
+    }
+
+    /**
+     * Check if URL is a plain GitHub repo URL (without /tree/ or /blob/)
+     * e.g., https://github.com/owner/repo
+     */
+    private static boolean isPlainGitHubRepoUrl(final @Nonnull String url) {
+        // Match https://github.com/owner/repo with optional trailing slash
+        final Pattern pattern = Pattern.compile("https://github\\.com/([^/]+)/([^/]+)/?$");
+        return pattern.matcher(url).matches();
+    }
+
+    /**
+     * Convert plain repo URL to tree URL with default branch (main)
+     * e.g., https://github.com/owner/repo -> https://github.com/owner/repo/tree/main
+     */
+    private static @Nonnull String convertPlainRepoToTreeUrl(final @Nonnull String url) throws IOException {
+        // Remove trailing slash if present
+        final String cleanUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+
+        // Parse owner and repo from URL
+        final Pattern pattern = Pattern.compile("https://github\\.com/([^/]+)/([^/]+)$");
+        final Matcher matcher = pattern.matcher(cleanUrl);
+
+        if (!matcher.matches()) {
+            throw new IOException("Invalid GitHub repo URL format: " + url);
+        }
+
+        final String owner = matcher.group(1);
+        final String repo = matcher.group(2);
+
+        // Get default branch from GitHub API
+        final String defaultBranch = getDefaultBranch(owner, repo);
+
+        return cleanUrl + "/tree/" + defaultBranch;
+    }
+
+    /**
+     * Get the default branch for a GitHub repository using the API
+     */
+    private static String getDefaultBranch(final @Nonnull String owner, final @Nonnull String repo) throws IOException {
+        try (final HttpClient client = HttpClient.newHttpClient()) {
+            final String apiUrl = String.format("https://api.github.com/repos/%s/%s", owner, repo);
+            final HttpRequest request = HttpRequest
+                    .newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .build();
+
+            final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                LOG.warn("Failed to get default branch from GitHub API, falling back to 'main'. Status: {}", response.statusCode());
+                return "main"; // Fallback to main
+            }
+
+            final JsonNode repoInfo = Shared.OBJECT_MAPPER.readTree(response.body());
+            final JsonNode defaultBranchNode = repoInfo.get("default_branch");
+
+            if (defaultBranchNode != null && !defaultBranchNode.isNull()) {
+                return defaultBranchNode.asText();
+            }
+
+            return "main"; // Fallback
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Request interrupted", e);
+        } catch (Exception e) {
+            LOG.warn("Error getting default branch from GitHub API, falling back to 'main'", e);
+            return "main"; // Fallback
+        }
     }
 
     /**
@@ -110,10 +186,9 @@ class RemoteFileUtils {
         return null;
     }
 
-    private static Path downloadSingleFile(final @Nonnull String url) throws IOException {
+    private static Path downloadSingleFile(final @Nonnull String url, final @Nonnull Path targetDir) throws IOException {
         final String filename = extractFilename(url);
-        final Path tempDir = Files.createTempDirectory("javelit-remote-");
-        final Path targetFile = tempDir.resolve(filename);
+        final Path targetFile = targetDir.resolve(filename);
         LOG.info("Downloading {} to {}", url, targetFile);
         try (InputStream in = URI.create(url).toURL().openStream()) {
             Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
@@ -132,7 +207,7 @@ class RemoteFileUtils {
         return "App.java";
     }
 
-    private static Path downloadGitHubFolder(final @Nonnull String url) throws IOException {
+    private static Path downloadGitHubFolder(final @Nonnull String url, final @Nonnull Path targetDir) throws IOException {
         LOG.info("Detected GitHub folder URL, downloading entire folder...");
 
         // Parse GitHub URL to get API endpoint
@@ -144,13 +219,12 @@ class RemoteFileUtils {
                                             repoInfo.branch);
 
         // Download folder contents
-        final Path tempDir = Files.createTempDirectory("javelit-remote-");
-        LOG.info("Downloading folder contents to {}", tempDir);
-        downloadGitHubFolderRecursive(apiUrl, tempDir);
+        LOG.info("Downloading folder contents to {}", targetDir);
+        downloadGitHubFolderRecursive(apiUrl, targetDir);
         LOG.info("Successfully downloaded folder contents");
 
         // Find the main Java file
-        final Path mainFile = findMainJavaFile(tempDir);
+        final Path mainFile = findMainJavaFile(targetDir);
         LOG.info("Found main file: {}", mainFile);
         return mainFile;
     }
@@ -160,20 +234,23 @@ class RemoteFileUtils {
 
     /**
      * Parse GitHub URL to extract owner, repo, branch, and path
-     * Supports URLs like: https://github.com/owner/repo/tree/branch/path/to/folder
+     * Supports URLs like:
+     * - https://github.com/owner/repo/tree/branch/path/to/folder
+     * - https://github.com/owner/repo/tree/branch (root of branch)
      */
     private static GitHubRepoInfo parseGitHubUrl(final @Nonnull String url) throws IOException {
-        final Pattern pattern = Pattern.compile("https://github\\.com/([^/]+)/([^/]+)/tree/([^/]+)/(.+)");
+        final Pattern pattern = Pattern.compile("https://github\\.com/([^/]+)/([^/]+)/tree/([^/]+)(?:/(.*))?");
         final Matcher matcher = pattern.matcher(url);
 
         if (!matcher.matches()) {
-            throw new IOException("Invalid GitHub folder URL format. Expected format: " + "https://github.com/owner/repo/tree/branch/path/to/folder");
+            throw new IOException("Invalid GitHub folder URL format. Expected format: " + "https://github.com/owner/repo/tree/branch[/path/to/folder]");
         }
 
+        final String path = matcher.group(4);
         return new GitHubRepoInfo(matcher.group(1),  // owner
                                   matcher.group(2),  // repo
                                   matcher.group(3),  // branch
-                                  matcher.group(4)   // path
+                                  path != null && !path.isEmpty() ? path : ""   // path (empty string for root)
         );
     }
 
