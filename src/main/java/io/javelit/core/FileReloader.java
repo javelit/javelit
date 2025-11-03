@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -28,12 +29,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
+import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
@@ -45,6 +51,17 @@ import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spoon.Launcher;
+import spoon.reflect.CtModel;
+import spoon.reflect.code.CtComment;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtTypeMember;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
+import spoon.reflect.visitor.DefaultTokenWriter;
+import spoon.support.compiler.FileSystemFile;
+import spoon.support.reflect.code.CtBlockImpl;
+import spoon.support.reflect.declaration.CtMethodImpl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -52,7 +69,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 class FileReloader extends Reloader {
     private static final Logger LOG = LoggerFactory.getLogger(FileReloader.class);
     protected static final Path COMPILATION_TARGET_DIR = Paths.get("target/javelit/classes")
-            .toAbsolutePath();
+                                                              .toAbsolutePath();
 
     private final JavaCompiler compiler;
     private final @Nonnull Path javaFile;
@@ -207,9 +224,10 @@ class FileReloader extends Reloader {
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null,
                                                                                    null,
                                                                                    null)) {
+            // FIXME SHOULD BE A PARAM OF COURSE
+            final boolean notebook = true;
+
             final DiagnosticCollector<JavaFileObject> diagnosticsCollector = new DiagnosticCollector<>();
-            final Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(
-                    List.of(javaFile));
             final List<@NotNull String> compilationOptions = List.of("-d",
                                                                      COMPILATION_TARGET_DIR.toString(),
                                                                      "-cp",
@@ -217,13 +235,40 @@ class FileReloader extends Reloader {
                                                                      "-sourcepath",
                                                                      javaFile.toAbsolutePath().getParent().toString(),
                                                                      "-proc:none");
-            // Compile
-            final var task = (JavacTask) compiler.getTask(null,
-                                                          fileManager,
-                                                          diagnosticsCollector,
-                                                          compilationOptions,
-                                                          null,
-                                                          compilationUnits);
+
+            final JavacTask task;
+            if (notebook) {
+                // Generate modified source in-memory with notebook enhancements
+                final String modifiedSource = genMainMethod(javaFile);
+                final String className = extractClassName(javaFile);
+
+                // Create in-memory source object
+                final JavaFileObject inMemorySource = new StringSourceJavaFileObject(className, modifiedSource);
+
+                // Create hybrid file manager that checks in-memory sources first
+                final Map<String, JavaFileObject> inMemorySources = Map.of(className, inMemorySource);
+                final HybridJavaFileManager hybridManager = new HybridJavaFileManager(fileManager, inMemorySources);
+
+                // Compile from in-memory source
+                task = (JavacTask) compiler.getTask(null,
+                                                   hybridManager,
+                                                   diagnosticsCollector,
+                                                   compilationOptions,
+                                                   null,
+                                                   List.of(inMemorySource));
+            } else {
+                // Normal mode: compile from disk
+                final Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(
+                        List.of(javaFile));
+                task = (JavacTask) compiler.getTask(null,
+                                                   fileManager,
+                                                   diagnosticsCollector,
+                                                   compilationOptions,
+                                                   null,
+                                                   compilationUnits);
+            }
+
+            // Continue with compilation
             final Iterable<? extends CompilationUnitTree> l = task.parse();
             if (!l.iterator().hasNext()) {
                 throw new CompilationException(
@@ -257,6 +302,152 @@ class FileReloader extends Reloader {
         } catch (IOException | IllegalStateException e) {
             LOG.error("Error compiling file {}", javaFile, e);
             throw new CompilationException(e);
+        }
+    }
+
+    private String genMainMethod(final Path javaFile) {
+        final Launcher spoon = new Launcher();
+        spoon.getEnvironment().setAutoImports(true);
+        spoon.addInputResource(new FileSystemFile(new File(javaFile.toUri())));
+        spoon.getFactory().getEnvironment().setPrettyPrinterCreator(() -> {
+            DefaultJavaPrettyPrinter defaultJavaPrettyPrinter =
+                    new DefaultJavaPrettyPrinter(spoon.getFactory().getEnvironment());
+            defaultJavaPrettyPrinter.setIgnoreImplicit(false);
+            defaultJavaPrettyPrinter.setPrinterTokenWriter(new DefaultTokenWriter() {
+                @Override
+                public DefaultTokenWriter writeComment(CtComment comment) {
+                    // FIXME P1 CYRIL maybe just don't write comments for top level field impl, main because they are written manually as markdown
+                    //  is it possible to get the top level? most likely
+                    // don't write comments
+                    return this;
+                }
+            });
+            return defaultJavaPrettyPrinter;
+        });
+        final CtModel model = spoon.buildModel();
+        final CtClass<?> classAst = (CtClass<?>) model.getAllTypes().iterator().next();
+        final List<CtTypeMember> members = classAst.getTypeMembers();
+        final StringBuilder newMain = new StringBuilder();
+        newMain.append("public static void main(String[] args) { \n");
+        CtMethodImpl<?> mainMethod = null;
+        for (int i = 1; i < members.size(); i++) {
+            final CtTypeMember elem = members.get(i);
+            if (elem instanceof CtMethodImpl<?> method) {
+                if ("main".equals(method.getSimpleName())) {
+                    mainMethod = method;
+                }
+            }
+        }
+        if (mainMethod == null) {
+            throw new CompilationException("Could not find main method");
+        }
+        genMainBody(mainMethod, newMain);
+        newMain.append("}");
+        final String originalClassCode;
+        try {
+            originalClassCode = Files.readString(javaFile);
+        } catch (IOException e) {
+            throw new CompilationException(e);
+        }
+        return "import io.javelit.core.Jt;\n" + originalClassCode.substring(0,
+                                           mainMethod.getPosition().getSourceStart())
+               + newMain
+               + originalClassCode.substring(mainMethod.getPosition().getSourceEnd() + 1);
+    }
+
+    private void genMainBody(CtMethodImpl<?> notebookMethod, StringBuilder newMain) {
+        final CtBlockImpl<?> block = (CtBlockImpl<?>) notebookMethod.getBody();
+        List<CtStatement> statements = block.getStatements();
+        final List<String> codeElems = new ArrayList<>();
+        final List<String> orphanComments = new ArrayList<>();
+        for (int i = 0; i < statements.size(); i++) {
+            CtStatement s = statements.get(i);
+            var sPos = s.getPosition();
+            var endLine = sPos.getEndLine();
+            newMain.append(commentPrint(s));
+            if (s instanceof CtComment comment) {
+                orphanComments.add(comment.getContent());
+                continue;
+            }
+            final String statement = s + ";";
+            codeElems.add(statement);
+            boolean showResult = i + 1 == statements.size() // end of file
+                                 || statements.get(i + 1) instanceof CtComment // next is a comment
+                                 || statements.get(i + 1)
+                                              .getPosition()
+                                              .getLine() > endLine + 1; // there is an empty line --> corresponds to a notebook block end
+            if (showResult) {
+                final String codeSnippet = String.join("\n", codeElems);
+                newMain.append("Jt.code(\"\"\"\n").append(codeSnippet).append("\n\"\"\").use();\n");
+                newMain.append(codeSnippet).append("\n");
+                codeElems.clear();
+            }
+        }
+        if (!orphanComments.isEmpty()) {
+            final String commentSnippet = String.join("\n", orphanComments);
+            final CommentTemplate template = processCommentTemplate(commentSnippet);
+            if (template.variables.isEmpty()) {
+                newMain.append("Jt.markdown(\"\"\"\n").append(template.template).append("\n\"\"\").use();\n");
+            } else {
+                final String varsJoined = String.join(", ", template.variables);
+                newMain.append("Jt.markdown(\"\"\"\n").append(template.template).append("\n\"\"\".formatted(").append(varsJoined).append(")).use();\n");
+            }
+        }
+    }
+
+    /**
+     * Result of processing a comment template with variable interpolation
+     */
+    private static class CommentTemplate {
+        final String template;  // With %s placeholders
+        final List<String> variables;  // Variable names in order
+
+        CommentTemplate(final String template, final List<String> variables) {
+            this.template = template;
+            this.variables = variables;
+        }
+    }
+
+    /**
+     * Process comment string to extract ${expression} patterns and replace with %s placeholders
+     * Supports any Java expression: ${x}, ${x*x}, ${foo.bar()}, etc.
+     * @param comment Original comment string with ${...} patterns
+     * @return CommentTemplate with %s placeholders and list of expressions
+     */
+    private static CommentTemplate processCommentTemplate(final String comment) {
+        // Match ${...} where ... can be any Java expression (non-greedy to handle multiple ${} in one line)
+        final Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
+        final Matcher matcher = pattern.matcher(comment);
+        final List<String> variables = new ArrayList<>();
+        final StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            variables.add(matcher.group(1).trim());  // Extract expression and trim whitespace
+            matcher.appendReplacement(result, "%s");  // Replace with %s
+        }
+        matcher.appendTail(result);
+
+        return new CommentTemplate(result.toString(), variables);
+    }
+
+    private static String commentPrint(CtStatement elem) {
+        if (elem.getComments().isEmpty()) {
+            return "";
+        }
+        final String commentsString = elem.getComments()
+                                          .stream()
+                                          .map(CtComment::getContent)
+                                          .collect(Collectors.joining("\n"));
+
+        final CommentTemplate template = processCommentTemplate(commentsString);
+
+        if (template.variables.isEmpty()) {
+            // No interpolation needed
+            return "Jt.markdown(\"\"\"\n" + template.template + "\n\"\"\").use();\n";
+        } else {
+            // Add .formatted(var1, var2, ...)
+            final String varsJoined = String.join(", ", template.variables);
+            return "Jt.markdown(\"\"\"\n" + template.template + "\n\"\"\".formatted(" + varsJoined + ")).use();\n";
         }
     }
 
@@ -342,6 +533,48 @@ class FileReloader extends Reloader {
     }
 
     /**
+     * JavaFileObject that holds source code in memory for in-memory compilation
+     */
+    static class StringSourceJavaFileObject extends SimpleJavaFileObject {
+        private final String sourceCode;
+
+        StringSourceJavaFileObject(final String className, final String sourceCode) {
+            super(URI.create("string:///" + className.replace('.', '/') + ".java"), Kind.SOURCE);
+            this.sourceCode = sourceCode;
+        }
+
+        @Override
+        public CharSequence getCharContent(final boolean ignoreEncodingErrors) {
+            return sourceCode;
+        }
+    }
+
+    /**
+     * File manager that checks in-memory sources first, then falls back to disk
+     */
+    static class HybridJavaFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
+        private final Map<String, JavaFileObject> inMemorySources;
+
+        HybridJavaFileManager(final StandardJavaFileManager fileManager,
+                             final Map<String, JavaFileObject> inMemorySources) {
+            super(fileManager);
+            this.inMemorySources = inMemorySources;
+        }
+
+        @Override
+        public JavaFileObject getJavaFileForInput(final Location location,
+                                                 final String className,
+                                                 final JavaFileObject.Kind kind) throws IOException {
+            // Check in-memory sources first
+            if (kind == JavaFileObject.Kind.SOURCE && inMemorySources.containsKey(className)) {
+                return inMemorySources.get(className);
+            }
+            // Fall back to disk
+            return super.getJavaFileForInput(location, className, kind);
+        }
+    }
+
+    /**
      * obtain and combine classpaths.
      */
     private String buildClasspath(final @Nullable String providedClasspath, final @Nonnull Path javaFilePath) {
@@ -373,6 +606,15 @@ class FileReloader extends Reloader {
                                                                                              e.getMessage()), e);
         }
         return cp.toString();
+    }
+
+    /**
+     * Extract class name from Java file path
+     * examples/demo/DemoApp.java -> DemoApp
+     */
+    private static String extractClassName(final Path javaFile) {
+        final String fileName = javaFile.getFileName().toString();
+        return fileName.substring(0, fileName.lastIndexOf('.'));
     }
 
     /**
