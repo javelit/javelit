@@ -107,6 +107,7 @@ public final class Server implements StateManager.RenderServer {
     private final @Nullable FileWatcher fileWatcher;
     private final @Nonnull BuildSystem buildSystem;
     private final @Nullable Path appPath;
+    private boolean ready;
 
     private Undertow server;
     private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
@@ -201,10 +202,13 @@ public final class Server implements StateManager.RenderServer {
         this.appPath = builder.appPath;
         this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
         this.buildSystem = builder.buildSystem;
+        this.ready = false;
     }
 
     public void start() {
         HttpHandler app = new PathHandler()
+                .addExactPath("/_/health", new HealthHandler())
+                .addExactPath("/_/ready", new ReadyHandler())
                 .addExactPath("/_/ws",
                               Handlers.websocket(new WebSocketHandler()).addExtension(new PerMessageDeflateHandshake()))
                 .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
@@ -254,6 +258,7 @@ public final class Server implements StateManager.RenderServer {
                 throw new RuntimeException(e);
             }
         }
+        ready = true;
         LOG.info("Javelit server started on http://localhost:{}", port);
     }
 
@@ -387,6 +392,28 @@ public final class Server implements StateManager.RenderServer {
         }
     }
 
+    private static class HealthHandler implements HttpHandler {
+        @Override
+        public void handleRequest(HttpServerExchange exchange) {
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+            exchange.getResponseSender().send("OK");
+        }
+    }
+
+    private class ReadyHandler implements HttpHandler {
+        @Override
+        public void handleRequest(HttpServerExchange exchange) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+            if (ready) {
+                exchange.setStatusCode(StatusCodes.OK);
+                exchange.getResponseSender().send("OK");
+            } else {
+                exchange.setStatusCode(StatusCodes.SERVICE_UNAVAILABLE);
+                exchange.getResponseSender().send("Service Unavailable");
+            }
+        }
+    }
 
     private class UploadHandler implements HttpHandler {
 
