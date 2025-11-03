@@ -262,6 +262,7 @@
     {{> code.html.mustache }}
     {{> toolbar-menu.html.mustache }}
     {{> status-widget.html.mustache }}
+    {{> deploy-button.html.mustache }}
     {{> settings-content.html.mustache }}
     {{! one-liner svg favicon }}
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22transform%3A%20scale%28-1%2C1%29%22%3E%0A%20%20%3Ctext%20y%3D%2232%22%20font-size%3D%2232%22%3E%F0%9F%9A%A1%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
@@ -281,6 +282,7 @@
     <div class="layout-container">
         <div class="toolbar">
             <jt-status-widget id="status-widget"></jt-status-widget>
+            <jt-deploy-button id="deploy-button"></jt-deploy-button>
             <jt-toolbar-menu id="toolbar-menu"></jt-toolbar-menu>
         </div>
         <div id="main-container" class="main-layout" data-container="main">
@@ -312,6 +314,30 @@
     <jt-settings-content></jt-settings-content>
 </jt-connection-error-modal>
 
+{{! Deploy Modal }}
+<jt-connection-error-modal id="deploy-modal" top-aligned>
+    <h3 slot="title">Deploy this app using...</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--jt-spacing-lg); margin-top: var(--jt-spacing-md);">
+        <div style="padding: var(--jt-spacing-md); border: 1px solid #A020F0; border-radius: var(--jt-border-radius); box-shadow: 0 0 8px rgba(160, 32, 240, 0.4), 0 0 16px rgba(160, 32, 240, 0.2);">
+            <h3 style="margin: 0 0 var(--jt-spacing-sm) 0;">
+                Railway
+            </h3>
+            <p style="margin: 0 0 var(--jt-spacing-md) 0;">Deploy your app in one click - free tier included and scales down to zero automatically.</p>
+            <a href="{{ RAILWAY_DEPLOY_APP_URL }}" target="_blank" rel="noopener noreferrer">
+                <img src="https://railway.com/button.svg" alt="Deploy on Railway">
+            </a>
+            <details style="font-size: var(--jt-font-size-sm)">
+                <summary><i>Deploying with Railway supports the Javelit project!</i></summary>
+                <i>The interactive examples in the documentation are hosted on Railway. <br>Deploying your Javelit apps with this Railway template sends 25% of your spend back to Javelit to help fund the hosting.</i>
+            </details>
+        </div>
+        <div style="padding: var(--jt-spacing-md); border: 1px solid var(--jt-border-color); border-radius: var(--jt-border-radius);">
+            <h3 style="margin: 0 0 var(--jt-spacing-sm) 0;">Custom Deployment</h3>
+            <p style="margin: 0;">For other platforms and custom deployments, <a href="https://docs.javelit.io/deploy" target="_blank">refer to the documentation</a></p>
+        </div>
+    </div>
+</jt-connection-error-modal>
+
 {{! Attribution }}
 <a href="https://github.com/javelit/javelit" class="javelit-attribution" target="_blank" rel="noopener">&hearts; Built with Javelit &hearts;</a>
 
@@ -333,6 +359,7 @@
     // Localhost detection and XSRF token - available globally
     window.javelit = {
         isDevMode: {{ DEV_MODE }},
+        isStandaloneMode: {{ STANDALONE_MODE }},
         xsrfToken: "{{ XSRF_TOKEN }}"
     };
     if (window.javelit.isDevMode) {

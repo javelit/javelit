@@ -91,6 +91,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static io.javelit.core.DeployUtils.generateRailwayDeployUrl;
 import static io.javelit.core.utils.LangUtils.optional;
 
 public final class Server implements StateManager.RenderServer {
@@ -107,6 +108,8 @@ public final class Server implements StateManager.RenderServer {
     private final @Nullable FileWatcher fileWatcher;
     private final @Nonnull BuildSystem buildSystem;
     private final @Nullable Path appPath;
+    private final boolean standaloneMode;
+    private final @Nullable String originalUrl;
     private boolean ready;
 
     private Undertow server;
@@ -131,6 +134,7 @@ public final class Server implements StateManager.RenderServer {
         @Nullable String classpath;
         @Nullable String headersFile;
         @Nullable BuildSystem buildSystem;
+        private @Nullable String originalUrl;
 
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
@@ -173,6 +177,11 @@ public final class Server implements StateManager.RenderServer {
             return this;
         }
 
+
+        public void originalUrl(final @Nonnull String originalUrl) {
+            this.originalUrl = originalUrl;
+        }
+
         public Server build() {
             if (buildSystem == null) {
                 buildSystem = BuildSystem.inferBuildSystem();
@@ -200,9 +209,11 @@ public final class Server implements StateManager.RenderServer {
         this.customHeaders = loadCustomHeaders(builder.headersFile);
         this.appRunner = new AppRunner(builder, this);
         this.appPath = builder.appPath;
-        this.fileWatcher = builder.appPath == null ? null : new FileWatcher(builder.appPath);
+        this.standaloneMode = this.appPath != null;
+        this.fileWatcher = this.standaloneMode ? new FileWatcher(builder.appPath) : null;
         this.buildSystem = builder.buildSystem;
         this.ready = false;
+        this.originalUrl = builder.originalUrl;
     }
 
     public void start() {
@@ -840,7 +851,11 @@ public final class Server implements StateManager.RenderServer {
                                      "PRISM_CSS",
                                      JtComponent.PRISM_CSS,
                                      "DEV_MODE",
-                                     devMode));
+                                     devMode,
+                                     "STANDALONE_MODE",
+                                     standaloneMode,
+                                     "RAILWAY_DEPLOY_APP_URL",
+                                     devMode && standaloneMode ? generateRailwayDeployUrl(appPath, originalUrl) : ""));
         return writer.toString();
     }
 
