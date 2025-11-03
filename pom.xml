@@ -134,6 +134,14 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.19.0</version>
             </dependency>
+
+            <!-- used in notebook mode -->
+            <dependency>
+                <groupId>fr.inria.gforge.spoon</groupId>
+                <artifactId>spoon-core</artifactId>
+                <version>11.2.1</version>
+            </dependency>
+
             <!-- JBang for dependency resolution. -->
             <!-- TODO brings tons of dependency. Some could be excluded. -->
             <dependency>
@@ -239,6 +247,17 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>fr.inria.gforge.spoon</groupId>
+            <artifactId>spoon-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
