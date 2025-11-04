@@ -31,7 +31,7 @@ public class DeployUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeployUtils.class);
 
-    private static final String RAILWAY_BASE = "https://railway.com/new/template/javelit-app?referralCode=NFgD4z&utm_medium=integration&utm_source=template&utm_campaign=inapp";
+    private static final String RAILWAY_BASE = "https://railway.com/new/template/javelit-app?referralCode=NFgD4z&utm_medium=integration&utm_source=template&utm_campaign=devmode";
 
     @Nonnull
     static String generateRailwayDeployUrl(final @Nullable Path appPath, final @Nullable String originalUrl) {

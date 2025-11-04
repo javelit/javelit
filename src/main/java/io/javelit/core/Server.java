@@ -91,7 +91,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static io.javelit.core.DeployUtils.generateRailwayDeployUrl;
 import static io.javelit.core.utils.LangUtils.optional;
 
 public final class Server implements StateManager.RenderServer {
@@ -855,7 +854,12 @@ public final class Server implements StateManager.RenderServer {
                                      "STANDALONE_MODE",
                                      standaloneMode,
                                      "RAILWAY_DEPLOY_APP_URL",
-                                     devMode && standaloneMode ? generateRailwayDeployUrl(appPath, originalUrl) : ""));
+
+                                     devMode && standaloneMode ?
+                                             // generateRailwayDeployUrl(appPath, originalUrl) :  // HOTFIX ISSUE IN RAILWAY
+                                             "https://railway.com/deploy/javelit-app?referralCode=NFgD4z&utm_medium=integration&utm_source=template&utm_campaign=devmode" :
+                                             "")
+        );
         return writer.toString();
     }
 
