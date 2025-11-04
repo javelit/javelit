@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.63.0
+//DEPS io.javelit:javelit:0.64.0
 
 
 import java.util.List;
