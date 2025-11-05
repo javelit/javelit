@@ -71,6 +71,7 @@ import io.undertow.server.session.SessionCookieConfig;
 import io.undertow.server.session.SessionManager;
 import io.undertow.util.ByteRange;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
 import io.undertow.util.Sessions;
 import io.undertow.util.StatusCodes;
 import io.undertow.websockets.WebSocketConnectionCallback;
@@ -96,6 +97,8 @@ import static io.javelit.core.utils.LangUtils.optional;
 public final class Server implements StateManager.RenderServer {
     private static final String SESSION_XSRF_ATTRIBUTE = "XSRF_TOKEN";
     private static final String XSRF_COOKIE_KEY = "javelit-xsrf";
+    private static final String SESSION_ID_COOKIE_KEY = "javelit-session-id";
+    private static final String EMBED_QUERY_PARAM = "embed";
 
     // visible for StateManager
     static final String MEDIA_PATH = "/_/media/";
@@ -231,12 +234,13 @@ public final class Server implements StateManager.RenderServer {
         if (staticRm != null) {
             ((PathHandler) app).addPrefixPath("/app/static", resource(staticRm));
         }
+        app = new EmbeddedHandler(app);
         app = new XsrfValidationHandler(app);
         // attach a BROWSER session cookie - this is not the same as app state "session" used downstream
         app = new SessionAttachmentHandler(app,
                                            new InMemorySessionManager("javelit_session"),
                                            new SessionCookieConfig()
-                                                   .setCookieName("javelit-session-id")
+                                                   .setCookieName(SESSION_ID_COOKIE_KEY)
                                                    .setHttpOnly(true)
                                                    .setMaxAge(86400 * 7)// 7 days
                                                    .setPath("/")
@@ -334,6 +338,41 @@ public final class Server implements StateManager.RenderServer {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
             final boolean devMode = isLocalClient(exchange.getSourceAddress());
             exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode));
+        }
+    }
+
+    private static class EmbeddedHandler implements HttpHandler {
+
+        private final HttpHandler next;
+
+        private EmbeddedHandler(final @Nonnull HttpHandler next) {
+            this.next = next;
+        }
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange)  throws Exception {
+            final boolean embedMode = isEmbedMode(exchange);
+            if (embedMode) {
+                final Iterable<Cookie> sessionCookies = exchange.responseCookies();
+                for (Cookie cookie : sessionCookies) {
+                    if (Set.of(XSRF_COOKIE_KEY, SESSION_ID_COOKIE_KEY).contains(cookie.getName())) {
+                        cookie.setSameSiteMode("None").setSecure(true);
+                    }
+                }
+            } else {
+                // prevent iframe explicitly
+                exchange.getResponseHeaders().put(new HttpString("X-Frame-Options"), "DENY");
+            }
+            next.handleRequest(exchange);
+        }
+
+
+        private static boolean isEmbedMode(final @Nonnull HttpServerExchange exchange) {
+            return optional(exchange.getQueryParameters())
+                    .map(e -> e.get(EMBED_QUERY_PARAM))
+                    .map(Deque::peek)
+                    .map("true"::equalsIgnoreCase)
+                    .orElse(false);
         }
     }
 
