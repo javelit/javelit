@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.64.0
+//DEPS io.javelit:javelit:0.65.0
 //DEPS com.google.guava:guava:32.1.3-jre
 
 
