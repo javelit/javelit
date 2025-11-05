@@ -178,6 +178,10 @@ class JtToolbarMenu extends LitElement {
                     window.javelit.sendMessage({ type: 'reload' });
                 }
                 break;
+            case 'copy-embed':
+                // Copy embed code to clipboard
+                this.handleCopyEmbed();
+                break;
             case 'settings':
                 // Open settings modal
                 const settingsModal = document.getElementById('settings-modal');
@@ -192,6 +196,34 @@ class JtToolbarMenu extends LitElement {
                 }
                 break;
         }
+    }
+
+    handleCopyEmbed() {
+        // Get current URL with ?embed=true
+        const embedUrl = window.location.origin + window.location.pathname + '?embed=true';
+
+        // Generate iframe HTML matching the oEmbed format
+        const iframeCode = `<iframe src="${embedUrl}" allow="camera;microphone;clipboard-read;clipboard-write;" style="width:100%;height:600px;border:0;" loading="lazy"></iframe>`;
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(iframeCode).then(() => {
+            // Show success toast notification
+            const toast = document.createElement('jt-internal-toast');
+            toast.body = 'Embed code copied to clipboard';
+            toast.icon = ':content_copy:';
+            toast.duration = 2;
+            toast.position = 'top';
+            document.body.appendChild(toast);
+        }).catch(err => {
+            console.error('Failed to copy embed code:', err);
+            // Show error toast notification
+            const toast = document.createElement('jt-internal-toast');
+            toast.body = 'Failed to copy embed code to clipboard';
+            toast.icon = ':error:';
+            toast.duration = 5;
+            toast.position = 'top';
+            document.body.appendChild(toast);
+        });
     }
 
     render() {
@@ -211,6 +243,14 @@ class JtToolbarMenu extends LitElement {
                 >
                     <span class="material-symbols-rounded menu-icon">refresh</span>
                     <span class="menu-label">Rerun</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button
+                    class="menu-item"
+                    @click="${(e) => this.handleMenuItemClick('copy-embed', e)}"
+                >
+                    <span class="material-symbols-rounded menu-icon">code</span>
+                    <span class="menu-label">Get embed code</span>
                 </button>
                 <div class="menu-divider"></div>
                 <button

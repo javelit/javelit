@@ -20,6 +20,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
     <link rel="preload" as="style" href="{{ MATERIAL_SYMBOLS_CDN }}">
     <link rel="stylesheet" href="{{ MATERIAL_SYMBOLS_CDN }}">
+    <link rel="alternate" type="application/json+oembed" href="/_/oembed?url={{ENCODED_CURRENT_URL}}&format=json" title="Javelit App">
     {{> design_system.html.mustache }}
     <style>
         html, body {
@@ -254,6 +255,64 @@
             font-weight: var(--jt-font-weight-bold);
             padding: var(--jt-spacing-sm) var(--jt-spacing-sm);
         }
+
+        /* Embed mode styles - activated when ?embed=true */
+        #root {
+            /* Transparent container in normal mode */
+        }
+
+        body.embed-mode {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        body.embed-mode #root {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            border: 3px solid var(--jt-bg-tertiary);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        body.embed-mode .app-wrapper {
+            flex: 1;
+            overflow-y: auto; /* Single scrollbar inside the border */
+            overflow-x: hidden;
+        }
+
+        /* Embed footer - hidden by default, shown in embed mode */
+        .embed-footer {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--jt-bg-tertiary);
+            font-size: 14px;
+            color: var(--jt-text-secondary);
+            font-family: var(--jt-font-family);
+        }
+
+        body.embed-mode .embed-footer {
+            display: flex;
+        }
+
+        .embed-footer a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--jt-text-secondary);
+            text-decoration: none;
+        }
+
+        .embed-footer a:hover .link-text {
+            text-decoration: underline;
+        }
+
+        .embed-footer .material-symbols-rounded {
+            font-size: 16px;
+        }
     </style>
     {{{ customHeaders }}}
     {{> tooltip.html.mustache }}
@@ -268,6 +327,7 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22transform%3A%20scale%28-1%2C1%29%22%3E%0A%20%20%3Ctext%20y%3D%2232%22%20font-size%3D%2232%22%3E%F0%9F%9A%A1%3C%2Ftext%3E%0A%3C%2Fsvg%3E">
 </head>
 <body>
+<div id="root">
 <div id="app" class="app-wrapper">
     {{! Sidebar with separated UI chrome and content }}
     <div id="full-sidebar" class="full-sidebar">
@@ -292,6 +352,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 {{! Connection Error Modal }}
@@ -362,7 +423,35 @@
         isStandaloneMode: {{ STANDALONE_MODE }},
         xsrfToken: "{{ XSRF_TOKEN }}"
     };
-    if (window.javelit.isDevMode) {
+
+    // Embed mode detection and setup
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('embed') === 'true') {
+        // Activate embed mode styling
+        document.body.classList.add('embed-mode');
+
+        // Create and inject embed footer
+        const footer = document.createElement('div');
+        footer.className = 'embed-footer';
+
+        // Get current URL without embed parameter for fullscreen link
+        const fullscreenUrl = window.location.href
+            .replace(/[?&]embed=true/g, '')
+            .replace(/\?&/, '?')  // Fix malformed query string
+            .replace(/\?$/, '');   // Remove trailing ?
+
+        footer.innerHTML = `
+            <span>Built with <a href="https://javelit.io" target="_blank"><span class="link-text">Javelit</span></a></span>
+            <a href="${fullscreenUrl}" target="_blank">
+                <span class="link-text">Fullscreen</span>
+                <span class="material-symbols-rounded">open_in_new</span>
+            </a>
+        `;
+
+        // Insert footer inside the root container (after the app div)
+        app.parentElement.appendChild(footer);
+    }
+    if (window.javelit.isDevMode || urlParams.get('embed') === 'true') {
         document.querySelector('.javelit-attribution').style.display = 'none';
     }
 

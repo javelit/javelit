@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Deque;
@@ -222,6 +223,7 @@ public final class Server implements StateManager.RenderServer {
         HttpHandler app = new PathHandler()
                 .addExactPath("/_/health", new HealthHandler())
                 .addExactPath("/_/ready", new ReadyHandler())
+                .addExactPath("/_/oembed", new OEmbedHandler())
                 .addExactPath("/_/ws",
                               Handlers.websocket(new WebSocketHandler()).addExtension(new PerMessageDeflateHandshake()))
                 .addExactPath("/_/upload", new BlockingHandler(new UploadHandler()))
@@ -337,7 +339,19 @@ public final class Server implements StateManager.RenderServer {
             final String xsrfToken = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
             final boolean devMode = isLocalClient(exchange.getSourceAddress());
-            exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode));
+            final String currentUrl = getCurrentUrl(exchange);
+
+            exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode, currentUrl));
+        }
+
+        private static String getCurrentUrl(final @Nonnull HttpServerExchange exchange) {
+            String currentUrl = exchange.getRequestURL();
+            // handle reverse proxy HTTPS forwarding to not lose https
+            final String forwardedProto = exchange.getRequestHeaders().getFirst("X-Forwarded-Proto");
+            if ("https".equalsIgnoreCase(forwardedProto) && currentUrl.startsWith("http://")) {
+                currentUrl = "https://" + currentUrl.substring(7);
+            }
+            return currentUrl;
         }
     }
 
@@ -462,6 +476,63 @@ public final class Server implements StateManager.RenderServer {
                 exchange.setStatusCode(StatusCodes.SERVICE_UNAVAILABLE);
                 exchange.getResponseSender().send("Service Unavailable");
             }
+        }
+    }
+
+    /**
+     * Handler for oEmbed endpoint that returns embed information for the app.
+     * Implements the oEmbed specification: https://oembed.com/
+     */
+    private static class OEmbedHandler implements HttpHandler {
+        @Override
+        public void handleRequest(HttpServerExchange exchange) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json; charset=utf-8");
+
+            // Parse query parameters
+            final String url = exchange.getQueryParameters()
+                    .getOrDefault("url", new ArrayDeque<>())
+                    .peek();
+            final String format = exchange.getQueryParameters()
+                    .getOrDefault("format", new ArrayDeque<>(List.of("json")))
+                    .peek();
+
+            // Validate URL parameter
+            if (url == null || url.isEmpty()) {
+                exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+                exchange.getResponseSender().send("{\"error\":\"Missing required parameter: url\"}");
+                return;
+            }
+
+            // Only support JSON format (XML is rarely used)
+            if (!"json".equalsIgnoreCase(format)) {
+                exchange.setStatusCode(StatusCodes.NOT_IMPLEMENTED);
+                exchange.getResponseSender().send("{\"error\":\"Only JSON format is supported\"}");
+                return;
+            }
+
+            // Build iframe HTML with embed=true parameter
+            final String embedUrl = url + (url.contains("?") ? "&" : "?") + "embed=true";
+            final String iframeHtml = """
+                    <iframe src='%s' allow='camera;microphone;clipboard-read;clipboard-write;'
+                    style='width:100%%;height:600px;border:0;'
+                    loading="lazy"></iframe>
+                    """.formatted(embedUrl.replace("'", "\\'"));
+
+            // Build oEmbed JSON response
+            final String oembedJson = String.format("""
+                    {
+                      "title": "Javelit",
+                      "version": "1.0",
+                      "type": "rich",
+                      "provider_name": "Javelit",
+                      "provider_url": "https://javelit.io",
+                      "html": "%s"
+                    }""",
+                    iframeHtml.replace("\"", "\\\"") // Escape double quotes for JSON
+            );
+
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseSender().send(oembedJson);
         }
     }
 
@@ -871,33 +942,26 @@ public final class Server implements StateManager.RenderServer {
                                  error, false);
     }
 
-    private String getIndexHtml(final String xsrfToken, boolean devMode) {
+    private String getIndexHtml(final String xsrfToken, boolean devMode, final String encodedCurrentUrl) {
         final StringWriter writer = new StringWriter();
         indexTemplate.execute(writer,
-                              Map.of("MATERIAL_SYMBOLS_CDN",
-                                     JtComponent.MATERIAL_SYMBOLS_CDN,
-                                     "LIT_DEPENDENCY",
-                                     JtComponent.LIT_DEPENDENCY,
-                                     "customHeaders",
-                                     customHeaders,
-                                     "port",
-                                     port,
-                                     "XSRF_TOKEN",
-                                     xsrfToken,
-                                     "PRISM_SETUP_SNIPPET",
-                                     JtComponent.PRISM_SETUP_SNIPPET,
-                                     "PRISM_CSS",
-                                     JtComponent.PRISM_CSS,
-                                     "DEV_MODE",
-                                     devMode,
-                                     "STANDALONE_MODE",
-                                     standaloneMode,
-                                     "RAILWAY_DEPLOY_APP_URL",
-
-                                     devMode && standaloneMode ?
-                                             // generateRailwayDeployUrl(appPath, originalUrl) :  // HOTFIX ISSUE IN RAILWAY
-                                             "https://railway.com/deploy/javelit-app?referralCode=NFgD4z&utm_medium=integration&utm_source=template&utm_campaign=devmode" :
-                                             "")
+                              Map.ofEntries(
+                                      Map.entry("MATERIAL_SYMBOLS_CDN", JtComponent.MATERIAL_SYMBOLS_CDN),
+                                      Map.entry("LIT_DEPENDENCY", JtComponent.LIT_DEPENDENCY),
+                                      Map.entry("customHeaders", customHeaders),
+                                      Map.entry("port", port),
+                                      Map.entry("XSRF_TOKEN", xsrfToken),
+                                      Map.entry("PRISM_SETUP_SNIPPET", JtComponent.PRISM_SETUP_SNIPPET),
+                                      Map.entry("PRISM_CSS", JtComponent.PRISM_CSS),
+                                      Map.entry("DEV_MODE", devMode),
+                                      Map.entry("STANDALONE_MODE", standaloneMode),
+                                      Map.entry("RAILWAY_DEPLOY_APP_URL",
+                                                devMode && standaloneMode ?
+                                                        // generateRailwayDeployUrl(appPath, originalUrl) :  // HOTFIX ISSUE IN RAILWAY
+                                                        "https://railway.com/deploy/javelit-app?referralCode=NFgD4z&utm_medium=integration&utm_source=template&utm_campaign=devmode" :
+                                                        ""),
+                                      Map.entry("ENCODED_CURRENT_URL", encodedCurrentUrl)
+                              )
         );
         return writer.toString();
     }
