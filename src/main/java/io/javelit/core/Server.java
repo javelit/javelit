@@ -121,10 +121,12 @@ public final class Server implements StateManager.RenderServer {
     private final String customHeaders;
 
     private static final Mustache indexTemplate;
+    private static final Mustache SAFARI_WARNING_TEMPLATE;
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
         indexTemplate = mf.compile("index.html.mustache");
+        SAFARI_WARNING_TEMPLATE = mf.compile("safari-embed-warning.html.mustache");
     }
 
     private String lastCompilationErrorMessage;
@@ -343,16 +345,16 @@ public final class Server implements StateManager.RenderServer {
 
             exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode, currentUrl));
         }
+    }
 
-        private static String getCurrentUrl(final @Nonnull HttpServerExchange exchange) {
-            String currentUrl = exchange.getRequestURL();
-            // handle reverse proxy HTTPS forwarding to not lose https
-            final String forwardedProto = exchange.getRequestHeaders().getFirst("X-Forwarded-Proto");
-            if ("https".equalsIgnoreCase(forwardedProto) && currentUrl.startsWith("http://")) {
-                currentUrl = "https://" + currentUrl.substring(7);
-            }
-            return currentUrl;
+    private static String getCurrentUrl(final @Nonnull HttpServerExchange exchange) {
+        String currentUrl = exchange.getRequestURL();
+        // handle reverse proxy HTTPS forwarding to not lose https
+        final String forwardedProto = exchange.getRequestHeaders().getFirst("X-Forwarded-Proto");
+        if ("https".equalsIgnoreCase(forwardedProto) && currentUrl.startsWith("http://")) {
+            currentUrl = "https://" + currentUrl.substring(7);
         }
+        return currentUrl;
     }
 
     private static class EmbeddedHandler implements HttpHandler {
@@ -366,7 +368,16 @@ public final class Server implements StateManager.RenderServer {
         @Override
         public void handleRequest(HttpServerExchange exchange)  throws Exception {
             final boolean embedMode = isEmbedMode(exchange);
-            if (embedMode) {
+            if (embedMode && isSafari(exchange)) {
+                // return a static html page - embedded is not supported in safari
+                // Remove ?embed=true from URL for the "open in new tab" link
+                final String currentUrl = getCurrentUrl(exchange);
+                final String appUrl = currentUrl.replaceAll("[?&]embed=true", "")
+                                                .replaceAll("\\?&", "?")
+                                                .replaceAll("\\?$", "");
+                exchange.getResponseSender().send(getSafariWarningHtml(appUrl));
+                return;
+            } else if (embedMode) {
                 final Iterable<Cookie> sessionCookies = exchange.responseCookies();
                 for (Cookie cookie : sessionCookies) {
                     if (Set.of(XSRF_COOKIE_KEY, SESSION_ID_COOKIE_KEY).contains(cookie.getName())) {
@@ -387,6 +398,23 @@ public final class Server implements StateManager.RenderServer {
                     .map(Deque::peek)
                     .map("true"::equalsIgnoreCase)
                     .orElse(false);
+        }
+
+
+        private static boolean isSafari(final @Nonnull HttpServerExchange exchange) {
+            final String userAgent = exchange.getRequestHeaders().getFirst("User-Agent");
+            return userAgent != null
+                   && userAgent.contains("Safari")
+                   && !userAgent.contains("Chrome")
+                   && !userAgent.contains("Chromium");
+        }
+
+        private static String getSafariWarningHtml(final @Nonnull String appUrl) {
+            final Map<String, Object> context = new HashMap<>();
+            context.put("APP_URL", appUrl);
+            final StringWriter writer = new StringWriter();
+            SAFARI_WARNING_TEMPLATE.execute(writer, context);
+            return writer.toString();
         }
     }
 
@@ -653,6 +681,9 @@ public final class Server implements StateManager.RenderServer {
                 exchange.setStatusCode(StatusCodes.NOT_FOUND);
                 return;
             }
+            // X-Frame-Options is NONE when embed=true is not set (the most common case)
+            // we allow iframe for media because the component pdf uses iframe
+            exchange.getResponseHeaders().put(new HttpString("X-Frame-Options"), "SAMEORIGIN");
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, media.format());
             exchange.getResponseHeaders().put(Headers.ACCEPT_RANGES, "bytes");
             exchange.getResponseHeaders().put(Headers.ETAG, hash);
