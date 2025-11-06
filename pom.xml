@@ -21,7 +21,7 @@
 
     <groupId>io.javelit</groupId>
     <artifactId>javelit</artifactId>
-    <version>0.67.0</version>
+    <version>0.68.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Javelit</name>
@@ -66,7 +66,7 @@
         <url>https://github.com/javelit/javelit.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <tag>javelit-0.67.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
