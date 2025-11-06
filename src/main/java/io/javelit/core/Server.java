@@ -684,6 +684,11 @@ public final class Server implements StateManager.RenderServer {
             // X-Frame-Options is NONE when embed=true is not set (the most common case)
             // we allow iframe for media because the component pdf uses iframe
             exchange.getResponseHeaders().put(new HttpString("X-Frame-Options"), "SAMEORIGIN");
+            final String ifNoneMatch = exchange.getRequestHeaders().getFirst(Headers.IF_NONE_MATCH);
+            if (ifNoneMatch != null && ifNoneMatch.equals(hash)) {
+                exchange.setStatusCode(StatusCodes.NOT_MODIFIED);
+                return;
+            }
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, media.format());
             exchange.getResponseHeaders().put(Headers.ACCEPT_RANGES, "bytes");
             exchange.getResponseHeaders().put(Headers.ETAG, hash);
