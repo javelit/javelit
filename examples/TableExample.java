@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.65.0
+//DEPS io.javelit:javelit:0.66.0
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
