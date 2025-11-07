@@ -1,6 +1,6 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.javelit:javelit:0.66.0
+//DEPS io.javelit:javelit:0.67.0
 //DEPS dev.langchain4j:langchain4j:0.36.2
 //DEPS dev.langchain4j:langchain4j-ollama:0.36.2
 
