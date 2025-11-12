@@ -358,9 +358,16 @@
 {{! Connection Error Modal }}
 <jt-connection-error-modal id="connection-modal" prevent-close>
     <span slot="title">Connection Error</span>
-    <p>Is Javelit still running? If you accidentally stopped Javelit, just restart it in your terminal:</p>
+    <p>Unable to connect to the Javelit server.</p>
+    {{#DEV_MODE }}
+    <p>If you accidentally stopped Javelit, just restart it in your terminal:</p>
     <jt-internal-code body="javelit run YourApp.java" language="bash"></jt-internal-code>
+    {{/DEV_MODE}}
+    {{^DEV_MODE }}
+        <p>Retrying in a few seconds...</p>
+    {{/DEV_MODE}}
 </jt-connection-error-modal>
+
 
 {{! Any other error modal }}
 <jt-connection-error-modal id="other-error-modal">
