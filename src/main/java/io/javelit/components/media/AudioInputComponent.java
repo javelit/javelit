@@ -198,7 +198,7 @@ public class AudioInputComponent extends JtComponent<JtUploadedFile> {
             return jtF;
         } else {
             throw new RuntimeException(
-                    "Failed to parse input widget value coming from the app. FileUpload value is not a list. Please reach out to support.");
+                    "Failed to parse input widget value coming from the app. AudioInputComponent expects a list value coming from the upload endpoint. Please reach out to support.");
         }
     }
 
