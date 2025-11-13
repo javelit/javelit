@@ -40,6 +40,7 @@ import io.javelit.components.layout.FormSubmitButtonComponent;
 import io.javelit.components.layout.PopoverComponent;
 import io.javelit.components.layout.TabsComponent;
 import io.javelit.components.media.AudioComponent;
+import io.javelit.components.media.AudioInputComponent;
 import io.javelit.components.media.FileUploaderComponent;
 import io.javelit.components.media.ImageComponent;
 import io.javelit.components.media.PdfComponent;
@@ -2165,6 +2166,44 @@ public final class Jt {
      */
     public static AudioComponent.Builder audio(final @Nonnull String url) {
         return new AudioComponent.Builder(url);
+    }
+
+
+    /**
+     * Display a widget that returns an audio recording from the user's microphone.
+     *
+     * Examples:
+     * Record a voice message and play it back.
+     * The default sample rate of 16000 Hz is optimal for speech recognition.
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class AudioInputApp {
+     *     public static void main(String[] args) {
+     *         var recording = Jt.audioInput("Record a voice message").use();
+     *         if (recording != null) {
+     *             Jt.audio(recording).use();
+     *         }
+     *     }
+     * }
+     * }
+     * Record high-fidelity audio and play it back. Higher sample rates can create higher-quality, larger audio files.
+     * This might require a nicer microphone to fully appreciate the difference.
+     * {@snippet :
+     * import io.javelit.core.Jt;
+     *
+     * public class AudioInputApp {
+     *     public static void main(String[] args) {
+     *         var recording = Jt.audioInput("Record high quality audio").sampleRate(48000).use();
+     *         if (recording != null) {
+     *             Jt.audio(recording).use();
+     *         }
+     *     }
+     * }
+     * }
+     */
+    public static AudioInputComponent.Builder audioInput(final @Nonnull String label) {
+        return new AudioInputComponent.Builder(label);
     }
 
 
