@@ -7,15 +7,16 @@ import io.javelit.core.Jt;
 public class AudioInputExample {
 
     public static void main(String[] args) {
-        var res1 = Jt.audioInput("Say something").sampleRate(48000).use();
-        var res2 = Jt.audioInput("Say something").use();
-        if (res1 != null) {
+        var recording1 = Jt.audioInput("Record a message").use();
+        if (recording1 != null) {
             Jt.text("Play it later!").use();
-            Jt.audio(res1).use();
+            Jt.audio(recording1).use();
         }
-        if (res2 != null) {
-            Jt.text("Play it later! low qual").use();
-            Jt.audio(res2).use();
+
+        var recording2 = Jt.audioInput("Record high quality audio").sampleRate(48000).use();
+        if (recording2 != null) {
+            Jt.text("Play it later in high res!").use();
+            Jt.audio(recording2).use();
         }
     }
 }
