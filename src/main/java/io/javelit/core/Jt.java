@@ -2201,6 +2201,8 @@ public final class Jt {
      *     }
      * }
      * }
+     *
+     * @param label A short label explaining to the user what this audio input widget is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
     public static AudioInputComponent.Builder audioInput(final @Nonnull String label) {
         return new AudioInputComponent.Builder(label);
