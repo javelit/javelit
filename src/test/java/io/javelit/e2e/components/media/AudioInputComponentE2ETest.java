@@ -20,6 +20,7 @@ import java.util.List;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
@@ -32,6 +33,11 @@ public class AudioInputComponentE2ETest {
 
     @Test
     void testAudioInputDisplaysProperly(final TestInfo testInfo) {
+        Assumptions.assumeFalse(
+                System.getenv("CI") != null,
+                "AudioInput tests require headed browser with microphone - skipping in CI"
+        );
+
         JtRunnable app = () -> Jt.audioInput("Say something").use();
 
         PlaywrightUtils.runInBrowser(testInfo, app, false, page -> {
