@@ -67,6 +67,7 @@ public final class PlaywrightUtils {
     // set this to true in dev to remove HEADLESS browser and add traces
     private static final boolean DEBUG = false;
     public static final BrowserType.LaunchOptions HEADLESS = new BrowserType.LaunchOptions().setHeadless(!DEBUG);
+    public static final BrowserType.LaunchOptions NOT_HEADLESS = new BrowserType.LaunchOptions().setHeadless(false);
 
     public static void runInBrowser(final @Nonnull TestInfo testInfo,
                                     final @Nonnull Path appFile,
@@ -110,8 +111,6 @@ public final class PlaywrightUtils {
         runInBrowser(testInfo, appFile, run);
     }
 
-
-
     // run an embedded javelit server
     // uses Class run - will be removed, use JtRunnable instead
     @Deprecated
@@ -151,10 +150,17 @@ public final class PlaywrightUtils {
     public static void runInBrowser(final @Nonnull TestInfo testInfo,
                                     final @Nonnull JtRunnable appMethod,
                                     final @Nonnull Consumer<Page> run) {
+        runInBrowser(testInfo, appMethod, true, run);
+    }
+
+    public static void runInBrowser(final @Nonnull TestInfo testInfo,
+                                    final @Nonnull JtRunnable appMethod,
+                                    final boolean headless,
+                                    final @Nonnull Consumer<Page> run) {
         Server server = null;
         BrowserContext context = null;
         try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
+             final Browser browser = playwright.chromium().launch(headless ? HEADLESS : NOT_HEADLESS);
              final Page page = browser.newPage()) {
             if (DEBUG) {
                 // Enable tracing for screenshots and snapshots

@@ -1,0 +1,608 @@
+{{!
+    Copyright © 2025 Cyril de Catheu (cdecatheu@hey.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+}}
+<script src="https://cdn.jsdelivr.net/npm/recordrtc@latest/RecordRTC.min.js"></script>
+<script type="module">
+    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+
+    class JtAudioInput extends LitElement {
+        static styles = css`
+            {{{ MARKDOWN_CSS }}}
+
+            :host {
+                display: block;
+                margin: var(--jt-spacing-lg) 0;
+            }
+
+            :host([width]:not([width="stretch"])) {
+                width: var(--input-width);
+                max-width: 100%;
+            }
+
+            .audio-input-container {
+                display: flex;
+                flex-direction: column;
+                gap: var(--jt-spacing-xs);
+            }
+
+            .label-row {
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-sm);
+            }
+
+            .label {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                font-weight: var(--jt-font-weight-medium);
+                color: var(--jt-text-primary);
+                margin: 0;
+            }
+
+            .label.spacer {
+                visibility: hidden;
+            }
+
+            .recorder-area {
+                background-color: var(--jt-bg-secondary);
+                border-radius: var(--jt-border-radius);
+                padding: var(--jt-spacing-md);
+                display: flex;
+                align-items: center;
+                gap: var(--jt-spacing-md);
+            }
+
+            .recorder-area.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .control-button {
+                width: 24px;
+                height: 40px;
+                border: none;
+                background: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all var(--jt-transition-fast);
+                flex-shrink: 0;
+                padding: 0;
+            }
+
+            .control-button:disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
+
+            .record-button .icon {
+                color: var(--jt-text-secondary);
+            }
+
+            .record-button:not(:disabled):hover .icon {
+                color: var(--jt-text-primary);
+            }
+
+            .stop-button .icon {
+                color: var(--jt-theme-color);
+            }
+
+            .stop-button:not(:disabled):hover .icon {
+                color: var(--jt-danger-color);
+            }
+
+            .play-button .icon {
+                color: var(--jt-text-secondary);
+            }
+
+            .play-button:not(:disabled):hover .icon {
+                color: var(--jt-text-primary);
+            }
+
+            .icon {
+                font-family: 'Material Symbols Rounded';
+                font-size: 24px;
+            }
+
+            .visualizer-container {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                height: 40px;
+                min-width: 100px;
+            }
+
+            .visualizer-bar {
+                flex: 1;
+                background-color: var(--jt-border-color);
+                border-radius: 2px;
+                transition: all 0.1s ease;
+                min-height: 4px;
+            }
+
+            .visualizer-bar.recording {
+                background-color: var(--jt-theme-color);
+            }
+
+            .progress-bar-container {
+                flex: 1;
+                height: 4px;
+                background-color: var(--jt-border-color);
+                border-radius: 2px;
+                overflow: hidden;
+                min-width: 100px;
+            }
+
+            .progress-bar-fill {
+                height: 100%;
+                background-color: var(--jt-text-secondary);
+                transition: none;
+            }
+
+            .time-display {
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-sm);
+                color: var(--jt-text-secondary);
+                min-width: 45px;
+                text-align: right;
+                flex-shrink: 0;
+            }
+
+            .loading-spinner {
+                display: inline-block;
+                width: 24px;
+                height: 24px;
+                border: 3px solid var(--jt-border-color);
+                border-right-color: var(--jt-text-secondary);
+                border-radius: 50%;
+                animation: spin 0.75s linear infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            .upload-status {
+                margin-top: var(--jt-spacing-sm);
+                padding: var(--jt-spacing-sm);
+                border-radius: var(--jt-border-radius-sm);
+                font-family: var(--jt-font-family);
+                font-size: var(--jt-font-size-xs);
+                text-align: center;
+            }
+
+            .upload-status.error {
+                background-color: var(--jt-error-bg);
+                color: var(--jt-error-color);
+            }
+        `;
+
+        static properties = {
+            label: { type: String },
+            sampleRate: { type: Number, attribute: 'sample-rate' },
+            help: { type: String },
+            disabled: { type: Boolean },
+            labelVisibility: { type: String, attribute: 'label-visibility' },
+            width: { type: String },
+            componentKey: { type: String, attribute: 'component-key' },
+            currentValueUrl: { type: String, attribute: 'current-value-url' },
+            // Internal state
+            isRecording: { type: Boolean, state: true },
+            isUploading: { type: Boolean, state: true },
+            isPlaying: { type: Boolean, state: true },
+            recordingTime: { type: Number, state: true },
+            audioDuration: { type: Number, state: true },
+            playbackProgress: { type: Number, state: true },
+            uploadError: { type: String, state: true }
+        };
+
+        constructor() {
+            super();
+            this.disabled = false;
+            this.labelVisibility = 'visible';
+            this.width = 'stretch';
+            this.isRecording = false;
+            this.isUploading = false;
+            this.isPlaying = false;
+            this.recordingTime = 0;
+            this.audioDuration = 0;
+            this.playbackProgress = 0;
+            this.uploadError = null;
+
+            // Audio recording state
+            this.stream = null;
+            this.recordingStartTime = 0;
+            this.timerInterval = null;
+
+            // Audio playback
+            this.audioElement = null;
+
+            // Visualizer
+            this.audioContext = null;
+            this.analyser = null;
+            this.dataArray = null;
+            this.animationId = null;
+        }
+
+        updated(changedProperties) {
+            if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
+                this.style.setProperty('--input-width', `${this.width}px`);
+            } else if (this.width === 'stretch') {
+                this.style.removeProperty('--input-width');
+            }
+
+            if (changedProperties.has('currentValueUrl') && this.currentValueUrl) {
+                this.loadAudioDuration();
+            }
+        }
+
+        async loadAudioDuration() {
+            // Clean up any existing audio element when loading new audio
+            if (this.audioElement) {
+                this.audioElement.pause();
+                this.audioElement.src = '';
+                this.audioElement = null;
+            }
+            this.isPlaying = false;
+            this.playbackProgress = 0;
+
+            if (!this.currentValueUrl) {
+                this.audioDuration = 0;
+                this.recordingTime = 0;
+                return;
+            }
+
+            const audio = new Audio(this.currentValueUrl);
+            const handleMetadata = () => {
+                this.audioDuration = audio.duration;
+                this.recordingTime = audio.duration;
+                // Clean up this temporary audio element
+                audio.removeEventListener('loadedmetadata', handleMetadata);
+                audio.src = '';
+            };
+            audio.addEventListener('loadedmetadata', handleMetadata);
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            this.cleanup();
+        }
+
+        cleanup() {
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+                this.stream = null;
+            }
+            if (this.recorder) {
+                this.recorder.destroy();
+                this.recorder = null;
+            }
+            if (this.audioContext) {
+                this.audioContext.close();
+                this.audioContext = null;
+            }
+            if (this.audioElement) {
+                this.audioElement.pause();
+                this.audioElement.src = '';
+                this.audioElement = null;
+            }
+            this.analyser = null;
+            this.dataArray = null;
+        }
+
+        async startRecording() {
+            if (this.disabled || this.isRecording) return;
+
+            // Clean up previous recording resources
+            this.cleanup();
+
+            try {
+                // Request microphone permission
+                const constraints = { audio: true };
+                if (this.sampleRate) {
+                    constraints.audio = {
+                        sampleRate: this.sampleRate
+                    };
+                }
+
+                this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // Setup Web Audio API for visualization
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = this.audioContext.createMediaStreamSource(this.stream);
+                this.analyser = this.audioContext.createAnalyser();
+                this.analyser.fftSize = 64;
+                source.connect(this.analyser);
+                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+                // Setup RecordRTC for WAV recording
+                this.recorder = RecordRTC(this.stream, {
+                    type: 'audio',
+                    mimeType: 'audio/wav',
+                    recorderType: RecordRTC.StereoAudioRecorder,
+                    numberOfAudioChannels: 1,
+                    desiredSampRate: this.sampleRate || 16000
+                });
+
+                this.recorder.startRecording();
+                this.isRecording = true;
+                this.recordingStartTime = Date.now();
+                this.recordingTime = 0;
+
+                // Start timer
+                this.timerInterval = setInterval(() => {
+                    this.recordingTime = Math.floor((Date.now() - this.recordingStartTime) / 1000);
+                    this.requestUpdate();
+                }, 100);
+
+                // Start visualization
+                this.visualize();
+
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                this.uploadError = `Failed to access microphone: ${error.message}`;
+                this.cleanup();
+            }
+        }
+
+        stopRecording() {
+            if (!this.isRecording || !this.recorder) return;
+
+            this.isRecording = false;
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+
+            // Stop animation before closing context
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+
+            this.recorder.stopRecording(() => {
+                const wavBlob = this.recorder.getBlob();
+                this.uploadAudio(wavBlob);
+
+                // Clean up recorder after getting blob
+                if (this.recorder) {
+                    this.recorder.destroy();
+                    this.recorder = null;
+                }
+            });
+
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+                this.stream = null;
+            }
+
+            // Close AudioContext immediately after recording stops
+            if (this.audioContext) {
+                this.audioContext.close();
+                this.audioContext = null;
+            }
+            this.analyser = null;
+            this.dataArray = null;
+        }
+
+        async uploadAudio(wavBlob) {
+            this.isUploading = true;
+            this.uploadError = null;
+            this.requestUpdate();
+
+            const formData = new FormData();
+            formData.append('file0', wavBlob, 'recording.wav');
+
+            try {
+                const response = await fetch('/_/upload', {
+                    method: 'PUT',
+                    headers: {
+                        'X-XSRF-TOKEN': window.javelit.xsrfToken,
+                        'X-Session-ID': window.javelit.sessionId,
+                        'X-Component-Key': this.componentKey
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Backend will send update with the processed file
+                    this.isUploading = false;
+                } else {
+                    const errorText = await response.text();
+                    this.uploadError = `Upload failed: ${errorText}`;
+                    this.isUploading = false;
+                }
+            } catch (error) {
+                this.uploadError = `Upload error: ${error.message}`;
+                this.isUploading = false;
+            }
+
+            this.requestUpdate();
+        }
+
+        visualize() {
+            if (!this.isRecording || !this.analyser) return;
+
+            this.analyser.getByteFrequencyData(this.dataArray);
+
+            // Update visualizer bars
+            const bars = this.shadowRoot.querySelectorAll('.visualizer-bar');
+            const step = Math.floor(this.dataArray.length / bars.length);
+
+            bars.forEach((bar, index) => {
+                const dataIndex = index * step;
+                const value = this.dataArray[dataIndex] / 255;
+                const height = Math.max(0.1, value) * 100;
+                bar.style.height = `${height}%`;
+            });
+
+            this.animationId = requestAnimationFrame(() => this.visualize());
+        }
+
+        async togglePlay() {
+            if (!this.currentValueUrl || this.disabled) return;
+
+            if (this.isPlaying) {
+                this.stopPlayback();
+            } else {
+                this.startPlayback();
+            }
+        }
+
+        startPlayback() {
+            if (!this.currentValueUrl) return;
+
+            // If audioElement exists, we're resuming from pause
+            if (!this.audioElement) {
+                this.audioElement = new Audio(this.currentValueUrl);
+
+                this.audioElement.addEventListener('ended', () => {
+                    this.isPlaying = false;
+                    this.playbackProgress = 0;
+                    this.recordingTime = this.audioDuration;
+                    this.audioElement.currentTime = 0;
+                    this.requestUpdate();
+                });
+
+                this.audioElement.addEventListener('timeupdate', () => {
+                    this.updatePlaybackProgress();
+                });
+            }
+
+            this.audioElement.play();
+            this.isPlaying = true;
+            this.requestUpdate();
+        }
+
+        stopPlayback() {
+            if (this.audioElement) {
+                this.audioElement.pause();
+                // Don't reset currentTime - keep position for resume
+                // Don't set to null - keep the audio element for resuming
+            }
+            this.isPlaying = false;
+            // Don't reset progress - keep current position visible
+            this.requestUpdate();
+        }
+
+        updatePlaybackProgress() {
+            if (!this.audioElement) return;
+
+            const currentTime = this.audioElement.currentTime;
+            const duration = this.audioElement.duration;
+
+            this.recordingTime = currentTime;
+            this.playbackProgress = duration > 0 ? currentTime / duration : 0;
+            this.requestUpdate();
+        }
+
+        formatTime(seconds) {
+            const wholeSeconds = Math.floor(seconds);
+            const mins = Math.floor(wholeSeconds / 60);
+            const secs = wholeSeconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        render() {
+            const hasValue = !!this.currentValueUrl;
+
+            return html`
+                <div class="audio-input-container">
+                    <div class="label-row">
+                        ${this.labelVisibility !== 'collapsed' ? html`
+                            <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
+                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
+                            </div>
+                        ` : ''}
+                        ${this.help && this.labelVisibility === 'visible' ? html`
+                            <jt-tooltip text="${this.help}"></jt-tooltip>
+                        ` : ''}
+                    </div>
+
+                    <div class="recorder-area ${this.disabled ? 'disabled' : ''}">
+                        ${this.isUploading ? html`
+                            <div class="loading-spinner"></div>
+                        ` : html`
+                            ${!this.isRecording ? html`
+                                <button
+                                    class="control-button record-button"
+                                    ?disabled="${this.disabled}"
+                                    @click="${this.startRecording}"
+                                    title="Record"
+                                >
+                                    <span class="icon">mic</span>
+                                </button>
+                            ` : html`
+                                <button
+                                    class="control-button stop-button"
+                                    ?disabled="${this.disabled}"
+                                    @click="${this.stopRecording}"
+                                    title="Stop recording"
+                                >
+                                    <span class="icon">stop_circle</span>
+                                </button>
+                            `}
+
+                            ${hasValue && !this.isRecording ? html`
+                                <button
+                                    class="control-button play-button"
+                                    ?disabled="${this.disabled}"
+                                    @click="${this.togglePlay}"
+                                    title="${this.isPlaying ? 'Pause' : 'Play'}"
+                                >
+                                    <span class="icon">${this.isPlaying ? 'pause' : 'play_circle'}</span>
+                                </button>
+                            ` : ''}
+                        `}
+
+                        ${hasValue && !this.isRecording ? html`
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${this.playbackProgress * 100}%"></div>
+                            </div>
+                        ` : html`
+                            <div class="visualizer-container">
+                                ${Array.from({ length: 18 }).map(() => html`
+                                    <div class="visualizer-bar ${this.isRecording ? 'recording' : ''}"></div>
+                                `)}
+                            </div>
+                        `}
+
+                        <div class="time-display">
+                            ${this.formatTime(this.recordingTime)}
+                        </div>
+                    </div>
+
+                    ${this.uploadError ? html`
+                        <div class="upload-status error">
+                            ${this.uploadError}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    }
+
+    customElements.define('jt-audio-input', JtAudioInput);
+</script>
