@@ -1,10 +1,12 @@
+package fileImageApp;
+
 import java.nio.file.Path;
 
 import io.javelit.core.Jt;
 
  public class FileImageApp {
      public static void main(String[] args) {
-          // assume mountains.jpg is present in the working directory
+          // mountains.jpg is present in the working directory
           Jt.image(Path.of("mountains.jpg")).use();
      }
  }

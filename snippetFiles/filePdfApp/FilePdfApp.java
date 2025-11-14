@@ -1,6 +1,6 @@
- 
+package filePdfApp;
 
- import java.nio.file.Path;import io.javelit.core.Jt;
+import java.nio.file.Path;import io.javelit.core.Jt;
 
  public class FilePdfApp {
      public static void main(String[] args) {

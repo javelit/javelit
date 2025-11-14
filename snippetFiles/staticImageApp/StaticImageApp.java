@@ -1,4 +1,6 @@
- import io.javelit.core.Jt;
+package staticImageApp;
+
+import io.javelit.core.Jt;
 
  public class StaticImageApp {
      public static void main(String[] args) {
