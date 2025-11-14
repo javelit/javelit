@@ -18,6 +18,8 @@ package io.javelit.doclet;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,10 +48,18 @@ import jdk.javadoc.doclet.Doclet;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
 
+import static io.javelit.core.utils.EmbedUtils.iframeHtml;
+
 /**
  * Visitor to convert DocTree elements to HTML format
  */
 class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
+
+    private final String snippetPath;
+
+    public HtmlDocTreeVisitor(String snippetPath) {
+        this.snippetPath = snippetPath;
+    }
 
     @Override
     public String visitAttribute(AttributeTree node, Void p) {
@@ -219,22 +229,56 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
     public String visitSnippet(SnippetTree node, Void p) {
         // Convert @snippet tags to <pre><code> HTML blocks
         StringBuilder result = new StringBuilder();
-        result.append("<pre><code class=\"language-java\">");
 
-        // Get the snippet body - it's a TextTree, not a List
-        TextTree body = node.getBody();
-        if (body != null) {
-            String content = body.getBody();
-            // Remove leading asterisks from JavaDoc formatting and trim
-            content = content.replaceAll("(?m)^\\s*\\*\\s?", "");
-            // HTML escape the content
-            content = content.replace("&", "&amp;")
-                             .replace("<", "&lt;")
-                             .replace(">", "&gt;");
-            result.append(content);
+        // Parse attributes
+        String fileAttribute = null;
+        String appUrlAttribute = null;
+        String appHeightAttribute = "400";
+
+        for (DocTree attr : node.getAttributes()) {
+            if (attr instanceof AttributeTree attrTree) {
+                String name = attrTree.getName().toString();
+                String value = getAttributeValue(attrTree);
+
+                switch (name) {
+                    case "file" -> fileAttribute = value;
+                    case "appUrl" -> appUrlAttribute = value;
+                    case "appHeight" -> appHeightAttribute = value;
+                }
+            }
         }
 
+        result.append("<pre><code class=\"language-java\">");
+
+        // Determine content source
+        String content;
+        if (fileAttribute != null) {
+            // External snippet file
+            content = readSnippetFile(fileAttribute);
+        } else {
+            // Inline snippet
+            TextTree body = node.getBody();
+            if (body != null) {
+                content = body.getBody();
+                // Remove leading asterisks from JavaDoc formatting and trim
+                content = content.replaceAll("(?m)^\\s*\\*\\s?", "");
+            } else {
+                content = "";
+            }
+        }
+
+        // HTML escape the content
+        content = content.replace("&", "&amp;")
+                         .replace("<", "&lt;")
+                         .replace(">", "&gt;");
+        result.append(content);
         result.append("</code></pre>");
+
+        // Add iframe if appUrl is provided
+        if (appUrlAttribute != null) {
+            result.append(iframeHtml(appUrlAttribute, Integer.parseInt(appHeightAttribute)));
+        }
+
         return result.toString();
     }
 
@@ -256,6 +300,33 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
     }
+
+    /**
+     * Extract attribute value from AttributeTree
+     */
+    private String getAttributeValue(AttributeTree attr) {
+        if (attr.getValue() == null) {
+            return null;
+        }
+        // getValue() returns a list of DocTree - join them together
+        return attr.getValue()
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(""))
+                .replaceAll("^\"|\"$", ""); // Remove surrounding quotes
+    }
+
+    /**
+     * Read snippet file from snippet-files directory
+     */
+    private String readSnippetFile(String filename) {
+        try {
+            Path path = Path.of(this.snippetPath, filename);
+            return Files.readString(path, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return "// Error reading snippet file: " + filename + "\n// " + e.getMessage();
+        }
+    }
 }
 
 /**
@@ -265,7 +336,8 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
 public class JsonDoclet implements Doclet {
 
     private Reporter reporter;
-    private final HtmlDocTreeVisitor htmlVisitor = new HtmlDocTreeVisitor();
+    private String snippetPath = "snippetFiles";
+    private HtmlDocTreeVisitor htmlVisitor;
 
     //method names that should point to another method's documentation
     private static final Map<String, String> METHOD_ALIASES = Map.of(
@@ -277,6 +349,7 @@ public class JsonDoclet implements Doclet {
     @Override
     public void init(Locale locale, Reporter reporter) {
         this.reporter = reporter;
+        this.htmlVisitor = new HtmlDocTreeVisitor(snippetPath);
     }
 
     @Override
@@ -286,7 +359,40 @@ public class JsonDoclet implements Doclet {
 
     @Override
     public Set<? extends Option> getSupportedOptions() {
-        return Set.of();
+        return Set.of(new Option() {
+            @Override
+            public int getArgumentCount() {
+                return 1;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Path to snippet files directory";
+            }
+
+            @Override
+            public Kind getKind() {
+                return Kind.STANDARD;
+            }
+
+            @Override
+            public List<String> getNames() {
+                return List.of("--snippet-path");
+            }
+
+            @Override
+            public String getParameters() {
+                return "<path>";
+            }
+
+            @Override
+            public boolean process(String option, List<String> arguments) {
+                snippetPath = arguments.get(0);
+                // Reinitialize htmlVisitor with new path
+                htmlVisitor = new HtmlDocTreeVisitor(snippetPath);
+                return true;
+            }
+        });
     }
 
     @Override

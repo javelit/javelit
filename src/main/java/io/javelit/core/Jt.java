@@ -151,7 +151,7 @@ public final class Jt {
      *     <li>You cannot modify the value of a component that has not been rendered with a {@code .key()} in the session yet.</li>
      *     <li>You cannot modify the value of a component that has already been rendered in the current app run.</li>
      * </ul>
-     * Learn more in the <a href="https://docs.javelit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets">modify widget examples</>.
+     * Learn more in the <a href="https://docs.javelit.io/develop/concepts/design/buttons#buttons-to-modify-or-reset-other-widgets">modify widget examples</a>.
      * <p>
      * This method validates that the provided value is of the correct type and respects constraints if any (for instance, value range).
      * <p>
@@ -376,21 +376,7 @@ public final class Jt {
      * Write text without Markdown or HTML parsing.
      * For monospace text, use {@link Jt#code}
      * Examples:
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TextApp {
-     *     public static void main(String[] args) {
-     *         Jt.text("This is some plain text.").use();
-     *
-     *         Jt.text("""
-     *                         This is preformatted text.
-     *                         It preserves    spacing
-     *                         and line breaks.
-     *                         """).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TextExample.java" appUrl="https://javelit-container-production.up.railway.app/" appHeight="250"}
      *
      * @param body The string to display.
      */

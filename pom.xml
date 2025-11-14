@@ -589,6 +589,7 @@
                                 <exclude>.idea/**</exclude>
                                 <exclude>target/**</exclude>
                                 <exclude>examples/**</exclude>
+                                <exclude>snippetFiles/**</exclude>
                                 <exclude>notes/**</exclude>
                                 <exclude>src/main/resources/cli/HelloWorld.java</exclude>
                                 <exclude>streamlit_ref/**</exclude>
@@ -739,6 +740,9 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <additionalOptions>--snippet-path ${project.basedir}/snippetFiles</additionalOptions>
+                                </configuration>
                             </execution>
                             <!-- JSON Documentation Generation -->
                             <execution>
@@ -754,6 +758,7 @@
                                     <useStandardDocletOptions>false</useStandardDocletOptions>
                                     <sourcepath>${project.build.sourceDirectory}</sourcepath>
                                     <subpackages>io.javelit.core:io.javelit.components</subpackages>
+                                    <additionalOptions>--snippet-path ${project.basedir}/snippetFiles</additionalOptions>
                                     <quiet>true</quiet>
                                 </configuration>
                             </execution>

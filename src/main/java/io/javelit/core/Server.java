@@ -94,6 +94,7 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static io.javelit.core.DeployUtils.generateRailwayDeployUrl;
+import static io.javelit.core.utils.EmbedUtils.iframeHtml;
 import static io.javelit.core.utils.LangUtils.optional;
 
 public final class Server implements StateManager.RenderServer {
@@ -539,13 +540,7 @@ public final class Server implements StateManager.RenderServer {
                 return;
             }
 
-            // Build iframe HTML with embed=true parameter
-            final String embedUrl = url + (url.contains("?") ? "&" : "?") + "embed=true";
-            final String iframeHtml = """
-                    <iframe src='%s' allow='camera;microphone;clipboard-read;clipboard-write;'
-                    style='width:100%%;height:600px;border:0;'
-                    loading="lazy"></iframe>
-                    """.formatted(embedUrl.replace("'", "\\'"));
+            final String iframeHtml = iframeHtml(url, 600);
 
             // Build oEmbed JSON response
             final String oembedJson = String.format("""
