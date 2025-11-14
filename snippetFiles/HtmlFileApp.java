@@ -4,7 +4,7 @@ import io.javelit.core.Jt;
 
  public class HtmlFileApp {
      public static void main(String[] args) {
-         // Assumes you have a file "content.html" in your project
+         // Assumes "content.html" is present in the working directory
          Jt.html(Path.of("content.html")).use();
      }
  }
