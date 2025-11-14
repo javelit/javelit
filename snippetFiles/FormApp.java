@@ -6,7 +6,7 @@
 
          String name = Jt.textInput("Full Name").use(form);
          String email = Jt.textInput("Email").use(form);
-         int age = Jt.numberInput("Age", Integer.class).min(0).max(120).use(form);
+         int age = Jt.numberInput("Age", Integer.class).minValue(0).maxValue(120).use(form);
          boolean subscribe = Jt.checkbox("Subscribe to newsletter").use(form);
 
          if (Jt.formSubmitButton("Register").use()) {
