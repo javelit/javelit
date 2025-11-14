@@ -51,8 +51,8 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
 
-          # Update version in all example .java files: //DEPS io.javelit:javelit:X.Y.Z
-          find examples -name "*.java" -type f -exec sed -i "s/io\.javelit:javelit:[0-9.]\+/io.javelit:javelit:$VERSION/g" {} +
+          # Update version in all example and snippetFiles .java files: //DEPS io.javelit:javelit:X.Y.Z
+          find examples snippetFiles -name "*.java" -type f -exec sed -i "s/io\.javelit:javelit:[0-9.]\+/io.javelit:javelit:$VERSION/g" {} +
 
       - name: Check for changes
         id: check-changes
