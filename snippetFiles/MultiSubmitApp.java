@@ -2,7 +2,7 @@
 
  public class MultiSubmitApp {
      public static void main(String[] args) {
-         var form = Jt.form("document").use();
+         var form = Jt.form().use();
 
          String title = Jt.textInput("Document Title").use(form);
          String content = Jt.textArea("Content").use(form);
