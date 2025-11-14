@@ -83,6 +83,7 @@ import static com.google.common.base.Preconditions.checkState;
  * Get the session state with {@link Jt#sessionState}.
  * Get the app cache with {@link Jt#cache}.
  */
+@SuppressWarnings("JavadocReference")
 public final class Jt {
 
     public static final JtContainer SIDEBAR = JtContainer.SIDEBAR;
@@ -95,22 +96,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic counter with session state
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class CounterApp {
-     *     public static void main(String[] args) {
-     *         // initialize a counter
-     *         Jt.sessionState().putIfAbsent("counter", 0);
-     *
-     *         if (Jt.button("Increment").use()) {
-     *             Jt.sessionState().computeInt("counter", (k, v) -> v + 1);
-     *         }
-     *
-     *         Jt.text("Counter: " + Jt.sessionState().get("counter")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="CounterApp.java" appUrl="https://javelit-container-usfu-production.up.railway.app" appHeight="300"}
      */
     public static TypedMap sessionState() {
         return StateManager.publicSessionState();
@@ -125,19 +111,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Accessing component values by key
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ComponentsStateApp {
-     *     public static void main(String[] args) {
-     *         double volumeFromUse = Jt.slider("Volume").key("volume").min(0).max(100).value(50).use();
-     *         double volumeFromState = Jt.componentsState().getDouble("volume");
-     *
-     *         Jt.text("Volume from slider return value: " + volumeFromUse).use();
-     *         Jt.text("Value from components state map: " + volumeFromState).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="ComponentsStateApp.java" appUrl="https://javelit-container-qkdk-production.up.railway.app" appHeight="300"}
      */
     public static TypedMap componentsState() {
         return StateManager.publicComponentsState();
@@ -157,19 +131,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Programmatically update a text input value
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class UpdateStateApp {
-     *     public static void main(String[] args) {
-     *         String name = Jt.textInput("Name").key("name").use();
-     *         Jt.button("Clear name")
-     *           .onClick(b -> Jt.setComponentState("name", ""))
-     *           .use();
-     *         Jt.text("Hello " + name).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="UpdateStateApp.java" appUrl="https://javelit-container-production-5b01.up.railway.app/" appHeight="300"}
      * <p>
      *
      * @param key   The key of the component (as set via {@code .key()})
@@ -191,49 +153,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Caching expensive computations
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class CacheApp {
-     *      public static void main(String[] args) {
-     *          String cacheKey = "long_running_operation";
-     *          Long result = Jt.cache().getLong(cacheKey);
-     *
-     *          if (result == null) {
-     *              Jt.text("Performing a long running operation. This will take a few seconds").use();
-     *              result = long_running_operation();
-     *              Jt.cache().put(cacheKey, result);
-     *          }
-     *
-     *          Jt.text("Result of long operation: " + result).use();
-     *          Jt.text("Refresh or Open the page in another tab: the long running operation result will be cached").use();
-     *      }
-     *
-     *      private static long long_running_operation(){
-     *          try {
-     *              Thread.sleep(5000);
-     *          } catch (InterruptedException ignored) {
-     *          }
-     *          return 42;
-     *      }
-     *  }
-     *}
+     * {@snippet file="CacheApp.java" appUrl="https://javelit-container-fyxu-production.up.railway.app" appHeight="300"}
      * <p>
      * Sharing data across users
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SharedDataApp {
-     *     public static void main(String[] args) {
-     *         // initialization
-     *         Jt.cache().putIfAbsent("counter", 0);
-     *         // increment visits
-     *         int totalVisits = Jt.cache().computeInt("counter", (k, v) -> v + 1);
-     *
-     *         Jt.text("Total app visits: " + totalVisits).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="SharedDataApp.java" appUrl="https://javelit-container-xrmg-production.up.railway.app/" appHeight="300"}
      * <p>
      * Deleting values in the cache:
      * <pre>
@@ -261,27 +184,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Conditional content based on current path
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class PathApp {
-     *     public static void main(String[] args) {
-     *         Jt.navigation(
-     *                  Jt.page("/home", () -> home()),
-     *                  Jt.page("/details", () -> details())).use();
-     *
-     *         Jt.text("The current path is: " + Jt.urlPath()).use();
-     *     }
-     *
-     *     public static void home() {
-     *         Jt.title("Home Page").use();
-     *     }
-     *
-     *     public static void details() {
-     *         Jt.title("Details Page").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="PathApp.java" appUrl="https://javelit-container-uflt-production.up.railway.app/" appHeight="300"}
      */
     public static String urlPath() {
         return StateManager.getUrlContext().currentPath();
@@ -295,24 +198,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Using query parameters for app configuration
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class QueryParamsApp {
-     *     public static void main(String[] args) {
-     *         var params = Jt.urlQueryParameters();
-     *
-     *         String name = params.getOrDefault("name", List.of("unknown user")).get(0);
-     *
-     *         Jt.title("App Settings").use();
-     *         Jt.text("Hello " + name).use();
-     *         // URL: ?name=Alice would show:
-     *         // Hello Alice
-     *     }
-     * }
-     *}
+     * {@snippet file="QueryParamsApp.java" appUrl="TODO?name=Alice" appHeight="300"}
      */
     // TODO consider adding a TypedMap interface with list unwrap
     public static Map<String, List<String>> urlQueryParameters() {
@@ -328,38 +214,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Safe copying from cache to prevent mutations
-     * {@snippet :
-     * import java.util.ArrayList;
-     * import java.util.List;
-     *
-     * import io.javelit.core.Jt;
-     *
-     * import com.fasterxml.jackson.core.type.TypeReference;
-     *
-     * public class DeepCopyApp {
-     *     public static void main(String[] args) {
-     *         // init
-     *         List<String> sharedList = (List<String>) Jt.cache().get("shared_list");
-     *         if (sharedList == null) {
-     *             sharedList = new ArrayList<>();
-     *             sharedList.add("item1");
-     *             sharedList.add("item2");
-     *             Jt.cache().put("shared_list", sharedList);
-     *         }
-     *
-     *         // Create a safe copy to avoid mutations affecting other sessions
-     *         List<String> safeCopy = Jt.deepCopy(sharedList, new TypeReference<>() {
-     *         });
-     *
-     *         if (Jt.button("remove elements from user lists").use()) {
-     *             safeCopy.clear();
-     *         }
-     *
-     *         Jt.text("Original list size: " + sharedList.size()).use();
-     *         Jt.text("Safe copy size: " + safeCopy.size()).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="DeepCopyApp.java" appUrl="https://javelit-container-wlct-production.up.railway.app/" appHeight="300"}
      *
      * @return a deep copy of the provided object.
      */
@@ -390,19 +245,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic title and title with markdown formatting and styling
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TitleApp {
-     *     public static void main(String[] args) {
-     *         // Basic title
-     *         Jt.title("This is a title").use();
-     *
-     *         // Title with Markdown and styling
-     *         Jt.title("_Javelit_ is **cool** :sunglasses:").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TitleApp.java" appUrl="https://javelit-container-production-764a.up.railway.app/" appHeight="300"}
      *
      * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
      */
@@ -415,19 +258,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic header and header with markdown formatting and styling
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class HeaderApp {
-     *     public static void main(String[] args) {
-     *         // Basic header
-     *         Jt.header("This is a title").use();
-     *
-     *         // Header with Markdown and styling
-     *         Jt.header("_Javelit_ is **cool** :sunglasses:").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="HeaderApp.java" appUrl="https://javelit-container-faea-production.up.railway.app/" appHeight="300"}
      *
      * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
      */
@@ -440,19 +271,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic subheader and subheader with markdown formatting and styling
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SubHeaderApp {
-     *     public static void main(String[] args) {
-     *         // Basic subheader
-     *         Jt.subheader("This is a title").use();
-     *
-     *         // Subheader with Markdown and styling
-     *         Jt.subheader("_Javelit_ is **cool** :sunglasses:").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="SubHeaderApp.java" appUrl="https://javelit-container-jey-production.up.railway.app/" appHeight="300"}
      *
      * @param body The text to display. Markdown is supported, see {@link #markdown(String)} for more details.
      */
@@ -473,22 +292,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic markdown formatting and colored text styling
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class MarkdownApp {
-     *     public static void main(String[] args) {
-     *         // Basic text formatting
-     *         Jt.markdown("*Javelit* is **really** ***cool***.").use();
-     *
-     *         // Divider
-     *         Jt.markdown("---").use();
-     *
-     *         // Emoji and line breaks
-     *         Jt.markdown("Here's a bouquet — :tulip::cherry_blossom::rose::hibiscus::sunflower::blossom:").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="MarkdownApp.java" appUrl="https://javelit-container-nlt3-production.up.railway.app/" appHeight="300"}
      *
      * @param body The text to display as Markdown.
      */
@@ -501,21 +305,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic section separator
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class DividerApp {
-     *     public static void main(String[] args) {
-     *         Jt.title("Section 1").use();
-     *         Jt.text("Content for section 1").use();
-     *
-     *         Jt.divider("div1").use();
-     *
-     *         Jt.title("Section 2").use();
-     *         Jt.text("Content for section 2").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="DividerApp.java" appUrl="https://javelit-container-hru4-production.up.railway.app" appHeight="300"}
      */
     @Deprecated(forRemoval = true) // use divider(someKey)
     public static MarkdownComponent.Builder divider() {
@@ -527,21 +317,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic section separator
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class DividerApp {
-     *     public static void main(String[] args) {
-     *         Jt.title("Section 1").use();
-     *         Jt.text("Content for section 1").use();
-     *
-     *         Jt.divider("div1").use();
-     *
-     *         Jt.title("Section 2").use();
-     *         Jt.text("Content for section 2").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="DividerApp.java" appUrl="https://javelit-container-hru4-production.up.railway.app" appHeight="300"}
      *
      * @param key A unique key to avoid collisions when calling this method multiple times.
      */
@@ -554,32 +330,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple error message
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ErrorApp {
-     *     public static void main(String[] args) {
-     *         String username = Jt.textInput("Username").use();
-     *
-     *         if (username.isEmpty()) {
-     *             Jt.error("Username is required!").use();
-     *         } else if (username.length() < 3) {
-     *             Jt.error("Username must be at least 3 characters long.").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="ErrorApp.java" appUrl="https://javelit-container-mh0v-production.up.railway.app" appHeight="300"}
      * <p>
      * Error with markdown formatting
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormattedErrorApp {
-     *     public static void main(String[] args) {
-     *         Jt.error("**Connection Failed**: Unable to connect to the database. Please check your settings.").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FormattedErrorApp.java" appUrl="https://javelit-container-adrx-production.up.railway.app/" appHeight="300"}
      *
      * @param body The error text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -592,32 +346,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple warning message
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class WarningApp {
-     *     public static void main(String[] args) {
-     *         String username = Jt.textInput("Username").use();
-     *
-     *         if (username.isEmpty()) {
-     *             Jt.warning("Username is required!").use();
-     *         } else if (username.length() < 3) {
-     *             Jt.warning("Username must be at least 3 characters long.").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="WarningApp.java" appUrl="https://javelit-container-2hya-production.up.railway.app/" appHeight="300"}
      * <p>
      * Warning with markdown formatting
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormattedWarningApp {
-     *     public static void main(String[] args) {
-     *         Jt.warning("**Connection Failed**: Unable to connect to the database. Please check your settings.").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FormattedWarningApp.java" appUrl="https://javelit-container-n7e-production.up.railway.app/" appHeight="300"}
      *
      * @param body The warning text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -630,32 +362,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple success message
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SuccessApp {
-     *     public static void main(String[] args) {
-     *         String username = Jt.textInput("Username").use();
-     *
-     *         if (username.isEmpty()) {
-     *             Jt.success("Username is required!").use();
-     *         } else if (username.length() > 3) {
-     *             Jt.success("Username is long enough.").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="SuccessApp.java" appUrl="https://javelit-container-util-production.up.railway.app/" appHeight="300"}
      * <p>
      * Success with markdown formatting
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormattedSuccessApp {
-     *     public static void main(String[] args) {
-     *         Jt.success("**Connection Success**: Able to connect to the database.").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FormattedSuccessApp.java" appUrl="https://javelit-container-shmx-production.up.railway.app/" appHeight="300"}
      *
      * @param body The success text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -668,32 +378,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple info message
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class InfoApp {
-     *     public static void main(String[] args) {
-     *         String username = Jt.textInput("Username").use();
-     *
-     *         if (username.isEmpty()) {
-     *             Jt.info("Username is required!").use();
-     *         } else if (username.length() < 3) {
-     *             Jt.info("Username must be at least 3 characters long.").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="InfoApp.java" appUrl="https://javelit-container-sfd2-production.up.railway.app/" appHeight="300"}
      * <p>
      * Info with markdown formatting
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormattedInfoApp {
-     *     public static void main(String[] args) {
-     *         Jt.info("**Connection Success**: Able to connect to the database.").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FormattedInfoApp.java" appUrl="https://javelit-container-o2ma-production.up.railway.app/" appHeight="300"}
      *
      * @param body The info text to display. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -712,17 +400,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple HTML content
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class HtmlApp {
-     *     public static void main(String[] args) {
-     *         Jt.html("<h3>Custom HTML Header</h3>").use();
-     *         Jt.html("<p style='color: blue;'>This is blue text</p>").use();
-     *         Jt.html("<ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul>").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="HtmlApp.java" appUrl="https://javelit-container-xqjt-production.up.railway.app/" appHeight="300"}
      *
      * @param body The HTML code to insert.
      */
@@ -741,18 +419,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Loading HTML from file
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.nio.file.Path;
-     *
-     * public class HtmlFileApp {
-     *     public static void main(String[] args) {
-     *         // Assumes you have a file "content.html" in your project
-     *         Jt.html(Path.of("content.html")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="HtmlFileApp.java"}
      *
      * @param filePath The path of the file containing the HTML code to insert.
      */
@@ -765,31 +432,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple code block
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class CodeApp {
-     *     public static void main(String[] args) {
-     *         Jt.code("public class HelloWorld {}").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="CodeApp.java" appUrl="https://javelit-container-748i-production.up.railway.app" appHeight="300"}
      * <p>
      * Multi-line code with syntax highlighting
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class MultilineCodeApp {
-     *     public static void main(String[] args) {
-     *         String pythonCode = """
-     *                 import numpy as np
-     *
-     *                 a = np.arange(15).reshape(3, 5)
-     *                 """;
-     *         Jt.code(pythonCode).language("python").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="MultilineCodeApp.java" appUrl="https://javelit-container-lzvc-production.up.railway.app/" appHeight="300"}
      *
      * @param body The string to display as code or monospace text.
      */
@@ -802,19 +448,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic button usage and interaction
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ButtonApp {
-     *     public static void main(String[] args) {
-     *         if (Jt.button("Say hello").use()) {
-     *             Jt.text("Why hello there").use();
-     *         } else {
-     *             Jt.text("Goodbye").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="ButtonApp.java" appUrl="https://javelit-container-p3l0-production.up.railway.app" appHeight="300"}
      *
      * @param label A short label explaining to the user what this button is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -827,19 +461,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic checkbox usage
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class CheckboxApp {
-     *     public static void main(String[] args) {
-     *         boolean agree = Jt.checkbox("I agree").use();
-     *
-     *         if (agree) {
-     *             Jt.text("Great!").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="CheckboxApp.java" appUrl="https://javelit-container-dq4o-production.up.railway.app" appHeight="300"}
      *
      * @param label A short label explaining to the user what this checkbox is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -852,34 +474,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple toggle
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ToggleApp {
-     *     public static void main(String[] args) {
-     *         boolean enabled = Jt.toggle("Enable notifications").use();
-     *
-     *         Jt.text("Notifications: " + (enabled ? "Enabled" : "Disabled")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="ToggleApp.java" appUrl="https://javelit-container-nlsw-production.up.railway.app/" appHeight="300"}
      * <p>
      * Toggle with default value
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ToggleDefaultApp {
-     *     public static void main(String[] args) {
-     *         boolean autoSave = Jt.toggle("Auto-save")
-     *             .value(true)
-     *             .use();
-     *
-     *         if (autoSave) {
-     *             Jt.text("Changes will be saved automatically").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="ToggleDefaultApp.java" appUrl="https://javelit-container-niog-production.up.railway.app/" appHeight="300"}
      *
      * @param label A short label explaining to the user what this toggle is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -892,21 +490,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic integer slider usage
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SliderApp {
-     *     public static void main(String[] args) {
-     *         int age = Jt.slider("How old are you?")
-     *             .min(0)
-     *             .max(130)
-     *             .value(25)
-     *             .use();
-     *
-     *         Jt.text("I'm " + age + " years old").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="SliderApp.java" appUrl="https://javelit-container-ats7-production.up.railway.app/" appHeight="300"}
      *
      * @param label A short label explaining to the user what this slider is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -931,19 +515,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic container usage and adding elements out of order
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ContainerApp {
-     *     public static void main(String[] args) {
-     *         var container = Jt.container().use();
-     *
-     *         Jt.text("This is inside the container").use(container);
-     *         Jt.text("This is outside the container").use();
-     *         Jt.text("This is inside too").use(container);
-     *     }
-     * }
-     *}
+     * {@snippet file="ContainerApp.java" appUrl="https://javelit-container-xdhp-production.up.railway.app" appHeight="300"}
      *
      */
     public static ContainerComponent.Builder container() {
@@ -967,46 +539,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Dynamic content replacement
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class EmptyApp {
-     *     public static void main(String[] args) {
-     *         var placeholder = Jt.empty().use();
-     *         String selected = Jt.selectbox("Choose content",
-     *             List.of("None", "Text", "Button")).use();
-     *
-     *         switch (selected) {
-     *             case "Text" -> Jt.text("Dynamic text content").use(placeholder);
-     *             case "Button" -> {
-     *                 if (Jt.button("Dynamic button").use(placeholder)) {
-     *                     Jt.text("Button clicked!").use();
-     *                 }
-     *             }
-     *             // case "None" -> container remains empty
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="EmptyApp.java" appUrl="https://javelit-container-cp9j-production.up.railway.app" appHeight="300"}
      * <p>
      * Simple animations
-     * {@snippet :
-     * import io.javelit.core.Jt;import io.javelit.core.Jt;
-     *
-     * public class AnimationEmptyApp {
-     *     public static void main(String[] args) {
-     *         var emptyContainer = Jt.empty().use();
-     *          for (i = 10; i>=1; i--) {
-     *               Jt.text(i + "!").use(emptyContainer);
-     *                Thread.sleep(1000);
-     *           }
-     *           Jt.text("Happy new Year !").use(emptyContainer);
-     *           Jt.button("rerun").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="AnimationEmptyApp.java" appUrl="https://javelit-container-production.up.railway.app" appHeight="300"}
      *
      */
     public static ContainerComponent.Builder empty() {
@@ -1031,19 +567,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic three-column layout with headers and content
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ColumnsApp {
-     *     public static void main(String[] args) {
-     *         var cols = Jt.columns(3).use();
-     *
-     *         Jt.title("A cat").use(cols.col(0));
-     *         Jt.title("A dog").use(cols.col(1));
-     *         Jt.title("An owl").use(cols.col(2));
-     *     }
-     * }
-     *}
+     * {@snippet file="ColumnsApp.java" appUrl="https://javelit-container-tnzd-production.up.railway.app" appHeight="300"}
      *
      * @param numColumns The number of columns to create
      */
@@ -1071,44 +595,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic tabbed interface
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class TabsApp {
-     *     public static void main(String[] args) {
-     *         var tabs = Jt.tabs(List.of("Overview", "Details", "Settings")).use();
-     *
-     *         Jt.text("Welcome to the overview page").use(tabs.tab("Overview"));
-     *         Jt.text("Here are the details").use(tabs.tab("Details"));
-     *         Jt.text("Configure your settings here").use(tabs.tab("Settings"));
-     *     }
-     * }
-     *}
+     * {@snippet file="TabsApp.java" appUrl="https://javelit-container-ebco-production.up.railway.app/" appHeight="300"}
      * <p>
      * Data analysis tabs
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class DataTabsApp {
-     *     public static void main(String[] args) {
-     *         var tabs = Jt.tabs(List.of("Sales", "Marketing", "Finance")).use();
-     *
-     *         // Sales tab
-     *         Jt.title("Sales Dashboard").use(tabs.tab(0));
-     *         Jt.text("Total sales: $100,000").use(tabs.tab(0));
-     *
-     *         // Marketing tab
-     *         Jt.title("Marketing Metrics").use(tabs.tab(1));
-     *         Jt.text("Conversion rate: 3.5%").use(tabs.tab(1));
-     *
-     *         // Finance tab
-     *         Jt.title("Financial Overview").use(tabs.tab(2));
-     *         Jt.text("Revenue growth: +15%").use(tabs.tab(2));
-     *     }
-     * }
-     *}
+     * {@snippet file="DataTabsApp.java" appUrl="https://javelit-container-7zqb-production.up.railway.app" appHeight="300"}
      *
      * @param tabs A list of tab labels
      */
@@ -1133,19 +623,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic expander with explanation content
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ExpanderApp {
-     *     public static void main(String[] args) {
-     *         var expander = Jt.expander("See explanation").use();
-     *
-     *         Jt.text("""
-     *                 [A great explanation on the why and how of life.]
-     *                 """).use(expander);
-     *     }
-     * }
-     *}
+     * {@snippet file="ExpanderApp.java" appUrl="https://javelit-container-b8jy-production.up.railway.app/" appHeight="300"}
      *
      * @param label The label for the expander header
      */
@@ -1170,44 +648,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Settings popover
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class PopoverApp {
-     *     public static void main(String[] args) {
-     *         var settings = Jt.popover("⚙️ Settings").use();
-     *
-     *         Jt.text("Configure your preferences:").use(settings);
-     *         boolean notifications = Jt.checkbox("Enable notifications").use(settings);
-     *         String theme = Jt.selectbox("Theme", List.of("Light", "Dark")).use(settings);
-     *
-     *         if (notifications) {
-     *             Jt.text("Notifications are enabled").use();
-     *         }
-     *         Jt.text("The selected theme is " + theme).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="PopoverApp.java" appUrl="https://javelit-container-kuvn-production.up.railway.app/" appHeight="300"}
      * <p>
      * Help popover with information
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class HelpPopoverApp {
-     *     public static void main(String[] args) {
-     *         Jt.text("Username:").use();
-     *         Jt.textInput("Enter username").use();
-     *
-     *         var help = Jt.popover("❓ Help").use();
-     *         Jt.text("**Username requirements:**").use(help);
-     *         Jt.text("- Must be 3-20 characters long").use(help);
-     *         Jt.text("- Only letters and numbers allowed").use(help);
-     *         Jt.text("- Case sensitive").use(help);
-     *     }
-     * }
-     *}
+     * {@snippet file="HelpPopoverApp.java" appUrl="https://javelit-container-8mdm-production.up.railway.app/" appHeight="300"}
      *
      * @param label The label for the popover button. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1241,47 +685,10 @@ public final class Jt {
      * <p>
      * Examples:
      * User registration form
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormApp {
-     *     public static void main(String[] args) {
-     *         var form = Jt.form().use();
-     *
-     *         String name = Jt.textInput("Full Name").use(form);
-     *         String email = Jt.textInput("Email").use(form);
-     *         int age = Jt.numberInput("Age", Integer.class).min(0).max(120).use(form);
-     *         boolean subscribe = Jt.checkbox("Subscribe to newsletter").use(form);
-     *
-     *         if (Jt.formSubmitButton("Register").use()) {
-     *             Jt.text("Welcome, " + name + "!").use();
-     *             Jt.text("Email: " + email).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="FormApp.java" appUrl="https://javelit-container-ovom-production.up.railway.app/" appHeight="400"}
      * <p>
      * Survey form
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class SurveyFormApp {
-     *     public static void main(String[] args) {
-     *         var form = Jt.form().use();
-     *         double satisfaction = Jt.slider("Satisfaction (1-10)").min(1).max(10).value(5).use(form);
-     *         String feedback = Jt.textArea("Additional feedback").use(form);
-     *         String department = Jt.selectbox("Department",
-     *                                          List.of("Engineering", "Marketing", "Sales", "Support")).use(form);
-     *
-     *         if (Jt.formSubmitButton("Submit Survey").use(form)) {
-     *             Jt.text("Thank you for your feedback!").use();
-     *             Jt.text("Satisfaction: " + satisfaction + "/10").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="SurveyFormApp.java" appUrl="https://javelit-container-isdo-production.up.railway.app/" appHeight="400"}
      *
      */
     public static FormComponent.Builder form() {
@@ -1297,45 +704,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic form submit button
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FormSubmitApp {
-     *     public static void main(String[] args) {
-     *         var form = Jt.form("contact").use();
-     *
-     *         String name = Jt.textInput("Your Name").use(form);
-     *         String message = Jt.textArea("Message").use(form);
-     *
-     *         if (Jt.formSubmitButton("Send Message").use(form)) {
-     *             Jt.text("Message sent successfully!").use();
-     *             Jt.text("From: " + name).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="FormSubmitApp.java" appUrl="https://javelit-container-bq0o-production.up.railway.app/" appHeight="400"}
      * <p>
      * Multiple submit buttons in same form
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class MultiSubmitApp {
-     *     public static void main(String[] args) {
-     *         var form = Jt.form("document").use();
-     *
-     *         String title = Jt.textInput("Document Title").use(form);
-     *         String content = Jt.textArea("Content").use(form);
-     *
-     *         if (Jt.formSubmitButton("Save Draft").key("save").use(form)) {
-     *             Jt.text("Draft saved: " + title).use();
-     *         }
-     *
-     *         if (Jt.formSubmitButton("Publish").key("publish").use(form)) {
-     *             Jt.text("Document published: " + title).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="MultiSubmitApp.java" appUrl="https://javelit-container-wdwc-production.up.railway.app/" appHeight="400"}
      *
      * @param label The text to display on the submit button
      */
@@ -1348,38 +720,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple text input
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TextInputApp {
-     *     public static void main(String[] args) {
-     *         String name = Jt.textInput("Your name").use();
-     *
-     *         if (!name.isEmpty()) {
-     *             Jt.text("Hello, " + name + "!").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="TextInputApp.java" appUrl="https://javelit-container-lyjk-production.up.railway.app/" appHeight="300"}
      * <p>
      * Text input with validation
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ValidatedTextInputApp {
-     *     public static void main(String[] args) {
-     *         String email = Jt.textInput("Email address")
-     *                          .placeholder("Enter your email")
-     *                          .use();
-     *
-     *         if (!email.isEmpty() && !email.contains("@")) {
-     *             Jt.error("Please enter a valid email address").use();
-     *         } else if (!email.isEmpty()) {
-     *             Jt.text("Valid email: " + email).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="ValidatedTextInputApp.java" appUrl="https://javelit-container-fh90-production.up.railway.app/" appHeight="300"}
      *
      * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1392,39 +736,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple text area
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TextAreaApp {
-     *     public static void main(String[] args) {
-     *         String feedback = Jt.textArea("Your feedback").use();
-     *
-     *         if (!feedback.isEmpty()) {
-     *             Jt.text("Thank you for your feedback!").use();
-     *             Jt.text("Character count: " + feedback.length()).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="TextAreaApp.java" appUrl="https://javelit-container-oyie-production.up.railway.app/" appHeight="300"}
      * <p>
      * Text area for code input
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class CodeTextAreaApp {
-     *     public static void main(String[] args) {
-     *         String code = Jt.textArea("Enter your Java code")
-     *                         .height(200)
-     *                         .placeholder("public class MyClass {\n    // Your code here\n}")
-     *                         .use();
-     *
-     *         if (!code.isEmpty()) {
-     *             Jt.text("Code preview:").use();
-     *             Jt.code(code).language("java").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="CodeTextAreaApp.java" appUrl="https://javelit-container-e8he-production.up.railway.app" appHeight="300"}
      *
      * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1437,23 +752,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple date input
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.time.LocalDate;
-     * import java.time.Period;
-     *
-     * public class DateInputApp {
-     *     public static void main(String[] args) {
-     *         LocalDate birthday = Jt.dateInput("Your birthday").use();
-     *
-     *         if (birthday != null) {
-     *             int age = Period.between(birthday, LocalDate.now()).getYears();
-     *             Jt.text("You are " + age + " years old").use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="DateInputApp.java" appUrl="https://javelit-container-hiol-production.up.railway.app" appHeight="300"}
      *
      * @param label A short label explaining to the user what this date input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1466,19 +765,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple number input
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class NumberInputApp {
-     *     public static void main(String[] args) {
-     *         Number quantity = Jt.numberInput("Quantity").minValue(1).maxValue(100).use();
-     *
-     *         if (quantity != null) {
-     *             Jt.text("You selected: " + quantity).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="NumberInputApp.java" appUrl="https://javelit-container-yrri-production.up.railway.app/" appHeight="300"}
      *
      * @param label A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1491,23 +778,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Integer input with specific type
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TypedNumberInputApp {
-     *     public static void main(String[] args) {
-     *         Integer age = Jt.numberInput("Age", Integer.class)
-     *                         .minValue(0)
-     *                         .maxValue(150)
-     *                         .use();
-     *
-     *         if (age != null) {
-     *             String category = age < 18 ? "Minor" : age < 65 ? "Adult" : "Senior";
-     *             Jt.text("Category: " + category).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="TypedNumberInputApp.java" appUrl="https://javelit-container-qcrg-production.up.railway.app/" appHeight="300"}
      *
      * @param label      A short label explaining to the user what this numeric input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param valueClass The number type class (Integer, Double, Float, etc.)
@@ -1522,46 +793,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple radio selection
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class RadioApp {
-     *     public static void main(String[] args) {
-     *         String size = Jt.radio("Select size",
-     *             List.of("Small", "Medium", "Large")).use();
-     *
-     *         if (size != null) {
-     *             Jt.text("Selected size: " + size).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="RadioApp.java" appUrl="https://javelit-container-jo9r-production.up.railway.app/" appHeight="300"}
      * <p>
      * Radio with custom objects
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ProductRadioApp {
-     *     public static void main(String[] args) {
-     *         record Product(String name, double price) {}
-     *
-     *         Product selected = Jt
-     *                 .radio("Choose product",
-     *                        List.of(new Product("Basic Plan", 9.99),
-     *                                new Product("Pro Plan", 19.99),
-     *                                new Product("Enterprise Plan", 49.99)))
-     *                 .formatFunction(e -> e.name + " ($" + e.price + ")")
-     *                 .use();
-     *
-     *         if (selected != null) {
-     *             Jt.text("You chose: " + selected.name()).use();
-     *             Jt.text("Price: $" + selected.price()).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="ProductRadioApp.java" appUrl="https://javelit-container-hh-u-production.up.railway.app/" appHeight="300"}
      *
      * @param label   A short label explaining to the user what this radio selection is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param options The list of options to choose from
@@ -1576,37 +811,10 @@ public final class Jt {
      * <p>
      * Examples:
      * Simple dropdown selection
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class SelectBoxApp {
-     *     public static void main(String[] args) {
-     *         String country = Jt.selectbox("Select your country",
-     *                                       List.of("United States", "Canada", "United Kingdom", "Germany", "France")).use();
-     *
-     *         if (country != null) {
-     *             Jt.text("Selected country: " + country).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="SelectBoxApp.java" appUrl="https://javelit-container-ydef-production.up.railway.app/" appHeight="300"}
      * <p>
      * Dropdown with default value
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class ProcessingSelectBoxApp {
-     *     public static void main(String[] args) {
-     *         String priority = Jt.selectbox("Task priority",
-     *                                        List.of("Low", "Medium", "High", "Critical"))
-     *                             .index(1)
-     *                             .use();
-     *         Jt.text("Priority: " + priority).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="ProcessingSelectBoxApp.java" appUrl="https://javelit-container-vyft-production.up.railway.app/" appHeight="300"}
      *
      * @param label   A short label explaining to the user what this selection is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      * @param options The list of options to choose from
@@ -1630,26 +838,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic page creation with custom title and icon
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class NavigationApp {
-     *    public static void page1() {
-     *        Jt.title("First Page").use();
-     *    }
-     *
-     *    public static void page2() {
-     *        Jt.title("Second Page").use();
-     *    }
-     *
-     *    public static void main(String[] args) {
-     *        var page = Jt.navigation(
-     *                      Jt.page("page1", NavigationApp::page1).title("First page").icon("🔥"),
-     *                      Jt.page("page2", NavigationApp::page2).title("Second page").icon(":favorite:"))
-     *                 .use();
-     *    }
-     * }
-     *}
+     * {@snippet file="NavigationApp.java" appUrl="https://javelit-container-ygun-production.up.railway.app/" appHeight="300"}
      *
      * @param path The url path where the page should be found
      * @param page The page app logic
@@ -1672,26 +861,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic multipage navigation setup
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class NavigationApp {
-     *     public static void firstPage() {
-     *         Jt.title("First Page").use();
-     *     }
-     *
-     *     public static void secondPage() {
-     *         Jt.title("Second Page").use();
-     *     }
-     *
-     *     public static void main(String[] args) {
-     *         var page = Jt
-     *                 .navigation(Jt.page("/page1", () -> firstPage()).title("First page").icon("🔥"),
-     *                             Jt.page("/page2", () -> secondPage()).title("Second page").icon(":favorite:"))
-     *                 .use();
-     *     }
-     * }
-     *}
+     * {@snippet file="NavigationApp.java" appUrl="https://javelit-container-ygun-production.up.railway.app/" appHeight="300"}
      *
      * @param pages The pages to include in the navigation
      */
@@ -1711,35 +881,7 @@ public final class Jt {
      * Examples:
      * A multipage app with the sidebar hidden.
      * A footer replaces the sidebar. The footer contains links to all pages of the app and an external link.
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class PageLinkApp {
-     *
-     *     public static void firstPage() {
-     *         Jt.title("First Page").use();
-     *         Jt.text("first page content").use();
-     *     }
-     *
-     *     public static void secondPage() {
-     *         Jt.title("Second Page").use();
-     *         Jt.text("Second page content").use();
-     *     }
-     *
-     *     public static void main(String[] args) {
-     *         var page = Jt
-     *                 .navigation(Jt.page("/page1", () -> firstPage()).title("First page").icon("🔥"),
-     *                             Jt.page("/page2", () -> secondPage()).title("Second page").icon(":favorite:"))
-     *                 .hidden()
-     *                 .use();
-     *
-     *         Jt.divider("divider").use();
-     *         Jt.pageLink("/page1").use();
-     *         Jt.pageLink("/page2").use();
-     *         Jt.pageLink("https://github.com/javelit/javelit", "Github project").icon(":link:").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="PageLinkApp.java" appUrl="https://javelit-container-hgr7-production.up.railway.app/" appHeight="300"}
      *
      * @param pagePath The path of the page to link to in a multipage app. If null, target the home page.
      */
@@ -1769,27 +911,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic file upload with processing
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     * import io.javelit.core.JtUploadedFile;
-     *
-     * import java.util.List;
-     *
-     * public class FileUploadApp {
-     *     public static void main(String[] args) {
-     *         var uploadedFiles = Jt.fileUploader("Choose a CSV file")
-     *                               .type(List.of(".csv"))
-     *                               .use();
-     *
-     *         if (!uploadedFiles.isEmpty()) {
-     *             JtUploadedFile file = uploadedFiles.getFirst();
-     *             Jt.text("Uploaded file: " + file.filename()).use();
-     *             Jt.text("File size: " + file.content().length + " bytes").use();
-     *             Jt.text("Content type: " + file.contentType()).use();
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="FileUploadApp.java" appUrl="https://javelit-container-ala-production.up.railway.app/" appHeight="300"}
      *
      * @param label A short label explaining to the user what this file uploader is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -1803,26 +925,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Plot from a {@code Chart} ({@code Bar} extends {@code Chart}).
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import org.icepear.echarts.Bar;
-     *
-     * public class BarChartApp {
-     *     public static void main(String[] args) {
-     *         Bar bar = new Bar()
-     *                 .setLegend()
-     *                 .setTooltip("item")
-     *                 .addXAxis(new String[] { "Matcha Latte", "Milk Tea", "Cheese Cocoa", "Walnut Brownie" })
-     *                 .addYAxis()
-     *                 .addSeries("2015", new Number[] { 43.3, 83.1, 86.4, 72.4 })
-     *                 .addSeries("2016", new Number[] { 85.8, 73.4, 65.2, 53.9 })
-     *                 .addSeries("2017", new Number[] { 93.7, 55.1, 82.5, 39.1 });
-     *
-     *         Jt.echarts(bar).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="BarChartApp.java" appUrl="https://javelit-container-8pdg-production.up.railway.app/" appHeight="500"}
      *
      * @param chart The ECharts {@code Chart} object to display
      */
@@ -1836,36 +939,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Plot from an {@code Option}.
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import org.icepear.echarts.Option;
-     * import org.icepear.echarts.charts.bar.BarSeries;
-     * import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
-     * import org.icepear.echarts.components.coord.cartesian.ValueAxis;
-     * import org.icepear.echarts.origin.util.SeriesOption;
-     *
-     * public class OptionChartApp {
-     *     public static void main(String[] args) {
-     *         CategoryAxis xAxis = new CategoryAxis()
-     *                 .setType("category")
-     *                 .setData(new String[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" });
-     *
-     *         ValueAxis yAxis = new ValueAxis().setType("value");
-     *
-     *         BarSeries series = new BarSeries()
-     *                 .setData(new Number[] { 120, 200, 150, 80, 70, 110, 130 })
-     *                 .setType("bar");
-     *
-     *         Option option = new Option()
-     *                 .setXAxis(xAxis)
-     *                 .setYAxis(yAxis)
-     *                 .setSeries(new SeriesOption[] { series });
-     *
-     *         Jt.echarts(option).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="OptionChartApp.java" appUrl="https://javelit-container-hqjs-production.up.railway.app/" appHeight="500"}
      *
      * @param chartOption The ECharts {@code Option} object to display
      */
@@ -1879,39 +953,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Plot from a JSON {@code String}
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import org.icepear.echarts.Option;
-     * import org.icepear.echarts.charts.bar.BarSeries;
-     * import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
-     * import org.icepear.echarts.components.coord.cartesian.ValueAxis;
-     * import org.icepear.echarts.origin.util.SeriesOption;
-     *
-     * public class OptionChartApp {
-     *     public static void main(String[] args) {
-     *         String echartsOptionJson = """
-     *                 {
-     *                   "xAxis": {
-     *                     "type": "category",
-     *                     "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-     *                   },
-     *                   "yAxis": {
-     *                     "type": "value"
-     *                   },
-     *                   "series": [
-     *                     {
-     *                       "data": [150, 230, 224, 218, 135, 147, 260],
-     *                       "type": "line"
-     *                     }
-     *                   ]
-     *                 }
-     *                 """;
-     *
-     *         Jt.echarts(echartsOptionJson).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="OptionJsonChartApp.java" appUrl="https://javelit-container-n71a-production.up.railway.app/" appHeight="500"}
      *
      * @param chartOptionJson The ECharts option as a JSON string
      */
@@ -1924,24 +966,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic table with data objects
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     *
-     * public class TableApp {
-     *     public static void main(String[] args) {
-     *         record Person(String name, int age, String city) {
-     *         }
-     *
-     *         List<Object> data = List.of(new Person("Alice", 25, "New York"),
-     *                                     new Person("Bob", 30, "San Francisco"),
-     *                                     new Person("Charlie", 35, "Chicago"));
-     *
-     *         Jt.table(data).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TableApp.java" appUrl="https://javelit-container-m0nf-production.up.railway.app/" appHeight="400"}
      *
      * @param rows The list of objects representing table rows
      */
@@ -1976,23 +1001,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Basic table with array of objects
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class TableArrayApp {
-     *     public static void main(String[] args) {
-     *         record Product(String name, double price, boolean inStock) {}
-     *
-     *         Product[] products = {
-     *             new Product("Laptop", 999.99, true),
-     *             new Product("Mouse", 25.50, false),
-     *             new Product("Keyboard", 75.00, true)
-     *         };
-     *
-     *         Jt.table(products).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TableArrayApp.java" appUrl="https://javelit-container-9siz-production.up.railway.app/" appHeight="400"}
      *
      * @param rows The array of objects representing table rows
      */
@@ -2005,24 +1014,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Table from column arrays
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.Map;
-     *
-     * public class TableColumnsArrayApp {
-     *     public static void main(String[] args) {
-     *         Map<String, Object[]> salesData = Map.of(
-     *                 "Month", new String[]{"Jan", "Feb", "Mar", "Apr"},
-     *                 "Sales", new Integer[]{1200, 1350, 1100, 1450},
-     *                 "Target", new Integer[]{1000, 1300, 1200, 1400},
-     *                 "Achieved", new Boolean[]{true, true, false, true}
-     *         );
-     *
-     *         Jt.tableFromArrayColumns(salesData).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TableColumnsArrayApp.java" appUrl="https://javelit-container-j1rl-production.up.railway.app/" appHeight="400"}
      *
      * @param cols A map where keys are column names and values are arrays of column data
      */
@@ -2035,25 +1027,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Table from column lists
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.util.List;
-     * import java.util.Map;
-     *
-     * public class TableColumnsListApp {
-     *     public static void main(String[] args) {
-     *         Map<String, List<Object>> employeeData = Map.of(
-     *                 "Name", List.of("Alice", "Bob", "Charlie", "Diana"),
-     *                 "Department", List.of("Engineering", "Sales", "Marketing", "Engineering"),
-     *                 "Salary", List.of(95000, 75000, 68000, 102000),
-     *                 "Remote", List.of(true, false, true, true)
-     *         );
-     *
-     *         Jt.tableFromListColumns(employeeData).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="TableColumnsListApp.java" appUrl="https://javelit-container-21w6-production.up.railway.app/" appHeight="400"}
      *
      * @param cols A map where keys are column names and values are collections of column data
      */
@@ -2071,39 +1045,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Conditional page switching with checkboxes
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SwitchPageApp {
-     *     public static void welcome() {
-     *         Jt.title("Welcome Page").use();
-     *         Jt.text("Please complete the requirements below to proceed:").use();
-     *
-     *         boolean agreedToTerms = Jt.checkbox("I agree with Bob").use();
-     *         boolean confirmedAge = Jt.checkbox("I agree with Alice").use();
-     *
-     *         if (agreedToTerms && confirmedAge) {
-     *             Jt.text("All requirements met! Redirecting to dashboard...").use();
-     *             Jt.switchPage("/dashboard");
-     *         } else {
-     *             Jt.text("Please check both boxes to continue.").use();
-     *         }
-     *     }
-     *
-     *     public static void dashboard() {
-     *         Jt.title("Dashboard").use();
-     *         Jt.text("Welcome to your dashboard!").use();
-     *         Jt.text("You have successfully completed the requirements.").use();
-     *     }
-     *
-     *     public static void main(String[] args) {
-     *         Jt.navigation(Jt.page("/welcome", () -> welcome()).title("Welcome").icon("👋").home(),
-     *                       Jt.page("/dashboard", () -> dashboard()).title("Dashboard").icon("📊"))
-     *           .hidden()
-     *           .use();
-     *     }
-     * }
-     *}
+     * {@snippet file="SwitchPageApp.java" appUrl="https://javelit-container-wyfi-production.up.railway.app/" appHeight="400"}
      *
      * @param path The target page path. If {@code null}, target the home page.
      */
@@ -2127,26 +1069,9 @@ public final class Jt {
      * <p>
      * Examples:
      * Audio from external URL
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class UrlAudioApp {
-     *     public static void main(String[] args) {
-     *         Jt.audio("https://github.com/javelit/public_assets/raw/refs/heads/main/audio/piano-chords.mp3").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="UrlAudioApp.java" appUrl="https://javelit-container-agf8-production.up.railway.app/" appHeight="400"}
      * Audio from static resource
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class UrlAudioApp {
-     *     public static void main(String[] args) {
-     *          // assume static/piano-chords.mp3 is present in the working directory
-     *         Jt.audio("app/static/piano-chords.mp3").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="staticUrlAudioApp/StaticUrlAudioApp.java" appUrl="https://javelit-container-o7n6-production.up.railway.app/" appHeight="400"}
      *
      * @param url A URL for a hosted audio file.
      */
@@ -2161,32 +1086,10 @@ public final class Jt {
      * Examples:
      * Record a voice message and play it back.
      * The default sample rate of 16000 Hz is optimal for speech recognition.
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class AudioInputApp {
-     *     public static void main(String[] args) {
-     *         var recording = Jt.audioInput("Record a voice message").use();
-     *         if (recording != null) {
-     *             Jt.audio(recording).use();
-     *         }
-     *     }
-     * }
-     * }
+     * {@snippet file="AudioInputApp.java" appUrl="https://javelit-container-oz84-production.up.railway.app" appHeight="400"}
      * Record high-fidelity audio and play it back. Higher sample rates can create higher-quality, larger audio files.
      * This might require a nicer microphone to fully appreciate the difference.
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class AudioInputApp {
-     *     public static void main(String[] args) {
-     *         var recording = Jt.audioInput("Record high quality audio").sampleRate(48000).use();
-     *         if (recording != null) {
-     *             Jt.audio(recording).use();
-     *         }
-     *     }
-     * }
-     * }
+     * {@snippet file="HighQualityAudioInputApp.java" appUrl="https://javelit-container-1en5-production.up.railway.app/" appHeight="400"}
      *
      * @param label A short label explaining to the user what this audio input widget is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
      */
@@ -2203,17 +1106,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Audio from raw data
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class RawDataAudioApp {
-     *     public static void main(String[] args) {
-     *         // a method that generates wav raw data - find one at https://github.com/javelit/javelit/blob/main/examples/audio/AudioExample.java
-     *         byte[] beepWav = generateBeepWavBytes(2);
-     *         Jt.audio(beepWav).format("audio/wav").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="RawDataAudioApp.java" appUrl="https://javelit-container-xnj4-production.up.railway.app/" appHeight="400"}
      *
      * @param data Raw audio data.
      */
@@ -2229,16 +1122,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Audio from local file
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class FileAudioApp {
-     *     public static void main(String[] args) {
-     *          // assume piano-chords.mp3 is present in the working directory
-     *          Jt.audio(Path.of("piano-chords.mp3")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FileAudioApp.java"}
      *
      * @param filePath A path to a local audio file. The path can be absolute or relative to the working directory.
      */
@@ -2264,26 +1148,9 @@ public final class Jt {
      * <p>
      * Examples:
      * Image from external URL
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class UrlImageApp {
-     *     public static void main(String[] args) {
-     *         Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="UrlImageApp.java" appUrl="https://javelit-container-sagw-production.up.railway.app/" appHeight="400"}
      * Image from static resource
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class StaticImageApp {
-     *     public static void main(String[] args) {
-     *          // assume static/mountains.jpg is present in the working directory
-     *         Jt.image("app/static/mountains.jpg").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="staticImageApp/StaticImageApp.java" appUrl="https://javelit-container-o6qa-production.up.railway.app/" appHeight="400"}
      *
      * @param url A URL for a hosted image file.
      */
@@ -2296,21 +1163,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Image from raw data
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.io.IOException;
-     * import java.nio.file.Files;
-     * import java.nio.file.Path;
-     *
-     * public class ByteImageApp {
-     *     public static void main(String[] args) throws IOException {
-     *         // a method that generates image byte - find one at https://github.com/javelit/javelit/blob/main/examples/image/ImageExample.java
-     *         byte[] imageBytes = generateImage();
-     *         Jt.image(imageBytes).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="ByteImageApp.java" appUrl="https://javelit-container-jabg-production.up.railway.app" appHeight="400"}
      *
      * @param data Raw image data.
      */
@@ -2323,18 +1176,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Image from local file
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.nio.file.Path;
-     *
-     * public class FileImageApp {
-     *     public static void main(String[] args) {
-     *          // assume mountains.jpg is present in the working directory
-     *          Jt.image(Path.of("mountains.jpg")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FileImageApp.java"}
      *
      * @param filePath A path to a local image file. The path can be absolute or relative to the working directory.
      */
@@ -2357,21 +1199,7 @@ public final class Jt {
      * <p>
      * Examples:
      * From an SVG image
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class SvgImageApp {
-     *     public static void main(String[] args) {
-     *         String svg = """
-     *                 <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-     *                     <circle cx="100" cy="100" r="80" fill="#4CAF50" />
-     *                     <path d="M 60 100 L 90 130 L 140 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-     *                 </svg>
-     *                 """;
-     *         Jt.imageFromSvg(svg).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="SvgImageApp.java" appUrl="https://javelit-container-kkah-production.up.railway.app/" appHeight="400"}
      */
     public static ImageComponent.Builder imageFromSvg(final @Language("html") @Nonnull String svg) {
         return ImageComponent.Builder.ofSvg(svg);
@@ -2382,15 +1210,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Display PDF from URL
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class PdfApp {
-     *     public static void main(String[] args) {
-     *         Jt.pdf("https://cdn.jsdelivr.net/gh/javelit/public_assets@main/pdf/dummy.pdf").use();
-     *     }
-     * }
-     *}
+     * {@snippet file="PdfApp.java" appUrl="https://javelit-container-zhd-production.up.railway.app/" appHeight="400"}
      *
      * @param url A URL for a hosted PDF, or a path to a PDF in the static folder.
      */
@@ -2403,20 +1223,7 @@ public final class Jt {
      * <p>
      * Examples:
      * PDF from raw data
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.io.IOException;
-     * import java.nio.file.Files;
-     * import java.nio.file.Path;
-     *
-     * public class BytePdfApp {
-     *     public static void main(String[] args) throws IOException {
-     *         byte[] pdfBytes = Files.readAllBytes(Path.of("document.pdf"));
-     *         Jt.pdf(pdfBytes).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="BytePdfApp.java" appUrl="https://javelit-container-4lr7-production.up.railway.app" appHeight="400"}
      *
      * @param data Raw PDF data.
      */
@@ -2429,18 +1236,7 @@ public final class Jt {
      * <p>
      * Examples:
      * PDF from local file
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * import java.nio.file.Path;
-     *
-     * public class FilePdfApp {
-     *     public static void main(String[] args) {
-     *          // assume document.pdf is present in the working directory
-     *          Jt.pdf(Path.of("document.pdf")).use();
-     *     }
-     * }
-     *}
+     * {@snippet file="FilePdfApp.java"}
      *
      * @param filePath A path to a local PDF file. The path can be absolute or relative to the working directory.
      */
@@ -2466,23 +1262,7 @@ public final class Jt {
      * <p>
      * Examples:
      * Updating session state and triggering rerun
-     * {@snippet :
-     * import io.javelit.core.Jt;
-     *
-     * public class RerunApp {
-     *     public static void main(String[] args) {
-     *          Jt.sessionState().computeIfAbsent("value", "Title");
-     *
-     *         // Display current value
-     *         Jt.title(Jt.sessionState().getString("value")).use();
-     *
-     *         if (Jt.button("Foo").use()) {
-     *             Jt.sessionState().put("value", "Foo");
-     *             Jt.rerun(false);
-     *         }
-     *     }
-     * }
-     *}
+     * {@snippet file="RerunApp.java" appUrl="https://javelit-container-aopo-production.up.railway.app/" appHeight="400"}
      *
      * @param toHome If {@code true}, rerun in {@code /} url path. If {@code false}, rerun in current path.
      */

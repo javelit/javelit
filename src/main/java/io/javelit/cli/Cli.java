@@ -104,6 +104,7 @@ public class Cli implements Callable<Integer> {
             if (isUrl) {
                 try {
                     javaFilePath = resolveRemoteUrl(appPath);
+
                 } catch (IOException e) {
                     LOG.error("Failed to resolve app path: {}", appPath, e);
                     return 1;

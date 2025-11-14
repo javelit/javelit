@@ -76,3 +76,13 @@ The javadoc should then be written:
 
 the recommended minimum appHeight is 250. (it is not enforced though) 
 
+#### Resources
+List snippets that don't have their link set yet
+```bash
+FILES=$(grep -Eo '\{@snippet file="[^"]+\.java" appUrl="TODO"' "src/main/java/io/javelit/core/Jt.java" | sed 's/{@snippet file="\([^"]*\)".*/\1/')
+```
+
+Deploy a list of names:
+```bash
+for APP_NAME in $FILES; do   railway deploy -t javelit-app     -v "APP_URL=https://github.com/javelit/javelit/blob/main/snippetFiles/${APP_NAME}";    sleep 3; done
+```

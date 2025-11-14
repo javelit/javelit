@@ -324,7 +324,7 @@ class HtmlDocTreeVisitor implements DocTreeVisitor<String, Void> {
             Path path = Path.of(this.snippetPath, filename);
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            return "// Error reading snippet file: " + filename + "\n// " + e.getMessage();
+            throw new RuntimeException("Error reading snippet file: " + filename, e);
         }
     }
 }
