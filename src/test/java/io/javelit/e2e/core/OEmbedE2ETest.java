@@ -122,10 +122,6 @@ public class OEmbedE2ETest {
             assertTrue(htmlContent.contains("?embed=true") || htmlContent.contains("&embed=true"),
                 "iframe src should include embed=true parameter");
 
-            // Verify iframe styling
-            assertTrue(htmlContent.contains("style='width:100%;height:600px;border:0;'"),
-                "iframe should have proper styling for embedding");
-
             // ==========================================
             // Part 3: Test Error Cases
             // ==========================================

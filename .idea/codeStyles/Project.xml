@@ -29,6 +29,11 @@
       <option name="TERNARY_OPERATION_WRAP" value="5" />
       <option name="FIELD_ANNOTATION_WRAP" value="0" />
       <option name="ENUM_CONSTANTS_WRAP" value="2" />
+      <indentOptions>
+        <option name="INDENT_SIZE" value="2" />
+        <option name="CONTINUATION_INDENT_SIZE" value="2" />
+        <option name="TAB_SIZE" value="2" />
+      </indentOptions>
     </codeStyleSettings>
   </code_scheme>
 </component>

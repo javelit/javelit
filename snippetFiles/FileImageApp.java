@@ -2,9 +2,9 @@ import java.nio.file.Path;
 
 import io.javelit.core.Jt;
 
- public class FileImageApp {
-     public static void main(String[] args) {
-          // assumes mountains.jpg is present in the working directory
-          Jt.image(Path.of("mountains.jpg")).use();
-     }
- }
+public class FileImageApp {
+  public static void main(String[] args) {
+    // assumes mountains.jpg is present in the working directory
+    Jt.image(Path.of("mountains.jpg")).use();
+  }
+}
