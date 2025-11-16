@@ -216,7 +216,8 @@ class FileReloader extends Reloader {
                                                                      classpath,
                                                                      "-sourcepath",
                                                                      javaFile.toAbsolutePath().getParent().toString(),
-                                                                     "-proc:none");
+                                                                     "-proc:none",
+                                                                     "-parameters");
             // Compile
             final var task = (JavacTask) compiler.getTask(null,
                                                           fileManager,
