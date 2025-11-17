@@ -1,5 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.70.0
+//DEPS io.javelit:javelit:0.71.0
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
