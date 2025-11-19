@@ -14,5 +14,6 @@ public class NavigationApp {
                      Jt.page("page1", NavigationApp::page1).title("First page").icon("🔥"),
                      Jt.page("page2", NavigationApp::page2).title("Second page").icon(":favorite:"))
                  .use();
+    page.run();
   }
 }

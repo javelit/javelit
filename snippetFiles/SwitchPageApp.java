@@ -23,9 +23,11 @@ public class SwitchPageApp {
   }
 
   public static void main(String[] args) {
-    Jt.navigation(Jt.page("/welcome", () -> welcome()).title("Welcome").icon("👋").home(),
+    var page = Jt.navigation(Jt.page("/welcome", () -> welcome()).title("Welcome").icon("👋").home(),
                   Jt.page("/dashboard", () -> dashboard()).title("Dashboard").icon("📊"))
       .hidden()
       .use();
+
+    page.run();
   }
 }

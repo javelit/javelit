@@ -2,9 +2,10 @@ import io.javelit.core.Jt;
 
 public class PathApp {
   public static void main(String[] args) {
-    Jt.navigation(
+    var page = Jt.navigation(
         Jt.page("/home", () -> home()),
         Jt.page("/details", () -> details())).use();
+    page.run();
 
     Jt.text("The current path is: " + Jt.urlPath()).use();
   }
