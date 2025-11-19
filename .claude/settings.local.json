@@ -33,7 +33,8 @@
       "mcp__jetbrains__get_file_text_by_path",
       "WebFetch(domain:www.w3.org)",
       "mcp__jetbrains__find_files_by_name_keyword",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:undertow.io)"
     ],
     "deny": []
   }
