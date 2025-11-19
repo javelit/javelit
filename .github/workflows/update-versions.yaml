@@ -71,6 +71,6 @@ jobs:
           VERSION="${{ steps.get-version.outputs.version }}"
           git config --global user.name "javelit-ci"
           git config --global user.email "javelit-ci@users.noreply.github.com"
-          git add README.md examples/
+          git add README.md examples/ snippetFiles/
           git commit -m "chore: update version references to $VERSION"
           git push
