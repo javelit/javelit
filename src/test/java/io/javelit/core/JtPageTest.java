@@ -22,63 +22,93 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JtPageTest {
 
-    private static Stream<Arguments> pathToTitleTestCases() {
-        return Stream.of(
-                // Simple paths with hyphens
-                Arguments.of("/my-dashboard", "My Dashboard"),
-                Arguments.of("/user-profile", "User Profile"),
-                Arguments.of("/api-endpoint", "Api Endpoint"),
+  private static Stream<Arguments> pathToTitleTestCases() {
+    return Stream.of(
+        // Simple paths with hyphens
+        Arguments.of("/my-dashboard", "My Dashboard"),
+        Arguments.of("/user-profile", "User Profile"),
+        Arguments.of("/api-endpoint", "Api Endpoint"),
 
-                // Simple paths with underscores
-                Arguments.of("/user_profile", "User Profile"),
-                Arguments.of("/my_page", "My Page"),
+        // Simple paths with underscores
+        Arguments.of("/user_profile", "User Profile"),
+        Arguments.of("/my_page", "My Page"),
 
-                // Mixed separators
-                Arguments.of("/my-awesome_page", "My Awesome Page"),
-                Arguments.of("/user_profile-settings", "User Profile Settings"),
+        // Mixed separators
+        Arguments.of("/my-awesome_page", "My Awesome Page"),
+        Arguments.of("/user_profile-settings", "User Profile Settings"),
 
-                // With numbers
-                Arguments.of("/page-2", "Page 2"),
-                Arguments.of("/api-v2", "Api V2"),
-                Arguments.of("/version-123-beta", "Version 123 Beta"),
+        // With numbers
+        Arguments.of("/page-2", "Page 2"),
+        Arguments.of("/api-v2", "Api V2"),
+        Arguments.of("/version-123-beta", "Version 123 Beta"),
 
-                // Multiple consecutive separators
-                Arguments.of("/my--page", "My Page"),
-                Arguments.of("/user__profile", "User Profile"),
-                Arguments.of("/mixed-_-separators", "Mixed Separators"),
+        // Multiple consecutive separators
+        Arguments.of("/my--page", "My Page"),
+        Arguments.of("/user__profile", "User Profile"),
+        Arguments.of("/mixed-_-separators", "Mixed Separators"),
 
-                // Single word
-                Arguments.of("/dashboard", "Dashboard"),
-                Arguments.of("/settings", "Settings"),
+        // Single word
+        Arguments.of("/dashboard", "Dashboard"),
+        Arguments.of("/settings", "Settings"),
 
-                // Without leading slash
-                Arguments.of("my-page", "My Page"),
-                Arguments.of("dashboard", "Dashboard"),
+        // Without leading slash
+        Arguments.of("my-page", "My Page"),
+        Arguments.of("dashboard", "Dashboard"),
 
-                // Empty or root path
-                Arguments.of("/", "Home"),
-                Arguments.of("", "Home"),
+        // Empty or root path
+        Arguments.of("/", "Home"),
+        Arguments.of("", "Home"),
 
-                // Already capitalized
-                Arguments.of("/MyPage", "MyPage"),
-                Arguments.of("/ALLCAPS", "ALLCAPS"),
+        // Already capitalized
+        Arguments.of("/MyPage", "MyPage"),
+        Arguments.of("/ALLCAPS", "ALLCAPS"),
 
-                // Long paths
-                Arguments.of("/this-is-a-very-long-page-title", "This Is A Very Long Page Title"),
+        // Long paths
+        Arguments.of("/this-is-a-very-long-page-title", "This Is A Very Long Page Title"),
 
-                // Edge cases
-                Arguments.of("/-", ""),
-                Arguments.of("/_", ""),
-                Arguments.of("/--", "")
-        );
-    }
+        // Edge cases
+        Arguments.of("/-", ""),
+        Arguments.of("/_", ""),
+        Arguments.of("/--", ""));
+  }
 
-    @ParameterizedTest
-    @MethodSource("pathToTitleTestCases")
-    public void testPathToTitle(final String input, final String expected) {
-        assertThat(JtPage.Builder.pathToTitle(input)).isEqualTo(expected);
-    }
+  @ParameterizedTest
+  @MethodSource("pathToTitleTestCases")
+  public void testPathToTitle(final String input, final String expected) {
+    assertThat(JtPage.Builder.pathToTitle(input)).isEqualTo(expected);
+  }
+
+
+  public static Stream<Arguments> nestedPathCases() {
+    return Stream.of(Arguments.of("nested/path"), Arguments.of("/nested/path"), Arguments.of("/nested/path/"));
+  }
+
+
+  @ParameterizedTest
+  @MethodSource("nestedPathCases")
+  public void testNestedPathNotSupported(final String input) {
+    assertThatThrownBy(() -> JtPage.builder(input, () -> {
+    })).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  public static Stream<Arguments> reservedPathCases() {
+    return Stream.of(Arguments.of("_"),
+                     Arguments.of("/_"),
+                     Arguments.of("/_/"),
+                     Arguments.of("app"),
+                     Arguments.of("/app"),
+                     Arguments.of("/app/")
+                     );
+  }
+
+  @ParameterizedTest
+  @MethodSource("reservedPathCases")
+  public void testReservedPathThrows(final String input) {
+    assertThatThrownBy(() -> JtPage.builder(input, () -> {
+    })).isInstanceOf(IllegalArgumentException.class);
+  }
 }

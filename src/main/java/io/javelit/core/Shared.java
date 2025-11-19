@@ -15,6 +15,8 @@
  */
 package io.javelit.core;
 
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public final class Shared {
 
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    static final Set<String> RESERVED_URL_PATHS = Set.of("/_", "/app");
 
     static {
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
