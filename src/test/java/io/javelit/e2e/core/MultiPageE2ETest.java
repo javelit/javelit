@@ -54,19 +54,19 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate directly to Settings page using custom URL path
-            page.navigate(page.url().replace("/home", "/config/settings"));
+            page.navigate(page.url().replace("/home", "/settings"));
             // Verify Settings page content is visible
             assertThat(page.getByText("Settings Page", EXACT_MATCH).first()).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify URL uses custom path
-            assertTrue(page.url().endsWith("/config/settings"));
+            assertTrue(page.url().endsWith("/settings"));
             // Verify Home page content is NOT visible
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             // Verify persistent footer is always visible
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Navigate directly to About page
-            page.navigate(page.url().replace("/config/settings", "/about"));
+            page.navigate(page.url().replace("/settings", "/about"));
             // Verify About page content is visible
             assertThat(page.getByText("About Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Learn more about this app", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -76,7 +76,7 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Test page not found - navigate to an invalid URL
-            page.navigate(page.url().replace("/about", "/invalid/page"));
+            page.navigate(page.url().replace("/about", "/invalid_page"));
             // Verify page not found message appears
             assertThat(page.getByText("Page Not Found.", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify other page content is NOT visible
@@ -87,7 +87,7 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             
             // Test root path "/" redirects to home page
-            page.navigate(page.url().replace("/invalid/page", "/"));
+            page.navigate(page.url().replace("/invalid_page", "/"));
             // Verify home page loads when navigating to root
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible();
@@ -116,9 +116,9 @@ public class MultiPageE2ETest {
             
             // Click on Settings in the sidebar
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Settings")).click(WAIT_1_SEC_MAX_CLICK);
-            // Verify URL changed to custom path /config/settings
+            // Verify URL changed to custom path /settings
             String settingsUrl = page.url();
-            assertTrue(settingsUrl.endsWith("/config/settings"));
+            assertTrue(settingsUrl.endsWith("/settings"));
             // Verify Settings page content appears
             assertThat(page.getByText("Settings Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
