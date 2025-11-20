@@ -88,6 +88,17 @@ public class Cli implements Callable<Integer> {
                 description = "Set log level (TRACE, DEBUG, INFO, WARN, ERROR). Default: INFO. If the value is not recognized, fallbacks to DEBUG.",
                 defaultValue = "INFO") private String logLevel;
 
+        @SuppressWarnings("unused")
+        @Option(names = {"--base-path"},
+                description = """
+                    URL path prefix where the Javelit app is served. By default, Javelit expects to be served at the root "/".
+                    For instance, if Javelit is served behind a proxy at example.com/behind/proxy, use "--base-path=/behind/proxy".
+                    This setting is not necessary if the proxy sets the X-Forwarded-Prefix header.
+                    When using --base-path, if you need to access the app on localhost directly (not behind the proxy), pass the ?ignoreBasePath=true query parameter. Eg: localhost:8080/?ignoreBasePath=true
+                    In dev mode, the browser automatically opens with ?ignoreBasePath=true.
+                    """)
+        private String basePath;
+
         @Override
         public Integer call() throws Exception {
             final Level logLevel = Level.valueOf(this.logLevel);
@@ -126,12 +137,14 @@ public class Cli implements Callable<Integer> {
             if (isUrl) {
                 builder.originalUrl(appPath);
             }
+            if (basePath != null) {
+              builder.basePath(basePath);
+            }
 
             final Server server = builder.build();
 
-
             // Start everything
-            final String url = "http://localhost:" + port;
+            final String url = "http://localhost:" + port + (basePath != null ? "?ignoreBasePath=true" : "");
             try {
                 server.start();
                 LOG.info("Press Ctrl+C to stop");

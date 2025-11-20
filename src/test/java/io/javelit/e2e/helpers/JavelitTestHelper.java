@@ -92,7 +92,7 @@ public final class JavelitTestHelper {
         return startServer(server);
     }
 
-    private static Server startServer(final @Nonnull Server server) {
+    public static Server startServer(final @Nonnull Server server) {
         // Start server in a separate thread
         final Thread serverThread = new Thread(() -> {
             try {

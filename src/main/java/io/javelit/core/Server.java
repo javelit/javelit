@@ -115,6 +115,7 @@ public final class Server implements StateManager.RenderServer {
     private final @Nullable Path appPath;
     private final boolean standaloneMode;
     private final @Nullable String originalUrl;
+    private final @Nullable String basePath;
     private boolean ready;
 
     private Undertow server;
@@ -142,6 +143,10 @@ public final class Server implements StateManager.RenderServer {
         @Nullable String headersFile;
         @Nullable BuildSystem buildSystem;
         private @Nullable String originalUrl;
+        // basePath where javelit is served - useful when a javelit app is proxied
+        // this is not necessary if the proxy sets the X-Forwarded-Prefix header properly
+        // this is not the root path, this is only used to build media, ws and pages urls properly
+        private @Nullable String basePath;
 
         private Builder(final @Nonnull Path appPath, final int port) {
             this.appPath = appPath;
@@ -184,6 +189,10 @@ public final class Server implements StateManager.RenderServer {
             return this;
         }
 
+        public Builder basePath(final @Nonnull String basePath) {
+          this.basePath = basePath;
+          return this;
+        }
 
         public void originalUrl(final @Nonnull String originalUrl) {
             this.originalUrl = originalUrl;
@@ -221,6 +230,14 @@ public final class Server implements StateManager.RenderServer {
         this.buildSystem = builder.buildSystem;
         this.ready = false;
         this.originalUrl = builder.originalUrl;
+        this.basePath = builder.basePath == null ? null : cleanBasePath(builder.basePath);
+    }
+
+    private static @Nonnull String cleanBasePath(final @Nonnull String path) {
+        String cleaned = path.trim();
+        cleaned = cleaned.startsWith("/") ? cleaned : "/" + cleaned;
+        cleaned = cleaned.endsWith("/") ? cleaned.substring(0, cleaned.length() - 1) : cleaned;
+        return cleaned;
     }
 
     public void start() {
@@ -360,20 +377,17 @@ public final class Server implements StateManager.RenderServer {
         return currentUrl;
     }
 
-    private static String extractBasePath(final @Nonnull HttpServerExchange exchange) {
+    private String extractBasePath(final @Nonnull HttpServerExchange exchange) {
+        final boolean isIgnoreBasePath = isLocalClient(exchange.getSourceAddress()) && exchange.getQueryParameters().containsKey("ignoreBasePath");
+        if (basePath != null && !isIgnoreBasePath) {
+          return basePath;
+        }
+
         String basePath = exchange.getRequestHeaders().getFirst("X-Forwarded-Prefix");
         if (basePath == null || basePath.isEmpty()) {
             return "";
         }
-        // Normalize: ensure starts with / but doesn't end with /
-        basePath = basePath.trim();
-        if (!basePath.startsWith("/")) {
-            basePath = "/" + basePath;
-        }
-        if (basePath.endsWith("/")) {
-            basePath = basePath.substring(0, basePath.length() - 1);
-        }
-        return basePath;
+        return cleanBasePath(basePath);
     }
 
     private static class EmbeddedHandler implements HttpHandler {

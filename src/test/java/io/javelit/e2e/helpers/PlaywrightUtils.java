@@ -105,7 +105,7 @@ public final class PlaywrightUtils {
       final String url;
       if (proxied) {
         final int proxyPort = PortAllocator.getNextAvailablePort();
-        proxyServer = startProxy(proxyPort, server.port);
+        proxyServer = startProxy(proxyPort, server.port, true);
         url = "http://localhost:" + proxyPort + TEST_PROXY_PREFIX;
       } else {
         url = "http://localhost:" + server.port;
@@ -210,7 +210,7 @@ public final class PlaywrightUtils {
       final String url;
       if (proxied) {
         final int proxyPort = PortAllocator.getNextAvailablePort();
-        proxyServer = startProxy(proxyPort, server.port);
+        proxyServer = startProxy(proxyPort, server.port, true);
         url = "http://localhost:" + proxyPort + TEST_PROXY_PREFIX;
       } else {
         url = "http://localhost:" + server.port;
@@ -238,7 +238,7 @@ public final class PlaywrightUtils {
   }
 
   // claude code generated - not reviewed
-  private static Undertow startProxy(final int proxyPort, final int backendPort) {
+  public static Undertow startProxy(final int proxyPort, final int backendPort, final boolean setForwardedPrefix) {
     try {
       final URI backend = new URI("http://localhost:" + backendPort);
 
@@ -246,7 +246,6 @@ public final class PlaywrightUtils {
 
       final HttpHandler handler = exchange -> {
         final String originalPath = exchange.getRequestPath();
-        final String query = exchange.getQueryString();
 
         // Strip prefix from requestPath
         String newPath = originalPath.substring(PlaywrightUtils.TEST_PROXY_PREFIX.length());
@@ -260,13 +259,14 @@ public final class PlaywrightUtils {
         // exchange.setRequestURI(newPath + (query == null || query.isEmpty() ? "" : "?" + query));
         exchange.setRequestURI(newPath);
 
-        ProxyHandler
+        var ph = ProxyHandler
             .builder()
             .setProxyClient(client)
-            .setMaxRequestTime(30000)
-            .addRequestHeader(new HttpString("X-Forwarded-Prefix"), ExchangeAttributes.constant(PlaywrightUtils.TEST_PROXY_PREFIX))
-            .build()
-            .handleRequest(exchange);
+            .setMaxRequestTime(30000);
+        if (setForwardedPrefix) {
+          ph.addRequestHeader(new HttpString("X-Forwarded-Prefix"), ExchangeAttributes.constant(PlaywrightUtils.TEST_PROXY_PREFIX));
+        }
+        ph.build().handleRequest(exchange);
       };
 
       final PathHandler root = new PathHandler().addPrefixPath(PlaywrightUtils.TEST_PROXY_PREFIX, handler);
