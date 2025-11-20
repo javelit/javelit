@@ -161,6 +161,10 @@
             this.isFullscreen = false;
         }
 
+        get fullUrl() {
+            return window.javelit.prependBasePath(this.url);
+        }
+
         toggleFullscreen() {
             this.isFullscreen = !this.isFullscreen;
             this.requestUpdate();
@@ -185,7 +189,7 @@
                             </button>
                         </div>
                         <div class="image-wrapper">
-                            <img src="${this.url}" alt="${this.caption || ''}" />
+                            <img src="${this.fullUrl}" alt="${this.caption || ''}" />
                         </div>
                         ${this.caption ? html`
                             <div class="caption-wrapper">

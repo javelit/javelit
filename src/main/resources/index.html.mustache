@@ -428,7 +428,8 @@
     window.javelit = {
         isDevMode: {{ DEV_MODE }},
         isStandaloneMode: {{ STANDALONE_MODE }},
-        xsrfToken: "{{ XSRF_TOKEN }}"
+        xsrfToken: "{{ XSRF_TOKEN }}",
+        baseUrlPath: "{{ BASE_URL_PATH }}"
     };
 
     // Embed mode detection and setup
@@ -621,10 +622,23 @@
                 queryObj[key] = params.getAll(key);
             }
 
+            // Strip base path from pathname before sending to backend
+            const basePath = this.baseUrlPath;
+            let relativePath;
+            if (basePath) {
+                relativePath = window.location.pathname.substring(basePath.length);
+                // basePath contains the root "/" - we need to keep it in the case were in the home page
+                if (relativePath === '') {
+                    relativePath = '/';
+                }
+            } else {
+                relativePath = window.location.pathname;
+            }
+
             // Send path_update message to backend to trigger app re-run
             window.javelit.sendMessage({
                 type: 'path_update',
-                path: window.location.pathname,
+                path: relativePath,
                 queryParameters: queryObj,
             });
         },
@@ -635,15 +649,28 @@
                 console.log("Failed to send message to backend. Connection to backend is not available.");
             }
         },
+        prependBasePath: function(url) {
+            if (!url) return url;
+            const basePath = this.baseUrlPath || '';
+            if (!basePath || url.startsWith('http://') || url.startsWith('https://') ||
+                url.startsWith('data:') || url.startsWith('blob:')) {
+                return url;
+            }
+            // relative path - we need to add the basePath
+            // a relative url may be passed without / for static files - NOTE: for the moment this logic is string based because it is not meant to support all url path build edge cases
+            const normalizedUrl = url.startsWith('/') ? url : '/' + url;
+            return basePath + normalizedUrl;
+        },
     };
 
     // Connection management functions
     function createWebSocketConnection() {
         try {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // contains hostname + port
-            const host = window.location.host;
-            ws = new WebSocket(`${protocol}//${host}/_/ws`);
+            const basePath = window.javelit.baseUrlPath;
+            const wsUrl = new URL(basePath + '/_/ws', window.location.origin);
+            wsUrl.protocol = protocol;
+            ws = new WebSocket(wsUrl);
 
             ws.onclose = () => {
                 console.log('WebSocket closed');

@@ -19,8 +19,9 @@ import com.microsoft.playwright.Locator;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
@@ -33,8 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class MultiPageNoPersistWhenLeftE2ETest {
 
-    @Test
-    void testNoPersistWhenLeftBehavior(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testNoPersistWhenLeftBehavior(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             var currentPage = Jt.navigation(
                 Jt.page("/page-1", MultiPageNoPersistWhenLeftE2ETest::page1).home().noPersistWhenLeft(),
@@ -58,7 +60,7 @@ public class MultiPageNoPersistWhenLeftE2ETest {
         // Ensure "page 1 text input" is here and its value is empty string
         // Click on page 2
         // Ensure "page 2 text input" is here and its value is "should stay here"
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
             // Wait for page to load - should be on home page (Page1)
             Locator sharedInput = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("shared text input")).locator("input");
             assertThat(sharedInput).isVisible(WAIT_1_SEC_MAX);

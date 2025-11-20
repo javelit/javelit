@@ -23,19 +23,22 @@ import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PdfComponentE2ETest {
 
-    @Test
-    void testPdfVariations(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testPdfVariations(final boolean proxied, final TestInfo testInfo) {
         final @Language("java") String app = """
             import io.javelit.core.Jt;
             import java.nio.file.Path;
@@ -68,7 +71,9 @@ public class PdfComponentE2ETest {
             }
             """;
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify all 5 PDF components are rendered
             assertThat(page.locator("#app jt-pdf").nth(0)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-pdf").nth(1)).isVisible(WAIT_1_SEC_MAX);
@@ -83,7 +88,7 @@ public class PdfComponentE2ETest {
             // Test 2: Local file
             assertThat(page.locator("#app jt-pdf").nth(1).locator("iframe")).isVisible(WAIT_1_SEC_MAX);
             String src2 = page.locator("#app jt-pdf").nth(1).locator("iframe").getAttribute("src");
-            assertTrue(src2.startsWith("/_/media/"), "PDF src should start with /_/media/, got: " + src2);
+            assertTrue(src2.startsWith(pathPrefix + "/_/media/"), "PDF src should start with " + pathPrefix + "/_/media/, got: " + src2);
 
             // Test 3: Height default
             assertThat(page.locator("#app jt-pdf").nth(2)).hasAttribute("height", "500", WAIT_1_SEC_MAX_ATTRIBUTE);
@@ -96,8 +101,9 @@ public class PdfComponentE2ETest {
         });
     }
 
-    @Test
-    void testStaticFolder(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testStaticFolder(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-pdf-test-");
         copyResourceDirectory("pdf-test", tempDir);
         final Path appFile = tempDir.resolve("PdfStaticTestApp.java");
@@ -105,7 +111,9 @@ public class PdfComponentE2ETest {
         // Verify PDF component is rendered
         // Verify iframe element exists
         // Verify src points to static folder
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX + "/" : "";
+
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -113,21 +121,22 @@ public class PdfComponentE2ETest {
             assertThat(page.locator("#app jt-pdf iframe")).isVisible(WAIT_1_SEC_MAX);
 
             // Verify src points to static folder
-            assertThat(page.locator("#app jt-pdf iframe")).hasAttribute("src", "app/static/sample.pdf", WAIT_1_SEC_MAX_ATTRIBUTE);
+            assertThat(page.locator("#app jt-pdf iframe")).hasAttribute("src", pathPrefix + "app/static/sample.pdf", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 
-    @Test
-    void testGeneratedBytes(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGeneratedBytes(final boolean proxied, final TestInfo testInfo) {
         JtRunnable runnable = () -> {
             byte[] pdfBytes = null;
             pdfBytes = Files.readAllBytes(Path.of("examples/pdf/sample.pdf"));
             Jt.pdf(pdfBytes)
               .use();
         };
-        PlaywrightUtils.runInBrowser(testInfo,
-                                     runnable,
-                                     page -> {
+        PlaywrightUtils.runInBrowser(testInfo, runnable, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify PDF component is rendered
             assertThat(page.locator("#app jt-pdf")).isVisible(WAIT_1_SEC_MAX);
 
@@ -136,7 +145,7 @@ public class PdfComponentE2ETest {
 
             // Verify src contains media hash (starts with /_/media/)
             String src = page.locator("#app jt-pdf iframe").getAttribute("src");
-            assertTrue(src.startsWith("/_/media/"), "PDF src should start with /_/media/, got: " + src);
+            assertTrue(src.startsWith(pathPrefix + "/_/media/"), "PDF src should start with " + pathPrefix + "/_/media/, got: " + src);
         });
     }
 }

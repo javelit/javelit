@@ -22,11 +22,13 @@ import com.microsoft.playwright.options.AriaRole;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
@@ -35,8 +37,9 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class PageLinkComponentE2ETest {
 
-    @Test
-    void testBasicFunctionality(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testBasicFunctionality(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             final var currentPage = Jt.navigation(
                 Jt.page("/home", PageLinkComponentE2ETest::home).title("Home").home(),
@@ -64,19 +67,21 @@ public class PageLinkComponentE2ETest {
         // Test icons are present
         // Test external link has correct attributes
         // Test disabled link
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify page links are visible
             assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
             // Navigate to About page
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).first().click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("About page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page).hasURL(Pattern.compile(".*/about"));
+            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
 
             // Test internal navigation - click Home link
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("🏠 Home")).click(WAIT_1_SEC_MAX_CLICK);
             assertThat(page.getByText("Home page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page).hasURL(Pattern.compile(".*/home"));
+            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
 
             // Test icons are present
             assertThat(page.locator("jt-page-link .emoji-icon").first()).isVisible(WAIT_1_SEC_MAX);
@@ -102,8 +107,9 @@ public class PageLinkComponentE2ETest {
         Jt.pageLink("/home").use();
     }
 
-    @Test
-    void testActiveStateDetection(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testActiveStateDetection(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             final var currentPage = Jt.navigation(
                 Jt.page("/home", PageLinkComponentE2ETest::home2).title("Home").home(),
@@ -122,9 +128,11 @@ public class PageLinkComponentE2ETest {
         // Now About link should be active, Home link should not be
         // Navigate back to Home
         // Should be back on root URL with Home active again
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Start on home page
-            assertThat(page).hasURL(Pattern.compile(".*/home"));
+            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
 
             // Home link should have active state
@@ -133,7 +141,7 @@ public class PageLinkComponentE2ETest {
             // Navigate to About page
             page.getByText("ℹ️ About", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
             // Should be on about page with correct active state
-            assertThat(page).hasURL(Pattern.compile(".*/about"));
+            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
             assertThat(page.getByText("About page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
 
             // Now About link should be active, Home link should not be
@@ -144,7 +152,7 @@ public class PageLinkComponentE2ETest {
             page.getByText("🏠 Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
 
             // Should be back on root URL with Home active again
-            assertThat(page).hasURL(Pattern.compile(".*/home"));
+            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
             assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
             assertThat(page.locator("jt-page-link").last()).not().hasAttribute("is-active", "");

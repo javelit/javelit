@@ -68,7 +68,8 @@ class JtEcharts extends LitElement {
             console.log("Registering echarts theme " + this.theme);
             try {
                 const xhr = new XMLHttpRequest();
-                xhr.open('GET', `/_/static/_javelit/components/chart/echarts_theme_${this.theme}.json`, false); // false = synchronous
+                const basePath = window.javelit?.baseUrlPath || '';
+                xhr.open('GET', basePath + `/_/static/_javelit/components/chart/echarts_theme_${this.theme}.json`, false); // false = synchronous
                 xhr.send();
                 if (xhr.status === 200) {
                     const themeJson = JSON.parse(xhr.responseText);

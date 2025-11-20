@@ -19,13 +19,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import io.javelit.core.Jt;
+import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_ATTRIBUTE;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT;
@@ -33,14 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ImageComponentE2ETest {
 
-    @Test
-    void testImageVariations(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.nio.file.Path;
-
-            public class TestApp {
-                public static void main(String[] args) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testImageVariations(final boolean proxied, final TestInfo testInfo) {
+        final JtRunnable app = () -> {
                     // Test 1: Public URL
                     Jt.image("https://raw.githubusercontent.com/javelit/public_assets/refs/heads/main/image/mountains2.jpg")
                         .caption("Mountain landscape from Unsplash")
@@ -52,12 +51,12 @@ public class ImageComponentE2ETest {
                         .use();
 
                     // Test 3: SVG
-                    String svg = \"""
+                    String svg = """
                         <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="100" cy="100" r="80" fill="#4CAF50" />
                             <path d="M 60 100 L 90 130 L 140 80" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        \""";
+                        """;
                     Jt.imageFromSvg(svg)
                         .caption("Simple SVG checkmark icon")
                         .use();
@@ -84,11 +83,11 @@ public class ImageComponentE2ETest {
                         .width(400)
                         .caption("Fixed width: 400px")
                         .use();
-                }
-            }
-            """;
+            };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify all 7 image components are rendered
             assertThat(page.locator("#app jt-image").nth(0)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-image").nth(1)).isVisible(WAIT_1_SEC_MAX);
@@ -107,7 +106,7 @@ public class ImageComponentE2ETest {
             // Test 2: Local file
             assertThat(page.locator("#app jt-image").nth(1).locator("img")).isVisible(WAIT_1_SEC_MAX);
             String src2 = page.locator("#app jt-image").nth(1).locator("img").getAttribute("src");
-            assertTrue(src2.startsWith("/_/media/"), "Image src should start with /_/media/, got: " + src2);
+            assertTrue(src2.startsWith(pathPrefix + "/_/media/"), "Image src should start with " + pathPrefix + "/_/media/, got: " + src2);
             assertThat(page.locator("#app jt-image").nth(1).locator(".caption")).hasText("Mountains from local file", WAIT_1_SEC_MAX_TEXT);
 
             // Test 3: SVG
@@ -133,8 +132,9 @@ public class ImageComponentE2ETest {
         });
     }
 
-    @Test
-    void testStaticFolder(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testStaticFolder(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-image-test-");
         copyResourceDirectory("image-test", tempDir);
         final Path appFile = tempDir.resolve("ImageStaticTestApp.java");
@@ -142,7 +142,9 @@ public class ImageComponentE2ETest {
         // Verify image component is rendered
         // Verify img element exists
         // Verify src points to static folder
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, false, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX + "/" : "";
+
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -150,33 +152,27 @@ public class ImageComponentE2ETest {
             assertThat(page.locator("#app jt-image img")).isVisible(WAIT_1_SEC_MAX);
 
             // Verify src points to static folder
-            assertThat(page.locator("#app jt-image img")).hasAttribute("src", "app/static/mountains.jpg", WAIT_1_SEC_MAX_ATTRIBUTE);
+            assertThat(page.locator("#app jt-image img")).hasAttribute("src", pathPrefix + "app/static/mountains.jpg", WAIT_1_SEC_MAX_ATTRIBUTE);
         });
     }
 
-    @Test
-    void testGeneratedBytes(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-            import java.nio.file.Files;
-            import java.nio.file.Path;
-            import javax.imageio.ImageIO;
-
-            public class TestApp {
-                public static void main(String[] args) throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGeneratedBytes(final boolean proxied, final TestInfo testInfo) {
+        final JtRunnable app = () -> {
                     byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
                     Jt.image(imageBytes)
-                        .caption("Programmatically generated hexagon (800x400)")
-                        .use();
-                }
-            }
-            """;
+                      .caption("Programmatically generated hexagon (800x400)")
+                      .use();
+            };
 
         // Verify image component is rendered
         // Verify img element exists
         // Verify src contains media hash (starts with /_/media/)
         // Verify caption
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify image component is rendered
             assertThat(page.locator("#app jt-image")).isVisible(WAIT_1_SEC_MAX);
 
@@ -185,7 +181,7 @@ public class ImageComponentE2ETest {
 
             // Verify src contains media hash (starts with /_/media/)
             String src = page.locator("#app jt-image img").getAttribute("src");
-            assertTrue(src.startsWith("/_/media/"), "Image src should start with /_/media/, got: " + src);
+            assertTrue(src.startsWith(pathPrefix + "/_/media/"), "Image src should start with " + pathPrefix + "/_/media/, got: " + src);
 
             // Verify caption
             assertThat(page.locator("#app jt-image .caption")).hasText("Programmatically generated hexagon (800x400)", WAIT_1_SEC_MAX_TEXT);

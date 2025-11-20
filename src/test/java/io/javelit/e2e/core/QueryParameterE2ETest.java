@@ -18,8 +18,9 @@ package io.javelit.e2e.core;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
@@ -29,8 +30,9 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class QueryParameterE2ETest {
 
-    @Test
-    void testQueryParameters(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testQueryParameters(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             var params = Jt.urlQueryParameters();
             Jt.title("Query Parameter Test").use();
@@ -48,7 +50,7 @@ public class QueryParameterE2ETest {
         // First verify no query params
         // Navigate with query parameters
         // Verify query parameters are displayed
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
             // First verify no query params
             assertThat(page.getByText("No query parameters")).isVisible(WAIT_1_SEC_MAX);
 

@@ -238,6 +238,10 @@
             this.animationId = null;
         }
 
+        get fullCurrentValueUrl() {
+            return window.javelit.prependBasePath(this.currentValueUrl);
+        }
+
         updated(changedProperties) {
             if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
                 this.style.setProperty('--input-width', `${this.width}px`);
@@ -266,7 +270,7 @@
                 return;
             }
 
-            const audio = new Audio(this.currentValueUrl);
+            const audio = new Audio(this.fullCurrentValueUrl);
             const handleMetadata = () => {
                 this.audioDuration = audio.duration;
                 this.recordingTime = audio.duration;
@@ -416,7 +420,8 @@
             formData.append('file0', wavBlob, 'recording.wav');
 
             try {
-                const response = await fetch('/_/upload', {
+                const basePath = window.javelit?.baseUrlPath || '';
+                const response = await fetch(basePath + '/_/upload', {
                     method: 'PUT',
                     headers: {
                         'X-XSRF-TOKEN': window.javelit.xsrfToken,
@@ -476,7 +481,7 @@
 
             // If audioElement exists, we're resuming from pause
             if (!this.audioElement) {
-                this.audioElement = new Audio(this.currentValueUrl);
+                this.audioElement = new Audio(this.fullCurrentValueUrl);
 
                 this.audioElement.addEventListener('ended', () => {
                     this.isPlaying = false;

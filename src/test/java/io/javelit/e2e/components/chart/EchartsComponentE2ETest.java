@@ -15,12 +15,15 @@
  */
 package io.javelit.e2e.components.chart;
 
+import io.javelit.components.chart.EchartsComponent;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.icepear.echarts.Bar;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
@@ -51,4 +54,28 @@ public class EchartsComponentE2ETest {
             assertThat(page.locator("jt-echarts canvas")).isVisible(WAIT_1_SEC_MAX);
         });
     }
+
+
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testEchartsWithTheme(final boolean proxied, final TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Bar chart = new Bar()
+          .addXAxis(new String[]{"Mon", "Tue", "Wed"})
+          .addYAxis()
+          .addSeries("Sales", new Number[]{120, 200, 150});
+
+      Jt.echarts(chart).theme(EchartsComponent.Theme.DARK).use();
+    };
+
+    // Wait for ECharts component to be visible
+    // Check that canvas element exists (ECharts renders to canvas)
+    PlaywrightUtils.runInBrowser(testInfo, app, false, proxied, page -> {
+      // Wait for ECharts component to be visible
+      assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
+
+      // Check that canvas element exists (ECharts renders to canvas)
+      assertThat(page.locator("jt-echarts canvas")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

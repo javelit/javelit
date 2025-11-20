@@ -23,10 +23,12 @@ import java.nio.file.Path;
 import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Response;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,8 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class StaticServingE2ETest {
 
-    @Test
-    void testBasicStaticFileServing(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testBasicStaticFileServing(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-static-test-");
         final Path staticDir = tempDir.resolve("static");
         Files.createDirectories(staticDir);
@@ -65,13 +68,15 @@ public class StaticServingE2ETest {
 
         // Verify the app loads correctly
         // Test direct access to static file
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify the app loads correctly
             assertThat(page.getByText("Static file serving test")).isVisible(WAIT_1_SEC_MAX);
 
             // Test direct access to static file
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
-            final Response response = page.navigate(baseUrl + "/app/static/test-image.png");
+            final Response response = page.navigate(baseUrl + pathPrefix + "/app/static/test-image.png");
 
             assertNotNull(response);
             assertEquals(200, response.status());
@@ -81,8 +86,9 @@ public class StaticServingE2ETest {
         });
     }
 
-    @Test
-    void testNoStaticFileFolder(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testNoStaticFileFolder(final boolean proxied, final TestInfo testInfo) throws IOException {
         final String app = """
             import io.javelit.core.Jt;
 
@@ -97,23 +103,27 @@ public class StaticServingE2ETest {
         // Test access to non-existent static file when no static directory exists
         // When no static directory exists, /app/static/* requests fall through to IndexHandler
         // which serves the main app, so we expect a 200 response with the app content
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify the app loads correctly
             assertThat(page.getByText("Static file 404 test")).isVisible(WAIT_1_SEC_MAX);
 
             // Test access to non-existent static file when no static directory exists
             // When no static directory exists, /app/static/* requests fall through to IndexHandler
             // which serves the main app, so we expect a 200 response with the app content
+            // FIXME - would be better to return a 404
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
-            final Response response = page.navigate(baseUrl + "/app/static/nonexistent.png");
+            final Response response = page.navigate(baseUrl + pathPrefix + "/app/static/nonexistent.png");
 
             assertNotNull(response);
             assertEquals(200, response.status());
         });
     }
 
-    @Test
-    void testMultipleStaticFileTypes(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testMultipleStaticFileTypes(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-static-multitype-test-");
         final Path staticDir = tempDir.resolve("static");
         Files.createDirectories(staticDir);
@@ -141,37 +151,39 @@ public class StaticServingE2ETest {
         // Test CSS file
         // Test JS file
         // Test JSON file
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
 
             // Test text file
-            Response response = page.navigate(baseUrl + "/app/static/test.txt");
+            Response response = page.navigate(baseUrl + pathPrefix + "/app/static/test.txt");
             assertEquals(200, response.status());
             assertEquals("nosniff", response.headers().get("x-content-type-options"));
             assertEquals("text/plain", response.headers().get("content-type"));
 
             // Test CSS file
-            response = page.navigate(baseUrl + "/app/static/test.css");
+            response = page.navigate(baseUrl + pathPrefix + "/app/static/test.css");
             assertEquals(200, response.status());
             assertEquals("nosniff", response.headers().get("x-content-type-options"));
             assertEquals("text/css", response.headers().get("content-type"));
 
             // Test JS file
-            response = page.navigate(baseUrl + "/app/static/test.js");
+            response = page.navigate(baseUrl + pathPrefix + "/app/static/test.js");
             assertEquals(200, response.status());
             assertEquals("nosniff", response.headers().get("x-content-type-options"));
             assertEquals("application/javascript", response.headers().get("content-type"));
 
             // Test JSON file
-            response = page.navigate(baseUrl + "/app/static/test.json");
+            response = page.navigate(baseUrl + pathPrefix + "/app/static/test.json");
             assertEquals(200, response.status());
             assertEquals("nosniff", response.headers().get("x-content-type-options"));
             assertEquals("application/json", response.headers().get("content-type"));
         });
     }
 
-    @Test
-    void testStaticDirectoryListingDisabled(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testStaticDirectoryListingDisabled(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-static-listing-test-");
         final Path staticDir = tempDir.resolve("static");
         Files.createDirectories(staticDir);
@@ -194,10 +206,12 @@ public class StaticServingE2ETest {
 
         // Try to access the static directory directly
         // Should get 403 Forbidden or 404 Not Found (directory listing disabled)
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Try to access the static directory directly
             final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
-            final APIResponse response = page.request().get(baseUrl + "/app/static/");
+            final APIResponse response = page.request().get(baseUrl + pathPrefix + "/app/static/");
 
             // Should get 403 Forbidden or 404 Not Found (directory listing disabled)
             assertTrue(response.status() == 403 || response.status() == 404);

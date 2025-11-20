@@ -21,8 +21,9 @@ import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX;
@@ -31,8 +32,9 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 public class AudioInputComponentE2ETest {
 
-    @Test
-    void testAudioInputDisplaysProperly(final TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testAudioInputDisplaysProperly(final boolean proxied, final TestInfo testInfo) {
         Assumptions.assumeFalse(
                 System.getenv("CI") != null,
                 "AudioInput tests require headed browser with microphone - skipping in CI"
@@ -40,7 +42,7 @@ public class AudioInputComponentE2ETest {
 
         JtRunnable app = () -> Jt.audioInput("Say something").use();
 
-        PlaywrightUtils.runInBrowser(testInfo, app, false, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, false, proxied, page -> {
             // Grant microphone permission
             page.context().grantPermissions(List.of("microphone"));
             // Verify component is rendered

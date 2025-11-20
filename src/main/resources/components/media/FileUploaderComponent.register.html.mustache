@@ -344,7 +344,8 @@
             });
 
             try {
-                const response = await fetch('/_/upload', {
+                const basePath = window.javelit?.baseUrlPath || '';
+                const response = await fetch(basePath + '/_/upload', {
                     method: 'PUT',
                     headers: {
                         'X-XSRF-TOKEN': window.javelit.xsrfToken,

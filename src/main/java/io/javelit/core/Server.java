@@ -344,8 +344,9 @@ public final class Server implements StateManager.RenderServer {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
             final boolean devMode = isLocalClient(exchange.getSourceAddress());
             final String currentUrl = getCurrentUrl(exchange);
+            final String basePath = extractBasePath(exchange);
 
-            exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode, currentUrl));
+            exchange.getResponseSender().send(getIndexHtml(xsrfToken, devMode, currentUrl, basePath));
         }
     }
 
@@ -357,6 +358,22 @@ public final class Server implements StateManager.RenderServer {
             currentUrl = "https://" + currentUrl.substring(7);
         }
         return currentUrl;
+    }
+
+    private static String extractBasePath(final @Nonnull HttpServerExchange exchange) {
+        String basePath = exchange.getRequestHeaders().getFirst("X-Forwarded-Prefix");
+        if (basePath == null || basePath.isEmpty()) {
+            return "";
+        }
+        // Normalize: ensure starts with / but doesn't end with /
+        basePath = basePath.trim();
+        if (!basePath.startsWith("/")) {
+            basePath = "/" + basePath;
+        }
+        if (basePath.endsWith("/")) {
+            basePath = basePath.substring(0, basePath.length() - 1);
+        }
+        return basePath;
     }
 
     private static class EmbeddedHandler implements HttpHandler {
@@ -974,7 +991,7 @@ public final class Server implements StateManager.RenderServer {
                                  error, false);
     }
 
-    private String getIndexHtml(final String xsrfToken, boolean devMode, final String encodedCurrentUrl) {
+    private String getIndexHtml(final String xsrfToken, boolean devMode, final String encodedCurrentUrl, final String basePath) {
         final StringWriter writer = new StringWriter();
         indexTemplate.execute(writer,
                               Map.ofEntries(
@@ -991,7 +1008,8 @@ public final class Server implements StateManager.RenderServer {
                                                 devMode && standaloneMode ?
                                                         generateRailwayDeployUrl(appPath, originalUrl) :
                                                         ""),
-                                      Map.entry("ENCODED_CURRENT_URL", encodedCurrentUrl)
+                                      Map.entry("ENCODED_CURRENT_URL", encodedCurrentUrl),
+                                      Map.entry("BASE_URL_PATH", basePath)
                               )
         );
         return writer.toString();

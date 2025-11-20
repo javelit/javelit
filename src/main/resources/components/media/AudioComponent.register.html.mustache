@@ -53,6 +53,10 @@
             this.endTimeMillis = null;
         }
 
+        get fullUrl() {
+            return window.javelit.prependBasePath(this.url);
+        }
+
         updated(changedProperties) {
             // Update width CSS variable
             if (changedProperties.has('width') && this.width && this.width !== 'stretch') {
@@ -114,7 +118,7 @@
                         @play="${this.handlePlay}"
                         @timeupdate="${this.handleTimeUpdate}"
                     >
-                        <source src="${this.url}" type="${this.format}" />
+                        <source src="${this.fullUrl}" type="${this.format}" />
                         Your browser does not support the audio element.
                     </audio>
                 </div>

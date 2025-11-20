@@ -18,19 +18,22 @@ package io.javelit.e2e.core;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SwitchPageE2ETest {
 
-    @Test
-    void testProgrammaticPageSwitching(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testProgrammaticPageSwitching(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             var currentPage = Jt.navigation(
                 Jt.page("/home", SwitchPageE2ETest::home).title("Home Page").home(),
@@ -40,29 +43,31 @@ class SwitchPageE2ETest {
             currentPage.run();
             Jt.text("Footer - always visible").use();
         };
-        
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Wait for app to load and verify we're on HomePage
             assertThat(page.getByText("The Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertTrue(page.url().endsWith("/home"));
-            
+            assertTrue(page.url().contains(pathPrefix + "/home"));
+
             // Test programmatic switch to Products page via button click
             page.getByText("Go to Products", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
-            
+
             // Verify we're now on Products page
             assertThat(page.getByText("Products Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Browse our amazing products!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertTrue(page.url().endsWith("/products"));
-            
+            assertTrue(page.url().contains(pathPrefix + "/products"));
+
             // Test programmatic switch back to Home page from Contact page
             page.getByText("Back to Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
-            
+
             // Verify we're back on Home page
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page!", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertTrue(page.url().endsWith("/home"));
-            
+            assertTrue(page.url().contains(pathPrefix + "/home"));
+
             // Verify footer is persistent across all page switches
             assertThat(page.getByText("Footer - always visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
 
@@ -73,7 +78,7 @@ class SwitchPageE2ETest {
             assertThat(page.getByText("IllegalArgumentException").first()).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("This page is not registered").first()).isVisible(WAIT_1_SEC_MAX);
             // page did not change
-            assertTrue(page.url().endsWith("/home"));
+            assertTrue(page.url().contains(pathPrefix + "/home"));
         });
     }
 

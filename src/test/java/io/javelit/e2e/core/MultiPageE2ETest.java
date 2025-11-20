@@ -22,12 +22,14 @@ import java.nio.file.Path;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
 import static io.javelit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_TEXT_C;
@@ -40,26 +42,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class MultiPageE2ETest {
 
-    @Test
-    void testDirectUrlNavigation(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testDirectUrlNavigation(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-multipage-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
-        
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify persistent footer is always visible
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Navigate directly to Settings page using custom URL path
             page.navigate(page.url().replace("/home", "/settings"));
             // Verify Settings page content is visible
             assertThat(page.getByText("Settings Page", EXACT_MATCH).first()).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify URL uses custom path
-            assertTrue(page.url().endsWith("/settings"));
+            assertTrue(page.url().contains(pathPrefix + "/settings"));
             // Verify Home page content is NOT visible
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
             // Verify persistent footer is always visible
@@ -93,67 +98,71 @@ public class MultiPageE2ETest {
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible();
             // Verify URL redirected to /HomePage
             String rootUrl = page.url();
-            assertTrue(rootUrl.endsWith("/home"));
+            assertTrue(rootUrl.contains(pathPrefix + "/home"));
             // Verify persistent footer is still visible
             assertThat(page.getByText("© 2025 Test App - Always Visible", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
         });
     }
-    
-    @Test
-    void testSidebarNavigationClicks(TestInfo testInfo) throws IOException {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testSidebarNavigationClicks(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-multipage-navigation-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
-        
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify initial home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            
+
             // Verify initial URL ends with /HomePage
             String initialUrl = page.url();
-            assertTrue(initialUrl.endsWith("/home"));
-            
+            assertTrue(initialUrl.contains(pathPrefix + "/home"));
+
             // Click on Settings in the sidebar
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Settings")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed to custom path /settings
             String settingsUrl = page.url();
-            assertTrue(settingsUrl.endsWith("/settings"));
+            assertTrue(settingsUrl.contains(pathPrefix + "/settings"));
             // Verify Settings page content appears
             assertThat(page.getByText("Settings Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify Home page content is hidden
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
-            
+
             // Click on About in the sidebar
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed to /AboutPage
             String aboutUrl = page.url();
-            assertTrue(aboutUrl.endsWith("/about"));
+            assertTrue(aboutUrl.contains(pathPrefix + "/about"));
             // Verify About page content appears
             assertThat(page.getByText("About Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Learn more about this app", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             // Verify Settings page content is hidden
             assertThat(page.getByText("Configure your settings here", EXACT_MATCH)).not().isVisible(WAIT_50_MS_MAX);
-            
+
             // Click back to Home
             page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("Home")).click(WAIT_1_SEC_MAX_CLICK);
             // Verify URL changed back to /HomePage
             String homeUrl = page.url();
-            assertTrue(homeUrl.endsWith("/home"));
+            assertTrue(homeUrl.contains(pathPrefix + "/home"));
             // Verify Home page content reappears
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
         });
     }
-    
-    @Test
-    void testPersistentElementsAfterNavigation(TestInfo testInfo) throws IOException {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testPersistentElementsAfterNavigation(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-multipage-persistent-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("MultiPageApp.java");
-        
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, true, proxied, page -> {
             // Verify footer is visible on home page
             assertThat(page.getByText("© 2025 Test App - Always Visible")).isVisible(WAIT_1_SEC_MAX);
             // Verify navigation sidebar is visible
@@ -189,13 +198,16 @@ public class MultiPageE2ETest {
         });
     }
     
-    @Test
-    void testHiddenNavigation(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testHiddenNavigation(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-hidden-nav-test-");
         copyResourceDirectory("multipage-test", tempDir);
         final Path mainFile = tempDir.resolve("HiddenNavApp.java");
-        
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+
+        PlaywrightUtils.runInBrowser(testInfo, mainFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify home page loads
             assertThat(page.getByText("Home Page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.getByText("Welcome to the home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
@@ -207,7 +219,7 @@ public class MultiPageE2ETest {
 
             // Verify initial URL ends with /HomePage
             String initialUrl = page.url();
-            assertTrue(initialUrl.endsWith("/home"));
+            assertTrue(initialUrl.contains(pathPrefix + "/home"));
 
             // Verify direct URL navigation still works
             page.navigate(page.url().replace("/home", "/settings"));

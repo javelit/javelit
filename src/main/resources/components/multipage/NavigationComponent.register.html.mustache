@@ -190,16 +190,17 @@
         }
         
         updateURL(page, addToHistory = true) {
-            const newPath = page.urlPath;
+            const basePath = window.javelit?.baseUrlPath || '';
+            const newPath = basePath + page.urlPath;
             const currentPath = window.location.pathname;
-            
+
             if (newPath !== currentPath) {
                 if (addToHistory) {
                     window.history.pushState({page: page.urlPath}, '', newPath);
                 } else {
                     window.history.replaceState({page: page.urlPath}, '', newPath);
                 }
-                
+
                 // Update document title if available
                 if (page.title) {
                     document.title = page.title;
@@ -254,7 +255,7 @@
                 <nav class="navigation-container">
                     ${this.pages.map(page => html`
                         <a class="nav-item ${this.isActivePage(page) ? 'active' : ''}"
-                           href="${page.urlPath}"
+                           href="${(window.javelit.baseUrlPath || '') + page.urlPath}"
                            @click="${(e) => this.handleNavClick(page, e)}">
                             ${this.renderIcon(page.icon)}
                             <span class="nav-title">${page.title}</span>

@@ -127,6 +127,10 @@
             this.suggestedUrl = null;
         }
 
+        get fullUrl() {
+            return window.javelit.prependBasePath(this.url);
+        }
+
         convertGitHubRawToJsDelivr(url) {
             // Pattern: https://raw.githubusercontent.com/{user}/{repo}/{branch}/{path}
             // Convert to: https://cdn.jsdelivr.net/gh/{user}/{repo}@{branch}/{path}
@@ -258,7 +262,7 @@
             return html`
                 <div class="pdf-container">
                     <iframe
-                        src="${this.url}"
+                        src="${this.fullUrl}"
                         type="application/pdf"
                         title="PDF Viewer">
                     </iframe>

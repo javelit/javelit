@@ -25,14 +25,18 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
+import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,8 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AudioComponentE2ETest {
 
-    @Test
-    void testAudioVariations(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testAudioVariations(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             // Test 1: Public URL with autoplay
             Jt.audio("https://github.com/javelit/public_assets/raw/refs/heads/main/audio/piano-chords.mp3")
@@ -75,7 +80,9 @@ public class AudioComponentE2ETest {
                 .use();
         };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             // Verify all 6 audio components are rendered
             assertThat(page.locator("#app jt-audio").nth(0)).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-audio").nth(1)).isVisible(WAIT_1_SEC_MAX);
@@ -95,7 +102,7 @@ public class AudioComponentE2ETest {
 
             // Test 3: Local file (media hash)
             String src3 = page.locator("#app jt-audio").nth(2).locator("audio source").getAttribute("src");
-            assertTrue(src3.startsWith("/_/media/"), "Audio src should start with /_/media/, got: " + src3);
+            assertTrue(src3.startsWith(pathPrefix + "/_/media/"), "Audio src should start with " + pathPrefix + "/_/media/, got: " + src3);
 
             // Test 4: With loop
             assertThat(page.locator("#app jt-audio").nth(3).locator("audio[loop]")).isVisible(WAIT_1_SEC_MAX);
@@ -113,18 +120,21 @@ public class AudioComponentE2ETest {
         });
     }
 
-    @Test
-    void testStaticFolder(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testStaticFolder(final boolean proxied, final TestInfo testInfo) throws IOException {
         final Path tempDir = Files.createTempDirectory("javelit-audio-test-");
         copyResourceDirectory("audio-test", tempDir);
         final Path appFile = tempDir.resolve("AudioStaticTestApp.java");
 
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX + "/" : "";
+
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-audio audio[controls]")).isVisible(WAIT_1_SEC_MAX);
 
             var audioSource = page.locator("#app jt-audio audio source");
-            assertThat(audioSource).hasAttribute("src", "app/static/piano-chords.mp3", WAIT_1_SEC_MAX_ATTRIBUTE);
+            assertThat(audioSource).hasAttribute("src", pathPrefix + "app/static/piano-chords.mp3", WAIT_1_SEC_MAX_ATTRIBUTE);
             assertThat(audioSource).hasAttribute("type", "audio/mpeg", WAIT_1_SEC_MAX_ATTRIBUTE);
 
             page.waitForFunction("document.querySelector('#app jt-audio').shadowRoot.querySelector('audio').readyState >= 1");
@@ -155,8 +165,9 @@ public class AudioComponentE2ETest {
         return baos.toByteArray();
     }
 
-    @Test
-    void testGeneratedBytes(TestInfo testInfo) {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGeneratedBytes(final boolean proxied, final TestInfo testInfo) {
         JtRunnable app = () -> {
             byte[] beepWav = generateBeepWavBytes(2);
             Jt.audio(beepWav)
@@ -164,16 +175,19 @@ public class AudioComponentE2ETest {
                 .use();
         };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+
             assertThat(page.locator("#app jt-audio")).isVisible(WAIT_1_SEC_MAX);
             assertThat(page.locator("#app jt-audio audio[controls]")).isVisible(WAIT_1_SEC_MAX);
 
             var audioSource = page.locator("#app jt-audio audio source");
-            String src = audioSource.getAttribute("src");
-            assertTrue(src.startsWith("/_/media/"), "Audio src should start with /_/media/, got: " + src);
-            assertThat(audioSource).hasAttribute("type", "audio/wav");
+            String src = audioSource.getAttribute("src", new Locator.GetAttributeOptions().setTimeout(1000));
+            assertTrue(src.startsWith(pathPrefix + "/_/media/"), "Audio src should start with " + pathPrefix + "/_/media/, got: " + src);
+            assertThat(audioSource).hasAttribute("type", "audio/wav", WAIT_1_SEC_MAX_ATTRIBUTE);
 
-            page.waitForFunction("document.querySelector('#app jt-audio').shadowRoot.querySelector('audio').readyState >= 1");
+            page.waitForFunction("document.querySelector('#app jt-audio').shadowRoot.querySelector('audio').readyState >= 1",
+                                 null, new Page.WaitForFunctionOptions().setTimeout(1000));
             int duration = (int) page.evaluate("document.querySelector('#app jt-audio').shadowRoot.querySelector('audio').duration");
             assertEquals(2, duration, "Audio duration should be approximately 2 seconds");
         });

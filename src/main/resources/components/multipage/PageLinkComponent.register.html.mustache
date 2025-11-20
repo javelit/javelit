@@ -210,11 +210,12 @@
 
             // Internal page link - prevent default and send path update
             e.preventDefault();
-            
+
             if (this.url) {
-                // Update URL in browser
-                window.history.pushState({}, '', this.url);
-                
+                // Update URL in browser - it's a relative url, need to add the base path
+                const basePath = window.javelit?.baseUrlPath || '';
+                window.history.pushState({}, '', basePath + this.url);
+
                 // Send path update to trigger page navigation
                 window.javelit.sendPathUpdate();
             }
@@ -252,7 +253,7 @@
                         </a>` :
                         html`<a
                             class="${linkClass}"
-                            href="${this.url || '#'}"
+                            href="${(window.javelit.baseUrlPath || '') + (this.url || '#')}"
                             style="${widthStyle}"
                             @click="${this.handleClick}">
                             ${linkContent}

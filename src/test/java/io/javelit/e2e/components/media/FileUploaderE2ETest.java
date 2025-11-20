@@ -25,8 +25,9 @@ import com.microsoft.playwright.FileChooser;
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
 import io.javelit.e2e.helpers.PlaywrightUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
@@ -37,8 +38,9 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class FileUploaderE2ETest {
 
-    @Test
-    void testCSVFileUpload(TestInfo testInfo) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testCSVFileUpload(final boolean proxied, final TestInfo testInfo) throws IOException {
         // Create a CSV file with known content
         final String csvContent = "name,age,city\nAlice,30,New York\nBob,25,Los Angeles\nCharlie,35,Chicago";
         final Path tempDir = Files.createTempDirectory("fileuploader-test");
@@ -55,7 +57,7 @@ public class FileUploaderE2ETest {
                 .use();
         };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
             try {
                 // Wait for the file uploader component to be visible
                 assertThat(page.locator("jt-file-uploader")).isVisible(WAIT_1_SEC_MAX);
