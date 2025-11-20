@@ -1,4 +1,4 @@
-///usr/bin/env jbang "$0" "$@" ; exit $?
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 
 //DEPS io.javelit:javelit:0.71.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
@@ -11,11 +11,11 @@ import io.javelit.core.Server;
 // javelit hot-reload available
 public class App {
 
-    public static void main(String[] args) {
-        int port = 8888;
-        var server = Server.builder(Path.of("WebApp.java"), port).build();
+  public static void main(String[] args) {
+    int port = 8888;
+    var server = Server.builder(Path.of("WebApp.java"), port).build();
 
-        // start the server - this is non-blocking, user thread
-        server.start();
-    }
+    // start the server - this is non-blocking, user thread
+    server.start();
+  }
 }

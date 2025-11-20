@@ -1,19 +1,19 @@
-///usr/bin/env jbang "$0" "$@" ; exit $?
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.javelit:javelit:0.71.0
 
 
 import io.javelit.core.Jt;
 
 public class CodeExample {
-    public static void main(String[] args) {
-        Jt.title("# Code Component Showcase").use();
-        Jt.markdown("This demo showcases all the capabilities of the `st.code` component in Javelit.").use();
+  public static void main(String[] args) {
+    Jt.title("# Code Component Showcase").use();
+    Jt.markdown("This demo showcases all the capabilities of the `st.code` component in Javelit.").use();
 
-        // Language highlighting examples
-        Jt.title("## Language Highlighting").use();
+    // Language highlighting examples
+    Jt.title("## Language Highlighting").use();
 
-        Jt.markdown("### Java Code (Default Language)").use();
-        Jt.code("""
+    Jt.markdown("### Java Code (Default Language)").use();
+    Jt.code("""
                 public class HelloWorld { 
                     private static final String GREETING = "Hello, World!";
                 
@@ -29,8 +29,8 @@ public class CodeExample {
                 }
                 """).use();
 
-        Jt.markdown("### Python Code").use();
-        Jt.code("""
+    Jt.markdown("### Python Code").use();
+    Jt.code("""
                 def fibonacci(n):
                     \"\"\"Generate Fibonacci sequence up to n terms\"\"\"
                     if n <= 0:
@@ -55,8 +55,8 @@ public class CodeExample {
                 print(f"Squares of even numbers: {squares}")
                 """).language("python").use();
 
-        Jt.markdown("### Plain Text (No Highlighting)").use();
-        Jt.code("""
+    Jt.markdown("### Plain Text (No Highlighting)").use();
+    Jt.code("""
                 This is plain text without any syntax highlighting.
                 No keywords, strings, or comments will be colored.
                 
@@ -69,11 +69,11 @@ public class CodeExample {
                 -- This looks like SQL but won't be highlighted either
                 """).language(null).use();
 
-        // Line numbers and wrap lines combinations
-        Jt.title("## Line Numbers & Wrap Lines Combinations").use();
+    // Line numbers and wrap lines combinations
+    Jt.title("## Line Numbers & Wrap Lines Combinations").use();
 
-        Jt.markdown("### Default: No Line Numbers, No Wrapping").use();
-        Jt.code("""
+    Jt.markdown("### Default: No Line Numbers, No Wrapping").use();
+    Jt.code("""
                 // Short lines that don't need wrapping
                 public void shortMethod() {
                     String name = "Alice";
@@ -82,8 +82,8 @@ public class CodeExample {
                 }
                 """).use();
 
-        Jt.markdown("### Line Numbers Only").use();
-        Jt.code("""
+    Jt.markdown("### Line Numbers Only").use();
+    Jt.code("""
                 public class Calculator {
                     public int add(int a, int b) {
                         return a + b;
@@ -100,8 +100,8 @@ public class CodeExample {
                 }
                 """).lineNumbers(true).use();
 
-        Jt.markdown("### Wrap Lines Only (Long Lines)").use();
-        Jt.code("""
+    Jt.markdown("### Wrap Lines Only (Long Lines)").use();
+    Jt.code("""
                 // This is a very long comment that demonstrates how line wrapping works when enabled. It will wrap to multiple lines instead of creating a horizontal scroll bar.
                 public void processUserData(String firstName, String lastName, String email, String phoneNumber, String address, String city, String country) {
                     String fullName = firstName + " " + lastName;
@@ -112,8 +112,8 @@ public class CodeExample {
                 }
                 """).wrapLines(true).use();
 
-        Jt.markdown("### Both Line Numbers and Wrap Lines").use();
-        Jt.code("""
+    Jt.markdown("### Both Line Numbers and Wrap Lines").use();
+    Jt.code("""
                 /**
                  * This method demonstrates both line numbers and line wrapping functionality together, which is particularly useful for long code blocks with extended lines
                  */
@@ -130,11 +130,11 @@ public class CodeExample {
                 }
                 """).lineNumbers(true).wrapLines(true).use();
 
-        // Width and height examples
-        Jt.title("## Width and Height Control").use();
+    // Width and height examples
+    Jt.title("## Width and Height Control").use();
 
-        Jt.markdown("### Default Dimensions (Stretch Width, Content Height)").use();
-        Jt.code("""
+    Jt.markdown("### Default Dimensions (Stretch Width, Content Height)").use();
+    Jt.code("""
                 // This code block uses default dimensions
                 public void defaultSize() {
                     System.out.println("Default width stretches to container");
@@ -142,8 +142,8 @@ public class CodeExample {
                 }
                 """).use();
 
-        Jt.markdown("### Fixed Pixel Dimensions").use();
-        Jt.code("""
+    Jt.markdown("### Fixed Pixel Dimensions").use();
+    Jt.code("""
                 // This code block has fixed width and height
                 public void fixedDimensions() {
                     String[] languages = {"Java", "Python", "JavaScript", "Go", "Rust"};
@@ -158,12 +158,12 @@ public class CodeExample {
                 }
                 """).width(600).height(150).lineNumbers(true).use();
 
-        Jt.markdown("### Content Width (Fits Code Width)").use();
-        Jt.code("short code").width("content").lineNumbers(true).use();
+    Jt.markdown("### Content Width (Fits Code Width)").use();
+    Jt.code("short code").width("content").lineNumbers(true).use();
 
-        Jt.markdown("### Stretch Height (Fills Available Space)").use();
-        final var cs = Jt.container().height(500).use();
-        Jt.code("""
+    Jt.markdown("### Stretch Height (Fills Available Space)").use();
+    final var cs = Jt.container().height(500).use();
+    Jt.code("""
                 // This code block stretches to available height
                 public class StretchExample {
                     public void method1() {
@@ -176,11 +176,11 @@ public class CodeExample {
                 }
                 """).height("stretch").lineNumbers(true).use(cs);
 
-        // Language variety showcase
-        Jt.title("## Different Programming Languages").use();
+    // Language variety showcase
+    Jt.title("## Different Programming Languages").use();
 
-        Jt.markdown("### JavaScript").use();
-        Jt.code("""
+    Jt.markdown("### JavaScript").use();
+    Jt.code("""
                 const fetchUserData = async (userId) => {
                     try {
                         const response = await fetch(`/api/users/${userId}`);
@@ -202,7 +202,7 @@ public class CodeExample {
                 });
                 """).language("javascript").lineNumbers(true).use();
 
-        Jt.code("""
+    Jt.code("""
                 const fetchUserData = async (userId) => {
                     try {
                         const response = await fetch(`/api/users/${userId}`);
@@ -215,8 +215,8 @@ public class CodeExample {
                 });
                 """).language("javascript").lineNumbers(true).use();
 
-        Jt.markdown("### CSS").use();
-        Jt.code("""
+    Jt.markdown("### CSS").use();
+    Jt.code("""
                 /* Modern CSS with custom properties and grid */
                 :root {
                     --primary-color: #3498db;
@@ -244,8 +244,8 @@ public class CodeExample {
                 }
                 """).language("css").lineNumbers(true).wrapLines(true).use();
 
-        Jt.markdown("### JSON Configuration").use();
-        Jt.code("""
+    Jt.markdown("### JSON Configuration").use();
+    Jt.code("""
                 {
                   "name": "javelit-demo",
                   "version": "1.0.0",
@@ -279,10 +279,10 @@ public class CodeExample {
                 }
                 """).language("json").lineNumbers(true).use();
 
-        Jt.markdown("---").use();
-        Jt
-                .markdown(
-                        "**Demo Complete!** This showcase demonstrates all the key features of the CodeComponent including syntax highlighting for multiple languages, line numbers, line wrapping, and flexible width/height controls.")
-                .use();
-    }
+    Jt.markdown("---").use();
+    Jt
+        .markdown(
+            "**Demo Complete!** This showcase demonstrates all the key features of the CodeComponent including syntax highlighting for multiple languages, line numbers, line wrapping, and flexible width/height controls.")
+        .use();
+  }
 }

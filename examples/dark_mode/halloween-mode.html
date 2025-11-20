@@ -16,90 +16,90 @@
 
 -->
 <style>
-  /*
-   * Javelit Halloween Mode 🎃
-   *
-   * This file provides a spooky Halloween theme for Javelit applications.
-   * It overrides Javelit's design system CSS variables with a dark, eerie
-   * color palette featuring pumpkin orange, ghostly green, and blood red accents.
-   *
-   * Usage:
-   *   javelit run --headers-file halloween-mode.html YourApp.java
-   *
-   * Or programmatically:
-   *   Server.builder(appPath, 8080)
-   *       .headersFile("halloween-mode.html")
-   *       .build()
-   */
+    /*
+     * Javelit Halloween Mode 🎃
+     *
+     * This file provides a spooky Halloween theme for Javelit applications.
+     * It overrides Javelit's design system CSS variables with a dark, eerie
+     * color palette featuring pumpkin orange, ghostly green, and blood red accents.
+     *
+     * Usage:
+     *   javelit run --headers-file halloween-mode.html YourApp.java
+     *
+     * Or programmatically:
+     *   Server.builder(appPath, 8080)
+     *       .headersFile("halloween-mode.html")
+     *       .build()
+     */
 
-  :root {
-    /* ========================================
-       Background Colors - Dark & Spooky
-       ======================================== */
-    --jt-bg-primary: #0a0a0f;        /* Deep dark purple-black */
-    --jt-bg-secondary: #1a0f2e;      /* Dark purple midnight */
-    --jt-bg-tertiary: #2a1a3e;       /* Medium dark purple */
-    --jt-bg-input: #1f1530;          /* Dark purple for inputs */
+    :root {
+        /* ========================================
+           Background Colors - Dark & Spooky
+           ======================================== */
+        --jt-bg-primary: #0a0a0f; /* Deep dark purple-black */
+        --jt-bg-secondary: #1a0f2e; /* Dark purple midnight */
+        --jt-bg-tertiary: #2a1a3e; /* Medium dark purple */
+        --jt-bg-input: #1f1530; /* Dark purple for inputs */
 
-    /* ========================================
-       Text Colors - Ghostly & Readable
-       ======================================== */
-    --jt-text-primary: #f0e6ff;      /* Soft purple-white for high contrast */
-    --jt-text-secondary: #b8a8cc;    /* Muted lavender */
-    --jt-text-muted: #8066a0;        /* Dark lavender */
-    --jt-text-white: #ffffff;        /* Pure white for emphasis */
+        /* ========================================
+           Text Colors - Ghostly & Readable
+           ======================================== */
+        --jt-text-primary: #f0e6ff; /* Soft purple-white for high contrast */
+        --jt-text-secondary: #b8a8cc; /* Muted lavender */
+        --jt-text-muted: #8066a0; /* Dark lavender */
+        --jt-text-white: #ffffff; /* Pure white for emphasis */
 
-    /* ========================================
-       Primary Accent Colors - Pumpkin Orange
-       ======================================== */
-    --jt-primary-color: #ff6b35;     /* Pumpkin orange */
-    --jt-primary-hover: #ff8552;     /* Lighter pumpkin on hover */
-    --jt-primary-active: #e65a2b;    /* Darker pumpkin when active */
+        /* ========================================
+           Primary Accent Colors - Pumpkin Orange
+           ======================================== */
+        --jt-primary-color: #ff6b35; /* Pumpkin orange */
+        --jt-primary-hover: #ff8552; /* Lighter pumpkin on hover */
+        --jt-primary-active: #e65a2b; /* Darker pumpkin when active */
 
-    /* ========================================
-       Theme Accent - Glowing Jack-o'-Lantern
-       ======================================== */
-    --jt-theme-color: #ff9933;       /* Bright pumpkin glow */
-    --jt-theme-hover: #ffad5c;       /* Lighter glow on hover */
-    --jt-theme-active: #ff7f1f;      /* Deeper orange when active */
+        /* ========================================
+           Theme Accent - Glowing Jack-o'-Lantern
+           ======================================== */
+        --jt-theme-color: #ff9933; /* Bright pumpkin glow */
+        --jt-theme-hover: #ffad5c; /* Lighter glow on hover */
+        --jt-theme-active: #ff7f1f; /* Deeper orange when active */
 
-    /* ========================================
-       Status Colors - Spooky Edition
-       ======================================== */
-    --jt-success-color: #39ff14;     /* Eerie neon green */
-    --jt-danger-color: #ff0000;      /* Blood red */
-    --jt-warning-color: #ffaa00;     /* Candy corn orange */
-    --jt-info-color: #9370db;        /* Medium purple */
-    --jt-error-color: #8b0000;       /* Dark blood red */
+        /* ========================================
+           Status Colors - Spooky Edition
+           ======================================== */
+        --jt-success-color: #39ff14; /* Eerie neon green */
+        --jt-danger-color: #ff0000; /* Blood red */
+        --jt-warning-color: #ffaa00; /* Candy corn orange */
+        --jt-info-color: #9370db; /* Medium purple */
+        --jt-error-color: #8b0000; /* Dark blood red */
 
-    /* ========================================
-       Status Background Colors - Semi-transparent Glows
-       ======================================== */
-    --jt-bg-error: rgba(139, 0, 0, 0.2);       /* Dark blood red glow */
-    --jt-bg-success: rgba(57, 255, 20, 0.15);  /* Ghostly green glow */
-    --jt-bg-info: rgba(147, 112, 219, 0.2);    /* Purple mist */
-    --jt-bg-warning: rgba(255, 170, 0, 0.2);   /* Candy corn glow */
+        /* ========================================
+           Status Background Colors - Semi-transparent Glows
+           ======================================== */
+        --jt-bg-error: rgba(139, 0, 0, 0.2); /* Dark blood red glow */
+        --jt-bg-success: rgba(57, 255, 20, 0.15); /* Ghostly green glow */
+        --jt-bg-info: rgba(147, 112, 219, 0.2); /* Purple mist */
+        --jt-bg-warning: rgba(255, 170, 0, 0.2); /* Candy corn glow */
 
-    /* ========================================
-       Secondary & Tertiary Colors
-       ======================================== */
-    --jt-secondary-color: #9370db;   /* Medium purple */
-    --jt-secondary-hover: #a98dd6;   /* Lighter purple on hover */
-    --jt-tertiary-color: #2a1a3e;    /* Dark purple surface */
-    --jt-tertiary-hover: #3a2a4e;    /* Lighter purple on hover */
+        /* ========================================
+           Secondary & Tertiary Colors
+           ======================================== */
+        --jt-secondary-color: #9370db; /* Medium purple */
+        --jt-secondary-hover: #a98dd6; /* Lighter purple on hover */
+        --jt-tertiary-color: #2a1a3e; /* Dark purple surface */
+        --jt-tertiary-hover: #3a2a4e; /* Lighter purple on hover */
 
-    /* ========================================
-       Borders & Separators - Subtle Glows
-       ======================================== */
-    --jt-border-color: #4a3a5e;             /* Medium purple borders */
-    --jt-light-border-color: #2d1f3f;       /* Very subtle purple borders */
+        /* ========================================
+           Borders & Separators - Subtle Glows
+           ======================================== */
+        --jt-border-color: #4a3a5e; /* Medium purple borders */
+        --jt-light-border-color: #2d1f3f; /* Very subtle purple borders */
 
-    /* ========================================
-       Shadows - Enhanced Dramatic Effect
-       ======================================== */
-    --jt-shadow-sm: 0 2px 4px 0 rgba(255, 107, 53, 0.15);
-    --jt-shadow: 0 4px 8px 0 rgba(255, 107, 53, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.6);
-    --jt-shadow-lg: 0 12px 20px -4px rgba(255, 107, 53, 0.3), 0 6px 10px -4px rgba(0, 0, 0, 0.7);
-    --jt-shadow-popover: 0 12px 24px -4px rgba(255, 107, 53, 0.4), 0 6px 12px -4px rgba(0, 0, 0, 0.8);
-  }
+        /* ========================================
+           Shadows - Enhanced Dramatic Effect
+           ======================================== */
+        --jt-shadow-sm: 0 2px 4px 0 rgba(255, 107, 53, 0.15);
+        --jt-shadow: 0 4px 8px 0 rgba(255, 107, 53, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.6);
+        --jt-shadow-lg: 0 12px 20px -4px rgba(255, 107, 53, 0.3), 0 6px 10px -4px rgba(0, 0, 0, 0.7);
+        --jt-shadow-popover: 0 12px 24px -4px rgba(255, 107, 53, 0.4), 0 6px 12px -4px rgba(0, 0, 0, 0.8);
+    }
 </style>

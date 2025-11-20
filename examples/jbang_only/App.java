@@ -1,4 +1,4 @@
-///usr/bin/env jbang "$0" "$@" ; exit $?
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 
 //DEPS io.javelit:javelit:0.71.0
 //DEPS ch.qos.logback:logback-classic:1.5.19
@@ -11,17 +11,17 @@ import io.javelit.core.Server;
 // see https://docs.javelit.io/get-started/installation/embedded-vanilla#development-with-hot-reload
 public class App {
 
-    public static void main(String[] args) {
-        var server = Server.builder(() -> app(), 8888).build();
+  public static void main(String[] args) {
+    var server = Server.builder(() -> app(), 8888).build();
 
-        // start the server - this is non-blocking, user thread
-        server.start();
-    }
+    // start the server - this is non-blocking, user thread
+    server.start();
+  }
 
-    private static void app() {
-        Jt.text("Hello World").use();
-    }
+  private static void app() {
+    Jt.text("Hello World").use();
+  }
 
-    private App() {
-    }
+  private App() {
+  }
 }

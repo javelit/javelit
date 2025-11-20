@@ -1,5 +1,6 @@
 package model;
 
 public enum Car {
-    RED, BLUE
+  RED,
+  BLUE
 }

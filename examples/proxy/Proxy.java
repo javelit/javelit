@@ -1,4 +1,4 @@
-///usr/bin/env jbang "$0" "$@" ; exit $?
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 
 //DEPS io.undertow:undertow-core:2.3.12.Final
 //DEPS io.undertow:undertow-servlet:2.3.12.Final
