@@ -22,7 +22,7 @@ public class MultiPageApp {
     public static void main(String[] args) {
         // Navigation with multiple pages
         final JtPage currentPage = Jt.navigation(
-            Jt.page("/settings", SettingsPage::app).title("Settings").icon("⚙️"),
+            Jt.page("/config/settings", SettingsPage::app).title("Settings").icon("⚙️"),
             Jt.page("/home", HomePage::app).icon("🏠").home(),
             Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
         ).use();

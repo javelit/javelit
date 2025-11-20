@@ -141,14 +141,6 @@ public final class JtPage {
                 cleanedUrl = cleanedUrl.substring(0, cleanedUrl.length() - 1);
             }
 
-            // supporting nested URL paths is not possible with auto-detection of the root path
-            // auto-detection of the root path is necessary for deployments of Javelit on sub-path (eg with a proxy)
-            // the auto-detection is frontend only and assumes there is only a single level of path
-            // see same issue in Streamlit https://github.com/streamlit/streamlit/issues/8971
-            // for the moment making Javelit deployable on a sub-path is more important than supporting nested paths
-            // see https://github.com/javelit/javelit/discussions/52
-            // also assuming path parameters is not necessary (query parameters is supported)
-            checkArgument(!cleanedUrl.substring(1).contains("/"), "The path %s contains a / character. Nested paths are not supported. Please use a simple path.", cleanedUrl);
             checkArgument(!RESERVED_URL_PATHS.contains(cleanedUrl), "The path %s is a reserved path. Please use a different path.", cleanedUrl);
 
             return cleanedUrl;
