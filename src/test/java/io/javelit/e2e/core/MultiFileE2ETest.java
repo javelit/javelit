@@ -33,76 +33,76 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class MultiFileE2ETest {
 
-    @Test
-    void testMultiFileCompilationWithSubdirectoryDependencies(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-multifile-test-");
-        copyResourceDirectory("multifile-test", tempDir);
-        final Path mainFile = tempDir.resolve("Test.java");
-        // Verify that Car.BLUE is rendered (from model/Car.java)
-        // Verify that Owner.BOSS is rendered (from model/Owner.java)
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            // Verify that Car.BLUE is rendered (from model/Car.java)
-            assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
-            // Verify that Owner.BOSS is rendered (from model/Owner.java)
-            assertThat(page.getByText("BOSS")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
-    
-    @Test
-    void testMultiFileHotReloadWithMainFileChange(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-multifile-reload-test-");
-        copyResourceDirectory("multifile-test", tempDir);
-        final Path mainFile = tempDir.resolve("Test.java");
+  @Test
+  void testMultiFileCompilationWithSubdirectoryDependencies(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-multifile-test-");
+    copyResourceDirectory("multifile-test", tempDir);
+    final Path mainFile = tempDir.resolve("Test.java");
+    // Verify that Car.BLUE is rendered (from model/Car.java)
+    // Verify that Owner.BOSS is rendered (from model/Owner.java)
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      // Verify that Car.BLUE is rendered (from model/Car.java)
+      assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
+      // Verify that Owner.BOSS is rendered (from model/Owner.java)
+      assertThat(page.getByText("BOSS")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
+  @Test
+  void testMultiFileHotReloadWithMainFileChange(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-multifile-reload-test-");
+    copyResourceDirectory("multifile-test", tempDir);
+    final Path mainFile = tempDir.resolve("Test.java");
+
+    // Verify initial state - Car.BLUE is displayed
+    // Verify the change is reflected - RED should now be displayed
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      try {
         // Verify initial state - Car.BLUE is displayed
+        assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
+        final String originalContent = Files.readString(mainFile);
+        final String modifiedContent = originalContent.replace("Car.BLUE", "Car.RED");
+        Files.writeString(mainFile, modifiedContent);
         // Verify the change is reflected - RED should now be displayed
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            try {
-                // Verify initial state - Car.BLUE is displayed
-                assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
-                final String originalContent = Files.readString(mainFile);
-                final String modifiedContent = originalContent.replace("Car.BLUE", "Car.RED");
-                Files.writeString(mainFile, modifiedContent);
-                // Verify the change is reflected - RED should now be displayed
-                assertThat(page.getByText("RED")).isVisible(WAIT_1_SEC_MAX);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-    
-    @Test
-    void testMultiFileHotReloadWithDependencyFileChange(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-multifile-dependency-reload-test-");
-        copyResourceDirectory("multifile-test", tempDir);
-        final Path mainFile = tempDir.resolve("Test.java");
-        final Path carFile = tempDir.resolve("model/Car.java");
+        assertThat(page.getByText("RED")).isVisible(WAIT_1_SEC_MAX);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
 
+  @Test
+  void testMultiFileHotReloadWithDependencyFileChange(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-multifile-dependency-reload-test-");
+    copyResourceDirectory("multifile-test", tempDir);
+    final Path mainFile = tempDir.resolve("Test.java");
+    final Path carFile = tempDir.resolve("model/Car.java");
+
+    // Verify initial state - Car.BLUE is displayed
+    // Modify the dependency file to change BLUE to GREEN
+    // Also update the main file to use GREEN instead of BLUE
+    // Verify the change is reflected - GREEN should now be displayed
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      try {
         // Verify initial state - Car.BLUE is displayed
+        assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
+
         // Modify the dependency file to change BLUE to GREEN
+        final String originalCarContent = Files.readString(carFile);
+        final String modifiedCarContent = originalCarContent.replace("BLUE", "GREEN");
+        Files.writeString(carFile, modifiedCarContent);
+
         // Also update the main file to use GREEN instead of BLUE
+        final String originalMainContent = Files.readString(mainFile);
+        final String modifiedMainContent = originalMainContent.replace("Car.BLUE", "Car.GREEN");
+        Files.writeString(mainFile, modifiedMainContent);
+
         // Verify the change is reflected - GREEN should now be displayed
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            try {
-                // Verify initial state - Car.BLUE is displayed
-                assertThat(page.getByText("BLUE")).isVisible(WAIT_1_SEC_MAX);
-
-                // Modify the dependency file to change BLUE to GREEN
-                final String originalCarContent = Files.readString(carFile);
-                final String modifiedCarContent = originalCarContent.replace("BLUE", "GREEN");
-                Files.writeString(carFile, modifiedCarContent);
-
-                // Also update the main file to use GREEN instead of BLUE
-                final String originalMainContent = Files.readString(mainFile);
-                final String modifiedMainContent = originalMainContent.replace("Car.BLUE", "Car.GREEN");
-                Files.writeString(mainFile, modifiedMainContent);
-
-                // Verify the change is reflected - GREEN should now be displayed
-                assertThat(page.getByText("GREEN")).isVisible(WAIT_1_SEC_MAX);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+        assertThat(page.getByText("GREEN")).isVisible(WAIT_1_SEC_MAX);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
 
 }

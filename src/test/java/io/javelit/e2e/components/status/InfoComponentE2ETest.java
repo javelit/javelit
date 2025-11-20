@@ -26,15 +26,15 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 public class InfoComponentE2ETest {
 
-    @Test
-    void testInfoDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.info("This is an informational message").use();
-        };
+  @Test
+  void testInfoDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.info("This is an informational message").use();
+    };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("This is an informational message")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("This is an informational message")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

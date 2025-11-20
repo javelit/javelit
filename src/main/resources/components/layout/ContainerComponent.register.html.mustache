@@ -15,7 +15,7 @@
 }}
 <script type="module">
     import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
-    
+
     class JtContainer extends LitElement {
         static styles = css`
             :host {
@@ -44,12 +44,12 @@
                 padding: var(--jt-spacing-md);
             }
         `;
-        
+
         static properties = {
             height: {type: Number},
             border: {type: Boolean, reflect: true}
         };
-        
+
         updated(changedProperties) {
             if (changedProperties.has('height')) {
                 if (this.height) {
@@ -59,7 +59,7 @@
                 }
             }
         }
-        
+
         render() {
             return html`
                 <div class="container">
@@ -68,6 +68,6 @@
             `;
         }
     }
-    
+
     customElements.define('jt-container', JtContainer);
 </script>

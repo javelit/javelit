@@ -17,7 +17,7 @@ package io.javelit.core;
 
 public class PageRunException extends RuntimeException {
 
-    public PageRunException(final Exception e) {
-        super(e.getMessage(), e.getCause());
-    }
+  public PageRunException(final Exception e) {
+    super(e.getMessage(), e.getCause());
+  }
 }

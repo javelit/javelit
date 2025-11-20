@@ -30,48 +30,48 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public final class OsUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
 
-    public enum OS {
-        WINDOWS("Control"),
-        LINUX("Control"),
-        MAC("Meta");
+  public enum OS {
+    WINDOWS("Control"),
+    LINUX("Control"),
+    MAC("Meta");
 
-        public final String modifier;
+    public final String modifier;
 
-        OS(final String modifier) {
-            this.modifier = modifier;
-        }
+    OS(final String modifier) {
+      this.modifier = modifier;
     }
+  }
 
-    public static OS getOS() {
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        if (os.contains("mac")) {
-            return OS.MAC;
-        } else if (os.contains("win")) {
-            return OS.WINDOWS;
-        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-            return OS.LINUX;
-        }
-        LOGGER.warn("Unrecognized OS: {}", os);
-        return OS.LINUX;
+  public static OS getOS() {
+    String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+    if (os.contains("mac")) {
+      return OS.MAC;
+    } else if (os.contains("win")) {
+      return OS.WINDOWS;
+    } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+      return OS.LINUX;
     }
+    LOGGER.warn("Unrecognized OS: {}", os);
+    return OS.LINUX;
+  }
 
-    private OsUtils() {
+  private OsUtils() {
+  }
+
+
+  /**
+   * Copy resource directory to target path.
+   */
+  public static void copyResourceDirectory(final String resourcePath, final Path target) throws IOException {
+    try {
+      final URL resource = OsUtils.class.getClassLoader().getResource(resourcePath);
+      checkArgument(resource != null, "Resource not found: " + resourcePath);
+      final File resourceDir = new File(resource.toURI());
+      FileUtils.copyDirectory(resourceDir, target.toFile());
+    } catch (URISyntaxException e) {
+      throw new IOException("Failed to copy resource directory: " + resourcePath, e);
     }
-
-
-    /**
-     * Copy resource directory to target path.
-     */
-    public static void copyResourceDirectory(final String resourcePath, final Path target) throws IOException {
-        try {
-            final URL resource = OsUtils.class.getClassLoader().getResource(resourcePath);
-            checkArgument(resource != null, "Resource not found: " + resourcePath);
-            final File resourceDir = new File(resource.toURI());
-            FileUtils.copyDirectory(resourceDir, target.toFile());
-        } catch (URISyntaxException e) {
-            throw new IOException("Failed to copy resource directory: " + resourcePath, e);
-        }
-    }
+  }
 }

@@ -36,165 +36,167 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public class TableComponent extends JtComponent<JtComponent.NONE> {
 
-    private static final Mustache registerTemplate;
-    private static final Mustache renderTemplate;
+  private static final Mustache registerTemplate;
+  private static final Mustache renderTemplate;
 
-    static {
-        final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/data/TableComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/data/TableComponent.render.html.mustache");
+  static {
+    final MustacheFactory mf = new DefaultMustacheFactory();
+    registerTemplate = mf.compile("components/data/TableComponent.register.html.mustache");
+    renderTemplate = mf.compile("components/data/TableComponent.render.html.mustache");
+  }
+
+  final @Nonnull List<String> columns;
+  final @Nonnull String[][] values;
+
+  private TableComponent(final @Nonnull Builder builder) {
+    super(builder, NONE.NONE_VALUE, null);
+    this.columns = builder.columns;
+    this.values = builder.values;
+  }
+
+  public static class Builder extends JtComponentBuilder<JtComponent.NONE, TableComponent, Builder> {
+
+    final Map<String, List<Object>> col2ListData;
+    final Map<String, Object[]> col2ArrayData;
+    final List<Object> listOfObjs;
+    final Object[] arrayOfObjs;
+
+    List<String> columns = null;
+    String[][] values = null;
+
+    private Builder(final @jakarta.annotation.Nullable Map<String, List<Object>> col2ListData,
+                    final @jakarta.annotation.Nullable Map<String, Object[]> col2ArrayData,
+                    final @jakarta.annotation.Nullable List<Object> objsList,
+                    final @jakarta.annotation.Nullable Object[] objsArray) {
+      this.col2ListData = col2ListData;
+      this.col2ArrayData = col2ArrayData;
+      this.listOfObjs = objsList;
+      this.arrayOfObjs = objsArray;
     }
 
-    final @Nonnull List<String> columns;
-    final @Nonnull String[][] values;
-
-    private TableComponent(final @Nonnull Builder builder) {
-        super(builder, NONE.NONE_VALUE, null);
-        this.columns = builder.columns;
-        this.values = builder.values;
+    /**
+     * Creates a table from a map where each key is a column name and each value is a list of column data.
+     * All columns must have the same number of elements.
+     */
+    @SuppressWarnings("unchecked")
+    public static <Values extends @NotNull List<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
+      return new Builder((Map<String, List<Object>>) col2List, null, null, null);
     }
 
-    public static class Builder extends JtComponentBuilder<JtComponent.NONE, TableComponent, Builder> {
+    /**
+     * Creates a table from a map where each key is a column name and each value is an array of column data.
+     * All columns must have the same number of elements.
+     */
+    public static Builder ofColumnsArrays(@Nonnull Map<@NotNull String, @NotNull Object[]> col2Array) {
+      return new Builder(null, col2Array, null, null);
+    }
 
-        final Map<String, List<Object>> col2ListData;
-        final Map<String, Object[]> col2ArrayData;
-        final List<Object> listOfObjs;
-        final Object[] arrayOfObjs;
+    /**
+     * Creates a table from a list of objects, where each object represents a row and object properties become columns.
+     * Objects are serialized to extract their fields as table columns.
+     */
+    public static Builder ofObjsList(@Nonnull List<Object> objsList) {
+      return new Builder(null, null, objsList, null);
+    }
 
-        List<String> columns = null;
-        String[][] values = null;
-
-        private Builder(final @jakarta.annotation.Nullable Map<String, List<Object>> col2ListData,
-                        final @jakarta.annotation.Nullable Map<String, Object[]> col2ArrayData,
-                        final @jakarta.annotation.Nullable List<Object> objsList,
-                        final @jakarta.annotation.Nullable Object[] objsArray) {
-            this.col2ListData = col2ListData;
-            this.col2ArrayData = col2ArrayData;
-            this.listOfObjs = objsList;
-            this.arrayOfObjs = objsArray;
-        }
-
-        /**
-         * Creates a table from a map where each key is a column name and each value is a list of column data.
-         * All columns must have the same number of elements.
-         */
-        @SuppressWarnings("unchecked")
-        public static <Values extends @NotNull List<@Nullable Object>> Builder ofColumnsLists(@Nonnull Map<@NotNull String, Values> col2List) {
-            return new Builder((Map<String, List<Object>>) col2List, null, null, null);
-        }
-
-        /**
-         * Creates a table from a map where each key is a column name and each value is an array of column data.
-         * All columns must have the same number of elements.
-         */
-        public static Builder ofColumnsArrays(@Nonnull Map<@NotNull String, @NotNull Object[]> col2Array) {
-            return new Builder(null, col2Array, null, null);
-        }
-
-        /**
-         * Creates a table from a list of objects, where each object represents a row and object properties become columns.
-         * Objects are serialized to extract their fields as table columns.
-         */
-        public static Builder ofObjsList(@Nonnull List<Object> objsList) {
-            return new Builder(null, null, objsList, null);
-        }
-
-        /**
-         * Creates a table from an array of objects, where each object represents a row and object properties become columns.
-         * Objects are serialized to extract their fields as table columns.
-         */
-        public static Builder ofObjsArray(@Nonnull Object[] objsArray) {
-            return new Builder(null, null, null, objsArray);
-        }
-
-        @Override
-        public TableComponent build() {
-            Map<String, Object[]> colName2Column;
-            if (col2ListData != null) {
-                // use of LinkedHashMap to respect order if the user passed an ordered map
-                colName2Column = new LinkedHashMap<>();
-                for (final Map.Entry<String, List<Object>> entry : col2ListData.entrySet()) {
-                    colName2Column.put(entry.getKey(), entry.getValue().toArray());
-                }
-            } else {
-                colName2Column = col2ArrayData;
-            }
-            if (colName2Column != null) {
-                this.columns = new ArrayList<>(colName2Column.keySet());
-                if (!this.columns.isEmpty()) {
-                    // will ensure all columns have the same size
-                    final int valueCount = colName2Column.get(columns.getFirst()).length;
-                    this.columns.forEach(colName -> {
-                        final int colLength = colName2Column.get(colName).length;
-                        checkArgument(colLength == valueCount,
-                                      "Columns must have the same size. %s has size %s, %s has size %s.",
-                                      columns.getFirst(),
-                                      valueCount,
-                                      colName,
-                                      colLength);
-                    });
-
-                    this.values = new String[valueCount][];
-                    for (int i = 0; i < valueCount; i++) {
-                        final int idx = i;
-                        this.values[i] = columns
-                                .stream()
-                                .map(colName2Column::get)
-                                .map(e -> e[idx])
-                                .map(v -> v == null ? null : String.valueOf(v))
-                                .toArray(String[]::new);
-                    }
-                } else {
-                    this.values = new String[0][0];
-                }
-            } else if (arrayOfObjs != null || listOfObjs != null) {
-                final Object itertableOfObject = arrayOfObjs != null ? arrayOfObjs : listOfObjs;
-                final List<Map<String, Object>> l = Shared.OBJECT_MAPPER.convertValue(itertableOfObject,
-                                                                                      new TypeReference<>() {
-                                                                                      });
-                this.columns = l.stream().flatMap(m -> m.keySet().stream()).distinct().toList();
-                this.values = l
-                        .stream()
-                        .map(m -> columns
-                                .stream()
-                                .map(m::get)
-                                .map(v -> v == null ? null : String.valueOf(v))
-                                .toArray(String[]::new))
-                        .toArray(String[][]::new);
-            }
-            return new TableComponent(this);
-        }
+    /**
+     * Creates a table from an array of objects, where each object represents a row and object properties become columns.
+     * Objects are serialized to extract their fields as table columns.
+     */
+    public static Builder ofObjsArray(@Nonnull Object[] objsArray) {
+      return new Builder(null, null, null, objsArray);
     }
 
     @Override
-    protected String register() {
-        final StringWriter writer = new StringWriter();
-        registerTemplate.execute(writer, this);
-        return writer.toString();
-    }
+    public TableComponent build() {
+      Map<String, Object[]> colName2Column;
+      if (col2ListData != null) {
+        // use of LinkedHashMap to respect order if the user passed an ordered map
+        colName2Column = new LinkedHashMap<>();
+        for (final Map.Entry<String, List<Object>> entry : col2ListData.entrySet()) {
+          colName2Column.put(entry.getKey(), entry.getValue().toArray());
+        }
+      } else {
+        colName2Column = col2ArrayData;
+      }
+      if (colName2Column != null) {
+        this.columns = new ArrayList<>(colName2Column.keySet());
+        if (!this.columns.isEmpty()) {
+          // will ensure all columns have the same size
+          final int valueCount = colName2Column.get(columns.getFirst()).length;
+          this.columns.forEach(colName -> {
+            final int colLength = colName2Column.get(colName).length;
+            checkArgument(colLength == valueCount,
+                          "Columns must have the same size. %s has size %s, %s has size %s.",
+                          columns.getFirst(),
+                          valueCount,
+                          colName,
+                          colLength);
+          });
 
-    @Override
-    protected String render() {
-        final StringWriter writer = new StringWriter();
-        renderTemplate.execute(writer, this);
-        return writer.toString();
+          this.values = new String[valueCount][];
+          for (int i = 0; i < valueCount; i++) {
+            final int idx = i;
+            this.values[i] = columns
+                .stream()
+                .map(colName2Column::get)
+                .map(e -> e[idx])
+                .map(v -> v == null ? null : String.valueOf(v))
+                .toArray(String[]::new);
+          }
+        } else {
+          this.values = new String[0][0];
+        }
+      } else if (arrayOfObjs != null || listOfObjs != null) {
+        final Object itertableOfObject = arrayOfObjs != null ? arrayOfObjs : listOfObjs;
+        final List<Map<String, Object>> l = Shared.OBJECT_MAPPER.convertValue(itertableOfObject,
+                                                                              new TypeReference<>() {
+                                                                              });
+        this.columns = l.stream().flatMap(m -> m.keySet().stream()).distinct().toList();
+        this.values = l
+            .stream()
+            .map(m -> columns
+                .stream()
+                .map(m::get)
+                .map(v -> v == null ? null : String.valueOf(v))
+                .toArray(String[]::new))
+            .toArray(String[][]::new);
+      }
+      return new TableComponent(this);
     }
+  }
 
-    @Override
-    protected TypeReference<NONE> getTypeReference() {
-        return new TypeReference<>() {
-        };
-    }
+  @Override
+  protected String register() {
+    final StringWriter writer = new StringWriter();
+    registerTemplate.execute(writer, this);
+    return writer.toString();
+  }
+
+  @Override
+  protected String render() {
+    final StringWriter writer = new StringWriter();
+    renderTemplate.execute(writer, this);
+    return writer.toString();
+  }
+
+  @Override
+  protected TypeReference<NONE> getTypeReference() {
+    return new TypeReference<>() {
+    };
+  }
 
 
-    @SuppressWarnings("unused")     // used in templates
-    String getColumnsJson() {
-        return toJson(columns);
-    }
+  @SuppressWarnings("unused")
+    // used in templates
+  String getColumnsJson() {
+    return toJson(columns);
+  }
 
-    @SuppressWarnings("unused")     // used in templates
-    String getValuesJson() {
-        return toJson(values);
-    }
+  @SuppressWarnings("unused")
+    // used in templates
+  String getValuesJson() {
+    return toJson(values);
+  }
 
 }

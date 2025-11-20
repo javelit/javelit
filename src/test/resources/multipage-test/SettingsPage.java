@@ -17,11 +17,11 @@
 import io.javelit.core.Jt;
 
 public class SettingsPage {
-    public static void app() {
-        Jt.title("Settings Page").use();
-        Jt.text("Configure your settings here").use();
-    }
+  public static void app() {
+    Jt.title("Settings Page").use();
+    Jt.text("Configure your settings here").use();
+  }
 
-    private SettingsPage() {
-    }
+  private SettingsPage() {
+  }
 }

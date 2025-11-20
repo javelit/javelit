@@ -14,10 +14,10 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-class JtToolbarMenu extends LitElement {
-    static styles = css`
+    class JtToolbarMenu extends LitElement {
+        static styles = css`
         :host {
             display: inline-block;
             position: relative;
@@ -132,102 +132,102 @@ class JtToolbarMenu extends LitElement {
         }
     `;
 
-    static properties = {
-        showMenu: { type: Boolean, state: true },
-        isDevMode: { type: Boolean, state: true }
-    };
+        static properties = {
+            showMenu: {type: Boolean, state: true},
+            isDevMode: {type: Boolean, state: true}
+        };
 
-    constructor() {
-        super();
-        this.showMenu = false;
-        this.isDevMode = false;
-        this.handleOutsideClick = this.handleOutsideClick.bind(this);
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        document.addEventListener('click', this.handleOutsideClick);
-        // Check if running on localhost
-        this.isDevMode = window.javelit && window.javelit.isDevMode;
-    }
-
-    disconnectedCallback() {
-        super.disconnectedCallback();
-        document.removeEventListener('click', this.handleOutsideClick);
-    }
-
-    handleOutsideClick(e) {
-        if (!this.contains(e.target)) {
+        constructor() {
+            super();
             this.showMenu = false;
+            this.isDevMode = false;
+            this.handleOutsideClick = this.handleOutsideClick.bind(this);
         }
-    }
 
-    toggleMenu(e) {
-        e.stopPropagation();
-        this.showMenu = !this.showMenu;
-    }
-
-    handleMenuItemClick(action, e) {
-        e.stopPropagation();
-        this.showMenu = false;
-        
-        switch(action) {
-            case 'rerun':
-                // Send reload message to backend
-                if (window.javelit && window.javelit.sendMessage) {
-                    window.javelit.sendMessage({ type: 'reload' });
-                }
-                break;
-            case 'copy-embed':
-                // Copy embed code to clipboard
-                this.handleCopyEmbed();
-                break;
-            case 'settings':
-                // Open settings modal
-                const settingsModal = document.getElementById('settings-modal');
-                if (settingsModal) {
-                    settingsModal.show = true;
-                }
-                break;
-            case 'clear-cache':
-                // Send clear cache message to backend (only works on localhost)
-                if (window.javelit && window.javelit.sendMessage) {
-                    window.javelit.sendMessage({ type: 'clear_cache' });
-                }
-                break;
+        connectedCallback() {
+            super.connectedCallback();
+            document.addEventListener('click', this.handleOutsideClick);
+            // Check if running on localhost
+            this.isDevMode = window.javelit && window.javelit.isDevMode;
         }
-    }
 
-    handleCopyEmbed() {
-        // Get current URL with ?embed=true
-        const embedUrl = window.location.origin + window.location.pathname + '?embed=true';
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            document.removeEventListener('click', this.handleOutsideClick);
+        }
 
-        // Generate iframe HTML matching the oEmbed format
-        const iframeCode = `<iframe src="${embedUrl}" allow="camera;microphone;clipboard-read;clipboard-write;" style="width:100%;height:600px;border:0;" loading="lazy"></iframe>`;
+        handleOutsideClick(e) {
+            if (!this.contains(e.target)) {
+                this.showMenu = false;
+            }
+        }
 
-        // Copy to clipboard
-        navigator.clipboard.writeText(iframeCode).then(() => {
-            // Show success toast notification
-            const toast = document.createElement('jt-internal-toast');
-            toast.body = 'Embed code copied to clipboard';
-            toast.icon = ':content_copy:';
-            toast.duration = 2;
-            toast.position = 'top';
-            document.body.appendChild(toast);
-        }).catch(err => {
-            console.error('Failed to copy embed code:', err);
-            // Show error toast notification
-            const toast = document.createElement('jt-internal-toast');
-            toast.body = 'Failed to copy embed code to clipboard';
-            toast.icon = ':error:';
-            toast.duration = 5;
-            toast.position = 'top';
-            document.body.appendChild(toast);
-        });
-    }
+        toggleMenu(e) {
+            e.stopPropagation();
+            this.showMenu = !this.showMenu;
+        }
 
-    render() {
-        return html`
+        handleMenuItemClick(action, e) {
+            e.stopPropagation();
+            this.showMenu = false;
+
+            switch (action) {
+                case 'rerun':
+                    // Send reload message to backend
+                    if (window.javelit && window.javelit.sendMessage) {
+                        window.javelit.sendMessage({type: 'reload'});
+                    }
+                    break;
+                case 'copy-embed':
+                    // Copy embed code to clipboard
+                    this.handleCopyEmbed();
+                    break;
+                case 'settings':
+                    // Open settings modal
+                    const settingsModal = document.getElementById('settings-modal');
+                    if (settingsModal) {
+                        settingsModal.show = true;
+                    }
+                    break;
+                case 'clear-cache':
+                    // Send clear cache message to backend (only works on localhost)
+                    if (window.javelit && window.javelit.sendMessage) {
+                        window.javelit.sendMessage({type: 'clear_cache'});
+                    }
+                    break;
+            }
+        }
+
+        handleCopyEmbed() {
+            // Get current URL with ?embed=true
+            const embedUrl = window.location.origin + window.location.pathname + '?embed=true';
+
+            // Generate iframe HTML matching the oEmbed format
+            const iframeCode = `<iframe src="${embedUrl}" allow="camera;microphone;clipboard-read;clipboard-write;" style="width:100%;height:600px;border:0;" loading="lazy"></iframe>`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(iframeCode).then(() => {
+                // Show success toast notification
+                const toast = document.createElement('jt-internal-toast');
+                toast.body = 'Embed code copied to clipboard';
+                toast.icon = ':content_copy:';
+                toast.duration = 2;
+                toast.position = 'top';
+                document.body.appendChild(toast);
+            }).catch(err => {
+                console.error('Failed to copy embed code:', err);
+                // Show error toast notification
+                const toast = document.createElement('jt-internal-toast');
+                toast.body = 'Failed to copy embed code to clipboard';
+                toast.icon = ':error:';
+                toast.duration = 5;
+                toast.position = 'top';
+                document.body.appendChild(toast);
+            });
+        }
+
+        render() {
+            return html`
             <button 
                 class="menu-button" 
                 @click="${this.toggleMenu}"
@@ -275,8 +275,8 @@ class JtToolbarMenu extends LitElement {
                 ` : ''}
             </div>
         `;
+        }
     }
-}
 
-customElements.define('jt-toolbar-menu', JtToolbarMenu);
+    customElements.define('jt-toolbar-menu', JtToolbarMenu);
 </script>

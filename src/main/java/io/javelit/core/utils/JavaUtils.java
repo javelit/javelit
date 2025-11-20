@@ -24,55 +24,55 @@ import jakarta.annotation.Nullable;
 
 public final class JavaUtils {
 
-    /**
-     * same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Javelit removed
-     */
-    public static @Nonnull String stackTraceString(final @Nonnull Throwable throwable) {
-        return stackTraceString(throwable, "jdk.internal.reflect.DirectMethodHandleAccessor");
+  /**
+   * same as getting the String of a stack trace, but with every calls in the stack that belong to the internals of Javelit removed
+   */
+  public static @Nonnull String stackTraceString(final @Nonnull Throwable throwable) {
+    return stackTraceString(throwable, "jdk.internal.reflect.DirectMethodHandleAccessor");
+  }
+
+  /**
+   * return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
+   */
+  private static @Nonnull String stackTraceString(final @Nonnull Throwable t, final @Nonnull String filterPrefix) {
+    filterInPlace(t, filterPrefix);
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    t.printStackTrace(pw);
+    return sw.toString();
+  }
+
+  private static void filterInPlace(final @Nullable Throwable t, final @Nonnull String filterPrefix) {
+    if (t == null) {
+      return;
     }
 
-    /**
-     * return the stack trace string of the Throwable, with every calls in the stack encountered from filterPrefix removed
-     */
-    private static @Nonnull String stackTraceString(final @Nonnull Throwable t, final @Nonnull String filterPrefix) {
-        filterInPlace(t, filterPrefix);
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        return sw.toString();
+    StackTraceElement[] stack = t.getStackTrace();
+
+    // Find the first match
+    int cutoffIndex = -1;
+    for (int i = 0; i < stack.length; i++) {
+      if (stack[i].getClassName().startsWith(filterPrefix)) {
+        cutoffIndex = i;
+        break;
+      }
     }
 
-    private static void filterInPlace(final @Nullable Throwable t, final @Nonnull String filterPrefix) {
-        if (t == null) {
-            return;
-        }
-
-        StackTraceElement[] stack = t.getStackTrace();
-
-        // Find the first match
-        int cutoffIndex = -1;
-        for (int i = 0; i < stack.length; i++) {
-            if (stack[i].getClassName().startsWith(filterPrefix)) {
-                cutoffIndex = i;
-                break;
-            }
-        }
-
-        // If found, cut the stack there
-        if (cutoffIndex != -1) {
-            stack = Arrays.copyOf(stack, cutoffIndex);
-        }
-
-        t.setStackTrace(stack);
-
-        // Recurse into causes & suppressed exceptions
-        filterInPlace(t.getCause(), filterPrefix);
-        for (Throwable suppressed : t.getSuppressed()) {
-            filterInPlace(suppressed, filterPrefix);
-        }
+    // If found, cut the stack there
+    if (cutoffIndex != -1) {
+      stack = Arrays.copyOf(stack, cutoffIndex);
     }
 
-    private JavaUtils() {
+    t.setStackTrace(stack);
+
+    // Recurse into causes & suppressed exceptions
+    filterInPlace(t.getCause(), filterPrefix);
+    for (Throwable suppressed : t.getSuppressed()) {
+      filterInPlace(suppressed, filterPrefix);
     }
+  }
+
+  private JavaUtils() {
+  }
 
 }

@@ -15,7 +15,7 @@
 }}
 <script type="module">
     import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
-    
+
     class JtTabs extends LitElement {
         static styles = css`
             {{{ MARKDOWN_CSS }}}
@@ -105,25 +105,25 @@
                 display: block;
             }
         `;
-        
+
         static properties = {
             tabs: {type: Array},
             width: {type: String},
             activeTab: {type: Number, state: true}
         };
-        
+
         constructor() {
             super();
             this.tabs = [];
             this.width = 'stretch';
             this.activeTab = 0;
         }
-        
+
         firstUpdated() {
             // Set up the indicator position for the first tab
             this.updateIndicator();
         }
-        
+
         updated(changedProperties) {
             // Update width CSS variable if needed
             if (changedProperties.has('width')) {
@@ -133,51 +133,51 @@
                     this.style.removeProperty('--tabs-width');
                 }
             }
-            
+
             // Update indicator when active tab changes
             if (changedProperties.has('activeTab')) {
                 this.updateIndicator();
                 this.updateSlotVisibility();
             }
         }
-        
+
         formatText(label) {
             if (!label) return '';
-            
+
             // Markdown formatting similar to slider
             return label
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
         }
-        
+
         handleTabClick(index) {
             this.activeTab = index;
         }
-        
+
         updateIndicator() {
             const tabButtons = this.shadowRoot.querySelectorAll('.tab');
             if (tabButtons.length === 0) return;
-            
+
             const activeButton = tabButtons[this.activeTab];
             if (!activeButton) return;
-            
+
             const indicator = this.shadowRoot.querySelector('.tab-indicator');
             if (!indicator) return;
-            
+
             const containerRect = this.shadowRoot.querySelector('.tabs-header').getBoundingClientRect();
             const buttonRect = activeButton.getBoundingClientRect();
-            
+
             const left = buttonRect.left - containerRect.left;
             const width = buttonRect.width;
-            
+
             indicator.style.transform = `translateX(${left}px)`;
             indicator.style.width = `${width}px`;
         }
-        
+
         updateSlotVisibility() {
             // Hide all slots first
             const slots = this.querySelectorAll('[slot^="tab_"]');
@@ -189,7 +189,7 @@
                 }
             });
         }
-        
+
         render() {
             return html`
                 <div class="tabs-container">
@@ -214,6 +214,6 @@
             `;
         }
     }
-    
+
     customElements.define('jt-tabs', JtTabs);
 </script>

@@ -15,7 +15,7 @@
 }}
 <script type="module">
     import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
-    
+
     class JtExpander extends LitElement {
         static styles = css`
             {{{ MARKDOWN_CSS }}}
@@ -93,13 +93,13 @@
                 display: block;
             }
         `;
-        
+
         static properties = {
             label: {type: String},
             expanded: {type: Boolean, reflect: true},
             width: {type: String}
         };
-        
+
         constructor() {
             super();
             this.label = '';
@@ -109,17 +109,17 @@
             this.isClosing = false;
             this.isExpanding = false;
         }
-        
+
         firstUpdated() {
             super.firstUpdated();
-            
+
             // Set initial state without animation
-            const details = this.shadowRoot.querySelector('details'); 
+            const details = this.shadowRoot.querySelector('details');
             if (details) {
                 details.open = this.expanded;
             }
         }
-        
+
         updated(changedProperties) {
             // Update width CSS variable if needed
             if (changedProperties.has('width')) {
@@ -129,7 +129,7 @@
                     this.style.removeProperty('--expander-width');
                 }
             }
-            
+
             // Handle programmatic changes to expanded property
             if (changedProperties.has('expanded') && !this.isExpanding && !this.isClosing) {
                 const details = this.shadowRoot.querySelector('details');
@@ -142,83 +142,83 @@
                 }
             }
         }
-        
+
         formatText(label) {
             if (!label) return '';
-            
+
             // Markdown formatting
             return label
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                .replace(/~~(.*?)~~/g, '<del>$1</del>');
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
+                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
         }
-        
+
         handleClick(e) {
             e.preventDefault();
             const details = this.shadowRoot.querySelector('details');
-            
+
             if (this.isClosing || !details.open) {
                 this.open(details);
             } else if (this.isExpanding || details.open) {
                 this.shrink(details);
             }
         }
-        
+
         shrink(details) {
             this.isClosing = true;
-            
+
             const startHeight = `${details.offsetHeight}px`;
             const summary = details.querySelector('summary');
             const endHeight = `${summary.offsetHeight}px`;
-            
+
             if (this.animation) {
                 this.animation.cancel();
             }
-            
+
             this.animation = details.animate({
                 height: [startHeight, endHeight]
             }, {
                 duration: 400,
                 easing: 'ease-out'
             });
-            
+
             this.animation.onfinish = () => this.onAnimationFinish(details, false);
             this.animation.oncancel = () => this.isClosing = false;
         }
-        
+
         open(details) {
             this.isExpanding = true;
-            
+
             const summary = details.querySelector('summary');
             const startHeight = `${details.offsetHeight}px`;
-            
+
             // Temporarily open to measure full height
             details.open = true;
             const endHeight = `${details.offsetHeight}px`;
             details.open = false;
-            
+
             // Set starting height and open
             details.style.height = startHeight;
             details.open = true;
-            
+
             if (this.animation) {
                 this.animation.cancel();
             }
-            
+
             this.animation = details.animate({
                 height: [startHeight, endHeight]
             }, {
                 duration: 400,
                 easing: 'ease-out'
             });
-            
+
             this.animation.onfinish = () => this.onAnimationFinish(details, true);
             this.animation.oncancel = () => this.isExpanding = false;
         }
-        
+
         onAnimationFinish(details, open) {
             details.open = open;
             this.animation = null;
@@ -228,7 +228,7 @@
             details.style.overflow = '';
             this.expanded = open;
         }
-        
+
         render() {
             return html`
                 <details ?open="${this.expanded}">
@@ -243,6 +243,6 @@
             `;
         }
     }
-    
+
     customElements.define('jt-expander', JtExpander);
 </script>

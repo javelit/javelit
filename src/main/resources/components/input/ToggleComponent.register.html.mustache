@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtToggle extends LitElement {
         static styles = css`
@@ -149,13 +149,13 @@
         `;
 
         static properties = {
-            label: { type: String },
-            help: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' },
-            checked: { type: Boolean, reflect: true }
+            label: {type: String},
+            help: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'},
+            checked: {type: Boolean, reflect: true}
         };
 
         constructor() {
@@ -196,7 +196,7 @@
             }
 
             this.checked = e.target.checked;
-            
+
             // Emit toggle change
             window.javelit.sendComponentUpdate(this.componentKey, this.checked);
         }

@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
     class JtAudio extends LitElement {
         static styles = css`
@@ -38,13 +38,13 @@
         `;
 
         static properties = {
-            url: { type: String },
-            format: { type: String },
-            startTimeMillis: { type: Number, attribute: 'start-time-millis' },
-            endTimeMillis: { type: Number, attribute: 'end-time-millis' },
-            loop: { type: Boolean },
-            autoplay: { type: Boolean },
-            width: { type: String, reflect: true }
+            url: {type: String},
+            format: {type: String},
+            startTimeMillis: {type: Number, attribute: 'start-time-millis'},
+            endTimeMillis: {type: Number, attribute: 'end-time-millis'},
+            loop: {type: Boolean},
+            autoplay: {type: Boolean},
+            width: {type: String, reflect: true}
         };
 
         constructor() {
@@ -110,15 +110,15 @@
             return html`
                 <div class="audio-container">
                     <audio
-                        controls
-                        ?loop="${this.loop && !hasTimeConstraints}"
-                        ?autoplay="${this.autoplay}"
-                        preload="metadata"
-                        @loadedmetadata="${this.handleLoadedMetadata}"
-                        @play="${this.handlePlay}"
-                        @timeupdate="${this.handleTimeUpdate}"
+                            controls
+                            ?loop="${this.loop && !hasTimeConstraints}"
+                            ?autoplay="${this.autoplay}"
+                            preload="metadata"
+                            @loadedmetadata="${this.handleLoadedMetadata}"
+                            @play="${this.handlePlay}"
+                            @timeupdate="${this.handleTimeUpdate}"
                     >
-                        <source src="${this.fullUrl}" type="${this.format}" />
+                        <source src="${this.fullUrl}" type="${this.format}"/>
                         Your browser does not support the audio element.
                     </audio>
                 </div>

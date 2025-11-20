@@ -19,18 +19,18 @@ import jakarta.annotation.Nonnull;
 
 public class EmbedUtils {
 
-    // Build iframe HTML with embed=true parameter
-    public static String iframeHtml(final @Nonnull String url, final int height) {
-        final String embedUrl = url + (url.contains("?") ? "&" : "?") + "embed=true";
-        return """
-                <style>@keyframes iframe-pulse{0%%,100%%{background-color:#f5f5f5}50%%{background-color:#e0e0e0}}</style>
-                <iframe src='%s' allow='camera;microphone;clipboard-read;clipboard-write;'
-                style='background-color:#f5f5f5;animation:iframe-pulse 1.5s ease-in-out infinite;width:100%%;height:%spx;border:0;'
-                loading="lazy"></iframe>
-                """.formatted(embedUrl.replace("'", "\\'"),
-                              height);
-    }
+  // Build iframe HTML with embed=true parameter
+  public static String iframeHtml(final @Nonnull String url, final int height) {
+    final String embedUrl = url + (url.contains("?") ? "&" : "?") + "embed=true";
+    return """
+        <style>@keyframes iframe-pulse{0%%,100%%{background-color:#f5f5f5}50%%{background-color:#e0e0e0}}</style>
+        <iframe src='%s' allow='camera;microphone;clipboard-read;clipboard-write;'
+        style='background-color:#f5f5f5;animation:iframe-pulse 1.5s ease-in-out infinite;width:100%%;height:%spx;border:0;'
+        loading="lazy"></iframe>
+        """.formatted(embedUrl.replace("'", "\\'"),
+                      height);
+  }
 
-    private EmbedUtils() {
-    }
+  private EmbedUtils() {
+  }
 }

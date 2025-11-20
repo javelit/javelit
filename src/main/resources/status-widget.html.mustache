@@ -14,10 +14,10 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-class JtStatusWidget extends LitElement {
-    static styles = css`
+    class JtStatusWidget extends LitElement {
+        static styles = css`
         :host {
             display: none;
         }
@@ -54,47 +54,47 @@ class JtStatusWidget extends LitElement {
         }
     `;
 
-    static properties = {
-        status: { type: String },
-        show: { type: Boolean, reflect: true }
-    };
+        static properties = {
+            status: {type: String},
+            show: {type: Boolean, reflect: true}
+        };
 
-    constructor() {
-        super();
-        this.status = 'IDLE';
-        this.show = false;
-    }
-
-    updateStatus(newStatus) {
-        this.status = newStatus;
-        // Show widget for BEGIN and RUNNING states
-        this.show = (newStatus === 'BEGIN' || newStatus === 'RUNNING');
-    }
-
-    getStatusText() {
-        switch(this.status) {
-            case 'BEGIN':
-                return 'Running...';
-            case 'RUNNING':
-                return 'Running';
-            default:
-                return '';
-        }
-    }
-
-    render() {
-        if (!this.show) {
-            return html``;
+        constructor() {
+            super();
+            this.status = 'IDLE';
+            this.show = false;
         }
 
-        return html`
+        updateStatus(newStatus) {
+            this.status = newStatus;
+            // Show widget for BEGIN and RUNNING states
+            this.show = (newStatus === 'BEGIN' || newStatus === 'RUNNING');
+        }
+
+        getStatusText() {
+            switch (this.status) {
+                case 'BEGIN':
+                    return 'Running...';
+                case 'RUNNING':
+                    return 'Running';
+                default:
+                    return '';
+            }
+        }
+
+        render() {
+            if (!this.show) {
+                return html``;
+            }
+
+            return html`
             <div class="status-container">
                 <div class="status-spinner"></div>
                 <span class="status-text">${this.getStatusText()}</span>
             </div>
         `;
+        }
     }
-}
 
-customElements.define('jt-status-widget', JtStatusWidget);
+    customElements.define('jt-status-widget', JtStatusWidget);
 </script>

@@ -24,31 +24,31 @@ import com.github.mustachejava.MustacheFactory;
 
 public class Nb {
 
-    private static final Mustache initTemplate;
+  private static final Mustache initTemplate;
 
-    static {
-        final MustacheFactory mf = new DefaultMustacheFactory();
-        initTemplate = mf.compile("nb.html.mustache");
-    }
+  static {
+    final MustacheFactory mf = new DefaultMustacheFactory();
+    initTemplate = mf.compile("nb.html.mustache");
+  }
 
-    public static String getInitHtml() {
-        final StringWriter writer = new StringWriter();
-        initTemplate.execute(writer, Map.of("MATERIAL_SYMBOLS_CDN",
-                                            JtComponent.MATERIAL_SYMBOLS_CDN,
-                                            "LIT_DEPENDENCY",
-                                            JtComponent.LIT_DEPENDENCY,
-                                            "PRISM_SETUP_SNIPPET",
-                                            JtComponent.PRISM_SETUP_SNIPPET,
-                                            "PRISM_CSS",
-                                            JtComponent.PRISM_CSS,
-                                            "MARKDOWN_CSS", JtComponent.MARKDOWN_CSS));
-        return writer.toString();
-    }
+  public static String getInitHtml() {
+    final StringWriter writer = new StringWriter();
+    initTemplate.execute(writer, Map.of("MATERIAL_SYMBOLS_CDN",
+                                        JtComponent.MATERIAL_SYMBOLS_CDN,
+                                        "LIT_DEPENDENCY",
+                                        JtComponent.LIT_DEPENDENCY,
+                                        "PRISM_SETUP_SNIPPET",
+                                        JtComponent.PRISM_SETUP_SNIPPET,
+                                        "PRISM_CSS",
+                                        JtComponent.PRISM_CSS,
+                                        "MARKDOWN_CSS", JtComponent.MARKDOWN_CSS));
+    return writer.toString();
+  }
 
-    public static String render(JtComponent component) {
-        return component.register() + component.render();
-    }
+  public static String render(JtComponent component) {
+    return component.register() + component.render();
+  }
 
-    private Nb() {
-    }
+  private Nb() {
+  }
 }

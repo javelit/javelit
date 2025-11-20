@@ -32,38 +32,42 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class ColumnsComponentE2ETest {
 
-    @Test
-    void testColumnsLayout(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            ColumnsComponent.Columns cols = Jt.columns(2).use();
+  @Test
+  void testColumnsLayout(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      ColumnsComponent.Columns cols = Jt.columns(2).use();
 
-            // Add content to first column
-            Jt.text("Column 0 Content").use(cols.col(0));
-            Jt.button("Button 0").use(cols.col(0));
+      // Add content to first column
+      Jt.text("Column 0 Content").use(cols.col(0));
+      Jt.button("Button 0").use(cols.col(0));
 
-            // Add content to second column
-            Jt.text("Column 1 Content").use(cols.col(1));
-            Jt.button("Button 1").use(cols.col(1));
-        };
+      // Add content to second column
+      Jt.text("Column 1 Content").use(cols.col(1));
+      Jt.button("Button 1").use(cols.col(1));
+    };
 
-        // Wait for columns component to be visible
-        // there are 2 columns
-        // ensure content is in correct column for col 0
-        // ensure content is in correct column for col 1
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for columns component to be visible
-            assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
-            // there are 2 columns
-            assertThat(page.locator("div[slot='col_0']")).isVisible(WAIT_1_SEC_MAX);
-            // ensure content is in correct column for col 0
-            assertThat(page.locator("div[slot='col_0']", new Page.LocatorOptions().setHasText("Column 0 Content"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("div[slot='col_0']", new Page.LocatorOptions().setHasText("Button 0"))).isVisible(WAIT_1_SEC_MAX);
-            // ensure content is in correct column for col 1
-            final Locator secondCol = page.locator("div[slot='col_1']");
-            assertThat(secondCol).isVisible();
-            assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Column 1 Content"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Button 1"))).isVisible(WAIT_1_SEC_MAX);
+    // Wait for columns component to be visible
+    // there are 2 columns
+    // ensure content is in correct column for col 0
+    // ensure content is in correct column for col 1
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for columns component to be visible
+      assertThat(page.locator("jt-columns")).isVisible(WAIT_1_SEC_MAX);
+      // there are 2 columns
+      assertThat(page.locator("div[slot='col_0']")).isVisible(WAIT_1_SEC_MAX);
+      // ensure content is in correct column for col 0
+      assertThat(page.locator("div[slot='col_0']", new Page.LocatorOptions().setHasText("Column 0 Content"))).isVisible(
+          WAIT_1_SEC_MAX);
+      assertThat(page.locator("div[slot='col_0']", new Page.LocatorOptions().setHasText("Button 0"))).isVisible(
+          WAIT_1_SEC_MAX);
+      // ensure content is in correct column for col 1
+      final Locator secondCol = page.locator("div[slot='col_1']");
+      assertThat(secondCol).isVisible();
+      assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Column 1 Content"))).isVisible(
+          WAIT_1_SEC_MAX);
+      assertThat(page.locator("div[slot='col_1']", new Page.LocatorOptions().setHasText("Button 1"))).isVisible(
+          WAIT_1_SEC_MAX);
 
-        });
-    }
+    });
+  }
 }

@@ -33,27 +33,27 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class EchartsComponentE2ETest {
 
-    @Test
-    void testEcharts_SimpleBarChart(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Bar chart = new Bar()
-                .addXAxis(new String[]{"Mon", "Tue", "Wed"})
-                .addYAxis()
-                .addSeries("Sales", new Number[]{120, 200, 150});
+  @Test
+  void testEcharts_SimpleBarChart(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Bar chart = new Bar()
+          .addXAxis(new String[]{"Mon", "Tue", "Wed"})
+          .addYAxis()
+          .addSeries("Sales", new Number[]{120, 200, 150});
 
-            Jt.echarts(chart).use();
-        };
+      Jt.echarts(chart).use();
+    };
 
-        // Wait for ECharts component to be visible
-        // Check that canvas element exists (ECharts renders to canvas)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for ECharts component to be visible
-            assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
+    // Wait for ECharts component to be visible
+    // Check that canvas element exists (ECharts renders to canvas)
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for ECharts component to be visible
+      assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
 
-            // Check that canvas element exists (ECharts renders to canvas)
-            assertThat(page.locator("jt-echarts canvas")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // Check that canvas element exists (ECharts renders to canvas)
+      assertThat(page.locator("jt-echarts canvas")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
 
   @ParameterizedTest

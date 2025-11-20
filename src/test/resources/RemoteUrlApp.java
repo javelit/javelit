@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import io.javelit.core.Jt;
 
 public class RemoteUrlApp {
 
-    public static void main(String[] args) {
-        Jt.title("Hello World").use();
-    }
+  public static void main(String[] args) {
+    Jt.title("Hello World").use();
+  }
 }

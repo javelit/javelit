@@ -17,11 +17,11 @@
 import io.javelit.core.Jt;
 
 public class AboutPage {
-    public static void app() {
-        Jt.title("About Page").use();
-        Jt.text("Learn more about this app").use();
-    }
+  public static void app() {
+    Jt.title("About Page").use();
+    Jt.text("Learn more about this app").use();
+  }
 
-    private AboutPage() {
-    }
+  private AboutPage() {
+  }
 }

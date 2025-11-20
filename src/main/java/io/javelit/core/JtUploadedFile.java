@@ -23,9 +23,9 @@ import jakarta.annotation.Nonnull;
 //   the array here should be ok - worst case we will refactor to a class - content will keep its byte[] type
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record JtUploadedFile(
-        //@Nonnull String fieldName, // not sure if useful yet
-        @Nonnull String filename,
-        String contentType,
-        // FIXME CYRIL - should we use a proper immutable field ?
-        @Nonnull byte[] content) {
+    //@Nonnull String fieldName, // not sure if useful yet
+    @Nonnull String filename,
+    String contentType,
+    // FIXME CYRIL - should we use a proper immutable field ?
+    @Nonnull byte[] content) {
 }

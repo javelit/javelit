@@ -34,32 +34,33 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  */
 public class ExpanderComponentE2ETest {
 
-    @Test
-    void testExpanderToggle(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            JtContainer expanderContainer = Jt.expander("Click to expand").use();
-            Jt.text("Hidden content inside expander").use(expanderContainer);
-            Jt.button("Hidden Button").use(expanderContainer);
-        };
+  @Test
+  void testExpanderToggle(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      JtContainer expanderContainer = Jt.expander("Click to expand").use();
+      Jt.text("Hidden content inside expander").use(expanderContainer);
+      Jt.button("Hidden Button").use(expanderContainer);
+    };
 
-        // Wait for expander to be visible
-        // Check expander header is visible
-        // Initially, content should be hidden (collapsed)
-        // Click to expand
-        // Check that content is now visible
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for expander to be visible
-            final Locator expanderLocator = page.locator("jt-expander");
-            assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);
-            // Check expander header is visible
-            assertThat(page.locator("jt-expander summary", new Page.LocatorOptions().setHasText("Click to expand"))).isVisible(WAIT_1_SEC_MAX);
-            // Initially, content should be hidden (collapsed)
-            assertThat(page.getByText("Hidden content inside expander")).not().isVisible(WAIT_50_MS_MAX);
-            // Click to expand
-            expanderLocator.click(WAIT_1_SEC_MAX_CLICK);
-            // Check that content is now visible
-            assertThat(page.getByText("Hidden content inside expander")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Hidden Button")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // Wait for expander to be visible
+    // Check expander header is visible
+    // Initially, content should be hidden (collapsed)
+    // Click to expand
+    // Check that content is now visible
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for expander to be visible
+      final Locator expanderLocator = page.locator("jt-expander");
+      assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);
+      // Check expander header is visible
+      assertThat(page.locator("jt-expander summary",
+                              new Page.LocatorOptions().setHasText("Click to expand"))).isVisible(WAIT_1_SEC_MAX);
+      // Initially, content should be hidden (collapsed)
+      assertThat(page.getByText("Hidden content inside expander")).not().isVisible(WAIT_50_MS_MAX);
+      // Click to expand
+      expanderLocator.click(WAIT_1_SEC_MAX_CLICK);
+      // Check that content is now visible
+      assertThat(page.getByText("Hidden content inside expander")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("Hidden Button")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

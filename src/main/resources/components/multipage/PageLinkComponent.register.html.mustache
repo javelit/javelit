@@ -190,12 +190,12 @@
 
         getWidthStyle() {
             if (!this.width) return '';
-            
+
             // Handle numeric width as pixels
             if (/^\d+$/.test(this.width)) {
                 return `width: ${this.width}px;`;
             }
-            
+
             return '';
         }
 
@@ -223,11 +223,11 @@
 
         render() {
             const iconContent = this.icon ? (
-                this.isEmoji(this.icon) ?
-                    html`<span class="emoji-icon">${this.icon}</span>` :
-                    this.isMaterialIcon(this.icon) ?
-                        html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
-                        null
+                    this.isEmoji(this.icon) ?
+                            html`<span class="emoji-icon">${this.icon}</span>` :
+                            this.isMaterialIcon(this.icon) ?
+                                    html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
+                                    null
             ) : null;
 
             const widthClass = this.getValidatedWidth();
@@ -241,8 +241,8 @@
 
             return html`
                 <div class="pagelink-container">
-                    ${this.isExternal ? 
-                        html`<a
+                    ${this.isExternal ?
+                    html`<a
                             class="${linkClass}"
                             href="${this.url}"
                             target="_blank"
@@ -251,17 +251,17 @@
                             @click="${this.handleClick}">
                             ${linkContent}
                         </a>` :
-                        html`<a
+                    html`<a
                             class="${linkClass}"
                             href="${(window.javelit.baseUrlPath || '') + (this.url || '#')}"
                             style="${widthStyle}"
                             @click="${this.handleClick}">
                             ${linkContent}
                         </a>`
-                    }
+            }
                     ${this.help ? html`
-                        <jt-tooltip text="${this.help}"></jt-tooltip>
-                    ` : ''}
+                <jt-tooltip text="${this.help}"></jt-tooltip>
+            ` : ''}
                 </div>
             `;
         }

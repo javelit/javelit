@@ -21,10 +21,10 @@ import jakarta.annotation.Nullable;
 
 public final class LangUtils {
 
-    public static <T> Optional<T> optional(final @Nullable T obj) {
-        return Optional.ofNullable(obj);
-    }
+  public static <T> Optional<T> optional(final @Nullable T obj) {
+    return Optional.ofNullable(obj);
+  }
 
-    private LangUtils() {
-    }
+  private LangUtils() {
+  }
 }

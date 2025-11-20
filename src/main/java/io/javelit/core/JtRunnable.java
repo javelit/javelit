@@ -16,5 +16,5 @@
 package io.javelit.core;
 
 public interface JtRunnable {
-    void run() throws Exception;
+  void run() throws Exception;
 }

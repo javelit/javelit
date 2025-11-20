@@ -31,69 +31,69 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  */
 public class ToggleComponentE2ETest {
 
-    @Test
-    void testSimpleToggleClick(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            boolean toggle = Jt.toggle("Enable notifications").use();
-            if (toggle) {
-                Jt.text("Notifications are **enabled**").use();
-            } else {
-                Jt.text("Notifications are **disabled**").use();
-            }
-        };
+  @Test
+  void testSimpleToggleClick(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      boolean toggle = Jt.toggle("Enable notifications").use();
+      if (toggle) {
+        Jt.text("Notifications are **enabled**").use();
+      } else {
+        Jt.text("Notifications are **disabled**").use();
+      }
+    };
 
-        // Toggle component exists
-        // Initial state shows "disabled" message
-        // "Enabled" message is not visible initially
-        // Wait for toggle input to be visible and click it
-        // "Enabled" message is now visible
-        // "Disabled" message is no longer visible
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Toggle component exists
-            assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
-            // Initial state shows "disabled" message
-            assertThat(page.getByText("Notifications are **disabled**")).isVisible(WAIT_1_SEC_MAX);
-            // "Enabled" message is not visible initially
-            assertThat(page.getByText("Notifications are **enabled**")).not().isVisible(WAIT_50_MS_MAX);
-            // Wait for toggle input to be visible and click it
-            page.locator("jt-toggle .toggle-slider").click(WAIT_1_SEC_MAX_CLICK);
-            // "Enabled" message is now visible
-            assertThat(page.getByText("Notifications are **enabled**")).isVisible(WAIT_1_SEC_MAX);
-            // "Disabled" message is no longer visible
-            assertThat(page.getByText("Notifications are **disabled**")).not().isVisible(WAIT_50_MS_MAX);
-        });
-    }
+    // Toggle component exists
+    // Initial state shows "disabled" message
+    // "Enabled" message is not visible initially
+    // Wait for toggle input to be visible and click it
+    // "Enabled" message is now visible
+    // "Disabled" message is no longer visible
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Toggle component exists
+      assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
+      // Initial state shows "disabled" message
+      assertThat(page.getByText("Notifications are **disabled**")).isVisible(WAIT_1_SEC_MAX);
+      // "Enabled" message is not visible initially
+      assertThat(page.getByText("Notifications are **enabled**")).not().isVisible(WAIT_50_MS_MAX);
+      // Wait for toggle input to be visible and click it
+      page.locator("jt-toggle .toggle-slider").click(WAIT_1_SEC_MAX_CLICK);
+      // "Enabled" message is now visible
+      assertThat(page.getByText("Notifications are **enabled**")).isVisible(WAIT_1_SEC_MAX);
+      // "Disabled" message is no longer visible
+      assertThat(page.getByText("Notifications are **disabled**")).not().isVisible(WAIT_50_MS_MAX);
+    });
+  }
 
-    @Test
-    void testToggleWithDefaultValueTrue(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            boolean toggle = Jt.toggle("Auto-save").value(true).use();
-            if (toggle) {
-                Jt.text("Notifications are **enabled**").use();
-            } else {
-                Jt.text("Notifications are **disabled**").use();
-            }
-        };
+  @Test
+  void testToggleWithDefaultValueTrue(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      boolean toggle = Jt.toggle("Auto-save").value(true).use();
+      if (toggle) {
+        Jt.text("Notifications are **enabled**").use();
+      } else {
+        Jt.text("Notifications are **disabled**").use();
+      }
+    };
 
-        // Toggle component exists
-        // Initial state shows "enabled" message
-        // "disabled" message is not visible initially
-        // Wait for toggle input to be visible and click it
-        // "Disabled" message is now visible
-        // "Enabled" message is no longer visible
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Toggle component exists
-            assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
-            // Initial state shows "enabled" message
-            assertThat(page.getByText("Notifications are **enabled**")).isVisible(WAIT_1_SEC_MAX);
-            // "disabled" message is not visible initially
-            assertThat(page.getByText("Notifications are **disabled**")).not().isVisible(WAIT_50_MS_MAX);
-            // Wait for toggle input to be visible and click it
-            page.locator("jt-toggle .toggle-slider").click(WAIT_1_SEC_MAX_CLICK);
-            // "Disabled" message is now visible
-            assertThat(page.getByText("Notifications are **disabled**")).isVisible(WAIT_1_SEC_MAX);
-            // "Enabled" message is no longer visible
-            assertThat(page.getByText("Notifications are **enabled**")).not().isVisible(WAIT_50_MS_MAX);
-        });
-    }
+    // Toggle component exists
+    // Initial state shows "enabled" message
+    // "disabled" message is not visible initially
+    // Wait for toggle input to be visible and click it
+    // "Disabled" message is now visible
+    // "Enabled" message is no longer visible
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Toggle component exists
+      assertThat(page.locator("jt-toggle")).isVisible(WAIT_1_SEC_MAX);
+      // Initial state shows "enabled" message
+      assertThat(page.getByText("Notifications are **enabled**")).isVisible(WAIT_1_SEC_MAX);
+      // "disabled" message is not visible initially
+      assertThat(page.getByText("Notifications are **disabled**")).not().isVisible(WAIT_50_MS_MAX);
+      // Wait for toggle input to be visible and click it
+      page.locator("jt-toggle .toggle-slider").click(WAIT_1_SEC_MAX_CLICK);
+      // "Disabled" message is now visible
+      assertThat(page.getByText("Notifications are **disabled**")).isVisible(WAIT_1_SEC_MAX);
+      // "Enabled" message is no longer visible
+      assertThat(page.getByText("Notifications are **enabled**")).not().isVisible(WAIT_50_MS_MAX);
+    });
+  }
 }

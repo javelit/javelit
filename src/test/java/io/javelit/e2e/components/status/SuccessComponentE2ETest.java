@@ -26,15 +26,15 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 public class SuccessComponentE2ETest {
 
-    @Test
-    void testSuccessDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.success("Operation completed successfully").use();
-        };
+  @Test
+  void testSuccessDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.success("Operation completed successfully").use();
+    };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Operation completed successfully")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("Operation completed successfully")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

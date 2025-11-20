@@ -15,7 +15,7 @@
 }}
 <script src="https://cdn.jsdelivr.net/npm/recordrtc@latest/RecordRTC.min.js"></script>
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtAudioInput extends LitElement {
         static styles = css`
@@ -173,7 +173,9 @@
             }
 
             @keyframes spin {
-                to { transform: rotate(360deg); }
+                to {
+                    transform: rotate(360deg);
+                }
             }
 
             .upload-status {
@@ -192,22 +194,22 @@
         `;
 
         static properties = {
-            label: { type: String },
-            sampleRate: { type: Number, attribute: 'sample-rate' },
-            help: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' },
-            currentValueUrl: { type: String, attribute: 'current-value-url' },
+            label: {type: String},
+            sampleRate: {type: Number, attribute: 'sample-rate'},
+            help: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'},
+            currentValueUrl: {type: String, attribute: 'current-value-url'},
             // Internal state
-            isRecording: { type: Boolean, state: true },
-            isUploading: { type: Boolean, state: true },
-            isPlaying: { type: Boolean, state: true },
-            recordingTime: { type: Number, state: true },
-            audioDuration: { type: Number, state: true },
-            playbackProgress: { type: Number, state: true },
-            uploadError: { type: String, state: true }
+            isRecording: {type: Boolean, state: true},
+            isUploading: {type: Boolean, state: true},
+            isPlaying: {type: Boolean, state: true},
+            recordingTime: {type: Number, state: true},
+            audioDuration: {type: Number, state: true},
+            playbackProgress: {type: Number, state: true},
+            uploadError: {type: String, state: true}
         };
 
         constructor() {
@@ -324,7 +326,7 @@
 
             try {
                 // Request microphone permission
-                const constraints = { audio: true };
+                const constraints = {audio: true};
                 if (this.sampleRate) {
                     constraints.audio = {
                         sampleRate: this.sampleRate
@@ -538,19 +540,20 @@
                     <div class="label-row">
                         ${this.labelVisibility !== 'collapsed' ? html`
                             <div class="label ${this.labelVisibility === 'hidden' ? 'spacer' : ''}">
-                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`<div class="markdown-content">${unsafeHTML(this.label)}</div>`}
+                                ${this.labelVisibility === 'hidden' ? html`&nbsp;` : html`
+                <div class="markdown-content">${unsafeHTML(this.label)}</div>`}
                             </div>
                         ` : ''}
                         ${this.help && this.labelVisibility === 'visible' ? html`
-                            <jt-tooltip text="${this.help}"></jt-tooltip>
-                        ` : ''}
+                <jt-tooltip text="${this.help}"></jt-tooltip>
+            ` : ''}
                     </div>
 
                     <div class="recorder-area ${this.disabled ? 'disabled' : ''}">
                         ${this.isUploading ? html`
-                            <div class="loading-spinner"></div>
-                        ` : html`
-                            ${!this.isRecording ? html`
+                <div class="loading-spinner"></div>
+            ` : html`
+                ${!this.isRecording ? html`
                                 <button
                                     class="control-button record-button"
                                     ?disabled="${this.disabled}"
@@ -560,17 +563,17 @@
                                     <span class="icon">mic</span>
                                 </button>
                             ` : html`
-                                <button
-                                    class="control-button stop-button"
-                                    ?disabled="${this.disabled}"
-                                    @click="${this.stopRecording}"
-                                    title="Stop recording"
-                                >
-                                    <span class="icon">stop_circle</span>
-                                </button>
-                            `}
+                    <button
+                            class="control-button stop-button"
+                            ?disabled="${this.disabled}"
+                            @click="${this.stopRecording}"
+                            title="Stop recording"
+                    >
+                        <span class="icon">stop_circle</span>
+                    </button>
+                `}
 
-                            ${hasValue && !this.isRecording ? html`
+                ${hasValue && !this.isRecording ? html`
                                 <button
                                     class="control-button play-button"
                                     ?disabled="${this.disabled}"
@@ -580,7 +583,7 @@
                                     <span class="icon">${this.isPlaying ? 'pause' : 'play_circle'}</span>
                                 </button>
                             ` : ''}
-                        `}
+            `}
 
                         ${hasValue && !this.isRecording ? html`
                             <div class="progress-bar-container">
@@ -588,9 +591,9 @@
                             </div>
                         ` : html`
                             <div class="visualizer-container">
-                                ${Array.from({ length: 18 }).map(() => html`
-                                    <div class="visualizer-bar ${this.isRecording ? 'recording' : ''}"></div>
-                                `)}
+                                ${Array.from({length: 18}).map(() => html`
+                <div class="visualizer-bar ${this.isRecording ? 'recording' : ''}"></div>
+            `)}
                             </div>
                         `}
 

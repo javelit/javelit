@@ -15,13 +15,14 @@
  */
 
 
-import io.javelit.core.Jt;import model.Car;
+import io.javelit.core.Jt;
+import model.Car;
 import model.Owner;
 
 public class Test {
 
-    public static void main(String[] args) throws InterruptedException {
-        Jt.text(String.valueOf(Car.BLUE)).use();
-        Jt.text(String.valueOf(Owner.BOSS)).use();
-    }
+  public static void main(String[] args) throws InterruptedException {
+    Jt.text(String.valueOf(Car.BLUE)).use();
+    Jt.text(String.valueOf(Owner.BOSS)).use();
+  }
 }

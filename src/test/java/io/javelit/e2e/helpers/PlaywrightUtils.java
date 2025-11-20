@@ -264,7 +264,8 @@ public final class PlaywrightUtils {
             .setProxyClient(client)
             .setMaxRequestTime(30000);
         if (setForwardedPrefix) {
-          ph.addRequestHeader(new HttpString("X-Forwarded-Prefix"), ExchangeAttributes.constant(PlaywrightUtils.TEST_PROXY_PREFIX));
+          ph.addRequestHeader(new HttpString("X-Forwarded-Prefix"),
+                              ExchangeAttributes.constant(PlaywrightUtils.TEST_PROXY_PREFIX));
         }
         ph.build().handleRequest(exchange);
       };

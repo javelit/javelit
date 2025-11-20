@@ -30,19 +30,19 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class TextComponentE2ETest {
 
-    @Test
-    void testTextDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.text("A first text").use();
-            Jt.text("A second text").use();
-        };
+  @Test
+  void testTextDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.text("A first text").use();
+      Jt.text("A second text").use();
+    };
 
-        // Wait for text components to be visible
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for text components to be visible
-            assertThat(page.locator("jt-text")).hasCount(2, new LocatorAssertions.HasCountOptions().setTimeout(1000));
-            assertThat(page.getByText("A first text")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("A second text")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // Wait for text components to be visible
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for text components to be visible
+      assertThat(page.locator("jt-text")).hasCount(2, new LocatorAssertions.HasCountOptions().setTimeout(1000));
+      assertThat(page.getByText("A first text")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("A second text")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

@@ -32,36 +32,36 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class TextAreaComponentE2ETest {
 
-    @Test
-    void testTextAreaInput(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            String text = new TextAreaComponent.Builder("Enter your message")
-                .placeholder("Type here...")
-                .height(150)
-                .build()
-                .use();
-            Jt.text("Message: " + text).use();
-        };
+  @Test
+  void testTextAreaInput(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      String text = new TextAreaComponent.Builder("Enter your message")
+          .placeholder("Type here...")
+          .height(150)
+          .build()
+          .use();
+      Jt.text("Message: " + text).use();
+    };
 
-        // text area input is visible
-        // current message is empty
-        // Type multi-line text in the textarea
-        // Press Cmd/Ctrl+Enter to submit (TextArea's default submit behavior)
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // text area input is visible
-            assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
-            // current message is empty
-            final Locator byText = page.getByText("Message: ");
-            assertThat(byText).isVisible(WAIT_1_SEC_MAX);
-            // Type multi-line text in the textarea
-            final Locator textarea = page.locator("jt-text-area textarea");
-            textarea.fill("Line 1\nLine 2\nLine 3");
-            // Press Cmd/Ctrl+Enter to submit (TextArea's default submit behavior)
-            final OsUtils.OS os = OsUtils.getOS();
-            page.keyboard().down(os.modifier);
-            page.keyboard().press("Enter");
-            page.keyboard().up(os.modifier);
-            assertThat(page.getByText("Message: Line 1\nLine 2\nLine 3")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // text area input is visible
+    // current message is empty
+    // Type multi-line text in the textarea
+    // Press Cmd/Ctrl+Enter to submit (TextArea's default submit behavior)
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // text area input is visible
+      assertThat(page.locator("jt-text-area")).isVisible(WAIT_1_SEC_MAX);
+      // current message is empty
+      final Locator byText = page.getByText("Message: ");
+      assertThat(byText).isVisible(WAIT_1_SEC_MAX);
+      // Type multi-line text in the textarea
+      final Locator textarea = page.locator("jt-text-area textarea");
+      textarea.fill("Line 1\nLine 2\nLine 3");
+      // Press Cmd/Ctrl+Enter to submit (TextArea's default submit behavior)
+      final OsUtils.OS os = OsUtils.getOS();
+      page.keyboard().down(os.modifier);
+      page.keyboard().press("Enter");
+      page.keyboard().up(os.modifier);
+      assertThat(page.getByText("Message: Line 1\nLine 2\nLine 3")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

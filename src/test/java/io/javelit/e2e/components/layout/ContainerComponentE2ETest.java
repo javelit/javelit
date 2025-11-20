@@ -32,35 +32,43 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  */
 public class ContainerComponentE2ETest {
 
-    @Test
-    void testContainerContent(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.text("Before container").use();
+  @Test
+  void testContainerContent(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.text("Before container").use();
 
-            JtContainer container = Jt.container().use();
-            Jt.text("Inside container").use(container);
-            Jt.button("Container Button").use(container);
+      JtContainer container = Jt.container().use();
+      Jt.text("Inside container").use(container);
+      Jt.button("Container Button").use(container);
 
-            Jt.text("After container").use();
-        };
+      Jt.text("After container").use();
+    };
 
-        // Wait for container to be visible
-        // Check content before container
-        // Check content inside container
-        // Check content after container
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for container to be visible
-            assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
-            // Check content before container
-            assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("Before container"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Before container"))).not().isVisible(WAIT_50_MS_MAX);
-            // Check content inside container
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Inside container"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Container Button"))).isVisible(WAIT_1_SEC_MAX);
-            // Check content after container
-            assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("After container"))).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container"))).not().isVisible(WAIT_50_MS_MAX);
+    // Wait for container to be visible
+    // Check content before container
+    // Check content inside container
+    // Check content after container
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for container to be visible
+      assertThat(page.locator("jt-container")).isVisible(WAIT_1_SEC_MAX);
+      // Check content before container
+      assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("Before container"))).isVisible(
+          WAIT_1_SEC_MAX);
+      assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Before container")))
+          .not()
+          .isVisible(WAIT_50_MS_MAX);
+      // Check content inside container
+      assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Inside container"))).isVisible(
+          WAIT_1_SEC_MAX);
+      assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("Container Button"))).isVisible(
+          WAIT_1_SEC_MAX);
+      // Check content after container
+      assertThat(page.locator("jt-text", new Page.LocatorOptions().setHasText("After container"))).isVisible(
+          WAIT_1_SEC_MAX);
+      assertThat(page.locator("jt-container", new Page.LocatorOptions().setHasText("After container")))
+          .not()
+          .isVisible(WAIT_50_MS_MAX);
 
-        });
-    }
+    });
+  }
 }

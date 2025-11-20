@@ -34,91 +34,120 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class MultiPageNoPersistWhenLeftE2ETest {
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void testNoPersistWhenLeftBehavior(final boolean proxied, final TestInfo testInfo) {
-        JtRunnable app = () -> {
-            var currentPage = Jt.navigation(
-                Jt.page("/page-1", MultiPageNoPersistWhenLeftE2ETest::page1).home().noPersistWhenLeft(),
-                Jt.page("/page-2", MultiPageNoPersistWhenLeftE2ETest::page2)
-            ).use();
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testNoPersistWhenLeftBehavior(final boolean proxied, final TestInfo testInfo) {
+    JtRunnable app = () -> {
+      var currentPage = Jt.navigation(
+          Jt.page("/page-1", MultiPageNoPersistWhenLeftE2ETest::page1).home().noPersistWhenLeft(),
+          Jt.page("/page-2", MultiPageNoPersistWhenLeftE2ETest::page2)
+      ).use();
 
-            currentPage.run();
+      currentPage.run();
 
-            Jt.textInput("shared text input").use();
-        };
+      Jt.textInput("shared text input").use();
+    };
 
-        // Wait for page to load - should be on home page (Page1)
-        // Fill the shared text input with "forever here"
-        // Fill the page 1 text input with "should not be here for long"
-        // Click on page2
-        // Ensure page 2 text input is here
-        // Ensure page 1 text input is not here
-        // Ensure "forever here" text value in shared input is still here
-        // Fill the "page 2 text input" with value: "should stay here"
-        // Click on page 1
-        // Ensure "page 1 text input" is here and its value is empty string
-        // Click on page 2
-        // Ensure "page 2 text input" is here and its value is "should stay here"
-        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
-            // Wait for page to load - should be on home page (Page1)
-            Locator sharedInput = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("shared text input")).locator("input");
-            assertThat(sharedInput).isVisible(WAIT_1_SEC_MAX);
+    // Wait for page to load - should be on home page (Page1)
+    // Fill the shared text input with "forever here"
+    // Fill the page 1 text input with "should not be here for long"
+    // Click on page2
+    // Ensure page 2 text input is here
+    // Ensure page 1 text input is not here
+    // Ensure "forever here" text value in shared input is still here
+    // Fill the "page 2 text input" with value: "should stay here"
+    // Click on page 1
+    // Ensure "page 1 text input" is here and its value is empty string
+    // Click on page 2
+    // Ensure "page 2 text input" is here and its value is "should stay here"
+    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+      // Wait for page to load - should be on home page (Page1)
+      Locator sharedInput = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("shared text input"))
+          .locator("input");
+      assertThat(sharedInput).isVisible(WAIT_1_SEC_MAX);
 
-            Locator page1Input = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 1 text input")).locator("input");
-            assertThat(page1Input).isVisible(WAIT_1_SEC_MAX);
+      Locator page1Input = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("page 1 text input"))
+          .locator("input");
+      assertThat(page1Input).isVisible(WAIT_1_SEC_MAX);
 
-            // Fill the shared text input with "forever here"
-            sharedInput.fill("forever here");
-            sharedInput.press("Enter");
+      // Fill the shared text input with "forever here"
+      sharedInput.fill("forever here");
+      sharedInput.press("Enter");
 
-            // Fill the page 1 text input with "should not be here for long"
-            page1Input.fill("should not be here for long");
-            page1Input.press("Enter");
+      // Fill the page 1 text input with "should not be here for long"
+      page1Input.fill("should not be here for long");
+      page1Input.press("Enter");
 
-            // Click on page2
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 2")).click(WAIT_1_SEC_MAX_CLICK);
+      // Click on page2
+      page
+          .locator("jt-navigation a")
+          .filter(new Locator.FilterOptions().setHasText("Page 2"))
+          .click(WAIT_1_SEC_MAX_CLICK);
 
-            // Ensure page 2 text input is here
-            Locator page2Input = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 2 text input")).locator("input");
-            assertThat(page2Input).isVisible(WAIT_1_SEC_MAX);
+      // Ensure page 2 text input is here
+      Locator page2Input = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("page 2 text input"))
+          .locator("input");
+      assertThat(page2Input).isVisible(WAIT_1_SEC_MAX);
 
-            // Ensure page 1 text input is not here
-            assertThat(page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 1 text input"))).not().isVisible(WAIT_10_MS_MAX);
+      // Ensure page 1 text input is not here
+      assertThat(page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 1 text input")))
+          .not()
+          .isVisible(WAIT_10_MS_MAX);
 
-            // Ensure "forever here" text value in shared input is still here
-            Locator sharedInputOnPage2 = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("shared text input")).locator("input");
-            assertEquals("forever here", sharedInputOnPage2.inputValue());
+      // Ensure "forever here" text value in shared input is still here
+      Locator sharedInputOnPage2 = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("shared text input"))
+          .locator("input");
+      assertEquals("forever here", sharedInputOnPage2.inputValue());
 
-            // Fill the "page 2 text input" with value: "should stay here"
-            page2Input.fill("should stay here");
-            page2Input.press("Enter");
+      // Fill the "page 2 text input" with value: "should stay here"
+      page2Input.fill("should stay here");
+      page2Input.press("Enter");
 
-            // Click on page 1
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 1")).click(WAIT_1_SEC_MAX_CLICK);
+      // Click on page 1
+      page
+          .locator("jt-navigation a")
+          .filter(new Locator.FilterOptions().setHasText("Page 1"))
+          .click(WAIT_1_SEC_MAX_CLICK);
 
-            // Ensure "page 1 text input" is here and its value is empty string
-            Locator page1InputAgain = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 1 text input")).locator("input");
-            assertThat(page1InputAgain).isVisible(WAIT_1_SEC_MAX);
-            assertEquals("", page1InputAgain.inputValue(),
-                "Page1 with noPersistWhenLeft should have cleared its state");
+      // Ensure "page 1 text input" is here and its value is empty string
+      Locator page1InputAgain = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("page 1 text input"))
+          .locator("input");
+      assertThat(page1InputAgain).isVisible(WAIT_1_SEC_MAX);
+      assertEquals("", page1InputAgain.inputValue(),
+                   "Page1 with noPersistWhenLeft should have cleared its state");
 
-            // Click on page 2
-            page.locator("jt-navigation a").filter(new Locator.FilterOptions().setHasText("Page 2")).click(WAIT_1_SEC_MAX_CLICK);
+      // Click on page 2
+      page
+          .locator("jt-navigation a")
+          .filter(new Locator.FilterOptions().setHasText("Page 2"))
+          .click(WAIT_1_SEC_MAX_CLICK);
 
-            // Ensure "page 2 text input" is here and its value is "should stay here"
-            Locator page2InputAgain = page.locator("jt-text-input").filter(new Locator.FilterOptions().setHasText("page 2 text input")).locator("input");
-            assertThat(page2InputAgain).isVisible(WAIT_1_SEC_MAX);
-            assertEquals("should stay here", page2InputAgain.inputValue(),
-                "Page2 without noPersistWhenLeft should persist its state");
-        });
-    }
+      // Ensure "page 2 text input" is here and its value is "should stay here"
+      Locator page2InputAgain = page
+          .locator("jt-text-input")
+          .filter(new Locator.FilterOptions().setHasText("page 2 text input"))
+          .locator("input");
+      assertThat(page2InputAgain).isVisible(WAIT_1_SEC_MAX);
+      assertEquals("should stay here", page2InputAgain.inputValue(),
+                   "Page2 without noPersistWhenLeft should persist its state");
+    });
+  }
 
-    private static void page1() {
-        Jt.textInput("page 1 text input").key("key1").use();
-    }
+  private static void page1() {
+    Jt.textInput("page 1 text input").key("key1").use();
+  }
 
-    private static void page2() {
-        Jt.textInput("page 2 text input").key("key1").use();
-    }
+  private static void page2() {
+    Jt.textInput("page 2 text input").key("key1").use();
+  }
 }

@@ -34,62 +34,62 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class ClassloaderMismatchE2ETest {
 
-    @Test
-    void testClassloaderMismatchDetectionAndRecovery(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-classloader-test-");
-        final Path mainFile = tempDir.resolve("TestApp.java");
+  @Test
+  void testClassloaderMismatchDetectionAndRecovery(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-classloader-test-");
+    final Path mainFile = tempDir.resolve("TestApp.java");
 
-        // Create initial app with Message class
-        final String initialApp = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                record Message(String name) {}
-
-                public static void main(String[] args) {
-                    Message message = (Message) Jt
-                            .cache()
-                            .computeIfAbsent("mess", k -> new Message("Bob"));
-                    Jt.text("Message: " + message.name).use();
-                }
+    // Create initial app with Message class
+    final String initialApp = """
+        import io.javelit.core.Jt;
+        
+        public class TestApp {
+            record Message(String name) {}
+        
+            public static void main(String[] args) {
+                Message message = (Message) Jt
+                        .cache()
+                        .computeIfAbsent("mess", k -> new Message("Bob"));
+                Jt.text("Message: " + message.name).use();
             }
-            """;
+        }
+        """;
 
-        Files.writeString(mainFile, initialApp);
+    Files.writeString(mainFile, initialApp);
 
+    // Verify initial state - should display "Message: Bob"
+    // Modify the file to trigger hot reload (add a comment)
+    // After reload, should see ClassCastException (search for unique text from developer feedback)
+    // visible for any user
+    // Should see "Clear cache" button (use getByRole to target the specific button in the error message)
+    // only visible in dev mode (which is the case for tests as it's running on localhost)
+    // After clearing cache, the app should work again
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      try {
         // Verify initial state - should display "Message: Bob"
+        assertThat(page.getByText("Message: Bob")).isVisible(WAIT_1_SEC_MAX);
+
         // Modify the file to trigger hot reload (add a comment)
+        final String originalContent = Files.readString(mainFile);
+        final String modifiedContent = "//some comment\n" + originalContent;
+        Files.writeString(mainFile, modifiedContent);
+
         // After reload, should see ClassCastException (search for unique text from developer feedback)
         // visible for any user
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+
         // Should see "Clear cache" button (use getByRole to target the specific button in the error message)
         // only visible in dev mode (which is the case for tests as it's running on localhost)
+        var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
+        assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
+        clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
+
         // After clearing cache, the app should work again
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            try {
-                // Verify initial state - should display "Message: Bob"
-                assertThat(page.getByText("Message: Bob")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: Bob")).isVisible(WAIT_1_SEC_MAX);
 
-                // Modify the file to trigger hot reload (add a comment)
-                final String originalContent = Files.readString(mainFile);
-                final String modifiedContent = "//some comment\n" + originalContent;
-                Files.writeString(mainFile, modifiedContent);
-
-                // After reload, should see ClassCastException (search for unique text from developer feedback)
-                // visible for any user
-                assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
-
-                // Should see "Clear cache" button (use getByRole to target the specific button in the error message)
-                // only visible in dev mode (which is the case for tests as it's running on localhost)
-                var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
-                assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
-                clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
-
-                // After clearing cache, the app should work again
-                assertThat(page.getByText("Message: Bob")).isVisible(WAIT_1_SEC_MAX);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
 }

@@ -30,17 +30,18 @@ import jakarta.annotation.Nullable;
  */
 class BreakAndReloadAppException extends RuntimeException {
 
-    // takes a sessionId and run - this is run after break
-    protected final Consumer<String> runAfterBreak;
+  // takes a sessionId and run - this is run after break
+  protected final Consumer<String> runAfterBreak;
 
-    BreakAndReloadAppException(final @Nullable Consumer<String> runAfterBreak) {
-        super("Requesting internal break—and-reload operation. If this exception is not caught and surfaced in the app, please reach out to support.");
-        this.runAfterBreak = runAfterBreak;
-    }
+  BreakAndReloadAppException(final @Nullable Consumer<String> runAfterBreak) {
+    super(
+        "Requesting internal break—and-reload operation. If this exception is not caught and surfaced in the app, please reach out to support.");
+    this.runAfterBreak = runAfterBreak;
+  }
 
-    // very slow operation that is not necessary here - override to do nothing
-    @Override
-    public synchronized Throwable fillInStackTrace() {
-        return this;
-    }
+  // very slow operation that is not necessary here - override to do nothing
+  @Override
+  public synchronized Throwable fillInStackTrace() {
+    return this;
+  }
 }

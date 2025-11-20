@@ -26,18 +26,18 @@ import tech.tablesaw.columns.Column;
  * All methods that help
  */
 class TablesawUtils {
-    static Map<String, Object[]> toColumnArrays(final @Nonnull Table table) {
-        final Map<String, Object[]> map = new LinkedHashMap<>();
-        for (final Column<?> column : table.columns()) {
-            Object[] values = new Object[column.size()];
-            for (int i = 0; i < column.size(); i++) {
-                values[i] = column.get(i);
-            }
-            map.put(column.name(), values);
-        }
-        return map;
+  static Map<String, Object[]> toColumnArrays(final @Nonnull Table table) {
+    final Map<String, Object[]> map = new LinkedHashMap<>();
+    for (final Column<?> column : table.columns()) {
+      Object[] values = new Object[column.size()];
+      for (int i = 0; i < column.size(); i++) {
+        values[i] = column.get(i);
+      }
+      map.put(column.name(), values);
     }
+    return map;
+  }
 
-    private TablesawUtils() {
-    }
+  private TablesawUtils() {
+  }
 }

@@ -17,5 +17,5 @@ package io.javelit.core;
 
 public interface JtLayout {
 
-    JtContainer layoutContainer();
+  JtContainer layoutContainer();
 }

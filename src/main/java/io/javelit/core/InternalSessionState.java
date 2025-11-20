@@ -41,158 +41,158 @@ import static com.google.common.base.Preconditions.checkState;
  * The components state is made available in {@link Jt#componentsState()}.
  */
 final class InternalSessionState {
-    // readable/writable by users
-    private final Map<String, Object> userState = new ConcurrentHashMap<>();
+  // readable/writable by users
+  private final Map<String, Object> userState = new ConcurrentHashMap<>();
 
-    // {componentKey: value}  - NOT EXPOSED TO USERS
-    // not using a ConcurrentHashMap because need to support null values
-    // concurrency on this map is an edge case, not the normal case so should be fine
-    private final Map<String, Object> componentsState = Collections.synchronizedMap(new HashMap<>());
+  // {componentKey: value}  - NOT EXPOSED TO USERS
+  // not using a ConcurrentHashMap because need to support null values
+  // concurrency on this map is an edge case, not the normal case so should be fine
+  private final Map<String, Object> componentsState = Collections.synchronizedMap(new HashMap<>());
 
-    // {componentUserKey: value} - exposed to users but should not be modifiable directly when exposed
-    // it's the responsibility of the internal logic (non public API) that gets this map to perform an immutable map wrapping or even consider a deep copy
-    // not using a ConcurrentHashMap because need to support null values
-    // concurrency on this map is an edge case, not the normal case so should be fine
-    private final Map<String, Object> userVisibleComponentsState = Collections.synchronizedMap(new HashMap<>());
+  // {componentUserKey: value} - exposed to users but should not be modifiable directly when exposed
+  // it's the responsibility of the internal logic (non public API) that gets this map to perform an immutable map wrapping or even consider a deep copy
+  // not using a ConcurrentHashMap because need to support null values
+  // concurrency on this map is an edge case, not the normal case so should be fine
+  private final Map<String, Object> userVisibleComponentsState = Collections.synchronizedMap(new HashMap<>());
 
-    // concurrency on this map is an edge case, not the normal case so should be fine
-    private final BiMap<@NotNull String, @NotNull String> internalKeyToUserKey = Maps.synchronizedBiMap(HashBiMap.create());
+  // concurrency on this map is an edge case, not the normal case so should be fine
+  private final BiMap<@NotNull String, @NotNull String> internalKeyToUserKey = Maps.synchronizedBiMap(HashBiMap.create());
 
-    // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
-    // values that are not applied yet - they are pending because controlled by a form
-    private final Map<String, Map<String, Object>> pendingInFormComponentsState = new ConcurrentHashMap<>();
+  // (formComponentKey -> (componentKey -> value) (internal only - not visible to users)
+  // values that are not applied yet - they are pending because controlled by a form
+  private final Map<String, Map<String, Object>> pendingInFormComponentsState = new ConcurrentHashMap<>();
 
-    // set of component keys to reset after the run of the script - the update has to be sent to the frontend.
-    private final Set<String> formComponentsToReset = new HashSet<>();
+  // set of component keys to reset after the run of the script - the update has to be sent to the frontend.
+  private final Set<String> formComponentsToReset = new HashSet<>();
 
-    // the content of JtComponent.register() only has to be sent once to the frontend per session
-    // this set maintains the registered components
-    private final Set<String> registeredInFrontend = new HashSet<>();
+  // the content of JtComponent.register() only has to be sent once to the frontend per session
+  // this set maintains the registered components
+  private final Set<String> registeredInFrontend = new HashSet<>();
 
-    // is reset at the beginning of each run, but must stay valid between runs
-    private final Map<String, MediaEntry> media = new ConcurrentHashMap<>();
+  // is reset at the beginning of each run, but must stay valid between runs
+  private final Map<String, MediaEntry> media = new ConcurrentHashMap<>();
 
-    private String callbackComponentKey;
+  private String callbackComponentKey;
 
-    // whether this is a developer session
-    private boolean isDeveloper;
+  // whether this is a developer session
+  private boolean isDeveloper;
 
-    void clearStates() {
-        userState.clear();
-        removeAllComponentsWithPrefix("");
-        formComponentsToReset.addAll(pendingInFormComponentsState.keySet());
-        pendingInFormComponentsState.clear();
+  void clearStates() {
+    userState.clear();
+    removeAllComponentsWithPrefix("");
+    formComponentsToReset.addAll(pendingInFormComponentsState.keySet());
+    pendingInFormComponentsState.clear();
+  }
+
+  public boolean isDeveloper() {
+    return isDeveloper;
+  }
+
+  public void setDeveloper(boolean developer) {
+    isDeveloper = developer;
+  }
+
+  private UrlContext urlContext;
+
+  private JtPage lastExecutionPage;
+
+  InternalSessionState() {
+  }
+
+  Map<String, Object> getUserState() {
+    return userState;
+  }
+
+  Map<String, Object> getUserVisibleComponentsState() {
+    return userVisibleComponentsState;
+  }
+
+  void removeComponentState(@Nonnull String componentKey) {
+    componentsState.remove(componentKey);
+    if (internalKeyToUserKey.containsKey(componentKey)) {
+      userVisibleComponentsState.remove(internalKeyToUserKey.get(componentKey));
+      internalKeyToUserKey.remove(componentKey);
     }
+  }
 
-    public boolean isDeveloper() {
-        return isDeveloper;
+  void removeAllComponentsWithPrefix(@Nonnull String prefix) {
+    componentsState.keySet().removeIf(key -> key.startsWith(prefix));
+    userVisibleComponentsState.keySet().removeIf(key -> key.startsWith(prefix));
+    internalKeyToUserKey.keySet().removeIf(key -> key.startsWith(prefix));
+  }
+
+  Object getComponentState(final @Nonnull String componentKey) {
+    return componentsState.get(componentKey);
+  }
+
+  void upsertComponentsState(final @Nonnull JtComponent component) {
+    componentsState.put(component.getInternalKey(), component.returnValue());
+    if (component.getUserKey() != null) {
+      final String prefixedUserKey = StateManager.pagePrefix() + component.getUserKey();
+      internalKeyToUserKey.forcePut(component.getInternalKey(), prefixedUserKey);
+      userVisibleComponentsState.put(prefixedUserKey, component.returnValue());
     }
+  }
 
-    public void setDeveloper(boolean developer) {
-        isDeveloper = developer;
+  // corresponds to a frontend update
+  void updateComponentsState(final @Nonnull String componentKey, final Object updatedValue) {
+    // this is a precondition - caller already ensures (and must), but keeping it here for safer refactorings and early catching of bugs
+    checkState(componentsState.containsKey(componentKey), "Implementation error. Please reach out to support.");
+    componentsState.put(componentKey, updatedValue);
+    if (internalKeyToUserKey.containsKey(componentKey)) {
+      final String prefixedUserKey = internalKeyToUserKey.get(componentKey);
+      userVisibleComponentsState.put(prefixedUserKey, updatedValue);
     }
+  }
 
-    private UrlContext urlContext;
-
-    private JtPage lastExecutionPage;
-
-    InternalSessionState() {
+  void updateAllComponentsState(final Map<@NotNull String, @Nullable Object> componentKeyToUpdatedValue) {
+    for (final Map.Entry<String, Object> entry : componentKeyToUpdatedValue.entrySet()) {
+      updateComponentsState(entry.getKey(), entry.getValue());
     }
+  }
 
-    Map<String, Object> getUserState() {
-        return userState;
-    }
+  @Nullable String getInternalKeyFromUserKey(final @Nonnull String userKey) {
+    final String prefixedUserKey = StateManager.pagePrefix() + userKey;
+    return internalKeyToUserKey.inverse().get(prefixedUserKey);
+  }
 
-    Map<String, Object> getUserVisibleComponentsState() {
-        return userVisibleComponentsState;
-    }
+  String getCallbackComponentKey() {
+    return callbackComponentKey;
+  }
 
-    void removeComponentState(@Nonnull String componentKey) {
-        componentsState.remove(componentKey);
-        if (internalKeyToUserKey.containsKey(componentKey)) {
-            userVisibleComponentsState.remove(internalKeyToUserKey.get(componentKey));
-            internalKeyToUserKey.remove(componentKey);
-        }
-    }
+  void setCallbackComponentKey(String callbackComponentKey) {
+    this.callbackComponentKey = callbackComponentKey;
+  }
 
-    void removeAllComponentsWithPrefix(@Nonnull String prefix) {
-        componentsState.keySet().removeIf(key -> key.startsWith(prefix));
-        userVisibleComponentsState.keySet().removeIf(key -> key.startsWith(prefix));
-        internalKeyToUserKey.keySet().removeIf(key -> key.startsWith(prefix));
-    }
+  Map<String, Map<String, Object>> pendingInFormComponentsState() {
+    return pendingInFormComponentsState;
+  }
 
-    Object getComponentState(final @Nonnull String componentKey) {
-        return componentsState.get(componentKey);
-    }
+  Set<String> formComponentsToReset() {
+    return formComponentsToReset;
+  }
 
-    void upsertComponentsState(final @Nonnull JtComponent component) {
-        componentsState.put(component.getInternalKey(), component.returnValue());
-        if (component.getUserKey() != null) {
-            final String prefixedUserKey = StateManager.pagePrefix() + component.getUserKey();
-            internalKeyToUserKey.forcePut(component.getInternalKey(), prefixedUserKey);
-            userVisibleComponentsState.put(prefixedUserKey, component.returnValue());
-        }
-    }
+  void setUrlContext(UrlContext urlContext) {
+    this.urlContext = urlContext;
+  }
 
-    // corresponds to a frontend update
-    void updateComponentsState(final @Nonnull String componentKey, final Object updatedValue) {
-        // this is a precondition - caller already ensures (and must), but keeping it here for safer refactorings and early catching of bugs
-        checkState(componentsState.containsKey(componentKey), "Implementation error. Please reach out to support.");
-        componentsState.put(componentKey, updatedValue);
-        if (internalKeyToUserKey.containsKey(componentKey)) {
-            final String prefixedUserKey = internalKeyToUserKey.get(componentKey);
-            userVisibleComponentsState.put(prefixedUserKey, updatedValue);
-        }
-    }
+  UrlContext getUrlContext() {
+    return urlContext;
+  }
 
-    void updateAllComponentsState(final Map<@NotNull String, @Nullable Object> componentKeyToUpdatedValue) {
-        for (final Map.Entry<String, Object> entry : componentKeyToUpdatedValue.entrySet()) {
-            updateComponentsState(entry.getKey(), entry.getValue());
-        }
-    }
+  void setLastExecutionPage(JtPage lastExecutionPage) {
+    this.lastExecutionPage = lastExecutionPage;
+  }
 
-    @Nullable String getInternalKeyFromUserKey(final @Nonnull String userKey) {
-        final String prefixedUserKey = StateManager.pagePrefix() + userKey;
-        return internalKeyToUserKey.inverse().get(prefixedUserKey);
-    }
+  JtPage getLastExecutionPage() {
+    return lastExecutionPage;
+  }
 
-    String getCallbackComponentKey() {
-        return callbackComponentKey;
-    }
+  public Set<String> getRegisteredInFrontend() {
+    return registeredInFrontend;
+  }
 
-    void setCallbackComponentKey(String callbackComponentKey) {
-        this.callbackComponentKey = callbackComponentKey;
-    }
-
-    Map<String, Map<String, Object>> pendingInFormComponentsState() {
-        return pendingInFormComponentsState;
-    }
-
-    Set<String> formComponentsToReset() {
-        return formComponentsToReset;
-    }
-
-    void setUrlContext(UrlContext urlContext) {
-        this.urlContext = urlContext;
-    }
-
-    UrlContext getUrlContext() {
-        return urlContext;
-    }
-
-    void setLastExecutionPage(JtPage lastExecutionPage) {
-        this.lastExecutionPage = lastExecutionPage;
-    }
-
-    JtPage getLastExecutionPage() {
-        return lastExecutionPage;
-    }
-
-    public Set<String> getRegisteredInFrontend() {
-        return registeredInFrontend;
-    }
-
-    public Map<String, MediaEntry> getMedia() {
-        return media;
-    }
+  public Map<String, MediaEntry> getMedia() {
+    return media;
+  }
 }

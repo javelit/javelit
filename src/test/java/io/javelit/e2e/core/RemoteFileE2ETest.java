@@ -33,144 +33,144 @@ import static io.javelit.e2e.helpers.PortAllocator.getNextAvailablePort;
  */
 public class RemoteFileE2ETest {
 
-    @Test
-    void testRunRemoteFileViaPlainTextUrl() {
-        final int port = getNextAvailablePort();
-        final String remoteUrl = "https://raw.githubusercontent.com/javelit/javelit/refs/heads/main/src/test/resources/RemoteUrlApp.java";
+  @Test
+  void testRunRemoteFileViaPlainTextUrl() {
+    final int port = getNextAvailablePort();
+    final String remoteUrl = "https://raw.githubusercontent.com/javelit/javelit/refs/heads/main/src/test/resources/RemoteUrlApp.java";
 
-        // Execute javelit CLI in a separate thread
-        final Thread cliThread = new Thread(() -> {
-            // Use main method approach since subcommands are package-private
-            String[] args = {"run", remoteUrl, "--port", String.valueOf(port), "--no-browser"};
-            Cli.main(args);
-        });
-        cliThread.setDaemon(true);
-        cliThread.start();
+    // Execute javelit CLI in a separate thread
+    final Thread cliThread = new Thread(() -> {
+      // Use main method approach since subcommands are package-private
+      String[] args = {"run", remoteUrl, "--port", String.valueOf(port), "--no-browser"};
+      Cli.main(args);
+    });
+    cliThread.setDaemon(true);
+    cliThread.start();
 
-        JavelitTestHelper.waitForServerReady(port);
+    JavelitTestHelper.waitForServerReady(port);
 
-        // Verify with Playwright that the app is running
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+    // Verify with Playwright that the app is running
+    try (final Playwright playwright = Playwright.create();
+         final Browser browser = playwright.chromium().launch(HEADLESS);
+         final Page page = browser.newPage()) {
+      page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
-            // Verify the title from the remote app is visible
-            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
-            assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
-        }
+      // Verify the title from the remote app is visible
+      final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+      assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
     }
+  }
 
-    @Test
-    void testRunRemoteFileViaGithubBlobUrl() {
-        final int port = getNextAvailablePort();
-        // also test without protocol
-        final String remoteUrl = "https://github.com/javelit/javelit/blob/refs/heads/main/src/test/resources/RemoteUrlApp.java";
+  @Test
+  void testRunRemoteFileViaGithubBlobUrl() {
+    final int port = getNextAvailablePort();
+    // also test without protocol
+    final String remoteUrl = "https://github.com/javelit/javelit/blob/refs/heads/main/src/test/resources/RemoteUrlApp.java";
 
-        // Execute javelit CLI in a separate thread
-        final Thread cliThread = new Thread(() -> {
-            // Use main method approach since subcommands are package-private
-            String[] args = {"run", remoteUrl, "--port", String.valueOf(port), "--no-browser"};
-            Cli.main(args);
-        });
-        cliThread.setDaemon(true);
-        cliThread.start();
+    // Execute javelit CLI in a separate thread
+    final Thread cliThread = new Thread(() -> {
+      // Use main method approach since subcommands are package-private
+      String[] args = {"run", remoteUrl, "--port", String.valueOf(port), "--no-browser"};
+      Cli.main(args);
+    });
+    cliThread.setDaemon(true);
+    cliThread.start();
 
-        JavelitTestHelper.waitForServerReady(port);
+    JavelitTestHelper.waitForServerReady(port);
 
-        // Verify with Playwright that the app is running
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+    // Verify with Playwright that the app is running
+    try (final Playwright playwright = Playwright.create();
+         final Browser browser = playwright.chromium().launch(HEADLESS);
+         final Page page = browser.newPage()) {
+      page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
-            // Verify the title from the remote app is visible
-            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
-            assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
-        }
+      // Verify the title from the remote app is visible
+      final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+      assertThat(page.locator("h1:has-text('Hello World')")).isVisible(timeout);
     }
+  }
 
-    @Test
-    void testRunRemoteGitHubFolder() {
-        final int port = getNextAvailablePort();
-        final String remoteFolderUrl = "https://github.com/javelit/javelit/tree/main/src/test/resources/multipage-remote";
+  @Test
+  void testRunRemoteGitHubFolder() {
+    final int port = getNextAvailablePort();
+    final String remoteFolderUrl = "https://github.com/javelit/javelit/tree/main/src/test/resources/multipage-remote";
 
-        // Execute javelit CLI in a separate thread
-        final Thread cliThread = new Thread(() -> {
-            // Use main method approach since subcommands are package-private
-            String[] args = {"run", remoteFolderUrl, "--port", String.valueOf(port), "--no-browser"};
-            Cli.main(args);
-        });
-        cliThread.setDaemon(true);
-        cliThread.start();
+    // Execute javelit CLI in a separate thread
+    final Thread cliThread = new Thread(() -> {
+      // Use main method approach since subcommands are package-private
+      String[] args = {"run", remoteFolderUrl, "--port", String.valueOf(port), "--no-browser"};
+      Cli.main(args);
+    });
+    cliThread.setDaemon(true);
+    cliThread.start();
 
-        JavelitTestHelper.waitForServerReady(port);
+    JavelitTestHelper.waitForServerReady(port);
 
-        // Verify with Playwright that the app is running
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+    // Verify with Playwright that the app is running
+    try (final Playwright playwright = Playwright.create();
+         final Browser browser = playwright.chromium().launch(HEADLESS);
+         final Page page = browser.newPage()) {
+      page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
-            // Verify the multipage navigation is visible (checking for "Dashboard" link)
-            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
-            assertThat(page.getByText("Users")).isVisible(timeout);
-        }
+      // Verify the multipage navigation is visible (checking for "Dashboard" link)
+      final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+      assertThat(page.getByText("Users")).isVisible(timeout);
     }
+  }
 
-    @Test
-    void testRunRemotePlainGitHubRepoUrl() {
-        final int port = getNextAvailablePort();
-        final String repoUrl = "https://github.com/javelit/jeamlit-example-standalone-vanilla";
+  @Test
+  void testRunRemotePlainGitHubRepoUrl() {
+    final int port = getNextAvailablePort();
+    final String repoUrl = "https://github.com/javelit/jeamlit-example-standalone-vanilla";
 
-        // Execute javelit CLI in a separate thread
-        final Thread cliThread = new Thread(() -> {
-            // Use main method approach since subcommands are package-private
-            String[] args = {"run", repoUrl, "--port", String.valueOf(port), "--no-browser"};
-            Cli.main(args);
-        });
-        cliThread.setDaemon(true);
-        cliThread.start();
+    // Execute javelit CLI in a separate thread
+    final Thread cliThread = new Thread(() -> {
+      // Use main method approach since subcommands are package-private
+      String[] args = {"run", repoUrl, "--port", String.valueOf(port), "--no-browser"};
+      Cli.main(args);
+    });
+    cliThread.setDaemon(true);
+    cliThread.start();
 
-        JavelitTestHelper.waitForServerReady(port);
+    JavelitTestHelper.waitForServerReady(port);
 
-        // Verify with Playwright that the app is running
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+    // Verify with Playwright that the app is running
+    try (final Playwright playwright = Playwright.create();
+         final Browser browser = playwright.chromium().launch(HEADLESS);
+         final Page page = browser.newPage()) {
+      page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
-            // Verify the app loaded (check for any visible content - adjust based on actual app)
-            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
-            assertThat(page.locator("#app")).isVisible(timeout);
-        }
+      // Verify the app loaded (check for any visible content - adjust based on actual app)
+      final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+      assertThat(page.locator("#app")).isVisible(timeout);
     }
+  }
 
-    @Test
-    void testRunRemoteGitHubRepoRootWithTree() {
-        final int port = getNextAvailablePort();
-        final String repoUrl = "https://github.com/javelit/jeamlit-example-standalone-vanilla/tree/main";
+  @Test
+  void testRunRemoteGitHubRepoRootWithTree() {
+    final int port = getNextAvailablePort();
+    final String repoUrl = "https://github.com/javelit/jeamlit-example-standalone-vanilla/tree/main";
 
-        // Execute javelit CLI in a separate thread
-        final Thread cliThread = new Thread(() -> {
-            // Use main method approach since subcommands are package-private
-            String[] args = {"run", repoUrl, "--port", String.valueOf(port), "--no-browser"};
-            Cli.main(args);
-        });
-        cliThread.setDaemon(true);
-        cliThread.start();
+    // Execute javelit CLI in a separate thread
+    final Thread cliThread = new Thread(() -> {
+      // Use main method approach since subcommands are package-private
+      String[] args = {"run", repoUrl, "--port", String.valueOf(port), "--no-browser"};
+      Cli.main(args);
+    });
+    cliThread.setDaemon(true);
+    cliThread.start();
 
-        JavelitTestHelper.waitForServerReady(port);
+    JavelitTestHelper.waitForServerReady(port);
 
-        // Verify with Playwright that the app is running
-        try (final Playwright playwright = Playwright.create();
-             final Browser browser = playwright.chromium().launch(HEADLESS);
-             final Page page = browser.newPage()) {
-            page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
+    // Verify with Playwright that the app is running
+    try (final Playwright playwright = Playwright.create();
+         final Browser browser = playwright.chromium().launch(HEADLESS);
+         final Page page = browser.newPage()) {
+      page.navigate("http://localhost:" + port, new Page.NavigateOptions().setTimeout(10000));
 
-            // Verify the app loaded (check for any visible content - adjust based on actual app)
-            final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
-            assertThat(page.locator("#app")).isVisible(timeout);
-        }
+      // Verify the app loaded (check for any visible content - adjust based on actual app)
+      final LocatorAssertions.IsVisibleOptions timeout = new LocatorAssertions.IsVisibleOptions().setTimeout(5000);
+      assertThat(page.locator("#app")).isVisible(timeout);
     }
+  }
 }

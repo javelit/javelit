@@ -25,34 +25,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MarkdownUtilsTest {
 
-    private static Stream<Arguments> testCases() {
+  private static Stream<Arguments> testCases() {
 
-        return Stream.of(Arguments.of("# This is a title",
-                                      "<h1>This is a title</h1>",
-                                      "This is a title"),
-                         Arguments.of("A basic text", "<p>A basic text</p>", "A basic text"),
-                         Arguments.of("_Javelit_ is cool :sunglasses:",
-                                      "<p><em>Javelit</em> is cool \uD83D\uDE0E</p>",
-                                      "<em>Javelit</em> is cool \uD83D\uDE0E"),
-                         Arguments.of("""
-                                              Breaking stuff
-                                              ## A title
-                                              With some content
-                                              """, """
-                                              <p>Breaking stuff</p>
-                                              <h2>A title</h2>
-                                              <p>With some content</p>""", """
-                                              <p>Breaking stuff</p>
-                                              <h2>A title</h2>
-                                              <p>With some content</p>"""),
-                         Arguments.of("", "", ""));
-    }
+    return Stream.of(Arguments.of("# This is a title",
+                                  "<h1>This is a title</h1>",
+                                  "This is a title"),
+                     Arguments.of("A basic text", "<p>A basic text</p>", "A basic text"),
+                     Arguments.of("_Javelit_ is cool :sunglasses:",
+                                  "<p><em>Javelit</em> is cool \uD83D\uDE0E</p>",
+                                  "<em>Javelit</em> is cool \uD83D\uDE0E"),
+                     Arguments.of("""
+                                      Breaking stuff
+                                      ## A title
+                                      With some content
+                                      """, """
+                                      <p>Breaking stuff</p>
+                                      <h2>A title</h2>
+                                      <p>With some content</p>""", """
+                                      <p>Breaking stuff</p>
+                                      <h2>A title</h2>
+                                      <p>With some content</p>"""),
+                     Arguments.of("", "", ""));
+  }
 
 
-    @ParameterizedTest
-    @MethodSource("testCases")
-    public void testMarkdownConversion(final String input, final String keepWrap, final String removeWrap) {
-        assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
-        assertThat(MarkdownUtils.markdownToHtml(input, true)).isEqualTo(removeWrap);
-    }
+  @ParameterizedTest
+  @MethodSource("testCases")
+  public void testMarkdownConversion(final String input, final String keepWrap, final String removeWrap) {
+    assertThat(MarkdownUtils.markdownToHtml(input, false)).isEqualTo(keepWrap);
+    assertThat(MarkdownUtils.markdownToHtml(input, true)).isEqualTo(removeWrap);
+  }
 }

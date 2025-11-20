@@ -14,13 +14,13 @@
     limitations under the License.
 }}
 <jt-columns
-num-columns="{{numColumns}}"
-{{#widthsJson}}widths="{{widthsJson}}"{{/widthsJson}}
-gap="{{gap}}"
-vertical-alignment="{{verticalAlignment}}"
-{{#border}}border{{/border}}
+        num-columns="{{numColumns}}"
+        {{#widthsJson}}widths="{{widthsJson}}"{{/widthsJson}}
+        gap="{{gap}}"
+        vertical-alignment="{{verticalAlignment}}"
+        {{#border}}border{{/border}}
 >
-{{#currentValue.indexedColumns.entrySet}}
-<div slot="col_{{key}}" data-container="{{value.frontendDataContainerField}}"></div>
-{{/currentValue.indexedColumns.entrySet}}
+    {{#currentValue.indexedColumns.entrySet}}
+        <div slot="col_{{key}}" data-container="{{value.frontendDataContainerField}}"></div>
+    {{/currentValue.indexedColumns.entrySet}}
 </jt-columns>

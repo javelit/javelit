@@ -29,16 +29,16 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class UnusedComponentsWarningE2ETest {
 
-    @Test
-    void testUnusedComponentWarning(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.text("Hello World");
-        };
+  @Test
+  void testUnusedComponentWarning(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.text("Hello World");
+    };
 
-        // Verify warning text appears
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify warning text appears
-            assertThat(page.getByText("The following components were created but never used")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // Verify warning text appears
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Verify warning text appears
+      assertThat(page.getByText("The following components were created but never used")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

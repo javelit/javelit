@@ -15,7 +15,7 @@
 }}
 <script src="{{ SPRINTF_DEPENDENCY }}"></script>
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtNumberInput extends LitElement {
         static styles = css`
@@ -192,22 +192,22 @@
         `;
 
         static properties = {
-            label: { type: String },
-            value: { type: String },
-            minValue: { type: String, attribute: 'min-value' },
-            maxValue: { type: String, attribute: 'max-value' },
-            step: { type: Number },
-            format: { type: String },
-            help: { type: String },
-            placeholder: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            icon: { type: String },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' },
-            hasIcon: { type: Boolean, attribute: 'has-icon', reflect: true },
-            hasChanged: { type: Boolean, state: true },
-            isFocused: { type: Boolean, state: true }
+            label: {type: String},
+            value: {type: String},
+            minValue: {type: String, attribute: 'min-value'},
+            maxValue: {type: String, attribute: 'max-value'},
+            step: {type: Number},
+            format: {type: String},
+            help: {type: String},
+            placeholder: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            icon: {type: String},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'},
+            hasIcon: {type: Boolean, attribute: 'has-icon', reflect: true},
+            hasChanged: {type: Boolean, state: true},
+            isFocused: {type: Boolean, state: true}
         };
 
         constructor() {
@@ -217,7 +217,7 @@
             this.labelVisibility = 'visible';
             this.width = 'stretch';
             this.step = 1;
-            
+
             // Internal state
             this.initialValue = '';
             this.hasChanged = false;
@@ -264,10 +264,10 @@
 
         formatDisplayValue(rawValue) {
             if (!rawValue && rawValue !== 0) return '';
-            
+
             const numValue = parseFloat(rawValue);
             if (isNaN(numValue)) return rawValue;
-            
+
             if (this.format && window.sprintf) {
                 try {
                     return window.sprintf(this.format, numValue);
@@ -276,13 +276,13 @@
                     return rawValue;
                 }
             }
-            
+
             return rawValue;
         }
 
         parseInputValue(strValue) {
             if (!strValue || strValue.trim() === '') return null;
-            
+
             const trimmed = strValue.trim();
             const parsed = parseFloat(trimmed);
             return isNaN(parsed) ? null : parsed;
@@ -291,40 +291,40 @@
         isValidNumberInput(char, currentValue, cursorPos) {
             // Allow basic number characters
             if (/[0-9]/.test(char)) return true;
-            
+
             // Allow decimal point (only one)
             if (char === '.') {
                 return currentValue.indexOf('.') === -1;
             }
-            
+
             // Allow minus sign at start
             if (char === '-') {
                 return cursorPos === 0 && currentValue.indexOf('-') === -1;
             }
-            
+
             // Allow plus sign at start
             if (char === '+') {
                 return cursorPos === 0 && currentValue.indexOf('+') === -1 && currentValue.indexOf('-') === -1;
             }
-            
+
             // Allow scientific notation (e, E)
             if (/[eE]/.test(char)) {
                 const hasE = /[eE]/.test(currentValue);
                 return !hasE && currentValue.length > 0;
             }
-            
+
             // Allow control characters
             if (char.length !== 1) return true;
-            
+
             return false;
         }
 
         applyConstraints(value) {
             if (value === null || value === undefined) return null;
-            
+
             let numValue = typeof value === 'number' ? value : parseFloat(value);
             if (isNaN(numValue)) return null;
-            
+
             // Apply min constraint
             if (this.minValue !== null && this.minValue !== undefined) {
                 const min = parseFloat(this.minValue);
@@ -332,7 +332,7 @@
                     numValue = min;
                 }
             }
-            
+
             // Apply max constraint
             if (this.maxValue !== null && this.maxValue !== undefined) {
                 const max = parseFloat(this.maxValue);
@@ -340,21 +340,21 @@
                     numValue = max;
                 }
             }
-            
+
             return numValue;
         }
 
         handleKeyPress(e) {
             if (this.disabled) return;
-            
+
             const char = e.key;
             const input = e.target;
-            
+
             // Allow special keys (backspace, delete, arrow keys, etc.)
             if (e.metaKey || e.ctrlKey || char.length > 1) {
                 return;
             }
-            
+
             if (!this.isValidNumberInput(char, input.value, input.selectionStart)) {
                 e.preventDefault();
             }
@@ -364,10 +364,10 @@
             if (this.disabled) return;
 
             const newValue = e.target.value;
-            
+
             // Track if value has changed from initial
             this.hasChanged = newValue !== this.initialValue;
-            
+
             this.requestUpdate();
         }
 
@@ -393,21 +393,21 @@
 
         handleBlur() {
             this.isFocused = false;
-            
+
             // Submit value if it has changed
             if (this.hasChanged) {
                 this.submitValue();
             }
-            
+
             this.requestUpdate();
         }
 
         stepUp() {
             if (this.disabled) return;
-            
+
             const input = this.shadowRoot.querySelector('.input-field');
             let currentValue = this.parseInputValue(input.value);
-            
+
             if (currentValue === null) {
                 // If no current value, start from min or 0
                 if (this.minValue !== null && this.minValue !== undefined) {
@@ -416,11 +416,11 @@
                     currentValue = 0;
                 }
             }
-            
+
             const stepValue = this.step;
             const newValue = currentValue + stepValue;
             const constrainedValue = this.applyConstraints(newValue);
-            
+
             if (constrainedValue !== null) {
                 input.value = constrainedValue.toString();
                 this.submitValue();
@@ -429,10 +429,10 @@
 
         stepDown() {
             if (this.disabled) return;
-            
+
             const input = this.shadowRoot.querySelector('.input-field');
             let currentValue = this.parseInputValue(input.value);
-            
+
             if (currentValue === null) {
                 // If no current value, start from max or 0
                 if (this.maxValue !== null && this.maxValue !== undefined) {
@@ -441,11 +441,11 @@
                     currentValue = 0;
                 }
             }
-            
+
             const stepValue = this.step;
             const newValue = currentValue - stepValue;
             const constrainedValue = this.applyConstraints(newValue);
-            
+
             if (constrainedValue !== null) {
                 input.value = constrainedValue.toString();
                 this.submitValue();
@@ -455,31 +455,31 @@
         submitValue() {
             const input = this.shadowRoot.querySelector('.input-field');
             const currentValue = input.value;
-            
+
             // Parse and validate the value
             const parsedValue = this.parseInputValue(currentValue);
             const constrainedValue = this.applyConstraints(parsedValue);
-            
+
             // Update display if value was constrained
             if (constrainedValue !== parsedValue) {
                 input.value = constrainedValue !== null ? constrainedValue.toString() : '';
             }
-            
+
             // Update internal state
             this.value = input.value;
             this.initialValue = this.value;
             this.hasChanged = false;
-            
+
             // Emit to backend
             window.javelit.sendComponentUpdate(this.componentKey, constrainedValue);
-            
+
             this.requestUpdate();
         }
 
         areButtonsDisabled() {
             const input = this.shadowRoot?.querySelector('.input-field');
             const inputValue = input?.value || this.value;
-            
+
             // Disable if component is disabled or if value is null/empty initially
             return this.disabled || (!inputValue && !this.value);
         }

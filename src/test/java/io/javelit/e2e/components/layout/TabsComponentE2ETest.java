@@ -36,47 +36,47 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class TabsComponentE2ETest {
 
-    @Test
-    void testTabSwitching(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            TabsComponent.Tabs tabs = Jt.tabs(List.of("Tab 0", "Tab 1", "Tab 2")).use();
+  @Test
+  void testTabSwitching(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      TabsComponent.Tabs tabs = Jt.tabs(List.of("Tab 0", "Tab 1", "Tab 2")).use();
 
-            // Content for Tab 1
-            Jt.text("Content of Tab 0").use(tabs.tab(0));
-            Jt.button("Button in Tab 0").use(tabs.tab(0));
+      // Content for Tab 1
+      Jt.text("Content of Tab 0").use(tabs.tab(0));
+      Jt.button("Button in Tab 0").use(tabs.tab(0));
 
-            // Content for Tab 2
-            Jt.text("Content of Tab 1").use(tabs.tab(1));
-            Jt.button("Button in Tab 1").use(tabs.tab(1));
+      // Content for Tab 2
+      Jt.text("Content of Tab 1").use(tabs.tab(1));
+      Jt.button("Button in Tab 1").use(tabs.tab(1));
 
-            // Content for Tab 3
-            Jt.text("Content of Tab 2").use(tabs.tab(2));
-            Jt.button("Button in Tab 2").use(tabs.tab(2));
-        };
+      // Content for Tab 3
+      Jt.text("Content of Tab 2").use(tabs.tab(2));
+      Jt.button("Button in Tab 2").use(tabs.tab(2));
+    };
 
-        // Wait for tabs to be visible
-        // Check tab headers are visible
-        // Initially, Tab 1 content should be visible
-        // Click on Tab 2
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+    // Wait for tabs to be visible
+    // Check tab headers are visible
+    // Initially, Tab 1 content should be visible
+    // Click on Tab 2
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
 
-            // Wait for tabs to be visible
-            assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
-            // Check tab headers are visible
-            assertThat(page.getByText("Tab 0", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Tab 1", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            final Locator tab2Header = page.getByText("Tab 2", EXACT_MATCH);
-            assertThat(tab2Header).isVisible(WAIT_1_SEC_MAX);
-            // Initially, Tab 1 content should be visible
-            assertThat(page.getByText("Content of Tab 0")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
-            assertThat(page.getByText("Content of Tab 2")).not().isVisible(WAIT_10_MS_MAX);
-            // Click on Tab 2
-            tab2Header.click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
-            assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
+      // Wait for tabs to be visible
+      assertThat(page.locator("jt-tabs")).isVisible(WAIT_1_SEC_MAX);
+      // Check tab headers are visible
+      assertThat(page.getByText("Tab 0", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("Tab 1", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      final Locator tab2Header = page.getByText("Tab 2", EXACT_MATCH);
+      assertThat(tab2Header).isVisible(WAIT_1_SEC_MAX);
+      // Initially, Tab 1 content should be visible
+      assertThat(page.getByText("Content of Tab 0")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
+      assertThat(page.getByText("Content of Tab 2")).not().isVisible(WAIT_10_MS_MAX);
+      // Click on Tab 2
+      tab2Header.click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("Content of Tab 2")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("Content of Tab 0")).not().isVisible(WAIT_10_MS_MAX);
+      assertThat(page.getByText("Content of Tab 1")).not().isVisible(WAIT_10_MS_MAX);
 
-        });
-    }
+    });
+  }
 }

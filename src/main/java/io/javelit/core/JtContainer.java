@@ -28,116 +28,118 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public final class JtContainer implements JtComponent.NotAState {
 
-    public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
+  public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 
-    public static final JtContainer MAIN = new JtContainer("main", null, false, false);
-    public static final JtContainer SIDEBAR = new JtContainer("sidebar", null, false, false);
+  public static final JtContainer MAIN = new JtContainer("main", null, false, false);
+  public static final JtContainer SIDEBAR = new JtContainer("sidebar", null, false, false);
 
-    private final @Nonnull List<@NotNull String> path;
-    private final @Nullable JtContainer parent;
-    private final boolean inPlace;
-    private final boolean formContainer;
+  private final @Nonnull List<@NotNull String> path;
+  private final @Nullable JtContainer parent;
+  private final boolean inPlace;
+  private final boolean formContainer;
 
-    private JtContainer(final @NotNull String key,
-                        @Nullable JtContainer parent,
-                        final boolean inPlace,
-                        final boolean formContainer) {
-        if (key.contains(",")) {
-            throw new IllegalArgumentException(
-                    "Container path cannot contain a comma. Please remove the comma from your key or container path.");
-        }
-        if (key.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Container path cannot contain an empty string. Please remove the empty string from your key or container path.");
-        }
-        this.inPlace = inPlace;
-        this.formContainer = formContainer;
-        this.parent = parent;
-        if (this.parent == null) {
-            this.path = List.of(key);
-        } else {
-            final ArrayList<String> tempPath = new ArrayList<>(parent.path.size() + 1);
-            tempPath.addAll(parent.path);
-            tempPath.add(key);
-            this.path = List.copyOf(tempPath);
-        }
+  private JtContainer(final @NotNull String key,
+                      @Nullable JtContainer parent,
+                      final boolean inPlace,
+                      final boolean formContainer) {
+    if (key.contains(",")) {
+      throw new IllegalArgumentException(
+          "Container path cannot contain a comma. Please remove the comma from your key or container path.");
     }
-
-    public JtContainer child(final @NotNull String key) {
-        return new JtContainer(key, this, false, false);
+    if (key.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Container path cannot contain an empty string. Please remove the empty string from your key or container path.");
     }
-
-    public JtContainer inPlaceChild(final @NotNull String key) {
-        return new JtContainer(key, this, true, false);
+    this.inPlace = inPlace;
+    this.formContainer = formContainer;
+    this.parent = parent;
+    if (this.parent == null) {
+      this.path = List.of(key);
+    } else {
+      final ArrayList<String> tempPath = new ArrayList<>(parent.path.size() + 1);
+      tempPath.addAll(parent.path);
+      tempPath.add(key);
+      this.path = List.copyOf(tempPath);
     }
+  }
 
-    public JtContainer formChild(final @NotNull String key) {
-        final String parentFormComponentKey = this.getParentFormComponentKey();
-        checkArgument(parentFormComponentKey == null,
-                      "Attempting to create a form with key %s in a form %s. A form cannot be embedded inside another form.",
-                      key,
-                      parentFormComponentKey);
-        return new JtContainer(key, this, false, true);
+  public JtContainer child(final @NotNull String key) {
+    return new JtContainer(key, this, false, false);
+  }
+
+  public JtContainer inPlaceChild(final @NotNull String key) {
+    return new JtContainer(key, this, true, false);
+  }
+
+  public JtContainer formChild(final @NotNull String key) {
+    final String parentFormComponentKey = this.getParentFormComponentKey();
+    checkArgument(parentFormComponentKey == null,
+                  "Attempting to create a form with key %s in a form %s. A form cannot be embedded inside another form.",
+                  key,
+                  parentFormComponentKey);
+    return new JtContainer(key, this, false, true);
+  }
+
+  @Nonnull
+  List<@NotNull String> path() {
+    return path;
+  }
+
+
+  boolean isInPlace() {
+    return inPlace;
+  }
+
+  // returns null if the Container has no parent (if main or sidebar)
+  @Nullable
+  JtContainer parent() {
+    return parent;
+  }
+
+  /**
+   * Find the parent form component key by traversing up the container hierarchy
+   * If the Container is a form, returns its own key.
+   * Return {@code null} if there is no form in the parents.
+   */
+  @Nullable
+  public String getParentFormComponentKey() {
+    JtContainer current = this;
+    while (current != null) {
+      if (current.formContainer) {
+        // Return the last element of the path (the form container's key)
+        return current.path.getLast();
+      }
+      current = current.parent;
     }
+    return null;
+  }
 
-    @Nonnull List<@NotNull String> path() {
-        return path;
+  @SuppressWarnings("unused")
+  public @Nonnull String frontendDataContainerField() {
+    return String.join(",", path);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(path, parent, inPlace);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
     }
-
-
-    boolean isInPlace() {
-        return inPlace;
+    if (!(obj instanceof JtContainer other)) {
+      return false;
     }
+    return this.path.equals(other.path)
+           && Objects.equals(this.parent, other.parent)
+           && this.inPlace == other.inPlace;
+  }
 
-    // returns null if the Container has no parent (if main or sidebar)
-    @Nullable JtContainer parent() {
-        return parent;
-    }
-
-    /**
-     * Find the parent form component key by traversing up the container hierarchy
-     * If the Container is a form, returns its own key.
-     * Return {@code null} if there is no form in the parents.
-     */
-    @Nullable
-    public String getParentFormComponentKey() {
-        JtContainer current = this;
-        while (current != null) {
-            if (current.formContainer) {
-                // Return the last element of the path (the form container's key)
-                return current.path.getLast();
-            }
-            current = current.parent;
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unused")
-    public @Nonnull String frontendDataContainerField() {
-        return String.join(",", path);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(path, parent, inPlace);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof JtContainer other)) {
-            return false;
-        }
-        return this.path.equals(other.path)
-               && Objects.equals(this.parent, other.parent)
-               && this.inPlace == other.inPlace;
-    }
-
-    @Override
-    public String toString() {
-        // no parent and inPlace in the string representation, it will be confusing to users
-        return String.join("->", path);
-    }
+  @Override
+  public String toString() {
+    // no parent and inPlace in the string representation, it will be confusing to users
+    return String.join("->", path);
+  }
 }

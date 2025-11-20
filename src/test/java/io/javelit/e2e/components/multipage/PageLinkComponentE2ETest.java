@@ -37,133 +37,140 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class PageLinkComponentE2ETest {
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void testBasicFunctionality(final boolean proxied, final TestInfo testInfo) {
-        JtRunnable app = () -> {
-            final var currentPage = Jt.navigation(
-                Jt.page("/home", PageLinkComponentE2ETest::home).title("Home").home(),
-                Jt.page("/about", PageLinkComponentE2ETest::about).title("About")
-            ).use();
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testBasicFunctionality(final boolean proxied, final TestInfo testInfo) {
+    JtRunnable app = () -> {
+      final var currentPage = Jt.navigation(
+          Jt.page("/home", PageLinkComponentE2ETest::home).title("Home").home(),
+          Jt.page("/about", PageLinkComponentE2ETest::about).title("About")
+      ).use();
 
-            currentPage.run();
+      currentPage.run();
 
-            Jt.text("Navigation Links:").use();
+      Jt.text("Navigation Links:").use();
 
-            // Internal page links with various configurations
-            Jt.pageLink("/home").icon("🏠").use();
-            Jt.pageLink("/about").icon("ℹ️").width("stretch").use();
+      // Internal page links with various configurations
+      Jt.pageLink("/home").icon("🏠").use();
+      Jt.pageLink("/about").icon("ℹ️").width("stretch").use();
 
-            // External link
-            Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
+      // External link
+      Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
 
-            // Disabled link
-            Jt.pageLink("/about").disabled(true).use();
-        };
+      // Disabled link
+      Jt.pageLink("/about").disabled(true).use();
+    };
 
-        // Verify page links are visible
-        // Navigate to About page
-        // Test internal navigation - click Home link
-        // Test icons are present
-        // Test external link has correct attributes
-        // Test disabled link
-        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
-            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+    // Verify page links are visible
+    // Navigate to About page
+    // Test internal navigation - click Home link
+    // Test icons are present
+    // Test external link has correct attributes
+    // Test disabled link
+    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+      final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
 
-            // Verify page links are visible
-            assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
+      // Verify page links are visible
+      assertThat(page.locator("jt-page-link").first()).isVisible(WAIT_1_SEC_MAX);
 
-            // Navigate to About page
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("About")).first().click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("About page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
+      // Navigate to About page
+      page
+          .getByRole(AriaRole.LINK)
+          .filter(new Locator.FilterOptions().setHasText("About"))
+          .first()
+          .click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("About page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
 
-            // Test internal navigation - click Home link
-            page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("🏠 Home")).click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("Home page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
+      // Test internal navigation - click Home link
+      page
+          .getByRole(AriaRole.LINK)
+          .filter(new Locator.FilterOptions().setHasText("🏠 Home"))
+          .click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("Home page content", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
 
-            // Test icons are present
-            assertThat(page.locator("jt-page-link .emoji-icon").first()).isVisible(WAIT_1_SEC_MAX);
+      // Test icons are present
+      assertThat(page.locator("jt-page-link .emoji-icon").first()).isVisible(WAIT_1_SEC_MAX);
 
-            // Test external link has correct attributes
-            assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
-                .hasAttribute("href", "https://example.com");
-            assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
-                .hasAttribute("target", "_blank");
+      // Test external link has correct attributes
+      assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
+          .hasAttribute("href", "https://example.com");
+      assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
+          .hasAttribute("target", "_blank");
 
-            // Test disabled link
-            assertThat(page.locator("jt-page-link[disabled]")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // Test disabled link
+      assertThat(page.locator("jt-page-link[disabled]")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
-    private static void home() {
-        Jt.text("Home page content").use();
-        Jt.pageLink("/about").use();
-    }
+  private static void home() {
+    Jt.text("Home page content").use();
+    Jt.pageLink("/about").use();
+  }
 
-    private static void about() {
-        Jt.text("About page content").use();
-        Jt.pageLink("/home").use();
-    }
+  private static void about() {
+    Jt.text("About page content").use();
+    Jt.pageLink("/home").use();
+  }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void testActiveStateDetection(final boolean proxied, final TestInfo testInfo) {
-        JtRunnable app = () -> {
-            final var currentPage = Jt.navigation(
-                Jt.page("/home", PageLinkComponentE2ETest::home2).title("Home").home(),
-                Jt.page("/about", PageLinkComponentE2ETest::about2).title("About")
-            ).use();
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testActiveStateDetection(final boolean proxied, final TestInfo testInfo) {
+    JtRunnable app = () -> {
+      final var currentPage = Jt.navigation(
+          Jt.page("/home", PageLinkComponentE2ETest::home2).title("Home").home(),
+          Jt.page("/about", PageLinkComponentE2ETest::about2).title("About")
+      ).use();
 
-            currentPage.run();
-            Jt.pageLink("/home").icon("🏠").use();
-            Jt.pageLink("/about").icon("ℹ️").use();
-        };
+      currentPage.run();
+      Jt.pageLink("/home").icon("🏠").use();
+      Jt.pageLink("/about").icon("ℹ️").use();
+    };
 
-        // Start on home page
-        // Home link should have active state
-        // Navigate to About page
-        // Should be on about page with correct active state
-        // Now About link should be active, Home link should not be
-        // Navigate back to Home
-        // Should be back on root URL with Home active again
-        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
-            final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
+    // Start on home page
+    // Home link should have active state
+    // Navigate to About page
+    // Should be on about page with correct active state
+    // Now About link should be active, Home link should not be
+    // Navigate back to Home
+    // Should be back on root URL with Home active again
+    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+      final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
 
-            // Start on home page
-            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
-            assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      // Start on home page
+      assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
+      assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
 
-            // Home link should have active state
-            assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
+      // Home link should have active state
+      assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
 
-            // Navigate to About page
-            page.getByText("ℹ️ About", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
-            // Should be on about page with correct active state
-            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
-            assertThat(page.getByText("About page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      // Navigate to About page
+      page.getByText("ℹ️ About", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
+      // Should be on about page with correct active state
+      assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/about"));
+      assertThat(page.getByText("About page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
 
-            // Now About link should be active, Home link should not be
-            assertThat(page.locator("jt-page-link").last()).hasAttribute("is-active", "");
-            assertThat(page.locator("jt-page-link").first()).not().hasAttribute("is-active", "");
+      // Now About link should be active, Home link should not be
+      assertThat(page.locator("jt-page-link").last()).hasAttribute("is-active", "");
+      assertThat(page.locator("jt-page-link").first()).not().hasAttribute("is-active", "");
 
-            // Navigate back to Home
-            page.getByText("🏠 Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
+      // Navigate back to Home
+      page.getByText("🏠 Home", EXACT_MATCH).click(WAIT_1_SEC_MAX_CLICK);
 
-            // Should be back on root URL with Home active again
-            assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
-            assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
-            assertThat(page.locator("jt-page-link").last()).not().hasAttribute("is-active", "");
-        });
-    }
+      // Should be back on root URL with Home active again
+      assertThat(page).hasURL(Pattern.compile(".*" + pathPrefix + "/home"));
+      assertThat(page.getByText("Home page", EXACT_MATCH)).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.locator("jt-page-link").first()).hasAttribute("is-active", "");
+      assertThat(page.locator("jt-page-link").last()).not().hasAttribute("is-active", "");
+    });
+  }
 
-    private static void home2() {
-        Jt.text("Home page").use();
-    }
+  private static void home2() {
+    Jt.text("Home page").use();
+  }
 
-    private static void about2() {
-        Jt.text("About page").use();
-    }
+  private static void about2() {
+    Jt.text("About page").use();
+  }
 }

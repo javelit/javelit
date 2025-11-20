@@ -21,18 +21,18 @@ import java.lang.reflect.Method;
 // not using an interface to not expose this in the public API
 abstract class Reloader {
 
-    abstract AppEntrypoint reload();
+  abstract AppEntrypoint reload();
 
-    record AppEntrypoint(JtRunnable runnable, ClassLoader classLoader) {
+  record AppEntrypoint(JtRunnable runnable, ClassLoader classLoader) {
 
-        static  AppEntrypoint of(Method method, ClassLoader classLoader) {
-            return new AppEntrypoint(() -> {
-                try {
-                    method.invoke(null, new Object[]{new String[]{}});
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    throw new PageRunException(e);
-                }
-            }, classLoader);
+    static AppEntrypoint of(Method method, ClassLoader classLoader) {
+      return new AppEntrypoint(() -> {
+        try {
+          method.invoke(null, new Object[]{new String[]{}});
+        } catch (InvocationTargetException | IllegalAccessException e) {
+          throw new PageRunException(e);
         }
+      }, classLoader);
     }
+  }
 }

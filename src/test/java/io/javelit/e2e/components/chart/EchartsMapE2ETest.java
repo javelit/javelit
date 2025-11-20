@@ -33,48 +33,49 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class EchartsMapE2ETest {
 
-    @Test
-    void testEchartsMap_BasicMapRegistration(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-map-test-");
-        copyResourceDirectory("map-test", tempDir);
-        final Path mainFile = tempDir.resolve("MapTestApp.java");
+  @Test
+  void testEchartsMap_BasicMapRegistration(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-map-test-");
+    copyResourceDirectory("map-test", tempDir);
+    final Path mainFile = tempDir.resolve("MapTestApp.java");
 
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            // Wait for ECharts component to be visible - test the first chart (basic map)
-            assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      // Wait for ECharts component to be visible - test the first chart (basic map)
+      assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify the first component has maps attribute
-            assertThat(page.locator("jt-echarts").first()).hasAttribute("maps", Pattern.compile(".{10,}"));
+      // Verify the first component has maps attribute
+      assertThat(page.locator("jt-echarts").first()).hasAttribute("maps", Pattern.compile(".{10,}"));
 
-            // Verify the chart container exists
-            assertThat(page.locator("jt-echarts").first().locator("#container")).isVisible(WAIT_1_SEC_MAX);
+      // Verify the chart container exists
+      assertThat(page.locator("jt-echarts").first().locator("#container")).isVisible(WAIT_1_SEC_MAX);
 
-            // Wait a bit for map to potentially load and check for console errors
-            page.waitForTimeout(2000);
+      // Wait a bit for map to potentially load and check for console errors
+      page.waitForTimeout(2000);
 
-            // Verify no critical JavaScript errors (this would throw if there were errors)
-            page.evaluate("() => { if (window.jsErrors && window.jsErrors.length > 0) throw new Error('JS errors: ' + window.jsErrors.join(', ')); }");
-        });
-    }
+      // Verify no critical JavaScript errors (this would throw if there were errors)
+      page.evaluate(
+          "() => { if (window.jsErrors && window.jsErrors.length > 0) throw new Error('JS errors: ' + window.jsErrors.join(', ')); }");
+    });
+  }
 
-    @Test
-    void testEchartsMap_WithSpecialAreas(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-map-test-");
-        copyResourceDirectory("map-test", tempDir);
-        final Path mainFile = tempDir.resolve("MapTestApp.java");
+  @Test
+  void testEchartsMap_WithSpecialAreas(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-map-test-");
+    copyResourceDirectory("map-test", tempDir);
+    final Path mainFile = tempDir.resolve("MapTestApp.java");
 
-        PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
-            // Wait for ECharts component to be visible - there are two charts, check for both
-            assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
+    PlaywrightUtils.runInBrowser(testInfo, mainFile, page -> {
+      // Wait for ECharts component to be visible - there are two charts, check for both
+      assertThat(page.locator("jt-echarts").first()).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify the second chart (with special areas) exists
-            assertThat(page.locator("jt-echarts").nth(1)).isVisible(WAIT_1_SEC_MAX);
+      // Verify the second chart (with special areas) exists
+      assertThat(page.locator("jt-echarts").nth(1)).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify the second component has maps attribute with special areas
-            assertThat(page.locator("jt-echarts").nth(1)).hasAttribute("maps", Pattern.compile("specialAreas"));
+      // Verify the second component has maps attribute with special areas
+      assertThat(page.locator("jt-echarts").nth(1)).hasAttribute("maps", Pattern.compile("specialAreas"));
 
-            // Verify the chart container exists for the second chart
-            assertThat(page.locator("jt-echarts").nth(1).locator("#container")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // Verify the chart container exists for the second chart
+      assertThat(page.locator("jt-echarts").nth(1).locator("#container")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

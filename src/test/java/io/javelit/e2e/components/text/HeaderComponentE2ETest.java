@@ -29,26 +29,26 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class HeaderComponentE2ETest {
 
-    @Test
-    void testHeaderDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.header("Main Title").use();
-            Jt.text("Some content under the title").use();
-        };
+  @Test
+  void testHeaderDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.header("Main Title").use();
+      Jt.text("Some content under the title").use();
+    };
 
-        // Wait for header component to be visible
-        // Verify it renders as h2
-        // Check header is rendered
-        // Check content after header
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for header component to be visible
-            assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
-            // Verify it renders as h2
-            assertThat(page.locator("jt-title h2")).isVisible(WAIT_1_SEC_MAX);
-            // Check header is rendered
-            assertThat(page.getByText("Main Title")).isVisible(WAIT_1_SEC_MAX);
-            // Check content after header
-            assertThat(page.getByText("Some content under the title")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // Wait for header component to be visible
+    // Verify it renders as h2
+    // Check header is rendered
+    // Check content after header
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for header component to be visible
+      assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
+      // Verify it renders as h2
+      assertThat(page.locator("jt-title h2")).isVisible(WAIT_1_SEC_MAX);
+      // Check header is rendered
+      assertThat(page.getByText("Main Title")).isVisible(WAIT_1_SEC_MAX);
+      // Check content after header
+      assertThat(page.getByText("Some content under the title")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

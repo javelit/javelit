@@ -33,48 +33,49 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class FormComponentE2ETest {
 
-    @Test
-    void testFormSubmission(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            JtContainer formContainer = Jt.form().use();
-            Jt.text("used to get out of form").use();
+  @Test
+  void testFormSubmission(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      JtContainer formContainer = Jt.form().use();
+      Jt.text("used to get out of form").use();
 
-            // Add form inputs
-            String name = Jt.textInput("Your Name").value("NOT_SET").use(formContainer);
-            String email = Jt.textInput("Your Email").value("NOT_SET").use(formContainer);
+      // Add form inputs
+      String name = Jt.textInput("Your Name").value("NOT_SET").use(formContainer);
+      String email = Jt.textInput("Your Email").value("NOT_SET").use(formContainer);
 
-            // Add submit button
-            boolean submitted = Jt.formSubmitButton("Submit Form").use(formContainer);
+      // Add submit button
+      boolean submitted = Jt.formSubmitButton("Submit Form").use(formContainer);
 
-            Jt.text("Name: " + name + ", Email: " + email).use();
-        };
+      Jt.text("Name: " + name + ", Email: " + email).use();
+    };
 
-        // used to get out of inputs easily
-        // Fill name form input
-        // ensure the change did not apply yet because the form was not submitted
-        // Fill email form input
-        // Click submit button
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // used to get out of inputs easily
-            final Locator textUtilLocator = page.locator("jt-text", new Page.LocatorOptions().setHasText("used to get out of form"));
-            assertThat(textUtilLocator).isVisible(WAIT_1_SEC_MAX);
+    // used to get out of inputs easily
+    // Fill name form input
+    // ensure the change did not apply yet because the form was not submitted
+    // Fill email form input
+    // Click submit button
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // used to get out of inputs easily
+      final Locator textUtilLocator = page.locator("jt-text",
+                                                   new Page.LocatorOptions().setHasText("used to get out of form"));
+      assertThat(textUtilLocator).isVisible(WAIT_1_SEC_MAX);
 
-            assertThat(page.locator("jt-form")).isVisible(WAIT_1_SEC_MAX);
-            // Fill name form input
-            Locator nameInput = page.locator("jt-text-input[label='Your Name'] input");
-            nameInput.fill("John");
-            textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
-            // ensure the change did not apply yet because the form was not submitted
-            assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
-            // Fill email form input
-            Locator emailInput = page.locator("jt-text-input[label='Your Email'] input");
-            emailInput.fill("john@example.com");
-            textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.locator("jt-form")).isVisible(WAIT_1_SEC_MAX);
+      // Fill name form input
+      Locator nameInput = page.locator("jt-text-input[label='Your Name'] input");
+      nameInput.fill("John");
+      textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
+      // ensure the change did not apply yet because the form was not submitted
+      assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
+      // Fill email form input
+      Locator emailInput = page.locator("jt-text-input[label='Your Email'] input");
+      emailInput.fill("john@example.com");
+      textUtilLocator.click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("Name: " + "NOT_SET" + ", Email: " + "NOT_SET")).isVisible(WAIT_1_SEC_MAX);
 
-            // Click submit button
-            page.locator("jt-form-submit-button button").click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("Name: " + "John" + ", Email: " + "john@example.com")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // Click submit button
+      page.locator("jt-form-submit-button button").click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("Name: " + "John" + ", Email: " + "john@example.com")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

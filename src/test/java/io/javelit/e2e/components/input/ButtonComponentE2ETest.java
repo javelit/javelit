@@ -31,30 +31,30 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  */
 public class ButtonComponentE2ETest {
 
-    @Test
-    void testButtonClick(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            if (Jt.button("Click Me").use()) {
-                Jt.text("Button was clicked!").use();
-            }
-        };
+  @Test
+  void testButtonClick(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      if (Jt.button("Click Me").use()) {
+        Jt.text("Button was clicked!").use();
+      }
+    };
 
-        // button exists
-        // button text is correct
-        // "Button was clicked" text is not visible
-        // Click the button
-        // "Button was clicked" new text is now visible
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // button exists
-            assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
-            // button text is correct
-            assertThat(page.getByText("Click Me")).isVisible(WAIT_1_SEC_MAX);
-            // "Button was clicked" text is not visible
-            assertThat(page.getByText("Button was clicked!")).not().isVisible(WAIT_50_MS_MAX);
-            // Click the button
-            page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
-            // "Button was clicked" new text is now visible
-            assertThat(page.getByText("Button was clicked!")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // button exists
+    // button text is correct
+    // "Button was clicked" text is not visible
+    // Click the button
+    // "Button was clicked" new text is now visible
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // button exists
+      assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
+      // button text is correct
+      assertThat(page.getByText("Click Me")).isVisible(WAIT_1_SEC_MAX);
+      // "Button was clicked" text is not visible
+      assertThat(page.getByText("Button was clicked!")).not().isVisible(WAIT_50_MS_MAX);
+      // Click the button
+      page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
+      // "Button was clicked" new text is now visible
+      assertThat(page.getByText("Button was clicked!")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

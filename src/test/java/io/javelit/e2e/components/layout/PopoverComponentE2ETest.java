@@ -33,41 +33,41 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_50_MS_MAX;
  */
 public class PopoverComponentE2ETest {
 
-    @Test
-    void testPopoverToggle(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            JtContainer popoverContainer = Jt.popover("Click me").use();
-            Jt.text("Content inside popover").use(popoverContainer);
-            Jt.button("Popover Button").use(popoverContainer);
+  @Test
+  void testPopoverToggle(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      JtContainer popoverContainer = Jt.popover("Click me").use();
+      Jt.text("Content inside popover").use(popoverContainer);
+      Jt.button("Popover Button").use(popoverContainer);
 
-            Jt.text("Content outside popover").use();
-        };
+      Jt.text("Content outside popover").use();
+    };
 
-        // Wait for popover to be visible
-        // Check popover trigger is visible
-        // Check content outside popover is visible
-        // Click to open popover
-        // Check that popover content is now visible
-        // click outside
-        // Check that popover content is not visible anymore
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for popover to be visible
-            assertThat(page.locator("jt-popover")).isVisible(WAIT_1_SEC_MAX);
-            // Check popover trigger is visible
-            final Locator popoverButton = page.getByText("Click me");
-            assertThat(popoverButton).isVisible(WAIT_1_SEC_MAX);
-            // Check content outside popover is visible
-            final Locator outsideText = page.getByText("Content outside popover");
-            assertThat(outsideText).isVisible(WAIT_1_SEC_MAX);
-            // Click to open popover
-            popoverButton.click(WAIT_1_SEC_MAX_CLICK);
-            // Check that popover content is now visible
-            assertThat(page.getByText("Content inside popover")).isVisible(WAIT_1_SEC_MAX);
-            // click outside
-            outsideText.click(WAIT_1_SEC_MAX_CLICK);
-            // Check that popover content is not visible anymore
-            assertThat(page.getByText("Content inside popover")).not().isVisible(WAIT_50_MS_MAX);
+    // Wait for popover to be visible
+    // Check popover trigger is visible
+    // Check content outside popover is visible
+    // Click to open popover
+    // Check that popover content is now visible
+    // click outside
+    // Check that popover content is not visible anymore
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for popover to be visible
+      assertThat(page.locator("jt-popover")).isVisible(WAIT_1_SEC_MAX);
+      // Check popover trigger is visible
+      final Locator popoverButton = page.getByText("Click me");
+      assertThat(popoverButton).isVisible(WAIT_1_SEC_MAX);
+      // Check content outside popover is visible
+      final Locator outsideText = page.getByText("Content outside popover");
+      assertThat(outsideText).isVisible(WAIT_1_SEC_MAX);
+      // Click to open popover
+      popoverButton.click(WAIT_1_SEC_MAX_CLICK);
+      // Check that popover content is now visible
+      assertThat(page.getByText("Content inside popover")).isVisible(WAIT_1_SEC_MAX);
+      // click outside
+      outsideText.click(WAIT_1_SEC_MAX_CLICK);
+      // Check that popover content is not visible anymore
+      assertThat(page.getByText("Content inside popover")).not().isVisible(WAIT_50_MS_MAX);
 
-        });
-    }
+    });
+  }
 }

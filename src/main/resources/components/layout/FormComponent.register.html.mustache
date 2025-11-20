@@ -15,7 +15,7 @@
 }}
 <script type="module">
     import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
-    
+
     class JtForm extends LitElement {
         static styles = css`
             :host {
@@ -53,14 +53,14 @@
                 padding: var(--jt-spacing-md);
             }
         `;
-        
+
         static properties = {
             width: {type: String},
             height: {type: Number},
             border: {type: Boolean, reflect: true},
             formKey: {type: String, attribute: 'form-key'}
         };
-        
+
         updated(changedProperties) {
             if (changedProperties.has('height')) {
                 if (this.height) {
@@ -70,7 +70,7 @@
                 }
             }
         }
-        
+
         render() {
             // Set width CSS variable if width is specified and is a pixel value
             if (this.width && /^\d+$/.test(this.width)) {
@@ -86,6 +86,6 @@
             `;
         }
     }
-    
+
     customElements.define('jt-form', JtForm);
 </script>

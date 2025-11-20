@@ -30,36 +30,36 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class QueryParameterE2ETest {
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void testQueryParameters(final boolean proxied, final TestInfo testInfo) {
-        JtRunnable app = () -> {
-            var params = Jt.urlQueryParameters();
-            Jt.title("Query Parameter Test").use();
-            if (params.containsKey("name")) {
-                Jt.text("Name: " + params.get("name").getFirst()).use();
-            }
-            if (params.containsKey("id")) {
-                Jt.text("ID: " + params.get("id").getFirst()).use();
-            }
-            if (params.isEmpty()) {
-                Jt.text("No query parameters").use();
-            }
-        };
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void testQueryParameters(final boolean proxied, final TestInfo testInfo) {
+    JtRunnable app = () -> {
+      var params = Jt.urlQueryParameters();
+      Jt.title("Query Parameter Test").use();
+      if (params.containsKey("name")) {
+        Jt.text("Name: " + params.get("name").getFirst()).use();
+      }
+      if (params.containsKey("id")) {
+        Jt.text("ID: " + params.get("id").getFirst()).use();
+      }
+      if (params.isEmpty()) {
+        Jt.text("No query parameters").use();
+      }
+    };
 
-        // First verify no query params
-        // Navigate with query parameters
-        // Verify query parameters are displayed
-        PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
-            // First verify no query params
-            assertThat(page.getByText("No query parameters")).isVisible(WAIT_1_SEC_MAX);
+    // First verify no query params
+    // Navigate with query parameters
+    // Verify query parameters are displayed
+    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
+      // First verify no query params
+      assertThat(page.getByText("No query parameters")).isVisible(WAIT_1_SEC_MAX);
 
-            // Navigate with query parameters
-            page.navigate(page.url() + "?name=Alice&id=456");
+      // Navigate with query parameters
+      page.navigate(page.url() + "?name=Alice&id=456");
 
-            // Verify query parameters are displayed
-            assertThat(page.getByText("Name: Alice")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("ID: 456")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // Verify query parameters are displayed
+      assertThat(page.getByText("Name: Alice")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("ID: 456")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

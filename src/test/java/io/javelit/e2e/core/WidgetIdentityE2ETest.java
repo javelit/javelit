@@ -33,68 +33,68 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class WidgetIdentityE2ETest {
 
-    @Test
-    void testWidgetIdentityWithAndWithoutKey(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            int minimum = Jt.numberInput("mini", Integer.class).minValue(0).maxValue(10).use();
-            int slider1 = Jt.slider("no key").min(minimum).use().intValue();
-            Jt.text("keyed value before: " + Jt.componentsState().get("key1")).use();
-            int slider2 = Jt.slider("with key").key("key1").min(minimum).use().intValue();
-            Jt.text("keyed value after: " + Jt.componentsState().get("key1")).use();
-        };
+  @Test
+  void testWidgetIdentityWithAndWithoutKey(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      int minimum = Jt.numberInput("mini", Integer.class).minValue(0).maxValue(10).use();
+      int slider1 = Jt.slider("no key").min(minimum).use().intValue();
+      Jt.text("keyed value before: " + Jt.componentsState().get("key1")).use();
+      int slider2 = Jt.slider("with key").key("key1").min(minimum).use().intValue();
+      Jt.text("keyed value after: " + Jt.componentsState().get("key1")).use();
+    };
 
-        // Wait for page to load
-        // Verify initial state
-        // Get both sliders
-        // "no key" slider
-        // "with key" slider
-        // Set both sliders to value around 20
-        // Change the number input to 1 (click + button or fill with "1")
-        // Verify final state
-        // The first text should show "keyed value before: 20" because the slider without key
-        // gets recreated when minimum changes, so its old value (20) is shown before it's created
-        // Get sliders again after re-render
-        // Both sliders should now have value 1 (slider without key was recreated with new min,
-        // slider with key was updated but reset to min value)
-        // The second text should show "keyed value after: 1"
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for page to load
-            assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
+    // Wait for page to load
+    // Verify initial state
+    // Get both sliders
+    // "no key" slider
+    // "with key" slider
+    // Set both sliders to value around 20
+    // Change the number input to 1 (click + button or fill with "1")
+    // Verify final state
+    // The first text should show "keyed value before: 20" because the slider without key
+    // gets recreated when minimum changes, so its old value (20) is shown before it's created
+    // Get sliders again after re-render
+    // Both sliders should now have value 1 (slider without key was recreated with new min,
+    // slider with key was updated but reset to min value)
+    // The second text should show "keyed value after: 1"
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for page to load
+      assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
 
-            // Verify initial state
-            assertThat(page.getByText("keyed value before: null")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("keyed value after: 0.0")).isVisible(WAIT_1_SEC_MAX);
+      // Verify initial state
+      assertThat(page.getByText("keyed value before: null")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("keyed value after: 0.0")).isVisible(WAIT_1_SEC_MAX);
 
-            // Get both sliders
-            final Locator sliders = page.locator("jt-slider .slider-input");
-            final Locator slider1 = sliders.nth(0); // "no key" slider
-            final Locator slider2 = sliders.nth(1); // "with key" slider
+      // Get both sliders
+      final Locator sliders = page.locator("jt-slider .slider-input");
+      final Locator slider1 = sliders.nth(0); // "no key" slider
+      final Locator slider2 = sliders.nth(1); // "with key" slider
 
-            // Set both sliders to value around 20
-            slider1.fill("20");
-            slider2.fill("20");
+      // Set both sliders to value around 20
+      slider1.fill("20");
+      slider2.fill("20");
 
-            // Change the number input to 1 (click + button or fill with "1")
-            Locator numberInputPlusButton = page.locator("jt-number-input .step-up");
-            numberInputPlusButton.click(WAIT_1_SEC_MAX_CLICK);
+      // Change the number input to 1 (click + button or fill with "1")
+      Locator numberInputPlusButton = page.locator("jt-number-input .step-up");
+      numberInputPlusButton.click(WAIT_1_SEC_MAX_CLICK);
 
-            // Verify final state
-            // The first text should show "keyed value before: 20" because the slider without key
-            // gets recreated when minimum changes, so its old value (20) is shown before it's created
-            assertThat(page.getByText("keyed value before: 20")).isVisible(WAIT_1_SEC_MAX);
+      // Verify final state
+      // The first text should show "keyed value before: 20" because the slider without key
+      // gets recreated when minimum changes, so its old value (20) is shown before it's created
+      assertThat(page.getByText("keyed value before: 20")).isVisible(WAIT_1_SEC_MAX);
 
-            // Get sliders again after re-render
-            final Locator slidersAfter = page.locator("jt-slider .slider-input");
-            final Locator slider1After = slidersAfter.nth(0);
-            final Locator slider2After = slidersAfter.nth(1);
+      // Get sliders again after re-render
+      final Locator slidersAfter = page.locator("jt-slider .slider-input");
+      final Locator slider1After = slidersAfter.nth(0);
+      final Locator slider2After = slidersAfter.nth(1);
 
-            // Both sliders should now have value 1 (slider without key was recreated with new min,
-            // slider with key was updated but reset to min value)
-            assertThat(slider1After).hasValue("1");
-            assertThat(slider2After).hasValue("1");
+      // Both sliders should now have value 1 (slider without key was recreated with new min,
+      // slider with key was updated but reset to min value)
+      assertThat(slider1After).hasValue("1");
+      assertThat(slider2After).hasValue("1");
 
-            // The second text should show "keyed value after: 1"
-            assertThat(page.getByText("keyed value after: 1.0")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+      // The second text should show "keyed value after: 1"
+      assertThat(page.getByText("keyed value after: 1.0")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

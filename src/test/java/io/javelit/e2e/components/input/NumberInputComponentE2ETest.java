@@ -31,63 +31,63 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class NumberInputComponentE2ETest {
 
-    @Test
-    void testDirectInput(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            final Number value = Jt.numberInput("Test Input").use();
-            Jt.text("Value: " + value).use();
-        };
+  @Test
+  void testDirectInput(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      final Number value = Jt.numberInput("Test Input").use();
+      Jt.text("Value: " + value).use();
+    };
 
-        // number input exists
-        // number input text is correct
-        // Enter a value in the number input
-        // Press Enter to submit
-        // Verify the value is displayed
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+    // number input exists
+    // number input text is correct
+    // Enter a value in the number input
+    // Press Enter to submit
+    // Verify the value is displayed
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
 
-            // number input exists
-            assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
-            // number input text is correct
-            assertThat(page.getByText("Test Input")).isVisible(WAIT_1_SEC_MAX);
-            // Enter a value in the number input
-            final Locator input = page.locator("jt-number-input input");
-            input.fill("42", new Locator.FillOptions().setTimeout(100));
-            // Press Enter to submit
-            input.press("Enter", new Locator.PressOptions().setTimeout(100));
-            // Verify the value is displayed
-            assertThat(page.getByText("Value: 42")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
-    
-    @Test
-    void testStepButtons(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Integer value = Jt.numberInput("Counter", Integer.class)
-                .value(5)
-                .step(1)
-                .use();
-            Jt.text("Count: " + value).use();
-        };
+      // number input exists
+      assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
+      // number input text is correct
+      assertThat(page.getByText("Test Input")).isVisible(WAIT_1_SEC_MAX);
+      // Enter a value in the number input
+      final Locator input = page.locator("jt-number-input input");
+      input.fill("42", new Locator.FillOptions().setTimeout(100));
+      // Press Enter to submit
+      input.press("Enter", new Locator.PressOptions().setTimeout(100));
+      // Verify the value is displayed
+      assertThat(page.getByText("Value: 42")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
-        // button exists
-        // Initial value should be 5
-        // Click the + button --> value should increment
-        // Click the - button twice - value should decrement
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+  @Test
+  void testStepButtons(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Integer value = Jt.numberInput("Counter", Integer.class)
+                        .value(5)
+                        .step(1)
+                        .use();
+      Jt.text("Count: " + value).use();
+    };
 
-            // button exists
-            assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
-            // Initial value should be 5
-            assertThat(page.getByText("Count: 5")).isVisible(WAIT_1_SEC_MAX);
-            // Click the + button --> value should increment
-            final Locator plusButton = page.locator("jt-number-input .step-up");
-            plusButton.click(WAIT_1_SEC_MAX_CLICK);
-            assertThat(page.getByText("Count: 6")).isVisible(WAIT_1_SEC_MAX);
-            // Click the - button twice - value should decrement
-            final Locator minusButton = page.locator("jt-number-input .step-down");
-            minusButton.click(new Locator.ClickOptions().setClickCount(2));
-            assertThat(page.getByText("Count: 4")).isVisible(WAIT_1_SEC_MAX);
+    // button exists
+    // Initial value should be 5
+    // Click the + button --> value should increment
+    // Click the - button twice - value should decrement
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
 
-        });
-    }
+      // button exists
+      assertThat(page.locator("jt-number-input")).isVisible(WAIT_1_SEC_MAX);
+      // Initial value should be 5
+      assertThat(page.getByText("Count: 5")).isVisible(WAIT_1_SEC_MAX);
+      // Click the + button --> value should increment
+      final Locator plusButton = page.locator("jt-number-input .step-up");
+      plusButton.click(WAIT_1_SEC_MAX_CLICK);
+      assertThat(page.getByText("Count: 6")).isVisible(WAIT_1_SEC_MAX);
+      // Click the - button twice - value should decrement
+      final Locator minusButton = page.locator("jt-number-input .step-down");
+      minusButton.click(new Locator.ClickOptions().setClickCount(2));
+      assertThat(page.getByText("Count: 4")).isVisible(WAIT_1_SEC_MAX);
+
+    });
+  }
 }

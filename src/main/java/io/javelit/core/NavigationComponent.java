@@ -31,200 +31,200 @@ import org.jetbrains.annotations.NotNull;
 
 public final class NavigationComponent extends JtComponent<JtPage> {
 
-    private static final Mustache registerTemplate;
-    private static final Mustache renderTemplate;
+  private static final Mustache registerTemplate;
+  private static final Mustache renderTemplate;
 
-    final List<JtPage> pages;
-    final JtPage home;
-    NavigationPosition position;
+  final List<JtPage> pages;
+  final JtPage home;
+  NavigationPosition position;
 
-    public enum NavigationPosition {
-        SIDEBAR,
-        HIDDEN,
-        TOP
+  public enum NavigationPosition {
+    SIDEBAR,
+    HIDDEN,
+    TOP
+  }
+
+  static {
+    final MustacheFactory mf = new DefaultMustacheFactory();
+    registerTemplate = mf.compile("components/multipage/NavigationComponent.register.html.mustache");
+    renderTemplate = mf.compile("components/multipage/NavigationComponent.render.html.mustache");
+  }
+
+  private NavigationComponent(final Builder builder) {
+    super(builder, null, // set later in this constructor
+          null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
+    final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
+    if (homePages.isEmpty()) {
+      JtPage.Builder firstPageBuilder = builder.pageBuilders.getFirst();
+      firstPageBuilder.home();
+    } else if (homePages.size() > 1) {
+      throw new IllegalArgumentException(
+          "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
+              ", ",
+              homePages.stream().filter(JtPage.Builder::isHome).map(JtPage.Builder::urlPath).toList())));
+
+    }
+    this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
+    this.home = this.pages
+        .stream()
+        .filter(JtPage::isHome)
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException(
+            "Home page not found. Implementation error. Please reach out to support."));
+    this.position = builder.position;
+
+    // Set initial page based on current URL, not always home
+    final String currentPath = getCurrentPath();
+    JtPage page = getPageFor(currentPath);
+    if (page == null) {
+      page = build404(currentPath);
     }
 
-    static {
-        final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/multipage/NavigationComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/multipage/NavigationComponent.render.html.mustache");
+    this.currentValue = page;
+  }
+
+  private static @NotNull JtPage build404(String currentPath) {
+    return JtPage.builder(currentPath, () -> {
+      Jt.title("Page Not Found.").use();
+      if (Jt.button("Go to home").use()) {
+        Jt.switchPage(null);
+      }
+    }).title("Page not found").build();
+  }
+
+  public JtPage getHome() {
+    return home;
+  }
+
+  /**
+   * Determines the initial page based on current URL path.
+   * Falls back to home page if no URL match is found.
+   */
+  public @Nullable JtPage getPageFor(final @Nullable String urlPath) {
+    if (urlPath == null || urlPath.isBlank() || "/".equals(urlPath)) {
+      return home;
     }
-
-    private NavigationComponent(final Builder builder) {
-        super(builder, null, // set later in this constructor
-              null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
-        final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
-        if (homePages.isEmpty()) {
-            JtPage.Builder firstPageBuilder = builder.pageBuilders.getFirst();
-            firstPageBuilder.home();
-        } else if (homePages.size() > 1) {
-            throw new IllegalArgumentException(
-                    "Multiple pages are defined as home: %s. Only one page should be defined as home.".formatted(String.join(
-                            ", ",
-                            homePages.stream().filter(JtPage.Builder::isHome).map(JtPage.Builder::urlPath).toList())));
-
-        }
-        this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
-        this.home = this.pages
-                .stream()
-                .filter(JtPage::isHome)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException(
-                        "Home page not found. Implementation error. Please reach out to support."));
-        this.position = builder.position;
-
-        // Set initial page based on current URL, not always home
-        final String currentPath = getCurrentPath();
-        JtPage page = getPageFor(currentPath);
-        if (page == null) {
-            page = build404(currentPath);
-        }
-
-        this.currentValue = page;
+    for (final JtPage page : pages) {
+      if (page.urlPath().equals(urlPath)) {
+        return page;
+      }
     }
+    // unknown
+    return null;
+  }
 
-    private static @NotNull JtPage build404(String currentPath) {
-        return JtPage.builder(currentPath, () -> {
-            Jt.title("Page Not Found.").use();
-            if (Jt.button("Go to home").use()) {
-                Jt.switchPage(null);
-            }
-        }).title("Page not found").build();
-    }
 
-    public JtPage getHome() {
-        return home;
+  public static class Builder extends JtComponentBuilder<JtPage, NavigationComponent, Builder> {
+
+    private final List<JtPage.Builder> pageBuilders = new ArrayList<>();
+    private NavigationPosition position;
+
+    public Builder(JtPage.Builder... pages) {
+      this.userKey = JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
+      Collections.addAll(this.pageBuilders, pages);
     }
 
     /**
-     * Determines the initial page based on current URL path.
-     * Falls back to home page if no URL match is found.
+     * Adds a page to the navigation. Pages can be added individually using this method or passed in the constructor.
      */
-    public @Nullable JtPage getPageFor(final @Nullable String urlPath) {
-        if (urlPath == null || urlPath.isBlank() || "/".equals(urlPath)) {
-            return home;
-        }
-        for (final JtPage page : pages) {
-            if (page.urlPath().equals(urlPath)) {
-                return page;
-            }
-        }
-        // unknown
-        return null;
+    public Builder addPage(final @Nonnull JtPage.Builder page) {
+      pageBuilders.add(page);
+      return this;
     }
 
-
-    public static class Builder extends JtComponentBuilder<JtPage, NavigationComponent, Builder> {
-
-        private final List<JtPage.Builder> pageBuilders = new ArrayList<>();
-        private NavigationPosition position;
-
-        public Builder(JtPage.Builder... pages) {
-            this.userKey = JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
-            Collections.addAll(this.pageBuilders, pages);
-        }
-
-        /**
-         * Adds a page to the navigation. Pages can be added individually using this method or passed in the constructor.
-         */
-        public Builder addPage(final @Nonnull JtPage.Builder page) {
-            pageBuilders.add(page);
-            return this;
-        }
-
-        /**
-         * Hides the navigation menu from the user interface. The pages will still be accessible programmatically,
-         * but no navigation UI will be displayed. Useful for programmatic navigation or single-page apps.
-         */
-        public Builder hidden() {
-            position = NavigationComponent.NavigationPosition.HIDDEN;
-            return this;
-        }
-
-        @Override
-        protected String generateInternalKey() {
-            return JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
-        }
-
-        @Override
-        public Builder key(final @NotNull String key) {
-            throw new UnsupportedOperationException(
-                    "The key of the navigation component cannot be modified. It is JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY");
-        }
-
-        @Override
-        public NavigationComponent build() {
-            return new NavigationComponent(this);
-        }
-    }
-
-
-    @Override
-    protected String register() {
-        final StringWriter writer = new StringWriter();
-        registerTemplate.execute(writer, this);
-        return writer.toString();
+    /**
+     * Hides the navigation menu from the user interface. The pages will still be accessible programmatically,
+     * but no navigation UI will be displayed. Useful for programmatic navigation or single-page apps.
+     */
+    public Builder hidden() {
+      position = NavigationComponent.NavigationPosition.HIDDEN;
+      return this;
     }
 
     @Override
-    protected String render() {
-        final StringWriter writer = new StringWriter();
-        renderTemplate.execute(writer, this);
-        return writer.toString();
+    protected String generateInternalKey() {
+      return JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
     }
 
     @Override
-    protected TypeReference<JtPage> getTypeReference() {
-        return new TypeReference<>() {
-        };
+    public Builder key(final @NotNull String key) {
+      throw new UnsupportedOperationException(
+          "The key of the navigation component cannot be modified. It is JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY");
     }
 
     @Override
-    protected void beforeUse(@NotNull JtContainer container) {
-        if (pages.size() <= 1 || position == NavigationPosition.HIDDEN) {
-            position = NavigationPosition.HIDDEN;
-            return;
-        }
+    public NavigationComponent build() {
+      return new NavigationComponent(this);
+    }
+  }
 
-        if (container.equals(JtContainer.SIDEBAR)) {
-            position = NavigationPosition.SIDEBAR;
-        } else if (container.equals(JtContainer.MAIN)) {
-            position = NavigationPosition.TOP;
-            throw new UnsupportedOperationException(
-                    "Navigation component in the main container is not supported yet. Please reach out to support for more information.");
-        } else {
-            throw new IllegalArgumentException(
-                    "Navigation component can only be used within the SIDEBAR (JtContainer.SIDEBAR) or the MAIN (JtContainer.MAIN) containers.");
-        }
+
+  @Override
+  protected String register() {
+    final StringWriter writer = new StringWriter();
+    registerTemplate.execute(writer, this);
+    return writer.toString();
+  }
+
+  @Override
+  protected String render() {
+    final StringWriter writer = new StringWriter();
+    renderTemplate.execute(writer, this);
+    return writer.toString();
+  }
+
+  @Override
+  protected TypeReference<JtPage> getTypeReference() {
+    return new TypeReference<>() {
+    };
+  }
+
+  @Override
+  protected void beforeUse(@NotNull JtContainer container) {
+    if (pages.size() <= 1 || position == NavigationPosition.HIDDEN) {
+      position = NavigationPosition.HIDDEN;
+      return;
     }
 
-    public String getPagesJson() {
-        try {
-            return Shared.OBJECT_MAPPER.writeValueAsString(pages.stream().map(FrontendJtPage::from).toList());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize pages", e);
-        }
+    if (container.equals(JtContainer.SIDEBAR)) {
+      position = NavigationPosition.SIDEBAR;
+    } else if (container.equals(JtContainer.MAIN)) {
+      position = NavigationPosition.TOP;
+      throw new UnsupportedOperationException(
+          "Navigation component in the main container is not supported yet. Please reach out to support for more information.");
+    } else {
+      throw new IllegalArgumentException(
+          "Navigation component can only be used within the SIDEBAR (JtContainer.SIDEBAR) or the MAIN (JtContainer.MAIN) containers.");
     }
+  }
 
-    public String getCurrentValueJson() {
-        try {
-            return Shared.OBJECT_MAPPER.writeValueAsString(FrontendJtPage.from(currentValue));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize currentValue", e);
-        }
+  public String getPagesJson() {
+    try {
+      return Shared.OBJECT_MAPPER.writeValueAsString(pages.stream().map(FrontendJtPage::from).toList());
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize pages", e);
     }
+  }
 
-
-    private record FrontendJtPage(@Nonnull String title, @Nonnull String icon,
-                                  @Nonnull String urlPath, boolean isHome,
-                                  // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
-                                  List<String> section) {
-        private static FrontendJtPage from(final @Nonnull JtPage page) {
-            return new FrontendJtPage(page.title(),
-                                      page.icon(),
-                                      page.urlPath(),
-                                      page.isHome(),
-                                      page.section());
-        }
+  public String getCurrentValueJson() {
+    try {
+      return Shared.OBJECT_MAPPER.writeValueAsString(FrontendJtPage.from(currentValue));
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to serialize currentValue", e);
     }
+  }
+
+
+  private record FrontendJtPage(@Nonnull String title, @Nonnull String icon,
+                                @Nonnull String urlPath, boolean isHome,
+                                // section path: List.of("Admin", "Users") would put the page in section Admin, subsection Users, etc...
+                                List<String> section) {
+    private static FrontendJtPage from(final @Nonnull JtPage page) {
+      return new FrontendJtPage(page.title(),
+                                page.icon(),
+                                page.urlPath(),
+                                page.isHome(),
+                                page.section());
+    }
+  }
 }

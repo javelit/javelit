@@ -27,68 +27,68 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 public class EmbeddedServerE2ETest {
 
-    // do not convert to local variable
-    private final String instanceString = "Hello";
+  // do not convert to local variable
+  private final String instanceString = "Hello";
 
-    @Deprecated
-    @Test
-    public void testEmbeddedServerFromClassE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInBrowser(testInfo, TestApp.class, page -> {
-            assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
-            page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
-            assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+  @Deprecated
+  @Test
+  public void testEmbeddedServerFromClassE2E(final TestInfo testInfo) {
+    PlaywrightUtils.runInBrowser(testInfo, TestApp.class, page -> {
+      assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
+      page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
+      assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
 
-    @Deprecated
-    public static class TestApp {
-        public static void main(String[] args) {
-            if (Jt.button("Click me").use()) {
-                Jt.text("I was clicked!").use();
-            }
-        }
-    }
-
-    @Test
-    public void testEmbeddedServerE2E(final TestInfo testInfo) {
-        final JtRunnable app = () -> {
-            if (Jt.button("Click me").use()) {
-                Jt.text("I was clicked!").use();
-            }
-        };
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
-            page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
-            assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
-
-    public static void test() {
+  @Deprecated
+  public static class TestApp {
+    public static void main(String[] args) {
+      if (Jt.button("Click me").use()) {
         Jt.text("I was clicked!").use();
+      }
     }
+  }
 
-    @Test
-    public void testEmbeddedServerWithParametrizedStaticRunnableE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInBrowser(testInfo, () -> app1("Hello"), page -> {
-            assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+  @Test
+  public void testEmbeddedServerE2E(final TestInfo testInfo) {
+    final JtRunnable app = () -> {
+      if (Jt.button("Click me").use()) {
+        Jt.text("I was clicked!").use();
+      }
+    };
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      assertThat(page.locator("jt-button")).isVisible(WAIT_1_SEC_MAX);
+      page.locator("jt-button button").click(WAIT_100_MS_MAX_CLICK);
+      assertThat(page.getByText("I was clicked!")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
+
+  public static void test() {
+    Jt.text("I was clicked!").use();
+  }
+
+  @Test
+  public void testEmbeddedServerWithParametrizedStaticRunnableE2E(final TestInfo testInfo) {
+    PlaywrightUtils.runInBrowser(testInfo, () -> app1("Hello"), page -> {
+      assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
 
-    public static void app1(String text) {
-        Jt.text(text).use();
-    }
+  public static void app1(String text) {
+    Jt.text(text).use();
+  }
 
-    @Test
-    public void testEmbeddedServerWithParametrizedNonStaticRunnableE2E(final TestInfo testInfo) {
-        PlaywrightUtils.runInBrowser(testInfo, this::app2, page -> {
-            assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+  @Test
+  public void testEmbeddedServerWithParametrizedNonStaticRunnableE2E(final TestInfo testInfo) {
+    PlaywrightUtils.runInBrowser(testInfo, this::app2, page -> {
+      assertThat(page.getByText("Hello")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 
-    public void app2() {
-        Jt.text(instanceString).use();
-    }
+  public void app2() {
+    Jt.text(instanceString).use();
+  }
 
 }

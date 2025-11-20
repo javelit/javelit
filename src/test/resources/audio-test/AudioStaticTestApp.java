@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import io.javelit.core.Jt;
 
 public class AudioStaticTestApp {
-    public static void main(String[] args) {
-        Jt.audio("app/static/piano-chords.mp3").use();
-    }
+  public static void main(String[] args) {
+    Jt.audio("app/static/piano-chords.mp3").use();
+  }
 }

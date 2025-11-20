@@ -268,8 +268,8 @@
                     this.isEmoji(this.icon) ?
                             html`<span class="emoji-icon">${this.icon}</span>` :
                             this.isMaterialIcon(this.icon) ?
-                                html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
-                                null
+                                    html`<span class="icon">${this.getMaterialIconName(this.icon)}</span>` :
+                                    null
             ) : null;
 
             const formattedLabel = this.formatText(this.label || '');

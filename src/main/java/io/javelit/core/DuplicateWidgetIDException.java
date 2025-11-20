@@ -26,37 +26,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 final class DuplicateWidgetIDException extends RuntimeException {
 
-    private static final ObjectMapper NON_PRIVATE_MAPPER = new ObjectMapper();
+  private static final ObjectMapper NON_PRIVATE_MAPPER = new ObjectMapper();
 
-    static {
-        NON_PRIVATE_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
-    }
+  static {
+    NON_PRIVATE_MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.NON_PRIVATE);
+  }
 
-    private DuplicateWidgetIDException(final String message) {
-        super(message);
-    }
+  private DuplicateWidgetIDException(final String message) {
+    super(message);
+  }
 
-    static DuplicateWidgetIDException forDuplicateInternalKey(final JtComponent<?> component) {
-        String componentJson;
-        try {
-            componentJson = NON_PRIVATE_MAPPER.writeValueAsString(component);
-        } catch (JsonProcessingException e) {
-            componentJson = "<failed to serialize component - please reach out to support if need be>";
-        }
-        final String message = """
-                There are multiple identical %s widgets with the same key='%s'. \s
-                To fix this, please pass a unique key argument to each widget. \s
-                Component: %s
-                """.formatted(component.getClass().getName(),
-                              component.getInternalKey(), componentJson);
-        return new DuplicateWidgetIDException(message);
+  static DuplicateWidgetIDException forDuplicateInternalKey(final JtComponent<?> component) {
+    String componentJson;
+    try {
+      componentJson = NON_PRIVATE_MAPPER.writeValueAsString(component);
+    } catch (JsonProcessingException e) {
+      componentJson = "<failed to serialize component - please reach out to support if need be>";
     }
+    final String message = """
+        There are multiple identical %s widgets with the same key='%s'. \s
+        To fix this, please pass a unique key argument to each widget. \s
+        Component: %s
+        """.formatted(component.getClass().getName(),
+                      component.getInternalKey(), componentJson);
+    return new DuplicateWidgetIDException(message);
+  }
 
-    static DuplicateWidgetIDException forDuplicateUserKey(final JtComponent<?> component) {
-        final String message = """
-                There are multiple widgets with the same user-provided key %s. \s
-                Please provide distinct unique keys when calling .key(...).
-                """.formatted(component.getUserKey());
-        return new DuplicateWidgetIDException(message);
-    }
+  static DuplicateWidgetIDException forDuplicateUserKey(final JtComponent<?> component) {
+    final String message = """
+        There are multiple widgets with the same user-provided key %s. \s
+        Please provide distinct unique keys when calling .key(...).
+        """.formatted(component.getUserKey());
+    return new DuplicateWidgetIDException(message);
+  }
 }

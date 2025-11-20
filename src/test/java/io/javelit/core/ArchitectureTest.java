@@ -27,15 +27,15 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
  */
 public class ArchitectureTest {
 
-    private static final JavaClasses CORE_CLASSES = new ClassFileImporter()
-            .importPackages("io.javelit.core");
+  private static final JavaClasses CORE_CLASSES = new ClassFileImporter()
+      .importPackages("io.javelit.core");
 
-    @Test
-    void internalSessionStateShouldOnlyBeAccessedByStateManager() {
-        ArchRule rule = classes()
-                .that().belongToAnyOf(InternalSessionState.class)
-                .should().onlyBeAccessed().byClassesThat().belongToAnyOf(InternalSessionState.class, StateManager.class);
+  @Test
+  void internalSessionStateShouldOnlyBeAccessedByStateManager() {
+    ArchRule rule = classes()
+        .that().belongToAnyOf(InternalSessionState.class)
+        .should().onlyBeAccessed().byClassesThat().belongToAnyOf(InternalSessionState.class, StateManager.class);
 
-        rule.check(CORE_CLASSES);
-    }
+    rule.check(CORE_CLASSES);
+  }
 }

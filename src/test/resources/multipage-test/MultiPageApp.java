@@ -15,21 +15,21 @@
  */
 
 
-
-import io.javelit.core.Jt;import io.javelit.core.JtPage;
+import io.javelit.core.Jt;
+import io.javelit.core.JtPage;
 
 public class MultiPageApp {
-    public static void main(String[] args) {
-        // Navigation with multiple pages
-        final JtPage currentPage = Jt.navigation(
-            Jt.page("/config/settings", SettingsPage::app).title("Settings").icon("⚙️"),
-            Jt.page("/home", HomePage::app).icon("🏠").home(),
-            Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
-        ).use();
+  public static void main(String[] args) {
+    // Navigation with multiple pages
+    final JtPage currentPage = Jt.navigation(
+        Jt.page("/config/settings", SettingsPage::app).title("Settings").icon("⚙️"),
+        Jt.page("/home", HomePage::app).icon("🏠").home(),
+        Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
+    ).use();
 
-        currentPage.run();
-        
-        // Persistent footer element that should appear on all pages
-        Jt.text("© 2025 Test App - Always Visible").use();
-    }
+    currentPage.run();
+
+    // Persistent footer element that should appear on all pages
+    Jt.text("© 2025 Test App - Always Visible").use();
+  }
 }

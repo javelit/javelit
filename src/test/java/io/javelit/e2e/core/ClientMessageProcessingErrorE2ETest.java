@@ -33,67 +33,68 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class ClientMessageProcessingErrorE2ETest {
 
-    // Minimal component with a button that triggers validation error
-    static class MinimalButtonComponent extends JtComponent<Boolean> {
-        private final String key;
+  // Minimal component with a button that triggers validation error
+  static class MinimalButtonComponent extends JtComponent<Boolean> {
+    private final String key;
 
-        static class Builder extends JtComponentBuilder<Boolean, MinimalButtonComponent, Builder> {
-            @Override
-            public MinimalButtonComponent build() {
-                return null; // Not used
-            }
-        }
-
-        public MinimalButtonComponent(String userKey) {
-            super(new Builder().key(userKey), false, null);
-            this.key = userKey;
-        }
-
-        @Override
-        protected Boolean validate(Boolean value) {
-            throw new RuntimeException("Validation failed!");
-        }
-
-        @Override
-        protected String register() {
-            return null; // No web component needed
-        }
-
-        @Override
-        protected String render() {
-            return "<button onclick=\"window.javelit.sendComponentUpdate('" + getInternalKey() + "', true)\">Click me</button>";
-        }
-
-        @Override
-        protected TypeReference<Boolean> getTypeReference() {
-            return new TypeReference<>() {};
-        }
-
-        @Override
-        protected void resetIfNeeded() {
-            currentValue = false;
-        }
+    static class Builder extends JtComponentBuilder<Boolean, MinimalButtonComponent, Builder> {
+      @Override
+      public MinimalButtonComponent build() {
+        return null; // Not used
+      }
     }
 
-    @Test
-    void testValidateErrorShowsModal(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.title("Test App").use();
-            new MinimalButtonComponent("test-button").use();
-        };
-
-        // Wait for the app to load
-        // Click the button
-        // Assert that the error modal appears with the expected text
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for the app to load
-            assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
-
-            // Click the button
-            page.getByText("Click me").click();
-
-            // Assert that the error modal appears with the expected text
-            assertThat(page.getByText("Client message processing error")).isVisible(WAIT_1_SEC_MAX);
-        });
+    public MinimalButtonComponent(String userKey) {
+      super(new Builder().key(userKey), false, null);
+      this.key = userKey;
     }
+
+    @Override
+    protected Boolean validate(Boolean value) {
+      throw new RuntimeException("Validation failed!");
+    }
+
+    @Override
+    protected String register() {
+      return null; // No web component needed
+    }
+
+    @Override
+    protected String render() {
+      return "<button onclick=\"window.javelit.sendComponentUpdate('" + getInternalKey() + "', true)\">Click me</button>";
+    }
+
+    @Override
+    protected TypeReference<Boolean> getTypeReference() {
+      return new TypeReference<>() {
+      };
+    }
+
+    @Override
+    protected void resetIfNeeded() {
+      currentValue = false;
+    }
+  }
+
+  @Test
+  void testValidateErrorShowsModal(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.title("Test App").use();
+      new MinimalButtonComponent("test-button").use();
+    };
+
+    // Wait for the app to load
+    // Click the button
+    // Assert that the error modal appears with the expected text
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for the app to load
+      assertThat(page.getByText("Test App")).isVisible(WAIT_1_SEC_MAX);
+
+      // Click the button
+      page.getByText("Click me").click();
+
+      // Assert that the error modal appears with the expected text
+      assertThat(page.getByText("Client message processing error")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

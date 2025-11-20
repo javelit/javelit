@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtInternalToast extends LitElement {
         static styles = css`
@@ -128,10 +128,10 @@
         `;
 
         static properties = {
-            body: { type: String },
-            icon: { type: String },
-            duration: { type: Number },
-            position: { type: String, reflect: true }
+            body: {type: String},
+            icon: {type: String},
+            duration: {type: Number},
+            position: {type: String, reflect: true}
         };
 
         constructor() {
@@ -199,11 +199,11 @@
 
         render() {
             const iconContent = this.icon ? (
-                this.isEmoji(this.icon) ?
-                    html`<span class="toast-icon emoji">${this.icon}</span>` :
-                    this.isMaterialIcon(this.icon) ?
-                        html`<span class="toast-icon material">${this.getMaterialIconName(this.icon)}</span>` :
-                        null
+                    this.isEmoji(this.icon) ?
+                            html`<span class="toast-icon emoji">${this.icon}</span>` :
+                            this.isMaterialIcon(this.icon) ?
+                                    html`<span class="toast-icon material">${this.getMaterialIconName(this.icon)}</span>` :
+                                    null
             ) : null;
 
             return html`

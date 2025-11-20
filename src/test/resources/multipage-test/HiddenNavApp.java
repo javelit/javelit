@@ -15,22 +15,22 @@
  */
 
 
-
-import io.javelit.core.Jt;import io.javelit.core.JtPage;
+import io.javelit.core.Jt;
+import io.javelit.core.JtPage;
 
 public class HiddenNavApp {
-    public static void main(String[] args) {
-        // Navigation with hidden() - no sidebar should appear
-        final JtPage currentPage = Jt.navigation(
-                Jt.page("/home", HomePage::app).icon("🏠").home(),
-            Jt.page("/settings", SettingsPage::app).title("Settings Page").icon("⚙️"),
-            Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
+  public static void main(String[] args) {
+    // Navigation with hidden() - no sidebar should appear
+    final JtPage currentPage = Jt.navigation(
+        Jt.page("/home", HomePage::app).icon("🏠").home(),
+        Jt.page("/settings", SettingsPage::app).title("Settings Page").icon("⚙️"),
+        Jt.page("/about", AboutPage::app).title("About").icon("ℹ️")
 
-        ).hidden().use();  // Call hidden() to hide navigation
+    ).hidden().use();  // Call hidden() to hide navigation
 
-        currentPage.run();
-        
-        // Content that should still be visible
-        Jt.text("App with hidden navigation").use();
-    }
+    currentPage.run();
+
+    // Content that should still be visible
+    Jt.text("App with hidden navigation").use();
+  }
 }

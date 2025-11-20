@@ -14,10 +14,10 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-class JtSettingsContent extends LitElement {
-    static styles = css`
+    class JtSettingsContent extends LitElement {
+        static styles = css`
         :host {
             display: block;
             font-family: var(--jt-font-family);
@@ -134,61 +134,61 @@ class JtSettingsContent extends LitElement {
         }
     `;
 
-    static properties = {
-        config: { type: Object, state: true }
-    };
-
-    constructor() {
-        super();
-        // Load config from localStorage or use defaults
-        this.config = this.loadConfig();
-    }
-
-    loadConfig() {
-        try {
-            const stored = localStorage.getItem('javelit-settings');
-            return stored ? JSON.parse(stored) : this.getDefaultConfig();
-        } catch (e) {
-            console.warn('Failed to load settings from localStorage:', e);
-            return this.getDefaultConfig();
-        }
-    }
-
-    getDefaultConfig() {
-        return {
-            appearance: {
-                wideMode: false
-            }
+        static properties = {
+            config: {type: Object, state: true}
         };
-    }
 
-    saveConfig() {
-        try {
-            localStorage.setItem('javelit-settings', JSON.stringify(this.config));
-            // Emit config change event for other components to listen
-            this.dispatchEvent(new CustomEvent('config-change', {
-                detail: { config: this.config },
-                bubbles: true,
-                composed: true
-            }));
-        } catch (e) {
-            console.error('Failed to save settings to localStorage:', e);
+        constructor() {
+            super();
+            // Load config from localStorage or use defaults
+            this.config = this.loadConfig();
         }
-    }
 
-    handleWideModeToggle(e) {
-        this.config = {
-            ...this.config,
-            appearance: {
-                ...this.config.appearance,
-                wideMode: e.target.checked
+        loadConfig() {
+            try {
+                const stored = localStorage.getItem('javelit-settings');
+                return stored ? JSON.parse(stored) : this.getDefaultConfig();
+            } catch (e) {
+                console.warn('Failed to load settings from localStorage:', e);
+                return this.getDefaultConfig();
             }
-        };
-        this.saveConfig();
-    }
+        }
 
-    render() {
-        return html`
+        getDefaultConfig() {
+            return {
+                appearance: {
+                    wideMode: false
+                }
+            };
+        }
+
+        saveConfig() {
+            try {
+                localStorage.setItem('javelit-settings', JSON.stringify(this.config));
+                // Emit config change event for other components to listen
+                this.dispatchEvent(new CustomEvent('config-change', {
+                    detail: {config: this.config},
+                    bubbles: true,
+                    composed: true
+                }));
+            } catch (e) {
+                console.error('Failed to save settings to localStorage:', e);
+            }
+        }
+
+        handleWideModeToggle(e) {
+            this.config = {
+                ...this.config,
+                appearance: {
+                    ...this.config.appearance,
+                    wideMode: e.target.checked
+                }
+            };
+            this.saveConfig();
+        }
+
+        render() {
+            return html`
             <div class="settings-container">
                 <div class="settings-section">
                     <div class="section-title">Appearance</div>
@@ -214,8 +214,8 @@ class JtSettingsContent extends LitElement {
                 </div>
             </div>
         `;
+        }
     }
-}
 
-customElements.define('jt-settings-content', JtSettingsContent);
+    customElements.define('jt-settings-content', JtSettingsContent);
 </script>

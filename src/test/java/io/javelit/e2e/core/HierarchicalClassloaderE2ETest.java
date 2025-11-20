@@ -36,87 +36,88 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
  */
 public class HierarchicalClassloaderE2ETest {
 
-    @Test
-    void testHierarchicalClassloaderCachingAndMismatch(TestInfo testInfo) throws IOException {
-        final Path tempDir = Files.createTempDirectory("javelit-classloader-test-");
-        copyResourceDirectory("classloader-test", tempDir);
-        final Path appFile = tempDir.resolve("App.java");
-        final Path messageFile = tempDir.resolve("Message.java");
+  @Test
+  void testHierarchicalClassloaderCachingAndMismatch(TestInfo testInfo) throws IOException {
+    final Path tempDir = Files.createTempDirectory("javelit-classloader-test-");
+    copyResourceDirectory("classloader-test", tempDir);
+    final Path appFile = tempDir.resolve("App.java");
+    final Path messageFile = tempDir.resolve("Message.java");
 
+    // Step 1: Verify initial state - both Message and Warning should be visible
+    // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
+    // Both should still be visible
+    // Step 3: Edit App.java by adding a comment
+    // This triggers App reload (including inner Warning class) Message.java should hit cache
+    // Should see ClassCastException (Warning from old classloader)
+    // Step 4: Click "Clear cache" button to recover
+    // After clearing cache, both should be visible again
+    // Step 5: Edit Message.java (add a comment on a new line)
+    // This reloads Message.class - by hierarchy App and Warning should reload too
+    // Should see ClassCastException
+    // Message and Warning should NOT be visible (error occurred early)
+    // Step 6: Click "Clear cache" button again to recover
+    // After clearing cache, both should be visible again
+    PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
+      try {
         // Step 1: Verify initial state - both Message and Warning should be visible
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
+
         // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
+        final String originalContent = Files.readString(appFile);
+        final String modifiedContent1 = originalContent.replace("// some comment",
+                                                                "// some comment something got appended");
+        Files.writeString(appFile, modifiedContent1);
+
         // Both should still be visible
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
+
         // Step 3: Edit App.java by adding a comment
         // This triggers App reload (including inner Warning class) Message.java should hit cache
+        final String currentContent = Files.readString(appFile);
+        final String modifiedContent2 = currentContent.replace("public class App {",
+                                                               "public class App {\n// new comment\n");
+        Files.writeString(appFile, modifiedContent2);
+
         // Should see ClassCastException (Warning from old classloader)
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+
         // Step 4: Click "Clear cache" button to recover
+        var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
+        assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
+        clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
+
         // After clearing cache, both should be visible again
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
+
         // Step 5: Edit Message.java (add a comment on a new line)
         // This reloads Message.class - by hierarchy App and Warning should reload too
+        final String messageContent = Files.readString(messageFile);
+        final String modifiedMessageContent = messageContent.replace("{}", "{\nstatic String NEW = null;\n}");
+        Files.writeString(messageFile, modifiedMessageContent);
+
         // Should see ClassCastException
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+
         // Message and Warning should NOT be visible (error occurred early)
+        assertThat(page.getByText("Message: hello")).isHidden(WAIT_10_MS_MAX_HIDDEN);
+        assertThat(page.getByText("Warning: caution")).isHidden(WAIT_10_MS_MAX_HIDDEN);
+
         // Step 6: Click "Clear cache" button again to recover
+        clearCacheButton = page.locator("jt-button").getByText("Clear cache");
+        assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
+        clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
+
         // After clearing cache, both should be visible again
-        PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
-            try {
-                // Step 1: Verify initial state - both Message and Warning should be visible
-                assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-                assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
-                // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
-                final String originalContent = Files.readString(appFile);
-                final String modifiedContent1 = originalContent.replace("// some comment",
-                                                                        "// some comment something got appended");
-                Files.writeString(appFile, modifiedContent1);
-
-                // Both should still be visible
-                assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-                assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
-
-                // Step 3: Edit App.java by adding a comment
-                // This triggers App reload (including inner Warning class) Message.java should hit cache
-                final String currentContent = Files.readString(appFile);
-                final String modifiedContent2 = currentContent.replace("public class App {", "public class App {\n// new comment\n");
-                Files.writeString(appFile, modifiedContent2);
-
-                // Should see ClassCastException (Warning from old classloader)
-                assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-                assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
-
-                // Step 4: Click "Clear cache" button to recover
-                var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
-                assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
-                clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
-
-                // After clearing cache, both should be visible again
-                assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-                assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
-
-                // Step 5: Edit Message.java (add a comment on a new line)
-                // This reloads Message.class - by hierarchy App and Warning should reload too
-                final String messageContent = Files.readString(messageFile);
-                final String modifiedMessageContent = messageContent.replace("{}", "{\nstatic String NEW = null;\n}");
-                Files.writeString(messageFile, modifiedMessageContent);
-
-                // Should see ClassCastException
-                assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
-
-                // Message and Warning should NOT be visible (error occurred early)
-                assertThat(page.getByText("Message: hello")).isHidden(WAIT_10_MS_MAX_HIDDEN);
-                assertThat(page.getByText("Warning: caution")).isHidden(WAIT_10_MS_MAX_HIDDEN);
-
-                // Step 6: Click "Clear cache" button again to recover
-                clearCacheButton = page.locator("jt-button").getByText("Clear cache");
-                assertThat(clearCacheButton).isVisible(WAIT_1_SEC_MAX);
-                clearCacheButton.click(WAIT_1_SEC_MAX_CLICK);
-
-                // After clearing cache, both should be visible again
-                assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-                assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
 }

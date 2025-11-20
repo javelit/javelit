@@ -26,15 +26,15 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 
 public class WarningComponentE2ETest {
 
-    @Test
-    void testWarningDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.warning("This is a warning message").use();
-        };
+  @Test
+  void testWarningDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.warning("This is a warning message").use();
+    };
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
-            assertThat(page.getByText("This is a warning message")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      assertThat(page.locator("jt-callout")).isVisible(WAIT_1_SEC_MAX);
+      assertThat(page.getByText("This is a warning message")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

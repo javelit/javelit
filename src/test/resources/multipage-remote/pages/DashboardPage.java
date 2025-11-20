@@ -20,16 +20,16 @@ import java.time.LocalTime;
 import io.javelit.core.Jt;
 
 public class DashboardPage {
-    public static void app() {
-        Jt.title("📊 Dashboard").use();
-        Jt.text("Welcome to the dashboard! This is the home page.").use();
-        
-        // Add some dashboard content
-        if (Jt.button("Refresh Data").use()) {
-            Jt.text("Data refreshed at: " + LocalTime.now()).use();
-        }
-    }
+  public static void app() {
+    Jt.title("📊 Dashboard").use();
+    Jt.text("Welcome to the dashboard! This is the home page.").use();
 
-    private DashboardPage() {
+    // Add some dashboard content
+    if (Jt.button("Refresh Data").use()) {
+      Jt.text("Data refreshed at: " + LocalTime.now()).use();
     }
+  }
+
+  private DashboardPage() {
+  }
 }

@@ -21,19 +21,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 // compatible with IDE hot-reload
 public class RunnableReloader extends Reloader {
 
-    private final JtRunnable runnable;
+  private final JtRunnable runnable;
 
-    public RunnableReloader(Server.Builder builder) {
-        checkArgument(builder.buildSystem == BuildSystem.RUNTIME,
-                      "Class reloader only supports RUNTIME build systems.");
-        checkArgument(builder.appRunnable != null);
-        this.runnable = builder.appRunnable;
-    }
+  public RunnableReloader(Server.Builder builder) {
+    checkArgument(builder.buildSystem == BuildSystem.RUNTIME,
+                  "Class reloader only supports RUNTIME build systems.");
+    checkArgument(builder.appRunnable != null);
+    this.runnable = builder.appRunnable;
+  }
 
-    @Override
-    AppEntrypoint reload() {
-        return new AppEntrypoint(
-                runnable,
-                Thread.currentThread().getContextClassLoader());
-    }
+  @Override
+  AppEntrypoint reload() {
+    return new AppEntrypoint(
+        runnable,
+        Thread.currentThread().getContextClassLoader());
+  }
 }

@@ -29,26 +29,26 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class SubheaderComponentE2ETest {
 
-    @Test
-    void testSubheaderDisplay(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            Jt.subheader("subheader").use();
-            Jt.text("Some content under the title").use();
-        };
+  @Test
+  void testSubheaderDisplay(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      Jt.subheader("subheader").use();
+      Jt.text("Some content under the title").use();
+    };
 
-        // Wait for subheader component to be visible
-        // Verify it renders as h3
-        // Check header is rendered
-        // Check content after subheader
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Wait for subheader component to be visible
-            assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
-            // Verify it renders as h3
-            assertThat(page.locator("jt-title h3")).isVisible(WAIT_1_SEC_MAX);
-            // Check header is rendered
-            assertThat(page.getByText("subheader")).isVisible(WAIT_1_SEC_MAX);
-            // Check content after subheader
-            assertThat(page.getByText("Some content under the title")).isVisible(WAIT_1_SEC_MAX);
-        });
-    }
+    // Wait for subheader component to be visible
+    // Verify it renders as h3
+    // Check header is rendered
+    // Check content after subheader
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Wait for subheader component to be visible
+      assertThat(page.locator("jt-title")).isVisible(WAIT_1_SEC_MAX);
+      // Verify it renders as h3
+      assertThat(page.locator("jt-title h3")).isVisible(WAIT_1_SEC_MAX);
+      // Check header is rendered
+      assertThat(page.getByText("subheader")).isVisible(WAIT_1_SEC_MAX);
+      // Check content after subheader
+      assertThat(page.getByText("Some content under the title")).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
 }

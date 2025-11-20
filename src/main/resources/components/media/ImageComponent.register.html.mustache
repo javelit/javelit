@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtImage extends LitElement {
         static styles = css`
@@ -150,10 +150,10 @@
         `;
 
         static properties = {
-            url: { type: String },
-            caption: { type: String },
-            width: { type: String, reflect: true },
-            isFullscreen: { type: Boolean, attribute: 'is-fullscreen', reflect: true}
+            url: {type: String},
+            caption: {type: String},
+            width: {type: String, reflect: true},
+            isFullscreen: {type: Boolean, attribute: 'is-fullscreen', reflect: true}
         };
 
         constructor() {

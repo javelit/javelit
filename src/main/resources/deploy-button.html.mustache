@@ -14,10 +14,10 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-class JtDeployButton extends LitElement {
-    static styles = css`
+    class JtDeployButton extends LitElement {
+        static styles = css`
         :host {
             display: none;
         }
@@ -60,36 +60,36 @@ class JtDeployButton extends LitElement {
         }
     `;
 
-    static properties = {
-        isDevMode: { type: Boolean, reflect: true, attribute: 'is-dev-mode' },
-        isStandaloneMode: { type: Boolean, reflect: true, attribute: 'is-standalone-mode' }
-    };
+        static properties = {
+            isDevMode: {type: Boolean, reflect: true, attribute: 'is-dev-mode'},
+            isStandaloneMode: {type: Boolean, reflect: true, attribute: 'is-standalone-mode'}
+        };
 
-    constructor() {
-        super();
-        this.isDevMode = false;
-        this.isStandaloneMode = false;
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        // Check if running in dev mode and standalone mode
-        this.isDevMode = window.javelit && window.javelit.isDevMode;
-        this.isStandaloneMode = window.javelit && window.javelit.isStandaloneMode;
-    }
-
-    handleClick(e) {
-        e.stopPropagation();
-
-        // Open deploy modal
-        const deployModal = document.getElementById('deploy-modal');
-        if (deployModal) {
-            deployModal.show = true;
+        constructor() {
+            super();
+            this.isDevMode = false;
+            this.isStandaloneMode = false;
         }
-    }
 
-    render() {
-        return html`
+        connectedCallback() {
+            super.connectedCallback();
+            // Check if running in dev mode and standalone mode
+            this.isDevMode = window.javelit && window.javelit.isDevMode;
+            this.isStandaloneMode = window.javelit && window.javelit.isStandaloneMode;
+        }
+
+        handleClick(e) {
+            e.stopPropagation();
+
+            // Open deploy modal
+            const deployModal = document.getElementById('deploy-modal');
+            if (deployModal) {
+                deployModal.show = true;
+            }
+        }
+
+        render() {
+            return html`
             <button
                 class="deploy-button"
                 @click="${this.handleClick}"
@@ -99,8 +99,8 @@ class JtDeployButton extends LitElement {
                 <span>Deploy</span>
             </button>
         `;
+        }
     }
-}
 
-customElements.define('jt-deploy-button', JtDeployButton);
+    customElements.define('jt-deploy-button', JtDeployButton);
 </script>

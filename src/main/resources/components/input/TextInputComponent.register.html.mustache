@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtTextInput extends LitElement {
         static styles = css`
@@ -177,21 +177,21 @@
         `;
 
         static properties = {
-            label: { type: String },
-            value: { type: String },
-            maxChars: { type: Number, attribute: 'max-chars' },
-            type: { type: String },
-            help: { type: String },
-            autocomplete: { type: String },
-            placeholder: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            icon: { type: String },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' },
-            hasIcon: { type: Boolean, attribute: 'has-icon', reflect: true },
-            hasChanged: { type: Boolean, state: true },
-            isFocused: { type: Boolean, state: true }
+            label: {type: String},
+            value: {type: String},
+            maxChars: {type: Number, attribute: 'max-chars'},
+            type: {type: String},
+            help: {type: String},
+            autocomplete: {type: String},
+            placeholder: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            icon: {type: String},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'},
+            hasIcon: {type: Boolean, attribute: 'has-icon', reflect: true},
+            hasChanged: {type: Boolean, state: true},
+            isFocused: {type: Boolean, state: true}
         };
 
         constructor() {
@@ -202,7 +202,7 @@
             this.labelVisibility = 'visible';
             this.width = 'stretch';
             this.autocomplete = '';
-            
+
             // Internal state
             this.initialValue = '';
             this.hasChanged = false;
@@ -253,7 +253,7 @@
             if (this.disabled) return;
 
             const newValue = e.target.value;
-            
+
             // Enforce max chars limit
             if (this.maxChars && newValue.length > this.maxChars) {
                 e.target.value = newValue.substring(0, this.maxChars);
@@ -263,7 +263,7 @@
 
             // Track if value has changed from initial
             this.hasChanged = newValue !== this.initialValue;
-            
+
             // Check if at limit
             if (this.maxChars && newValue.length === this.maxChars) {
                 this.flashCharLimit();
@@ -288,38 +288,38 @@
 
         handleBlur() {
             this.isFocused = false;
-            
+
             // Submit value if it has changed
             if (this.hasChanged) {
                 this.submitValue();
             }
-            
+
             this.requestUpdate();
         }
 
         submitValue() {
             const input = this.shadowRoot.querySelector('.input-field');
             const currentValue = input.value;
-            
+
             // Update internal state
             this.value = currentValue;
             this.initialValue = currentValue;
             this.hasChanged = false;
-            
+
             // Emit to backend
             window.javelit.sendComponentUpdate(this.componentKey, currentValue);
-            
+
             this.requestUpdate();
         }
 
         flashCharLimit() {
             this.charLimitReached = true;
             this.requestUpdate();
-            
+
             if (this.charLimitTimeout) {
                 clearTimeout(this.charLimitTimeout);
             }
-            
+
             this.charLimitTimeout = setTimeout(() => {
                 this.charLimitReached = false;
                 this.requestUpdate();

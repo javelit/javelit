@@ -15,7 +15,7 @@
 }}
 <script type="module">
     import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
-    
+
     class JtColumns extends LitElement {
         static styles = css`
             :host {
@@ -52,7 +52,7 @@
                 padding: var(--jt-spacing-md);
             }
         `;
-        
+
         static properties = {
             numColumns: {type: Number, attribute: 'num-columns'},
             widths: {type: Array},
@@ -60,18 +60,18 @@
             verticalAlignment: {type: String, attribute: 'vertical-alignment'},
             border: {type: Boolean}
         };
-        
+
         render() {
             const gapClass = `gap-${this.gap?.toLowerCase() || 'small'}`;
             const alignClass = `align-${this.verticalAlignment?.toLowerCase() || 'top'}`;
-            
+
             // Generate columns with appropriate widths
             const columns = [];
             for (let i = 0; i < this.numColumns; i++) {
-                const width = this.widths && this.widths[i] 
-                    ? `${(this.widths[i] * 100)}%`
-                    : `${100 / this.numColumns}%`;
-                
+                const width = this.widths && this.widths[i]
+                        ? `${(this.widths[i] * 100)}%`
+                        : `${100 / this.numColumns}%`;
+
                 columns.push(html`
                     <div 
                         class="column ${this.border ? 'border' : ''}"
@@ -81,7 +81,7 @@
                     </div>
                 `);
             }
-            
+
             return html`
                 <div class="columns-container ${gapClass} ${alignClass}">
                     ${columns}
@@ -89,6 +89,6 @@
             `;
         }
     }
-    
+
     customElements.define('jt-columns', JtColumns);
 </script>

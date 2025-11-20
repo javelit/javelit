@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtSlider extends LitElement {
         static styles = css`
@@ -179,17 +179,17 @@
         `;
 
         static properties = {
-            label: { type: String },
-            min: { type: Number },
-            max: { type: Number },
-            value: { type: Number },
-            step: { type: Number },
-            format: { type: String },
-            componentKey: { type: String, attribute: 'component-key' },
-            help: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            width: { type: String }
+            label: {type: String},
+            min: {type: Number},
+            max: {type: Number},
+            value: {type: Number},
+            step: {type: Number},
+            format: {type: String},
+            componentKey: {type: String, attribute: 'component-key'},
+            help: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            width: {type: String}
         };
 
         constructor() {

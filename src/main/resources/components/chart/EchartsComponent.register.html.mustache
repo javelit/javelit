@@ -14,24 +14,24 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-// Load ECharts dynamically and wait for it to be available
-if (!window.echarts) {
-    const script = document.createElement('script');
-    script.src = '{{ ECHARTS_DEPENDENCY }}';
-    await new Promise(resolve => {
-        script.onload = resolve;
-        document.head.appendChild(script);
-    });
-}
+    // Load ECharts dynamically and wait for it to be available
+    if (!window.echarts) {
+        const script = document.createElement('script');
+        script.src = '{{ ECHARTS_DEPENDENCY }}';
+        await new Promise(resolve => {
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    }
 
-class JtEcharts extends LitElement {
+    class JtEcharts extends LitElement {
 
-    static registeredThemes = new Set(["default"]);
-    static registeredMaps = new Set();
+        static registeredThemes = new Set(["default"]);
+        static registeredMaps = new Set();
 
-    static styles = css`
+        static styles = css`
         :host {
             display: flex;
             height: 100%;
@@ -47,135 +47,135 @@ class JtEcharts extends LitElement {
         }
     `;
 
-    static properties = {
-        option: { type: Object},
-        height: { type: Number},
-        width: {type: Number},
-        theme: { type: String },
-        maps: { type: String },
-        border: {type: Boolean, reflect: true}
-    };
+        static properties = {
+            option: {type: Object},
+            height: {type: Number},
+            width: {type: Number},
+            theme: {type: String},
+            maps: {type: String},
+            border: {type: Boolean, reflect: true}
+        };
 
-    constructor() {
-        super();
-        this.option = {};
-        this.chart = null;
-        this.resizeObserver = null;
-    }
-
-    firstUpdated() {
-        if (!JtEcharts.registeredThemes.has(this.theme)) {
-            console.log("Registering echarts theme " + this.theme);
-            try {
-                const xhr = new XMLHttpRequest();
-                const basePath = window.javelit?.baseUrlPath || '';
-                xhr.open('GET', basePath + `/_/static/_javelit/components/chart/echarts_theme_${this.theme}.json`, false); // false = synchronous
-                xhr.send();
-                if (xhr.status === 200) {
-                    const themeJson = JSON.parse(xhr.responseText);
-                    window.echarts.registerTheme(this.theme, themeJson);
-                    JtEcharts.registeredThemes.add(this.theme);
-                    console.log("SUCCESS");
-                } else {
-                    throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
-                }
-            } catch (err) {
-                console.warn(`Failed to load theme ${this.theme}, falling back to default: ${err}`);
-            }
+        constructor() {
+            super();
+            this.option = {};
+            this.chart = null;
+            this.resizeObserver = null;
         }
 
-        // Load and register maps if provided
-        if (this.maps && this.maps !== "[]") {
-            try {
-                const mapsConfig = JSON.parse(this.maps);
-                for (const mapConfig of mapsConfig) {
-                    const mapName = mapConfig.mapName;
-
-                    // Check if map is already registered
-                    if (JtEcharts.registeredMaps.has(mapName)) {
-                        console.log(`Map ${mapName} already registered, skipping...`);
-                        continue;
+        firstUpdated() {
+            if (!JtEcharts.registeredThemes.has(this.theme)) {
+                console.log("Registering echarts theme " + this.theme);
+                try {
+                    const xhr = new XMLHttpRequest();
+                    const basePath = window.javelit?.baseUrlPath || '';
+                    xhr.open('GET', basePath + `/_/static/_javelit/components/chart/echarts_theme_${this.theme}.json`, false); // false = synchronous
+                    xhr.send();
+                    if (xhr.status === 200) {
+                        const themeJson = JSON.parse(xhr.responseText);
+                        window.echarts.registerTheme(this.theme, themeJson);
+                        JtEcharts.registeredThemes.add(this.theme);
+                        console.log("SUCCESS");
+                    } else {
+                        throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
                     }
+                } catch (err) {
+                    console.warn(`Failed to load theme ${this.theme}, falling back to default: ${err}`);
+                }
+            }
 
-                    // Check if echarts already has this map
-                    if (window.echarts.getMap && window.echarts.getMap(mapName)) {
-                        console.log(`Map ${mapName} already exists in echarts, skipping...`);
-                        JtEcharts.registeredMaps.add(mapName);
-                        continue;
-                    }
+            // Load and register maps if provided
+            if (this.maps && this.maps !== "[]") {
+                try {
+                    const mapsConfig = JSON.parse(this.maps);
+                    for (const mapConfig of mapsConfig) {
+                        const mapName = mapConfig.mapName;
 
-                    console.log(`Loading map ${mapName} from ${mapConfig.geoJsonUri}`);
-                    try {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('GET', mapConfig.geoJsonUri, false); // synchronous
-                        xhr.send();
-                        if (xhr.status === 200) {
-                            const geoJson = JSON.parse(xhr.responseText);
-                            window.echarts.registerMap(mapName, geoJson, mapConfig.specialAreas);
-                            JtEcharts.registeredMaps.add(mapName);
-                            console.log(`Successfully registered map ${mapName}`);
-                        } else {
-                            throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
+                        // Check if map is already registered
+                        if (JtEcharts.registeredMaps.has(mapName)) {
+                            console.log(`Map ${mapName} already registered, skipping...`);
+                            continue;
                         }
-                    } catch (err) {
-                        console.error(`Failed to load map ${mapName}: ${err}`);
+
+                        // Check if echarts already has this map
+                        if (window.echarts.getMap && window.echarts.getMap(mapName)) {
+                            console.log(`Map ${mapName} already exists in echarts, skipping...`);
+                            JtEcharts.registeredMaps.add(mapName);
+                            continue;
+                        }
+
+                        console.log(`Loading map ${mapName} from ${mapConfig.geoJsonUri}`);
+                        try {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('GET', mapConfig.geoJsonUri, false); // synchronous
+                            xhr.send();
+                            if (xhr.status === 200) {
+                                const geoJson = JSON.parse(xhr.responseText);
+                                window.echarts.registerMap(mapName, geoJson, mapConfig.specialAreas);
+                                JtEcharts.registeredMaps.add(mapName);
+                                console.log(`Successfully registered map ${mapName}`);
+                            } else {
+                                throw new Error(`HTTP ${xhr.status}: ${xhr.statusText}`);
+                            }
+                        } catch (err) {
+                            console.error(`Failed to load map ${mapName}: ${err}`);
+                        }
                     }
+                } catch (err) {
+                    console.error(`Failed to parse maps configuration: ${err}`);
                 }
-            } catch (err) {
-                console.error(`Failed to parse maps configuration: ${err}`);
+            }
+
+            this.style.setProperty('--min-height', this.height + 'px');
+            if (this.width) {
+                this.style.setProperty('--width', this.width + 'px');
+            }
+            if (!this.chart && window.echarts) {
+                let container = this.shadowRoot.querySelector("#container");
+                this.chart = window.echarts.init(container, this.theme);
+                const resizeObserver = new ResizeObserver((entries) => {
+                    this.chart.resize();
+                })
+                resizeObserver.observe(container);
             }
         }
 
-        this.style.setProperty('--min-height', this.height + 'px');
-        if (this.width) {
-            this.style.setProperty('--width', this.width + 'px');
+        updated(changedProperties) {
+            if (changedProperties.has('option')) {
+                this.chart.setOption(this.option);
+            }
+            if (changedProperties.has('height')) {
+                this.style.setProperty('--min-height', this.height + 'px');
+            }
+            this.chart.resize();
         }
-        if (!this.chart && window.echarts) {
-            let container = this.shadowRoot.querySelector("#container");
-            this.chart = window.echarts.init(container, this.theme);
-            const resizeObserver = new ResizeObserver((entries) => {
-                this.chart.resize();
-            })
-            resizeObserver.observe(container);
-        }
-    }
 
-    updated(changedProperties) {
-        if (changedProperties.has('option')) {
+        disconnectedCallback() {
+            if (this.resizeObserver) {
+                this.resizeObserver.disconnect();
+            }
+            this.resizeObserver = null;
+            let container = this.shadowRoot.querySelector("#container");
+            if (container) {
+                container.innerHTML = "";
+            }
+            if (this.chart) {
+                this.chart.dispose();
+            }
+            this.chart = null;
+
+            super.disconnectedCallback();
+        }
+
+        render() {
+            return html`<div id="container"></div>`;
+        }
+
+        updateChart() {
+            if (!this.chart) return;
             this.chart.setOption(this.option);
         }
-        if (changedProperties.has('height')) {
-            this.style.setProperty('--min-height', this.height + 'px');
-        }
-        this.chart.resize();
     }
 
-    disconnectedCallback() {
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-        }
-        this.resizeObserver = null;
-        let container = this.shadowRoot.querySelector("#container");
-        if (container) {
-            container.innerHTML = "";
-        }
-        if (this.chart) {
-            this.chart.dispose();
-        }
-        this.chart = null;
-
-        super.disconnectedCallback();
-    }
-
-    render() {
-        return html`<div id="container"></div>`;
-    }
-
-    updateChart() {
-        if (!this.chart) return;
-        this.chart.setOption(this.option);
-    }
-}
-
-customElements.define('jt-echarts', JtEcharts);
+    customElements.define('jt-echarts', JtEcharts);
 </script>

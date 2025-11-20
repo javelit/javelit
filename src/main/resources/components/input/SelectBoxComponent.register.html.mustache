@@ -201,16 +201,16 @@
         `;
 
         static properties = {
-            label: { type: String },
-            optionsJson: { type: String, attribute: 'options-json' },
-            index: { type: Number },
-            placeholder: { type: String },
-            help: { type: String },
-            disabled: { type: Boolean },
-            acceptNewOptions: { type: Boolean, attribute: 'accept-new-options' },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' }
+            label: {type: String},
+            optionsJson: {type: String, attribute: 'options-json'},
+            index: {type: Number},
+            placeholder: {type: String},
+            help: {type: String},
+            disabled: {type: Boolean},
+            acceptNewOptions: {type: Boolean, attribute: 'accept-new-options'},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'}
         };
 
         constructor() {
@@ -345,14 +345,14 @@
 
         getFilteredOptions() {
             if (!this.searchValue) {
-                return this.options.map((option, index) => ({ option, index }));
+                return this.options.map((option, index) => ({option, index}));
             }
 
             return this.options
-                .map((option, index) => ({ option, index }))
-                .filter(({ option }) =>
-                    option.toLowerCase().includes(this.searchValue.toLowerCase())
-                );
+                    .map((option, index) => ({option, index}))
+                    .filter(({option}) =>
+                            option.toLowerCase().includes(this.searchValue.toLowerCase())
+                    );
         }
 
         render() {
@@ -361,8 +361,8 @@
             const isDisabled = this.disabled || (!this.options.length && !this.acceptNewOptions);
             const filteredOptions = this.getFilteredOptions();
             const showAddOption = this.acceptNewOptions && this.searchValue.trim() &&
-                                 !filteredOptions.some(({option}) =>
-                                     option.toLowerCase() === this.searchValue.toLowerCase());
+                    !filteredOptions.some(({option}) =>
+                            option.toLowerCase() === this.searchValue.toLowerCase());
 
             return html`
                 <div class="selectbox-container">
@@ -409,10 +409,10 @@
                                 ${showAddOption ? html`
                                     <div class="selectbox-option add-option"
                                          @click="${() => {
-                                             const valueToSend = this.searchValue.trim();
-                                             this.closeDropdown();
-                                             window.javelit.sendComponentUpdate(this.componentKey, valueToSend);
-                                         }}">
+                const valueToSend = this.searchValue.trim();
+                this.closeDropdown();
+                window.javelit.sendComponentUpdate(this.componentKey, valueToSend);
+            }}">
                                         Add: "${this.searchValue}"
                                     </div>
                                 ` : ''}

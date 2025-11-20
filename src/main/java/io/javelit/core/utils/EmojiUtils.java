@@ -20,19 +20,19 @@ import org.jetbrains.annotations.Nullable;
 
 public final class EmojiUtils {
 
-    public static void ensureIsValidIcon(@Nullable String icon) {
-        if (icon != null && !icon.isEmpty()) {
-            // Validate icon format: single emoji or :icon_name:
-            boolean isEmoji = EmojiManager.isEmoji(icon);
-            boolean isMaterialIcon = icon.startsWith(":") && icon.endsWith(":") && icon.length() > 2;
+  public static void ensureIsValidIcon(@Nullable String icon) {
+    if (icon != null && !icon.isEmpty()) {
+      // Validate icon format: single emoji or :icon_name:
+      boolean isEmoji = EmojiManager.isEmoji(icon);
+      boolean isMaterialIcon = icon.startsWith(":") && icon.endsWith(":") && icon.length() > 2;
 
-            if (!isEmoji && !isMaterialIcon) {
-                throw new IllegalArgumentException(
-                        "icon must be a single emoji or Material Symbols in format ':icon_name:'. Got: " + icon);
-            }
-        }
+      if (!isEmoji && !isMaterialIcon) {
+        throw new IllegalArgumentException(
+            "icon must be a single emoji or Material Symbols in format ':icon_name:'. Got: " + icon);
+      }
     }
+  }
 
-    private EmojiUtils() {
-    }
+  private EmojiUtils() {
+  }
 }

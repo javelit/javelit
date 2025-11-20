@@ -32,41 +32,41 @@ import jakarta.annotation.Nullable;
 
 public final class MarkdownUtils {
 
-    private static final Parser parser;
-    private static final HtmlRenderer renderer;
+  private static final Parser parser;
+  private static final HtmlRenderer renderer;
 
-    static {
-        final MutableDataSet options = new MutableDataSet();
-        final List<Extension> extensions = new ArrayList<>();
-        extensions.add(TablesExtension.create());
-        extensions.add(EmojiExtension.create());
-        extensions.add(StrikethroughExtension.create());
-        extensions.add(AutolinkExtension.create());
-        options.set(EmojiExtension.USE_IMAGE_TYPE, EmojiImageType.UNICODE_ONLY);
-        options.set(Parser.EXTENSIONS, extensions);
-        parser = Parser.builder(options).build();
-        renderer = HtmlRenderer.builder(options).build();
-    }
+  static {
+    final MutableDataSet options = new MutableDataSet();
+    final List<Extension> extensions = new ArrayList<>();
+    extensions.add(TablesExtension.create());
+    extensions.add(EmojiExtension.create());
+    extensions.add(StrikethroughExtension.create());
+    extensions.add(AutolinkExtension.create());
+    options.set(EmojiExtension.USE_IMAGE_TYPE, EmojiImageType.UNICODE_ONLY);
+    options.set(Parser.EXTENSIONS, extensions);
+    parser = Parser.builder(options).build();
+    renderer = HtmlRenderer.builder(options).build();
+  }
 
-    /**
-     * @param removeWrap if true, removes the wrapping tag if it exists. Usefull to remove the wrapping <p> tag that is put to text like "this text". If false, no post-processing. The wrapping tag removed could be any type of tag as long as it's wrapping, ie it's open first and closed last in the string.
-     */
-    static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
-        if (markdown == null) {
-            return null;
-        }
-        final Node document = parser.parse(markdown);
-        String html = renderer.render(document).trim();
-        if (!html.isBlank() && removeWrap) {
-            final boolean thereIsAWrappingTag = document.getFirstChild() == document.getLastChild();
-            if (thereIsAWrappingTag) {
-                final int closeWrapTagIdx = html.indexOf('>');
-                html = html.substring(closeWrapTagIdx + 1, html.length() - closeWrapTagIdx - 2).trim();
-            }
-        }
-        return html;
+  /**
+   * @param removeWrap if true, removes the wrapping tag if it exists. Usefull to remove the wrapping <p> tag that is put to text like "this text". If false, no post-processing. The wrapping tag removed could be any type of tag as long as it's wrapping, ie it's open first and closed last in the string.
+   */
+  static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
+    if (markdown == null) {
+      return null;
     }
+    final Node document = parser.parse(markdown);
+    String html = renderer.render(document).trim();
+    if (!html.isBlank() && removeWrap) {
+      final boolean thereIsAWrappingTag = document.getFirstChild() == document.getLastChild();
+      if (thereIsAWrappingTag) {
+        final int closeWrapTagIdx = html.indexOf('>');
+        html = html.substring(closeWrapTagIdx + 1, html.length() - closeWrapTagIdx - 2).trim();
+      }
+    }
+    return html;
+  }
 
-    private MarkdownUtils() {
-    }
+  private MarkdownUtils() {
+  }
 }

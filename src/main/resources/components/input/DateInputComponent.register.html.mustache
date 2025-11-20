@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtDateInput extends LitElement {
         static styles = css`
@@ -263,16 +263,16 @@
         `;
 
         static properties = {
-            label: { type: String },
-            currentValue: { type: String, attribute: 'current-value' },
-            minValue: { type: String, attribute: 'min-value' },
-            maxValue: { type: String, attribute: 'max-value' },
-            format: { type: String },
-            help: { type: String },
-            disabled: { type: Boolean },
-            labelVisibility: { type: String, attribute: 'label-visibility' },
-            width: { type: String },
-            componentKey: { type: String, attribute: 'component-key' }
+            label: {type: String},
+            currentValue: {type: String, attribute: 'current-value'},
+            minValue: {type: String, attribute: 'min-value'},
+            maxValue: {type: String, attribute: 'max-value'},
+            format: {type: String},
+            help: {type: String},
+            disabled: {type: Boolean},
+            labelVisibility: {type: String, attribute: 'label-visibility'},
+            width: {type: String},
+            componentKey: {type: String, attribute: 'component-key'}
         };
 
         constructor() {
@@ -431,7 +431,7 @@
             for (let i = 0; i < 7; i++) {
                 const date = new Date(baseDate);
                 date.setDate(baseDate.getDate() + i);
-                weekdays.push(date.toLocaleDateString(this.sanitizedLocale, { weekday: 'short' }).substring(0, 2));
+                weekdays.push(date.toLocaleDateString(this.sanitizedLocale, {weekday: 'short'}).substring(0, 2));
             }
 
             // Reorder based on locale's first day of week
@@ -445,7 +445,7 @@
 
         getMonthName(month) {
             const date = new Date(2024, month, 1);
-            return date.toLocaleDateString(this.sanitizedLocale, { month: 'long' });
+            return date.toLocaleDateString(this.sanitizedLocale, {month: 'long'});
         }
 
         renderCalendarDays() {
@@ -476,10 +476,10 @@
                     <button class="calendar-day other-month"
                             ?disabled="${isDisabled}"
                             @click="${() => {
-                                this.viewMonth = prevMonth;
-                                this.viewYear = prevYear;
-                                this.selectDate(date);
-                            }}">
+                    this.viewMonth = prevMonth;
+                    this.viewYear = prevYear;
+                    this.selectDate(date);
+                }}">
                         ${day}
                     </button>
                 `);
@@ -489,12 +489,12 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const isSelected = this.currentDate &&
-                                   date.getDate() === this.currentDate.getDate() &&
-                                   date.getMonth() === this.currentDate.getMonth() &&
-                                   date.getFullYear() === this.currentDate.getFullYear();
+                        date.getDate() === this.currentDate.getDate() &&
+                        date.getMonth() === this.currentDate.getMonth() &&
+                        date.getFullYear() === this.currentDate.getFullYear();
                 const isToday = date.getDate() === today.getDate() &&
-                                date.getMonth() === today.getMonth() &&
-                                date.getFullYear() === today.getFullYear();
+                        date.getMonth() === today.getMonth() &&
+                        date.getFullYear() === today.getFullYear();
                 const isDisabled = (minDate && date < minDate) || (maxDate && date > maxDate);
 
                 days.push(html`
@@ -519,10 +519,10 @@
                     <button class="calendar-day other-month"
                             ?disabled="${isDisabled}"
                             @click="${() => {
-                                this.viewMonth = nextMonth;
-                                this.viewYear = nextYear;
-                                this.selectDate(date);
-                            }}">
+                    this.viewMonth = nextMonth;
+                    this.viewYear = nextYear;
+                    this.selectDate(date);
+                }}">
                         ${day}
                     </button>
                 `);
@@ -543,15 +543,21 @@
 
             return html`
                 <select class="calendar-month-select"
-                        @change="${(e) => { this.viewMonth = parseInt(e.target.value); this.requestUpdate(); }}">
-                    ${Array.from({ length: 12 }, (_, i) => html`
+                        @change="${(e) => {
+                this.viewMonth = parseInt(e.target.value);
+                this.requestUpdate();
+            }}">
+                    ${Array.from({length: 12}, (_, i) => html`
                         <option value="${i}" ?selected="${i === this.viewMonth}">
                             ${this.getMonthName(i)}
                         </option>
                     `)}
                 </select>
                 <select class="calendar-year-select"
-                        @change="${(e) => { this.viewYear = parseInt(e.target.value); this.requestUpdate(); }}">
+                        @change="${(e) => {
+                this.viewYear = parseInt(e.target.value);
+                this.requestUpdate();
+            }}">
                     ${years.map(year => html`
                         <option value="${year}" ?selected="${year === this.viewYear}">
                             ${year}

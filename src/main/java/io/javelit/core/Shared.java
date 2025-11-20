@@ -23,14 +23,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public final class Shared {
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    static final Set<String> RESERVED_URL_PATHS = Set.of("/_", "/app");
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  static final Set<String> RESERVED_URL_PATHS = Set.of("/_", "/app");
 
-    static {
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
-        OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+  static {
+    OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+  }
 
-    private Shared() {
-    }
+  private Shared() {
+  }
 }

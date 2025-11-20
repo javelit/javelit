@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
     class JtConnectionErrorModal extends LitElement {
         static styles = css`
@@ -153,8 +153,8 @@
         `;
 
         static properties = {
-            show: { type: Boolean, reflect: true },
-            preventClose: { type: Boolean, reflect: true, attribute: 'prevent-close' }
+            show: {type: Boolean, reflect: true},
+            preventClose: {type: Boolean, reflect: true, attribute: 'prevent-close'}
         };
 
         constructor() {

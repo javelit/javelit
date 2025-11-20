@@ -30,32 +30,32 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
  */
 public class SliderComponentE2ETest {
 
-    @Test
-    void testSliderDrag(TestInfo testInfo) {
-        JtRunnable app = () -> {
-            double value = Jt.slider("Temperature")
-                .min(0)
-                .max(100)
-                .value(50)
-                .use();
-            Jt.text("Temperature: " + value).use();
-        };
+  @Test
+  void testSliderDrag(TestInfo testInfo) {
+    JtRunnable app = () -> {
+      double value = Jt.slider("Temperature")
+                       .min(0)
+                       .max(100)
+                       .value(50)
+                       .use();
+      Jt.text("Temperature: " + value).use();
+    };
 
-        // slider exists
-        // intial value is 50
-        // change the slider value to 25
-        // text is updated
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // slider exists
-            assertThat(page.locator("jt-slider")).isVisible(WAIT_1_SEC_MAX);
-            // intial value is 50
-            assertThat(page.getByText("Temperature: " + 50)).isVisible(WAIT_1_SEC_MAX);
-            // change the slider value to 25
-            final Locator sliderInput = page.locator("jt-slider .slider-input");
-            sliderInput.fill("25");
-            // text is updated
-            assertThat(page.getByText("Temperature: " + 25)).isVisible(WAIT_1_SEC_MAX);
+    // slider exists
+    // intial value is 50
+    // change the slider value to 25
+    // text is updated
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // slider exists
+      assertThat(page.locator("jt-slider")).isVisible(WAIT_1_SEC_MAX);
+      // intial value is 50
+      assertThat(page.getByText("Temperature: " + 50)).isVisible(WAIT_1_SEC_MAX);
+      // change the slider value to 25
+      final Locator sliderInput = page.locator("jt-slider .slider-input");
+      sliderInput.fill("25");
+      // text is updated
+      assertThat(page.getByText("Temperature: " + 25)).isVisible(WAIT_1_SEC_MAX);
 
-        });
-    }
+    });
+  }
 }

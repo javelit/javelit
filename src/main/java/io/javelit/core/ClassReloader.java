@@ -23,26 +23,26 @@ import static com.google.common.base.Preconditions.checkArgument;
 @Deprecated
 public class ClassReloader extends Reloader {
 
-    private final String appClassName;
+  private final String appClassName;
 
-    public ClassReloader(Server.Builder builder) {
-        checkArgument(builder.buildSystem == BuildSystem.RUNTIME, "Class reloader only supports RUNTIME build systems.");
-        checkArgument(builder.appClass != null);
-        this.appClassName = builder.appClass.getName();
+  public ClassReloader(Server.Builder builder) {
+    checkArgument(builder.buildSystem == BuildSystem.RUNTIME, "Class reloader only supports RUNTIME build systems.");
+    checkArgument(builder.appClass != null);
+    this.appClassName = builder.appClass.getName();
+  }
+
+  @Override
+  AppEntrypoint reload() {
+    // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
+    final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    final Method method;
+    try {
+      final Class<?> appClass = Class.forName(appClassName, true, cl);
+      method = appClass.getMethod("main", String[].class);
+    } catch (ClassNotFoundException | NoSuchMethodException e) {
+      throw new CompilationException(e);
     }
 
-    @Override
-    AppEntrypoint reload() {
-        // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
-        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        final Method method;
-        try {
-            final Class<?> appClass = Class.forName(appClassName, true, cl);
-            method =  appClass.getMethod("main", String[].class);
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new CompilationException(e);
-        }
-
-        return AppEntrypoint.of(method, cl);
-    }
+    return AppEntrypoint.of(method, cl);
+  }
 }

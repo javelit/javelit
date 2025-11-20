@@ -23,6 +23,7 @@
             height: 100%;
             margin: 0;
         }
+
         body {
             font-family: var(--jt-font-family);
             background-color: var(--jt-bg-primary);
@@ -31,27 +32,32 @@
             align-items: center;
             justify-content: center;
         }
+
         .warning-container {
             max-width: 500px;
             padding: var(--jt-spacing-2xl);
             text-align: center;
         }
+
         .warning-icon {
             font-size: 64px;
             margin-bottom: var(--jt-spacing-xl);
         }
+
         .warning-title {
             font-size: var(--jt-font-size-2xl);
             font-weight: var(--jt-font-weight-bold);
             margin-bottom: var(--jt-spacing-lg);
             color: var(--jt-text-primary);
         }
+
         .warning-message {
             font-size: var(--jt-font-size-base);
             color: var(--jt-text-secondary);
             line-height: var(--jt-line-height-relaxed);
             margin-bottom: var(--jt-spacing-2xl);
         }
+
         .open-button {
             display: inline-block;
             padding: 12px 24px;
@@ -64,19 +70,20 @@
             transition: all var(--jt-transition-fast);
             cursor: pointer;
         }
+
         .open-button:hover {
             background: var(--jt-theme-active);
         }
     </style>
 </head>
 <body>
-    <div class="warning-container">
-        <div class="warning-title">Embedded Javelit Apps Not Supported in Safari</div>
-        <div class="warning-message">
-            Due to Safari's privacy restrictions, embedded Javelit apps cannot function properly.
-            Please open this app in a new tab to use it.
-        </div>
-        <a href="{{ APP_URL }}" target="_blank" class="open-button">Open App in New Tab</a>
+<div class="warning-container">
+    <div class="warning-title">Embedded Javelit Apps Not Supported in Safari</div>
+    <div class="warning-message">
+        Due to Safari's privacy restrictions, embedded Javelit apps cannot function properly.
+        Please open this app in a new tab to use it.
     </div>
+    <a href="{{ APP_URL }}" target="_blank" class="open-button">Open App in New Tab</a>
+</div>
 </body>
 </html>

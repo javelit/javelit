@@ -14,10 +14,10 @@
     limitations under the License.
 }}
 <script type="module">
-import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
-class JtTable extends LitElement {
-    static styles = css`
+    class JtTable extends LitElement {
+        static styles = css`
         :host {
             display: block;
             width: 100%;
@@ -89,27 +89,27 @@ class JtTable extends LitElement {
         }
     `;
 
-    static properties = {
-        columns: { type: Array },
-        values: { type: Array }
-    };
+        static properties = {
+            columns: {type: Array},
+            values: {type: Array}
+        };
 
-    constructor() {
-        super();
-        this.columns = [];
-        this.values = [];
-    }
+        constructor() {
+            super();
+            this.columns = [];
+            this.values = [];
+        }
 
-    render() {
-        if (!this.columns || this.columns.length === 0) {
-            return html`
+        render() {
+            if (!this.columns || this.columns.length === 0) {
+                return html`
                 <div class="empty-state">
                     No columns defined
                 </div>
             `;
-        }
+            }
 
-        return html`
+            return html`
             <div class="table-container">
                 <table>
                     <thead>
@@ -120,8 +120,8 @@ class JtTable extends LitElement {
                         </tr>
                     </thead>
                     <tbody>
-                        ${this.values && this.values.length > 0 ? 
-                            this.values.map(row => html`
+                        ${this.values && this.values.length > 0 ?
+                    this.values.map(row => html`
                                 <tr>
                                     ${this.columns.map((_, index) => html`
                                         <td class="${this.getCellClass(row[index])}">
@@ -129,48 +129,48 @@ class JtTable extends LitElement {
                                         </td>
                                     `)}
                                 </tr>
-                            `) : 
-                            html`
+                            `) :
+                    html`
                                 <tr>
                                     <td colspan="${this.columns.length}" class="empty-state">
                                         No data available
                                     </td>
                                 </tr>
                             `
-                        }
+            }
                     </tbody>
                 </table>
             </div>
         `;
+        }
+
+        getCellClass(value) {
+            return value === null || value === undefined ? 'null-value' : '';
+        }
+
+        renderCell(value) {
+            if (value === null || value === undefined) {
+                return html`<span class="empty-cell">null</span>`;
+            }
+
+            // Handle different data types
+            if (typeof value === 'boolean') {
+                return value ? '' : '';
+            }
+
+            if (typeof value === 'number') {
+                // Format numbers with locale-specific formatting
+                return value.toLocaleString();
+            }
+
+            // Handle arrays and objects by converting to JSON
+            if (typeof value === 'object' && value !== null) {
+                return JSON.stringify(value);
+            }
+
+            return String(value);
+        }
     }
 
-    getCellClass(value) {
-        return value === null || value === undefined ? 'null-value' : '';
-    }
-
-    renderCell(value) {
-        if (value === null || value === undefined) {
-            return html`<span class="empty-cell">null</span>`;
-        }
-        
-        // Handle different data types
-        if (typeof value === 'boolean') {
-            return value ? '' : '';
-        }
-        
-        if (typeof value === 'number') {
-            // Format numbers with locale-specific formatting
-            return value.toLocaleString();
-        }
-        
-        // Handle arrays and objects by converting to JSON
-        if (typeof value === 'object' && value !== null) {
-            return JSON.stringify(value);
-        }
-        
-        return String(value);
-    }
-}
-
-customElements.define('jt-table', JtTable);
+    customElements.define('jt-table', JtTable);
 </script>

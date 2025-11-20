@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     // Load DOMPurify if not already loaded
     if (!window.DOMPurify) {
@@ -49,8 +49,8 @@
         `;
 
         static properties = {
-            htmlContent: { type: String, attribute: 'html-content' },
-            width: { type: String, reflect: true }
+            htmlContent: {type: String, attribute: 'html-content'},
+            width: {type: String, reflect: true}
         };
 
         constructor() {
@@ -73,7 +73,7 @@
             if (window.DOMPurify) {
                 return window.DOMPurify.sanitize(html);
             }
-            
+
             // Fallback: basic HTML escaping if DOMPurify is not available
             const div = document.createElement('div');
             div.textContent = html;
@@ -82,7 +82,7 @@
 
         render() {
             const sanitizedHtml = this.sanitizeHtml(this.htmlContent);
-            
+
             return html`
                 <div class="html-container">
                     ${unsafeHTML(sanitizedHtml)}

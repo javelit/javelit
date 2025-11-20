@@ -31,116 +31,116 @@ import org.jetbrains.annotations.NotNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public final class TitleComponent extends JtComponent<JtComponent.NONE> {
-    // protected to be visible to the template engine
-    final @Nonnull String body;
-    final String anchor;
-    final String help;
-    final String width;
-    final int level;
+  // protected to be visible to the template engine
+  final @Nonnull String body;
+  final String anchor;
+  final String help;
+  final String width;
+  final int level;
 
-    private static final Mustache registerTemplate;
-    private static final Mustache renderTemplate;
+  private static final Mustache registerTemplate;
+  private static final Mustache renderTemplate;
 
-    static {
-        final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/TitleComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/TitleComponent.render.html.mustache");
+  static {
+    final MustacheFactory mf = new DefaultMustacheFactory();
+    registerTemplate = mf.compile("components/TitleComponent.register.html.mustache");
+    renderTemplate = mf.compile("components/TitleComponent.render.html.mustache");
+  }
+
+  private TitleComponent(final Builder builder) {
+    super(builder, NONE.NONE_VALUE, null);
+    this.body = markdownToHtml(builder.body, true);
+    this.anchor = builder.anchor;
+    this.help = builder.help;
+    this.width = builder.width;
+    this.level = builder.level;
+  }
+
+  @SuppressWarnings("unused")
+  public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
+    @Language("markdown") private final @Nonnull String body;
+    private final int level;
+    private String anchor;
+    private String help;
+    private String width = "stretch";
+
+    /**
+     * The text to display. Markdown is supported, see {@link io.javelit.core.Jt#markdown(String)} for more details.
+     */
+    public Builder(final @Language("markdown") @NotNull String body, final int level) {
+      checkArgument(level == 1 || level == 2 || level == 3, "Invalid level %s. Accepted values: 1,2,3", level);
+      this.level = level;
+      this.body = body;
     }
 
-    private TitleComponent(final Builder builder) {
-        super(builder, NONE.NONE_VALUE, null);
-        this.body = markdownToHtml(builder.body, true);
-        this.anchor = builder.anchor;
-        this.help = builder.help;
-        this.width = builder.width;
-        this.level = builder.level;
+    /**
+     * The anchor name of the header that can be accessed with #anchor in the URL.
+     * If omitted, it generates an anchor using the body. If False, the anchor is not shown in the UI.
+     */
+    public Builder anchor(final @Nullable String anchor) {
+      this.anchor = anchor;
+      return this;
     }
 
-    @SuppressWarnings("unused")
-    public static class Builder extends JtComponentBuilder<NONE, TitleComponent, Builder> {
-        @Language("markdown") private final @Nonnull String body;
-        private final int level;
-        private String anchor;
-        private String help;
-        private String width = "stretch";
+    /**
+     * A tooltip that gets displayed next to the text. If this is {@code null} (default), no tooltip is displayed.
+     */
+    public Builder help(final @Nullable String help) {
+      this.help = help;
+      return this;
+    }
 
-        /**
-         * The text to display. Markdown is supported, see {@link io.javelit.core.Jt#markdown(String)} for more details.
-         */
-        public Builder(final @Language("markdown") @NotNull String body, final int level) {
-            checkArgument(level == 1 || level == 2 || level == 3, "Invalid level %s. Accepted values: 1,2,3", level);
-            this.level = level;
-            this.body = body;
-        }
+    /**
+     * The width of the element. This can be one of the following:
+     * <ul>
+     * <li>{@code content} (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
+     * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
+     * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
+     * </ul>
+     */
+    public Builder width(final @Nullable String width) {
+      if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
+        throw new IllegalArgumentException(
+            "width must be 'stretch', 'content', or a pixel value (integer). Got: " + width);
+      }
+      this.width = width;
+      return this;
+    }
 
-        /**
-         * The anchor name of the header that can be accessed with #anchor in the URL.
-         * If omitted, it generates an anchor using the body. If False, the anchor is not shown in the UI.
-         */
-        public Builder anchor(final @Nullable String anchor) {
-            this.anchor = anchor;
-            return this;
-        }
-
-        /**
-         * A tooltip that gets displayed next to the text. If this is {@code null} (default), no tooltip is displayed.
-         */
-        public Builder help(final @Nullable String help) {
-            this.help = help;
-            return this;
-        }
-
-        /**
-         * The width of the element. This can be one of the following:
-         * <ul>
-         * <li>{@code content} (default): The width of the element matches the width of its content, but doesn't exceed the width of the parent container.</li>
-         * <li>{@code stretch}: The width of the element matches the width of the parent container.</li>
-         * <li>An integer specifying the width in pixels: The element has a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.</li>
-         * </ul>
-         */
-        public Builder width(final @Nullable String width) {
-            if (width != null && !"stretch".equals(width) && !"content".equals(width) && !width.matches("\\d+")) {
-                throw new IllegalArgumentException(
-                        "width must be 'stretch', 'content', or a pixel value (integer). Got: " + width);
-            }
-            this.width = width;
-            return this;
-        }
-
-        /**
-         * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
-         */
-        public Builder width(final int widthPixels) {
-            if (widthPixels < 0) {
-                throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
-            }
-            this.width = String.valueOf(widthPixels);
-            return this;
-        }
-
-        @Override
-        public TitleComponent build() {
-            return new TitleComponent(this);
-        }
+    /**
+     * The width of the element in pixels. The element will have a fixed width. If the specified width is greater than the width of the parent container, the width of the element matches the width of the parent container.
+     */
+    public Builder width(final int widthPixels) {
+      if (widthPixels < 0) {
+        throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
+      }
+      this.width = String.valueOf(widthPixels);
+      return this;
     }
 
     @Override
-    protected String register() {
-        final StringWriter writer = new StringWriter();
-        registerTemplate.execute(writer, this);
-        return writer.toString();
+    public TitleComponent build() {
+      return new TitleComponent(this);
     }
+  }
 
-    @Override
-    protected String render() {
-        final StringWriter writer = new StringWriter();
-        renderTemplate.execute(writer, this);
-        return writer.toString();
-    }
+  @Override
+  protected String register() {
+    final StringWriter writer = new StringWriter();
+    registerTemplate.execute(writer, this);
+    return writer.toString();
+  }
 
-    @Override
-    protected TypeReference<NONE> getTypeReference() {
-        return new TypeReference<>() {
-        };
-    }
+  @Override
+  protected String render() {
+    final StringWriter writer = new StringWriter();
+    renderTemplate.execute(writer, this);
+    return writer.toString();
+  }
+
+  @Override
+  protected TypeReference<NONE> getTypeReference() {
+    return new TypeReference<>() {
+    };
+  }
 }

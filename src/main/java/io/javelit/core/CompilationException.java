@@ -22,15 +22,15 @@ package io.javelit.core;
  * Exception thrown when compilation of the app fails OR when launching the main method fails
  */
 class CompilationException extends RuntimeException {
-    protected CompilationException(final Exception e) {
-        super(e.getMessage(), e.getCause());
-    }
+  protected CompilationException(final Exception e) {
+    super(e.getMessage(), e.getCause());
+  }
 
-    protected CompilationException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
+  protected CompilationException(final String message, final Throwable cause) {
+    super(message, cause);
+  }
 
-    protected CompilationException(final String errorMessage) {
-        super(errorMessage);
-    }
+  protected CompilationException(final String errorMessage) {
+    super(errorMessage);
+  }
 }

@@ -22,11 +22,11 @@ import jakarta.annotation.Nonnull;
 
 public final class StringUtils {
 
-    public static String percentEncode(final @Nonnull String str) {
-        return URLEncoder.encode(str, StandardCharsets.UTF_8).replace("+", "%20");
-    }
+  public static String percentEncode(final @Nonnull String str) {
+    return URLEncoder.encode(str, StandardCharsets.UTF_8).replace("+", "%20");
+  }
 
-    private StringUtils() {
-    }
+  private StringUtils() {
+  }
 
 }

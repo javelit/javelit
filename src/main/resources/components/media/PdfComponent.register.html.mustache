@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css } from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
 
     class JtPdf extends LitElement {
         static styles = css`
@@ -110,12 +110,12 @@
         `;
 
         static properties = {
-            url: { type: String },
-            height: { type: String, reflect: true },
-            loadError: { type: Boolean, state: true },
-            loaded: { type: Boolean, state: true },
-            errorType: { type: String, state: true },
-            suggestedUrl: { type: String, state: true }
+            url: {type: String},
+            height: {type: String, reflect: true},
+            loadError: {type: Boolean, state: true},
+            loaded: {type: Boolean, state: true},
+            errorType: {type: String, state: true},
+            suggestedUrl: {type: String, state: true}
         };
 
         constructor() {
@@ -147,7 +147,7 @@
 
         async checkContentType(url) {
             try {
-                const response = await fetch(url, { method: 'HEAD' });
+                const response = await fetch(url, {method: 'HEAD'});
                 const contentType = response.headers.get('content-type');
 
                 if (contentType && contentType.includes('application/octet-stream')) {

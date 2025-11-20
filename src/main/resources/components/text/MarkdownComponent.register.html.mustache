@@ -14,8 +14,8 @@
     limitations under the License.
 }}
 <script type="module">
-    import { LitElement, html, css, unsafeHTML } from '{{ LIT_DEPENDENCY }}';
-    {{{ PRISM_SETUP_SNIPPET }}}
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
+        {{{ PRISM_SETUP_SNIPPET }}}
 
     class JtMarkdown extends LitElement {
         static styles = css`
@@ -62,9 +62,9 @@
         `;
 
         static properties = {
-            body: { type: String },
-            help: { type: String },
-            width: { type: String, reflect: true }
+            body: {type: String},
+            help: {type: String},
+            width: {type: String, reflect: true}
         };
 
         constructor() {

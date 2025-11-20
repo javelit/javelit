@@ -102,7 +102,7 @@ public class JtPageTest {
                      Arguments.of("app"),
                      Arguments.of("/app"),
                      Arguments.of("/app/")
-                     );
+    );
   }
 
   @ParameterizedTest

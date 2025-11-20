@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import io.javelit.core.Jt;
 
 public class ImageStaticTestApp {
-    public static void main(String[] args) {
-        Jt.image("app/static/mountains.jpg").use();
-    }
+  public static void main(String[] args) {
+    Jt.image("app/static/mountains.jpg").use();
+  }
 }

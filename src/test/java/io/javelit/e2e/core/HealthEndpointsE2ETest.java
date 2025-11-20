@@ -30,32 +30,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class HealthEndpointsE2ETest {
 
-    @Test
-    void testHealthAndReadyEndpoints(TestInfo testInfo) {
-        final @Language("java") String app = """
-            import io.javelit.core.Jt;
-
-            public class TestApp {
-                public static void main(String[] args) {
-                    Jt.text("Hello World").use();
-                }
+  @Test
+  void testHealthAndReadyEndpoints(TestInfo testInfo) {
+    final @Language("java") String app = """
+        import io.javelit.core.Jt;
+        
+        public class TestApp {
+            public static void main(String[] args) {
+                Jt.text("Hello World").use();
             }
-            """;
+        }
+        """;
 
-        PlaywrightUtils.runInBrowser(testInfo, app, page -> {
-            // Verify the app is running - check for "Hello World" text
-            assertThat(page.getByText("Hello World")).isVisible(WAIT_1_SEC_MAX);
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Verify the app is running - check for "Hello World" text
+      assertThat(page.getByText("Hello World")).isVisible(WAIT_1_SEC_MAX);
 
-            // Test health endpoint
-            final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
-            final APIResponse healthResponse = page.request().get(baseUrl + "/_/health");
-            assertEquals(200, healthResponse.status(), "Health endpoint should return 200");
-            assertEquals("OK", healthResponse.text(), "Health endpoint should return 'OK'");
+      // Test health endpoint
+      final String baseUrl = page.url().substring(0, page.url().lastIndexOf('/'));
+      final APIResponse healthResponse = page.request().get(baseUrl + "/_/health");
+      assertEquals(200, healthResponse.status(), "Health endpoint should return 200");
+      assertEquals("OK", healthResponse.text(), "Health endpoint should return 'OK'");
 
-            // Test ready endpoint
-            final APIResponse readyResponse = page.request().get(baseUrl + "/_/ready");
-            assertEquals(200, readyResponse.status(), "Ready endpoint should return 200");
-            assertEquals("OK", readyResponse.text(), "Ready endpoint should return 'OK'");
-        });
-    }
+      // Test ready endpoint
+      final APIResponse readyResponse = page.request().get(baseUrl + "/_/ready");
+      assertEquals(200, readyResponse.status(), "Ready endpoint should return 200");
+      assertEquals("OK", readyResponse.text(), "Ready endpoint should return 'OK'");
+    });
+  }
 }

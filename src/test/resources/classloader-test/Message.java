@@ -15,4 +15,5 @@
  */
 
 
-public record Message(String text) {}
+public record Message(String text) {
+}

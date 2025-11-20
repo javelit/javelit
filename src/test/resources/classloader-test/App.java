@@ -18,18 +18,19 @@ import io.javelit.core.Jt;
 
 public class App {
 
-    record Warning(String text) {}
+  record Warning(String text) {
+  }
 
-    public static void main(String[] args) {
-        Message message = (Message) Jt
-                .cache()
-                .computeIfAbsent("message", key -> new Message("hello"));
-        Jt.text("Message: " + message.text()).use();
+  public static void main(String[] args) {
+    Message message = (Message) Jt
+        .cache()
+        .computeIfAbsent("message", key -> new Message("hello"));
+    Jt.text("Message: " + message.text()).use();
 
-        // some comment
-        Warning warning = (Warning) Jt
-                .cache()
-                .computeIfAbsent("warning", key -> new Warning("caution"));
-        Jt.text("Warning: " + warning.text()).use();
-    }
+    // some comment
+    Warning warning = (Warning) Jt
+        .cache()
+        .computeIfAbsent("warning", key -> new Warning("caution"));
+    Jt.text("Warning: " + warning.text()).use();
+  }
 }
