@@ -210,7 +210,7 @@ public final class JtPage {
         return "Home";
       }
       // Split by - and _, filter empty, capitalize each word
-      String[] words = cleaned.split("[-_]+");
+      String[] words = cleaned.split("[-_/]+");
       StringBuilder result = new StringBuilder();
 
       for (final String word : words) {

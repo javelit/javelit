@@ -70,6 +70,9 @@ public class JtPageTest {
         // Long paths
         Arguments.of("/this-is-a-very-long-page-title", "This Is A Very Long Page Title"),
 
+        // Nested path
+        Arguments.of("/nested/path", "Nested Path"),
+
         // Edge cases
         Arguments.of("/-", ""),
         Arguments.of("/_", ""),
@@ -80,19 +83,6 @@ public class JtPageTest {
   @MethodSource("pathToTitleTestCases")
   public void testPathToTitle(final String input, final String expected) {
     assertThat(JtPage.Builder.pathToTitle(input)).isEqualTo(expected);
-  }
-
-
-  public static Stream<Arguments> nestedPathCases() {
-    return Stream.of(Arguments.of("nested/path"), Arguments.of("/nested/path"), Arguments.of("/nested/path/"));
-  }
-
-
-  @ParameterizedTest
-  @MethodSource("nestedPathCases")
-  public void testNestedPathNotSupported(final String input) {
-    assertThatThrownBy(() -> JtPage.builder(input, () -> {
-    })).isInstanceOf(IllegalArgumentException.class);
   }
 
   public static Stream<Arguments> reservedPathCases() {
