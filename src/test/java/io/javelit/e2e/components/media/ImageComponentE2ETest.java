@@ -142,7 +142,7 @@ public class ImageComponentE2ETest {
         // Verify image component is rendered
         // Verify img element exists
         // Verify src points to static folder
-        PlaywrightUtils.runInBrowser(testInfo, appFile, false, proxied, page -> {
+        PlaywrightUtils.runInBrowser(testInfo, appFile, true, proxied, page -> {
             final String pathPrefix = proxied ? TEST_PROXY_PREFIX + "/" : "";
 
             // Verify image component is rendered

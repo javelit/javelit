@@ -70,7 +70,7 @@ public class EchartsComponentE2ETest {
 
     // Wait for ECharts component to be visible
     // Check that canvas element exists (ECharts renders to canvas)
-    PlaywrightUtils.runInBrowser(testInfo, app, false, proxied, page -> {
+    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
       // Wait for ECharts component to be visible
       assertThat(page.locator("jt-echarts")).isVisible(WAIT_1_SEC_MAX);
 
