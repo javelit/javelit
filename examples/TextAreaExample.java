@@ -1,5 +1,5 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.71.0
+//DEPS io.javelit:javelit:0.73.0
 
 
 import io.javelit.components.input.TextAreaComponent;
