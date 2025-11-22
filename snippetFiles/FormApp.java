@@ -9,7 +9,7 @@ public class FormApp {
     int age = Jt.numberInput("Age", Integer.class).minValue(0).maxValue(120).use(form);
     boolean subscribe = Jt.checkbox("Subscribe to newsletter").use(form);
 
-    if (Jt.formSubmitButton("Register").use()) {
+    if (Jt.formSubmitButton("Register").use(form)) {
       Jt.text("Welcome, " + name + "!").use();
       Jt.text("Email: " + email).use();
     }

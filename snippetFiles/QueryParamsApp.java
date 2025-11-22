@@ -8,7 +8,7 @@ public class QueryParamsApp {
 
     String name = params.getOrDefault("name", List.of("unknown user")).get(0);
 
-    Jt.title("App Settings").use();
+    Jt.title("Query params reader").use();
     Jt.text("Hello " + name).use();
     // URL: ?name=Alice would show:
     // Hello Alice

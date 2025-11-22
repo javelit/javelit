@@ -198,7 +198,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Using query parameters for app configuration
-   * {@snippet file = "QueryParamsApp.java" appUrl = "TODO?name=Alice" appHeight = "300"}
+   * {@snippet file = "QueryParamsApp.java" appUrl = "https://javelit-container-production-f57e.up.railway.app/?name=Alice" appHeight = "300"}
    */
   // TODO consider adding a TypedMap interface with list unwrap
   public static Map<String, List<String>> urlQueryParameters() {
@@ -231,7 +231,7 @@ public final class Jt {
    * Write text without Markdown or HTML parsing.
    * For monospace text, use {@link Jt#code}
    * Examples:
-   * {@snippet file = "TextExample.java" appUrl = "https://javelit-container-production.up.railway.app/" appHeight = "250"}
+   * {@snippet file = "TextExample.java" appUrl = "https://javelit-container-production-0e7a.up.railway.app/" appHeight = "250"}
    *
    * @param body The string to display.
    */
@@ -302,10 +302,6 @@ public final class Jt {
 
   /**
    * Display a horizontal rule.
-   * <p>
-   * Examples:
-   * Basic section separator
-   * {@snippet file = "DividerApp.java" appUrl = "https://javelit-container-hru4-production.up.railway.app" appHeight = "300"}
    */
   @Deprecated(forRemoval = true) // use divider(someKey)
   public static MarkdownComponent.Builder divider() {
@@ -317,7 +313,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Basic section separator
-   * {@snippet file = "DividerApp.java" appUrl = "https://javelit-container-hru4-production.up.railway.app" appHeight = "300"}
+   * {@snippet file = "DividerApp.java" appUrl = "https://javelit-container-hru4-production.up.railway.app" appHeight = "350"}
    *
    * @param key A unique key to avoid collisions when calling this method multiple times.
    */
@@ -539,7 +535,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Dynamic content replacement
-   * {@snippet file = "EmptyApp.java" appUrl = "https://javelit-container-cp9j-production.up.railway.app" appHeight = "300"}
+   * {@snippet file = "EmptyApp.java" appUrl = "https://javelit-container-cp9j-production.up.railway.app" appHeight = "400"}
    * <p>
    * Simple animations
    * {@snippet file = "AnimationEmptyApp.java" appUrl = "https://javelit-container-production.up.railway.app" appHeight = "300"}
@@ -685,10 +681,10 @@ public final class Jt {
    * <p>
    * Examples:
    * User registration form
-   * {@snippet file = "FormApp.java" appUrl = "https://javelit-container-ovom-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "FormApp.java" appUrl = "https://javelit-container-ovom-production.up.railway.app/" appHeight = "510"}
    * <p>
    * Survey form
-   * {@snippet file = "SurveyFormApp.java" appUrl = "https://javelit-container-isdo-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "SurveyFormApp.java" appUrl = "https://javelit-container-isdo-production.up.railway.app/" appHeight = "550"}
    *
    */
   public static FormComponent.Builder form() {
@@ -704,10 +700,10 @@ public final class Jt {
    * <p>
    * Examples:
    * Basic form submit button
-   * {@snippet file = "FormSubmitApp.java" appUrl = "https://javelit-container-bq0o-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "FormSubmitApp.java" appUrl = "https://javelit-container-bq0o-production.up.railway.app/" appHeight = "450"}
    * <p>
    * Multiple submit buttons in same form
-   * {@snippet file = "MultiSubmitApp.java" appUrl = "https://javelit-container-wdwc-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "MultiSubmitApp.java" appUrl = "https://javelit-container-wdwc-production.up.railway.app/" appHeight = "490"}
    *
    * @param label The text to display on the submit button
    */
@@ -739,7 +735,7 @@ public final class Jt {
    * {@snippet file = "TextAreaApp.java" appUrl = "https://javelit-container-oyie-production.up.railway.app/" appHeight = "300"}
    * <p>
    * Text area for code input
-   * {@snippet file = "CodeTextAreaApp.java" appUrl = "https://javelit-container-e8he-production.up.railway.app" appHeight = "300"}
+   * {@snippet file = "CodeTextAreaApp.java" appUrl = "https://javelit-container-e8he-production.up.railway.app" appHeight = "500"}
    *
    * @param label A short label explaining to the user what this input is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
    */
@@ -796,7 +792,7 @@ public final class Jt {
    * {@snippet file = "RadioApp.java" appUrl = "https://javelit-container-jo9r-production.up.railway.app/" appHeight = "300"}
    * <p>
    * Radio with custom objects
-   * {@snippet file = "ProductRadioApp.java" appUrl = "https://javelit-container-hh-u-production.up.railway.app/" appHeight = "300"}
+   * {@snippet file = "ProductRadioApp.java" appUrl = "https://javelit-container-hh-u-production.up.railway.app/" appHeight = "350"}
    *
    * @param label   A short label explaining to the user what this radio selection is for. Markdown is supported, see {@link Jt#markdown(String)} for more details.
    * @param options The list of options to choose from
@@ -1069,9 +1065,9 @@ public final class Jt {
    * <p>
    * Examples:
    * Audio from external URL
-   * {@snippet file = "UrlAudioApp.java" appUrl = "https://javelit-container-agf8-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "UrlAudioApp.java" appUrl = "https://javelit-container-agf8-production.up.railway.app/" appHeight = "300"}
    * Audio from static resource
-   * {@snippet file = "staticUrlAudioApp/StaticUrlAudioApp.java" appUrl = "https://javelit-container-o7n6-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "staticUrlAudioApp/StaticUrlAudioApp.java" appUrl = "https://javelit-container-o7n6-production.up.railway.app/" appHeight = "300"}
    *
    * @param url A URL for a hosted audio file.
    */
@@ -1106,7 +1102,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Audio from raw data
-   * {@snippet file = "RawDataAudioApp.java" appUrl = "https://javelit-container-xnj4-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "RawDataAudioApp.java" appUrl = "https://javelit-container-xnj4-production.up.railway.app/" appHeight = "300"}
    *
    * @param data Raw audio data.
    */
@@ -1148,9 +1144,9 @@ public final class Jt {
    * <p>
    * Examples:
    * Image from external URL
-   * {@snippet file = "UrlImageApp.java" appUrl = "https://javelit-container-sagw-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "UrlImageApp.java" appUrl = "https://javelit-container-sagw-production.up.railway.app/" appHeight = "700"}
    * Image from static resource
-   * {@snippet file = "staticImageApp/StaticImageApp.java" appUrl = "https://javelit-container-o6qa-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "staticImageApp/StaticImageApp.java" appUrl = "https://javelit-container-o6qa-production.up.railway.app/" appHeight = "700"}
    *
    * @param url A URL for a hosted image file.
    */
@@ -1163,7 +1159,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Image from raw data
-   * {@snippet file = "ByteImageApp.java" appUrl = "https://javelit-container-jabg-production.up.railway.app" appHeight = "400"}
+   * {@snippet file = "ByteImageApp.java" appUrl = "https://javelit-container-jabg-production.up.railway.app" appHeight = "550"}
    *
    * @param data Raw image data.
    */
@@ -1210,7 +1206,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Display PDF from URL
-   * {@snippet file = "PdfApp.java" appUrl = "https://javelit-container-zhd-production.up.railway.app/" appHeight = "400"}
+   * {@snippet file = "PdfApp.java" appUrl = "https://javelit-container-zhd-production.up.railway.app/" appHeight = "700"}
    *
    * @param url A URL for a hosted PDF, or a path to a PDF in the static folder.
    */
@@ -1223,7 +1219,7 @@ public final class Jt {
    * <p>
    * Examples:
    * PDF from raw data
-   * {@snippet file = "BytePdfApp.java" appUrl = "https://javelit-container-4lr7-production.up.railway.app" appHeight = "400"}
+   * {@snippet file = "BytePdfApp.java"}
    *
    * @param data Raw PDF data.
    */
