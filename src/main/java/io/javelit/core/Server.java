@@ -1017,7 +1017,6 @@ public final class Server implements StateManager.RenderServer {
                               Map.entry("MATERIAL_SYMBOLS_CDN", JtComponent.MATERIAL_SYMBOLS_CDN),
                               Map.entry("LIT_DEPENDENCY", JtComponent.LIT_DEPENDENCY),
                               Map.entry("customHeaders", customHeaders),
-                              Map.entry("port", port),
                               Map.entry("XSRF_TOKEN", xsrfToken),
                               Map.entry("PRISM_SETUP_SNIPPET", JtComponent.PRISM_SETUP_SNIPPET),
                               Map.entry("PRISM_CSS", JtComponent.PRISM_CSS),
