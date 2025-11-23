@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import ch.qos.logback.classic.Level;
 import io.javelit.core.Server;
+import io.javelit.http.JavelitServer;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -141,7 +142,7 @@ public class Cli implements Callable<Integer> {
         builder.basePath(basePath);
       }
 
-      final Server server = builder.build();
+      final JavelitServer server = builder.build();
 
       // Start everything
       final String url = "http://localhost:" + port + (basePath != null ? "?ignoreBasePath=true" : "");

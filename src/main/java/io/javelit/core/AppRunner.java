@@ -45,17 +45,17 @@ final class AppRunner {
 
 
   // NOTE: using the server.builder is not a good practice but allows to move faster for the moment
-  AppRunner(final @Nonnull Server.Builder builder, final @Nonnull StateManager.RenderServer renderServer) {
+  AppRunner(final @Nonnull JavelitServerConfig config, final @Nonnull StateManager.RenderServer renderServer) {
     this.renderServer = renderServer;
-    if (builder.appPath != null) {
-      this.reloader = new FileReloader(builder);
-    } else if (builder.appClass != null) {
-      this.reloader = new ClassReloader(builder);
-    } else if (builder.appRunnable != null) {
-      this.reloader = new RunnableReloader(builder);
+    if (config.getAppPath() != null) {
+      this.reloader = new FileReloader(config);
+    } else if (config.getAppClass() != null) {
+      this.reloader = new ClassReloader(config);
+    } else if (config.getAppRunnable() != null) {
+      this.reloader = new RunnableReloader(config);
     } else {
       throw new IllegalArgumentException(
-          "Either appPath or appClass should be provided. Please reach out to support.");
+          "Either getAppPath or getAppClass should be provided. Please reach out to support.");
     }
     new Thread(() -> {
       try {

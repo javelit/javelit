@@ -46,6 +46,8 @@ import java.util.concurrent.TimeoutException;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import io.javelit.http.JavelitServer;
+import io.javelit.undertow.UndertowServer;
 import io.methvin.watcher.DirectoryWatcher;
 import io.methvin.watcher.hashing.FileHasher;
 import io.undertow.Handlers;
@@ -97,7 +99,7 @@ import static io.javelit.core.DeployUtils.generateRailwayDeployUrl;
 import static io.javelit.core.utils.EmbedUtils.iframeHtml;
 import static io.javelit.core.utils.LangUtils.optional;
 
-public final class Server implements StateManager.RenderServer {
+public final class Server implements StateManager.RenderServer, JavelitServer {
   private static final String SESSION_XSRF_ATTRIBUTE = "XSRF_TOKEN";
   private static final String XSRF_COOKIE_KEY = "javelit-xsrf";
   private static final String SESSION_ID_COOKIE_KEY = "javelit-session-id";
@@ -134,7 +136,7 @@ public final class Server implements StateManager.RenderServer {
 
   private String lastCompilationErrorMessage;
 
-  public static final class Builder {
+  public static final class Builder implements JavelitServerConfig {
     final @Nullable Path appPath;
     final @Nullable Class<?> appClass;
     final @Nullable JtRunnable appRunnable;
@@ -142,11 +144,13 @@ public final class Server implements StateManager.RenderServer {
     @Nullable String classpath;
     @Nullable String headersFile;
     @Nullable BuildSystem buildSystem;
-    private @Nullable String originalUrl;
+    // TODO WIP - package-private to be available to CoreServer
+    @Nullable String originalUrl;
     // basePath where javelit is served - useful when a javelit app is proxied
     // this is not necessary if the proxy sets the X-Forwarded-Prefix header properly
     // this is not the root path, this is only used to build media, ws and pages urls properly
-    private @Nullable String basePath;
+    // TODO WIP - package-private to be available to CoreServer
+    @Nullable String basePath;
 
     private Builder(final @Nonnull Path appPath, final int port) {
       this.appPath = appPath;
@@ -155,7 +159,7 @@ public final class Server implements StateManager.RenderServer {
       this.port = port;
     }
 
-    // use a Builder(JtRunnable appRunnable, int port) instead
+    // use a Builder(JtRunnable getAppRunnable, int getPort) instead
     @Deprecated(forRemoval = true)
     private Builder(final @Nonnull Class<?> appClass, final int port) {
       this.appPath = null;
@@ -184,7 +188,7 @@ public final class Server implements StateManager.RenderServer {
     }
 
     public Builder buildSystem(@Nullable BuildSystem buildSystem) {
-      checkState(appClass == null, "Cannot set build system when appClass is provided directly.");
+      checkState(appClass == null, "Cannot set build system when getAppClass is provided directly.");
       this.buildSystem = buildSystem;
       return this;
     }
@@ -198,11 +202,57 @@ public final class Server implements StateManager.RenderServer {
       this.originalUrl = originalUrl;
     }
 
-    public Server build() {
+    public JavelitServer build() {
       if (buildSystem == null) {
         buildSystem = BuildSystem.inferBuildSystem();
       }
-      return new Server(this);
+      //return new Server(this); FIXME ASAP - WIP - using UndertowServer instead of the legacy Server
+      return new UndertowServer(this);
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable String getClasspath() {
+      return classpath;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable Path getAppPath() {
+      return appPath;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable BuildSystem getBuildSystem() {
+      return buildSystem;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable Class<?> getAppClass() {
+      return appClass;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable JtRunnable getAppRunnable() {
+      return appRunnable;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable Integer getPort() {
+      return port;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable String getOriginalUrl() {
+      return originalUrl;
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable String getHeadersFile() {
+      return headersFile;
+    }
+
+    @Override
+    public String getBasePath() {
+      return basePath;
     }
   }
 
@@ -210,7 +260,7 @@ public final class Server implements StateManager.RenderServer {
     return new Builder(appPath, port);
   }
 
-  // use a builder(JtRunnable app, int port) instead
+  // use a builder(JtRunnable app, int getPort) instead
   @Deprecated(forRemoval = true)
   public static Builder builder(final @Nonnull Class<?> appClass, final int port) {
     return new Builder(appClass, port);
@@ -220,17 +270,17 @@ public final class Server implements StateManager.RenderServer {
     return new Builder(app, port);
   }
 
-  private Server(final Builder builder) {
-    this.port = builder.port;
-    this.customHeaders = loadCustomHeaders(builder.headersFile);
+  private Server(final JavelitServerConfig builder) {
+    this.port = builder.getPort();
+    this.customHeaders = loadCustomHeaders(builder.getHeadersFile());
     this.appRunner = new AppRunner(builder, this);
-    this.appPath = builder.appPath;
+    this.appPath = builder.getAppPath();
     this.standaloneMode = this.appPath != null;
-    this.fileWatcher = this.standaloneMode ? new FileWatcher(builder.appPath) : null;
-    this.buildSystem = builder.buildSystem;
+    this.fileWatcher = this.standaloneMode ? new FileWatcher(builder.getAppPath()) : null;
+    this.buildSystem = builder.getBuildSystem();
     this.ready = false;
-    this.originalUrl = builder.originalUrl;
-    this.basePath = builder.basePath == null ? null : cleanBasePath(builder.basePath);
+    this.originalUrl = builder.getOriginalUrl();
+    this.basePath = builder.getBasePath() == null ? null : cleanBasePath(builder.getBasePath());
   }
 
   private static @Nonnull String cleanBasePath(final @Nonnull String path) {
@@ -240,6 +290,7 @@ public final class Server implements StateManager.RenderServer {
     return cleaned;
   }
 
+  @Override
   public void start() {
     HttpHandler app = new PathHandler()
         .addExactPath("/_/health", new HealthHandler())
@@ -281,7 +332,7 @@ public final class Server implements StateManager.RenderServer {
         // yes this is not good practice to match on string but dev experience is important for this one
         if (e.getMessage().contains("Address already in use")) {
           throw new RuntimeException(
-              "Failed to launch the server. Port %s is already in use ? Try changing the port. In standalone mode, use --port <PORT>".formatted(
+              "Failed to launch the server. Port %s is already in use ? Try changing the getPort. In standalone mode, use --getPort <PORT>".formatted(
                   port),
               e);
         }
@@ -315,6 +366,7 @@ public final class Server implements StateManager.RenderServer {
     }
   }
 
+  @Override
   public void stop() {
     if (fileWatcher != null) {
       fileWatcher.stop();
@@ -322,6 +374,11 @@ public final class Server implements StateManager.RenderServer {
     if (server != null) {
       server.stop();
     }
+  }
+
+  @Override
+  public int port() {
+    return port;
   }
 
   private static HttpHandler resource(final @Nonnull ResourceManager resourceManager) {
@@ -776,6 +833,9 @@ public final class Server implements StateManager.RenderServer {
       return false;
     }
   }
+
+  // JavelitSession
+  // JavelitWebSocketChannel
 
   private class WebSocketHandler implements WebSocketConnectionCallback {
 

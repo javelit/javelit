@@ -15,6 +15,8 @@
  */
 package io.javelit.core;
 
+import jakarta.annotation.Nonnull;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 // compatible with JRE only
@@ -23,11 +25,11 @@ public class RunnableReloader extends Reloader {
 
   private final JtRunnable runnable;
 
-  public RunnableReloader(Server.Builder builder) {
-    checkArgument(builder.buildSystem == BuildSystem.RUNTIME,
+  public RunnableReloader(final @Nonnull JavelitServerConfig config) {
+    checkArgument(config.getBuildSystem() == BuildSystem.RUNTIME,
                   "Class reloader only supports RUNTIME build systems.");
-    checkArgument(builder.appRunnable != null);
-    this.runnable = builder.appRunnable;
+    checkArgument(config.getAppRunnable() != null);
+    this.runnable = config.getAppRunnable();
   }
 
   @Override
