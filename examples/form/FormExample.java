@@ -2,7 +2,7 @@ import io.javelit.core.Jt;
 
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.javelit:javelit:0.73.0
+//DEPS io.javelit:javelit:0.74.0
 
 public class FormExample {
 
