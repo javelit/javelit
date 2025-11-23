@@ -2,7 +2,11 @@ name: Tests
 on:
   push:
     branches: [main]
-  # not running automatically from PRs yet - need to figure out security first
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
 
 jobs:
