@@ -27,13 +27,14 @@ import io.javelit.core.JtComponentBuilder;
 import io.javelit.core.JtContainer;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkState;
 
 public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
   // the following fields are protected to be visible to the template engine - see render function
-  final String label;
+  final @Language("html") String label;
   final String type;
   final String icon;
   final String help;
@@ -52,7 +53,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
   private FormSubmitButtonComponent(final Builder builder) {
     super(builder, false, builder.onClick);
 
-    this.label = builder.label;
+    this.label = markdownToHtml(builder.label, true);
     this.type = builder.type;
     this.icon = builder.icon;
     this.help = builder.help;
@@ -61,7 +62,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
   }
 
   public static class Builder extends JtComponentBuilder<Boolean, FormSubmitButtonComponent, Builder> {
-    private final String label;
+    @Language("markdown") private final String label;
     private String type = "secondary";
     private String icon;
     private String help;
@@ -69,7 +70,7 @@ public final class FormSubmitButtonComponent extends JtComponent<Boolean> {
     private boolean useContainerWidth;
     private Consumer<Boolean> onClick;
 
-    public Builder(final @Nonnull String label) {
+    public Builder(@Language("markdown") final @Nonnull String label) {
       if (label.trim().isEmpty()) {
         throw new IllegalArgumentException("FormSubmitButton label cannot be null or empty");
       }
