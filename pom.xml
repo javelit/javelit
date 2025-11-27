@@ -57,6 +57,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <undertow.version>2.3.20.Final</undertow.version>
+        <spring-boot.version>3.4.1</spring-boot.version>
         <flexmark.version>0.64.8</flexmark.version>
         <jackson.version>2.20.1</jackson.version>
         <sonatype.url>https://ossrh-staging-api.central.sonatype.com</sonatype.url>
@@ -113,6 +114,13 @@
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-websockets-jsr</artifactId>
                 <version>${undertow.version}</version>
+            </dependency>
+            <!-- Spring WebFlux dependencies (optional - for Spring adapter) -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-webflux</artifactId>
+                <version>${spring-boot.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>io.methvin</groupId>
@@ -268,6 +276,13 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr</artifactId>
+        </dependency>
+
+        <!-- Spring WebFlux (optional - for Spring adapter) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- File Watching -->
