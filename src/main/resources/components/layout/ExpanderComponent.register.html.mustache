@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtExpander extends LitElement {
         static styles = css`
@@ -76,17 +76,14 @@
             summary::marker {
                 display: none;
             }
-            
-            summary:hover .label {
-                color: var(--jt-theme-color);
-            }
-            
-            summary:hover .chevron {
-                color: var(--jt-theme-color);
+
+            summary:hover {
+                background-color: var(--jt-bg-secondary);
             }
             
             .content-wrapper {
                 padding: var(--jt-spacing-lg);
+                border-top: 1px solid var(--jt-border-color);
             }
             
             ::slotted(*) {
@@ -141,19 +138,6 @@
                     }
                 }
             }
-        }
-
-        formatText(label) {
-            if (!label) return '';
-
-            // Markdown formatting
-            return label
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
         }
 
         handleClick(e) {
@@ -233,7 +217,7 @@
             return html`
                 <details ?open="${this.expanded}">
                     <summary @click="${this.handleClick}">
-                        <div class="label markdown-content" .innerHTML="${this.formatText(this.label)}"></div>
+                        <div class="markdown-content">${unsafeHTML(this.label)}</div>
                         <span class="chevron">expand_more</span>
                     </summary>
                     <div class="content-wrapper">

@@ -26,11 +26,12 @@ import io.javelit.core.JtComponentBuilder;
 import io.javelit.core.JtContainer;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 public final class ExpanderComponent extends JtComponent<JtContainer> {
 
-  final @Nonnull String label;
+  final @Language("html") @Nonnull String label;
   final boolean expanded;
   final @Nullable String width;
 
@@ -46,17 +47,17 @@ public final class ExpanderComponent extends JtComponent<JtContainer> {
   private ExpanderComponent(final Builder builder) {
     // the currentValue is set when use() is called
     super(builder, null, null);
-    this.label = builder.label;
+    this.label = markdownToHtml(builder.label, true);
     this.expanded = builder.expanded;
     this.width = builder.width;
   }
 
   public static class Builder extends JtComponentBuilder<JtContainer, ExpanderComponent, Builder> {
-    private final @Nonnull String label;
+    @Language("markdown") private final @Nonnull String label;
     private boolean expanded;
     private @Nullable String width = "stretch";
 
-    public Builder(final @Nonnull String label) {
+    public Builder(@Language("markdown") final @Nonnull String label) {
       this.label = label;
     }
 

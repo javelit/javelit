@@ -623,7 +623,7 @@ public final class Jt {
    *
    * @param label The label for the expander header
    */
-  public static ExpanderComponent.Builder expander(@Nonnull String label) {
+  public static ExpanderComponent.Builder expander(@Language("markdown") @Nonnull String label) {
     return new ExpanderComponent.Builder(label);
   }
 
