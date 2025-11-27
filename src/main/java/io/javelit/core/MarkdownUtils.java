@@ -29,6 +29,7 @@ import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.vladsch.flexmark.util.misc.Extension;
 import jakarta.annotation.Nullable;
+import org.intellij.lang.annotations.Language;
 
 public final class MarkdownUtils {
 
@@ -51,12 +52,12 @@ public final class MarkdownUtils {
   /**
    * @param removeWrap if true, removes the wrapping tag if it exists. Usefull to remove the wrapping <p> tag that is put to text like "this text". If false, no post-processing. The wrapping tag removed could be any type of tag as long as it's wrapping, ie it's open first and closed last in the string.
    */
-  static String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
+  static @Language("html") String markdownToHtml(final @Nullable String markdown, final boolean removeWrap) {
     if (markdown == null) {
       return null;
     }
     final Node document = parser.parse(markdown);
-    String html = renderer.render(document).trim();
+    @Language("html") String html = renderer.render(document).trim();
     if (!html.isBlank() && removeWrap) {
       final boolean thereIsAWrappingTag = document.getFirstChild() == document.getLastChild();
       if (thereIsAWrappingTag) {

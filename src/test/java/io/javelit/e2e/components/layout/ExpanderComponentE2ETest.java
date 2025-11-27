@@ -40,6 +40,8 @@ public class ExpanderComponentE2ETest {
       JtContainer expanderContainer = Jt.expander("Click to expand").use();
       Jt.text("Hidden content inside expander").use(expanderContainer);
       Jt.button("Hidden Button").use(expanderContainer);
+
+      Jt.expander("**this is in bold**").use();
     };
 
     // Wait for expander to be visible
@@ -49,7 +51,7 @@ public class ExpanderComponentE2ETest {
     // Check that content is now visible
     PlaywrightUtils.runInBrowser(testInfo, app, page -> {
       // Wait for expander to be visible
-      final Locator expanderLocator = page.locator("jt-expander");
+      final Locator expanderLocator = page.locator("jt-expander").first();
       assertThat(expanderLocator).isVisible(WAIT_1_SEC_MAX);
       // Check expander header is visible
       assertThat(page.locator("jt-expander summary",
@@ -61,6 +63,11 @@ public class ExpanderComponentE2ETest {
       // Check that content is now visible
       assertThat(page.getByText("Hidden content inside expander")).isVisible(WAIT_1_SEC_MAX);
       assertThat(page.getByText("Hidden Button")).isVisible(WAIT_1_SEC_MAX);
+
+      // ensure markdown works
+      assertThat(page.locator("jt-expander >> summary >> .markdown-content strong")
+          .filter(new Locator.FilterOptions().setHasText("this is in bold")))
+          .isVisible(WAIT_1_SEC_MAX);
     });
   }
 }
