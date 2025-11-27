@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtTabs extends LitElement {
         static styles = css`
@@ -141,19 +141,6 @@
             }
         }
 
-        formatText(label) {
-            if (!label) return '';
-
-            // Markdown formatting similar to slider
-            return label
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
-        }
-
         handleTabClick(index) {
             this.activeTab = index;
         }
@@ -198,8 +185,7 @@
                             <button
                                 class="tab markdown-content ${index === this.activeTab ? 'active' : ''}"
                                 @click="${() => this.handleTabClick(index)}"
-                                .innerHTML="${this.formatText(tab)}"
-                            >
+                            >${unsafeHTML(tab)}
                             </button>
                         `)}
                         <div class="tab-indicator"></div>

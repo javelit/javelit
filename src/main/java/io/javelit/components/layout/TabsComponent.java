@@ -33,7 +33,7 @@ import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 
 public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
-
+  // @Language("html") (cannot be put inside the List below)
   final @Nonnull List<@NotNull String> tabs;
   final String width;
 
@@ -55,11 +55,12 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
   private TabsComponent(final Builder builder) {
     // the currentValue is set when use() is called - see beforeUse
     super(builder, null, null);
-    this.tabs = builder.tabs;
+    this.tabs = builder.tabs.stream().map(e -> markdownToHtml(e, true)).toList();
     this.width = builder.width;
   }
 
   public static class Builder extends JtComponentBuilder<Tabs, TabsComponent, Builder> {
+    // @Language("markdown") (cannot be put inside a list)
     private final List<@NotNull String> tabs;
     private String width = "stretch";
 
@@ -73,7 +74,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
               "Tab name at index %s is null or empty. Please use a non-empty string.".formatted(i));
         }
       }
-      this.tabs = List.copyOf(tabs);
+      this.tabs = tabs;
     }
 
     /**
@@ -143,7 +144,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
     this.currentValue = new Tabs(baseContainer, this.tabs);
   }
 
-  // Helper method for Mustache template to render widths as JSON array
+  // Helper method for Mustache template to render tabs as JSON array
   String getTabsJson() {
     return toJson(tabs);
   }

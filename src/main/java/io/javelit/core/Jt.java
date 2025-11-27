@@ -707,7 +707,7 @@ public final class Jt {
    *
    * @param label The text to display on the submit button
    */
-  public static FormSubmitButtonComponent.Builder formSubmitButton(final @Nonnull String label) {
+  public static FormSubmitButtonComponent.Builder formSubmitButton(@Language("markdown") final @Nonnull String label) {
     return new FormSubmitButtonComponent.Builder(label);
   }
 
