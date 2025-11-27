@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 
 public final class PopoverComponent extends JtComponent<JtContainer> {
 
-  final @Nonnull String label;
+  final @Language("html") @Nonnull String label;
   final @Nullable String help;
   final boolean disabled;
   final boolean useContainerWidth;

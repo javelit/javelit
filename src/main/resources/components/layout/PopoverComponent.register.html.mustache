@@ -14,7 +14,7 @@
     limitations under the License.
 }}
 <script type="module">
-    import {LitElement, html, css} from '{{ LIT_DEPENDENCY }}';
+    import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
 
     class JtPopover extends LitElement {
         static styles = css`
@@ -153,19 +153,6 @@
             document.removeEventListener('click', this.handleOutsideClick.bind(this));
         }
 
-        formatText(label) {
-            if (!label) return '';
-
-            // Markdown formatting
-            return label
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-                    .replace(/:([a-zA-Z]+)\[(.*?)\]/g, '<span style="color: $1">$2</span>')
-                    .replace(/~~(.*?)~~/g, '<del>$1</del>');
-        }
-
         handleButtonClick(e) {
             if (this.disabled) return;
 
@@ -191,8 +178,6 @@
         }
 
         render() {
-            const formattedLabel = this.formatText(this.label || '');
-
             return html`
                 <div class="popover-container">
                     <button
@@ -200,7 +185,7 @@
                         ?disabled="${this.disabled}"
                         @click="${this.handleButtonClick}"
                         type="button">
-                        <div class="label markdown-content" .innerHTML="${formattedLabel}"></div>
+                        <div class="label markdown-content">${unsafeHTML(this.label)}</div>
                         <span class="chevron ${this.isOpen ? 'open' : ''}">expand_more</span>
                     </button>
                     ${this.help ? html`
