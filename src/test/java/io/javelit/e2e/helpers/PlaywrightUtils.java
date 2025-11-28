@@ -30,7 +30,7 @@ import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Tracing;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import io.javelit.core.JtRunnable;
-import io.javelit.core.Server;
+import io.javelit.http.JavelitServer;
 import io.undertow.Undertow;
 import io.undertow.attribute.ExchangeAttributes;
 import io.undertow.server.HttpHandler;
@@ -41,12 +41,18 @@ import io.undertow.util.HttpString;
 import jakarta.annotation.Nonnull;
 import org.junit.jupiter.api.TestInfo;
 
+import static io.javelit.core.utils.LangUtils.optional;
+
 public final class PlaywrightUtils {
 
+  private static final int TIME_MULTIPLIER = optional(System.getenv("JT_WAIT_MULTIPLIER"))
+      .map(Integer::parseInt)
+      .orElse(1);
+
   public static final LocatorAssertions.IsVisibleOptions WAIT_1_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.IsVisibleOptions WAIT_5_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
-      5000);
+      5000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.IsVisibleOptions WAIT_100_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
       100);
   public static final LocatorAssertions.IsVisibleOptions WAIT_50_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
@@ -55,19 +61,19 @@ public final class PlaywrightUtils {
       10);
 
   public static final LocatorAssertions.HasTextOptions WAIT_1_SEC_MAX_TEXT = new LocatorAssertions.HasTextOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.ContainsTextOptions WAIT_1_SEC_MAX_TEXT_C = new LocatorAssertions.ContainsTextOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.HasAttributeOptions WAIT_1_SEC_MAX_ATTRIBUTE = new LocatorAssertions.HasAttributeOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.IsHiddenOptions WAIT_1_SEC_MAX_HIDDEN = new LocatorAssertions.IsHiddenOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
   public static final LocatorAssertions.IsHiddenOptions WAIT_10_MS_MAX_HIDDEN = new LocatorAssertions.IsHiddenOptions().setTimeout(
       10);
   public static final LocatorAssertions.HasClassOptions WAIT_1_SEC_MAX_CLASS = new LocatorAssertions.HasClassOptions().setTimeout(
-      1000);
+      1000 * TIME_MULTIPLIER);
 
-  public static final Locator.ClickOptions WAIT_1_SEC_MAX_CLICK = new Locator.ClickOptions().setTimeout(1000);
+  public static final Locator.ClickOptions WAIT_1_SEC_MAX_CLICK = new Locator.ClickOptions().setTimeout(1000 * TIME_MULTIPLIER);
   public static final Locator.ClickOptions WAIT_100_MS_MAX_CLICK = new Locator.ClickOptions().setTimeout(100);
 
   public static final Page.GetByTextOptions EXACT_MATCH = new Page.GetByTextOptions().setExact(true);
@@ -89,7 +95,7 @@ public final class PlaywrightUtils {
                                   final boolean headless,
                                   final boolean proxied,
                                   final @Nonnull Consumer<Page> run) {
-    Server server = null;
+    JavelitServer server = null;
     BrowserContext context = null;
     Undertow proxyServer = null;
     try (final Playwright playwright = Playwright.create();
@@ -105,10 +111,10 @@ public final class PlaywrightUtils {
       final String url;
       if (proxied) {
         final int proxyPort = PortAllocator.getNextAvailablePort();
-        proxyServer = startProxy(proxyPort, server.port, true);
+        proxyServer = startProxy(proxyPort, server.port(), true);
         url = "http://localhost:" + proxyPort + TEST_PROXY_PREFIX;
       } else {
-        url = "http://localhost:" + server.port;
+        url = "http://localhost:" + server.port();
       }
       page.navigate(url, new Page.NavigateOptions().setTimeout(10000));
       run.accept(page);
@@ -154,7 +160,7 @@ public final class PlaywrightUtils {
   public static void runInBrowser(final @Nonnull TestInfo testInfo,
                                   final @Nonnull Class<?> appClass,
                                   final @Nonnull Consumer<Page> run) {
-    Server server = null;
+    JavelitServer server = null;
     BrowserContext context = null;
     try (final Playwright playwright = Playwright.create();
          final Browser browser = playwright.chromium().launch(HEADLESS);
@@ -165,7 +171,7 @@ public final class PlaywrightUtils {
         context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
       }
       server = JavelitTestHelper.startEmbeddedServer(appClass);
-      page.navigate("http://localhost:" + server.port);
+      page.navigate("http://localhost:" + server.port());
       run.accept(page);
     } finally {
       if (context != null) {
@@ -195,7 +201,7 @@ public final class PlaywrightUtils {
                                   final boolean headless,
                                   final boolean proxied,
                                   final @Nonnull Consumer<Page> run) {
-    Server server = null;
+    JavelitServer server = null;
     BrowserContext context = null;
     Undertow proxyServer = null;
     try (final Playwright playwright = Playwright.create();
@@ -210,10 +216,10 @@ public final class PlaywrightUtils {
       final String url;
       if (proxied) {
         final int proxyPort = PortAllocator.getNextAvailablePort();
-        proxyServer = startProxy(proxyPort, server.port, true);
+        proxyServer = startProxy(proxyPort, server.port(), true);
         url = "http://localhost:" + proxyPort + TEST_PROXY_PREFIX;
       } else {
-        url = "http://localhost:" + server.port;
+        url = "http://localhost:" + server.port();
       }
       page.navigate(url);
       run.accept(page);
@@ -259,10 +265,7 @@ public final class PlaywrightUtils {
         // exchange.setRequestURI(newPath + (query == null || query.isEmpty() ? "" : "?" + query));
         exchange.setRequestURI(newPath);
 
-        var ph = ProxyHandler
-            .builder()
-            .setProxyClient(client)
-            .setMaxRequestTime(30000);
+        var ph = ProxyHandler.builder().setProxyClient(client).setMaxRequestTime(30000);
         if (setForwardedPrefix) {
           ph.addRequestHeader(new HttpString("X-Forwarded-Prefix"),
                               ExchangeAttributes.constant(PlaywrightUtils.TEST_PROXY_PREFIX));

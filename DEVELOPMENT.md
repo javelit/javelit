@@ -14,6 +14,13 @@ This section may lack crucial details. Don't hesitate to reach out on the [forum
 ```
 ./mvnw clean test
 ```
+Note: most of the tests are e2e tests. JS dependencies are fetched from the internet, an _ok_ internet connection is necessary.  
+If tests are flaky on your side, we should work on the offline mode.
+You can increase the timeouts with
+```
+export JT_WAIT_MULTIPLIER=2
+```
+Only integer values are supported.
 
 **Build the jars**:
 ```

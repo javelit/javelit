@@ -28,6 +28,7 @@ import io.javelit.core.Server;
 import io.javelit.e2e.helpers.JavelitTestHelper;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import io.javelit.e2e.helpers.PortAllocator;
+import io.javelit.http.JavelitServer;
 import io.undertow.Undertow;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
@@ -48,10 +49,10 @@ public class BasePathE2ETest {
       Jt.image(imageBytes).caption("Programmatically generated hexagon (800x400)").use();
     };
 
-    Server javelit = null;
+    JavelitServer javelit = null;
     Undertow proxyServer = null;
     try {
-      final Server server = Server
+      final JavelitServer server = Server
           .builder(app, PortAllocator.getNextAvailablePort())
           .basePath(TEST_PROXY_PREFIX)
           .build();
@@ -61,7 +62,7 @@ public class BasePathE2ETest {
            final Browser browser = playwright.chromium().launch(HEADLESS);
            final Page page = browser.newPage()) {
         final int proxyPort = PortAllocator.getNextAvailablePort();
-        proxyServer = PlaywrightUtils.startProxy(proxyPort, server.port, false);
+        proxyServer = PlaywrightUtils.startProxy(proxyPort, server.port(), false);
         final String url = "http://localhost:" + proxyPort + TEST_PROXY_PREFIX;
         page.navigate(url);
         test(page, true);
@@ -70,7 +71,7 @@ public class BasePathE2ETest {
       try (final Playwright playwright = Playwright.create();
            final Browser browser = playwright.chromium().launch(HEADLESS);
            final Page page = browser.newPage()) {
-        final String url = "http://localhost:" + server.port + "?ignoreBasePath=true";
+        final String url = "http://localhost:" + server.port() + "?ignoreBasePath=true";
         page.navigate(url);
         test(page, false);
       }

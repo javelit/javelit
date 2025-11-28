@@ -984,7 +984,7 @@ public final class Jt {
     } catch (NoClassDefFoundError e) {
       // TODO CYRIL add bom explanation once implemented - this error should only happen in embedded mode
       throw new RuntimeException(
-          "Could not load optional tablesaw dependency. If you wish to create tables from dataframe, make sure tablesaw is available in the classpath.",
+          "Could not load optional tablesaw dependency. If you wish to create tables from dataframe, make sure tablesaw is available in the getClasspath.",
           e);
     }
     throw new IllegalArgumentException(

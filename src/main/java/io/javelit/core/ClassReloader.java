@@ -17,6 +17,8 @@ package io.javelit.core;
 
 import java.lang.reflect.Method;
 
+import jakarta.annotation.Nonnull;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 // use RunnableReloader instead
@@ -25,10 +27,10 @@ public class ClassReloader extends Reloader {
 
   private final String appClassName;
 
-  public ClassReloader(Server.Builder builder) {
-    checkArgument(builder.buildSystem == BuildSystem.RUNTIME, "Class reloader only supports RUNTIME build systems.");
-    checkArgument(builder.appClass != null);
-    this.appClassName = builder.appClass.getName();
+  public ClassReloader(final @Nonnull JavelitServerConfig config) {
+    checkArgument(config.getBuildSystem() == BuildSystem.RUNTIME, "Class reloader only supports RUNTIME build systems.");
+    checkArgument(config.getAppClass() != null);
+    this.appClassName = config.getAppClass().getName();
   }
 
   @Override

@@ -69,16 +69,16 @@ class FileReloader extends Reloader {
    * @throws CompilationException for any compilation that should be reported to the user in the app
    *                              Note: not implemented yet: re-compile multiple classes, the dependencies of the app class
    */
-  FileReloader(Server.Builder builder) {
-    this.providedClasspath = builder.classpath;
+  FileReloader(final @Nonnull JavelitServerConfig config) {
+    this.providedClasspath = config.getClasspath();
     this.compiler = ToolProvider.getSystemJavaCompiler();
     if (this.compiler == null) {
       throw new RuntimeException(
           "System java compiler not available. Make sure you're running Javelit with a JDK, not a JRE, and that the java compiler is available.");
     }
-    checkArgument(builder.appPath != null);
-    this.javaFile = builder.appPath;
-    this.buildSystem = builder.buildSystem;
+    checkArgument(config.getAppPath() != null);
+    this.javaFile = config.getAppPath();
+    this.buildSystem = config.getBuildSystem();
   }
 
   @Override

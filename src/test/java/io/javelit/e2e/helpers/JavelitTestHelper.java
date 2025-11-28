@@ -24,6 +24,7 @@ import java.util.Comparator;
 import io.javelit.core.BuildSystem;
 import io.javelit.core.JtRunnable;
 import io.javelit.core.Server;
+import io.javelit.http.JavelitServer;
 import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +60,10 @@ public final class JavelitTestHelper {
    * @param appFile Path to the app Java file
    * @return The started Server instance
    */
-  public static Server startServer(final Path appFile) {
+  public static JavelitServer startServer(final Path appFile) {
     final int port = PortAllocator.getNextAvailablePort();
-    final Server server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME)
-                                .build();
+    final JavelitServer server = Server.builder(appFile, port).buildSystem(BuildSystem.RUNTIME)
+                                       .build();
     return startServer(server);
   }
 
@@ -73,9 +74,9 @@ public final class JavelitTestHelper {
    * @return The started Server instance
    */
   @Deprecated(forRemoval = true)
-  public static Server startEmbeddedServer(final @Nonnull Class<?> appClass) {
+  public static JavelitServer startEmbeddedServer(final @Nonnull Class<?> appClass) {
     final int port = PortAllocator.getNextAvailablePort();
-    final Server server = Server.builder(appClass, port).build();
+    final JavelitServer server = Server.builder(appClass, port).build();
     return startServer(server);
   }
 
@@ -86,13 +87,13 @@ public final class JavelitTestHelper {
    * @param app runnable of the app
    * @return The started Server instance
    */
-  public static Server startEmbeddedServer(final @Nonnull JtRunnable app) {
+  public static JavelitServer startEmbeddedServer(final @Nonnull JtRunnable app) {
     final int port = PortAllocator.getNextAvailablePort();
-    final Server server = Server.builder(app, port).build();
+    final JavelitServer server = Server.builder(app, port).build();
     return startServer(server);
   }
 
-  public static Server startServer(final @Nonnull Server server) {
+  public static JavelitServer startServer(final @Nonnull JavelitServer server) {
     // Start server in a separate thread
     final Thread serverThread = new Thread(() -> {
       try {
@@ -105,7 +106,7 @@ public final class JavelitTestHelper {
     serverThread.start();
 
     // Wait for server to be ready
-    waitForServerReady(server.port);
+    waitForServerReady(server.port());
 
     return server;
   }
@@ -115,7 +116,7 @@ public final class JavelitTestHelper {
    *
    * @param server The server to stop
    */
-  public static void stopServer(final Server server) {
+  public static void stopServer(final JavelitServer server) {
     if (server != null) {
       try {
         server.stop();
@@ -129,7 +130,7 @@ public final class JavelitTestHelper {
   /**
    * Wait for the server to be ready to accept connections.
    *
-   * @param port The port to check
+   * @param port The getPort to check
    */
   public static void waitForServerReady(int port) {
     int maxAttempts = 60;
