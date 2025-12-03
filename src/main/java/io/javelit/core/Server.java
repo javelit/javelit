@@ -1114,7 +1114,7 @@ public final class Server implements StateManager.RenderServer {
               final FileHash lastHash = fileHashes.get(changedFile);
               final FileHash currentHash = FileHasher.DEFAULT_FILE_HASHER.hash(changedFile);
               if (lastHash.equals(currentHash)) {
-                // DEDUP
+                LOG.debug("Deduping windows file event for path {}", changedFile);
                 return;
               } else {
                 fileHashes.put(changedFile, lastHash);
