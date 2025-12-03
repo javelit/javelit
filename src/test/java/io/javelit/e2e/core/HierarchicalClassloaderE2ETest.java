@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import dev.jbang.devkitman.util.OsUtils;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -28,7 +29,6 @@ import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
-import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_5_SEC_MAX;
 
 /**
  * End-to-end tests for hierarchical classloader caching behavior.
@@ -69,10 +69,13 @@ public class HierarchicalClassloaderE2ETest {
         final String modifiedContent1 = originalContent.replace("// some comment",
                                                                 "// some comment something got appended");
         Files.writeString(appFile, modifiedContent1);
+        if (OsUtils.isWindows()) {
+          sleep(3000);
+        }
 
         // Both should still be visible
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
-        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_5_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
         // Step 3: Edit App.java by adding a comment
         // This triggers App reload (including inner Warning class) Message.java should hit cache
@@ -80,10 +83,13 @@ public class HierarchicalClassloaderE2ETest {
         final String modifiedContent2 = currentContent.replace("public class App {",
                                                                "public class App {\n// new comment\n");
         Files.writeString(appFile, modifiedContent2);
+        if (OsUtils.isWindows()) {
+          sleep(3000);
+        }
 
         // Should see ClassCastException (Warning from old classloader)
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_5_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
 
         // Step 4: Click "Clear cache" button to recover
         var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
@@ -99,9 +105,12 @@ public class HierarchicalClassloaderE2ETest {
         final String messageContent = Files.readString(messageFile);
         final String modifiedMessageContent = messageContent.replace("{\n}", "{\nstatic String NEW = null;\n}");
         Files.writeString(messageFile, modifiedMessageContent);
+        if (OsUtils.isWindows()) {
+          sleep(3000);
+        }
 
         // Should see ClassCastException
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_5_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
 
         // Message and Warning should NOT be visible (error occurred early)
         assertThat(page.getByText("Message: hello")).isHidden(WAIT_10_MS_MAX_HIDDEN);
@@ -120,5 +129,13 @@ public class HierarchicalClassloaderE2ETest {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  private static void sleep(final int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
