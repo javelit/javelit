@@ -19,9 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,8 @@ import dev.jbang.source.Source;
 import jakarta.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.javelit.core.utils.LangUtils.optional;
 
@@ -39,7 +44,7 @@ import static io.javelit.core.utils.LangUtils.optional;
 // ignore the array field in this enum - see https://errorprone.info/bugpattern/ImmutableEnumChecker - this one is internal only - just ensure compileCmdArgs is not mutated
 public enum BuildSystem {
   FATJAR_AND_JBANG() {
-
+    private static final Logger LOG = LoggerFactory.getLogger(BuildSystem.class);
     private static final String JAVELIT_DEP = "io.javelit:javelit:";
     private static final Method DEPENDENCY_COLLECT_REFLECTION;
 
@@ -73,13 +78,20 @@ public enum BuildSystem {
     @Override
     @Nonnull
     String obtainClasspath(@Nonnull Path javaFilePath) {
-      final String javelitLocation = BuildSystem.class
+      final URL location = BuildSystem.class
           .getProtectionDomain()
           .getCodeSource()
-          .getLocation()
-          .getPath();
-      // Decode URL encoding (e.g., %20 for spaces)
-      final StringBuilder cp = new StringBuilder(URLDecoder.decode(javelitLocation, StandardCharsets.UTF_8));
+          .getLocation();
+      String javelitLocation;
+      try {
+        javelitLocation = Paths.get(location.toURI()).toString();
+      } catch (URISyntaxException e) {
+        // TODO remove and throw an error - kept for the moment until further windows test is automated
+        // Decode URL encoding (e.g., %20 for spaces)
+        javelitLocation = URLDecoder.decode(location.getPath(), StandardCharsets.UTF_8);
+        LOG.error("Failed to obtain Javelit classpath from {}. Falling back to `{}`. This may not be a valid path and cause Javelit to not be injected properly in the classpath.", location, javelitLocation, e);
+      }
+      final StringBuilder cp = new StringBuilder(javelitLocation);
 
       // add jbang style deps
       final Project jbangProject = Project.builder().build(javaFilePath);
