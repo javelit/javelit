@@ -1113,7 +1113,7 @@ public final class Server implements StateManager.RenderServer {
             if (isWindows()) {
               final FileHash lastHash = fileHashes.get(changedFile);
               final FileHash currentHash = FileHasher.DEFAULT_FILE_HASHER.hash(changedFile);
-              if (lastHash.equals(currentHash)) {
+              if (lastHash != null && lastHash.equals(currentHash)) {
                 LOG.debug("Deduping windows file event for path {}", changedFile);
                 return;
               } else {
