@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import dev.jbang.devkitman.util.OsUtils;
 import io.javelit.e2e.helpers.PlaywrightUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -69,9 +68,6 @@ public class HierarchicalClassloaderE2ETest {
         final String modifiedContent1 = originalContent.replace("// some comment",
                                                                 "// some comment something got appended");
         Files.writeString(appFile, modifiedContent1);
-        if (OsUtils.isWindows()) {
-          sleep(3000);
-        }
 
         // Both should still be visible
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
@@ -83,9 +79,6 @@ public class HierarchicalClassloaderE2ETest {
         final String modifiedContent2 = currentContent.replace("public class App {",
                                                                "public class App {\n// new comment\n");
         Files.writeString(appFile, modifiedContent2);
-        if (OsUtils.isWindows()) {
-          sleep(3000);
-        }
 
         // Should see ClassCastException (Warning from old classloader)
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
@@ -105,9 +98,6 @@ public class HierarchicalClassloaderE2ETest {
         final String messageContent = Files.readString(messageFile);
         final String modifiedMessageContent = messageContent.replace("{\n}", "{\nstatic String NEW = null;\n}");
         Files.writeString(messageFile, modifiedMessageContent);
-        if (OsUtils.isWindows()) {
-          sleep(3000);
-        }
 
         // Should see ClassCastException
         assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
@@ -129,13 +119,5 @@ public class HierarchicalClassloaderE2ETest {
         throw new RuntimeException(e);
       }
     });
-  }
-
-  private static void sleep(final int millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
   }
 }

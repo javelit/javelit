@@ -501,7 +501,7 @@
                     <argLine>-Djava.awt.headless=true</argLine>
                     <!-- tests are not flaky but they are run in parallel - see junit-platform.properties - parallel + timeouts may introduce flakyness -->
                     <!-- parallel + a few retries is faster than sequential -->
-                    <rerunFailingTestsCount>0</rerunFailingTestsCount>
+                    <rerunFailingTestsCount>5</rerunFailingTestsCount>
                 </configuration>
             </plugin>
 

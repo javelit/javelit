@@ -26,9 +26,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build and run tests
-        # ClassloaderMismatchE2ETest
         run: |
-          ./mvnw clean -Dtest=HierarchicalClassloaderE2ETest test
+          ./mvnw clean test
         shell: bash
       - name: Upload Playwright artifacts
         if: failure()
