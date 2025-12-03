@@ -1098,40 +1098,40 @@ public final class Server implements StateManager.RenderServer {
           .fileHasher(FileHasher.LAST_MODIFIED_TIME)
           .listener(event -> {
             final Path changedFile = event.path();
-            boolean isJavaFile = changedFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".java");
-            if (!isJavaFile) {
-              return;
-            }
             // Only respond to changes to .java files in the source tree
-            switch (event.eventType()) {
-              case MODIFY -> {
-                LOG.info("File changed: {}. Rebuilding...", changedFile);
-                notifyReload();
-              }
-              case DELETE -> {
-                if (changedFile.equals(watchedFile)) {
-                  LOG.warn(
-                      "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
-                      watchedFile);
-                  session2WsChannel
-                      .keySet()
-                      .forEach(id -> sendCompilationError(id, "App file was deleted."));
-                }
-              }
-              case CREATE -> {
-                if (changedFile.equals(watchedFile)) {
-                  LOG.warn("App file {} recreated. Attempting to reload from the new file.",
-                           watchedFile);
+            if (changedFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".java")) {
+              switch (event.eventType()) {
+                case MODIFY -> {
+                  LOG.info("File changed: {}. Rebuilding...", changedFile);
                   notifyReload();
                 }
+                case DELETE -> {
+                  if (changedFile.equals(watchedFile)) {
+                    LOG.warn(
+                        "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
+                        watchedFile);
+                    session2WsChannel
+                        .keySet()
+                        .forEach(id -> sendCompilationError(id, "App file was deleted."));
+                  }
+                }
+                case CREATE -> {
+                  if (changedFile.equals(watchedFile)) {
+                    LOG.warn("App file {} recreated. Attempting to reload from the new file.",
+                             watchedFile);
+                    notifyReload();
+                  }
+                }
+                case OVERFLOW -> {
+                  LOG.warn(
+                      "Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
+                }
+                case null, default -> LOG.warn("File changed: {} but event type is not managed: {}.",
+                                               changedFile,
+                                               event.eventType());
               }
-              case OVERFLOW -> {
-                LOG.warn(
-                    "Too many file events. Some events may have been skipped or lost. If the app is not up to date, you may want to perform another edit to trigger a reload.");
-              }
-              case null, default -> LOG.warn("File changed: {} but event type is not managed: {}.",
-                                             changedFile,
-                                             event.eventType());
+            } else {
+              return;
             }
           }).build();
 
