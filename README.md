@@ -19,6 +19,8 @@ Build dashboards, back-offices, generate reports, showcase APIS, etc...
 - [Forum](https://github.com/javelit/javelit/discussions/)
 - [Roadmap](https://github.com/javelit/javelit/discussions/39)
 - [Dev Diary](https://world.hey.com/cdecatheu)
+- [Contribute](#contribute)
+- [Sponsors](#sponsors)
 
 ## Install
 
@@ -157,6 +159,25 @@ easier custom components, and more.
 Really? Thanks for you interest in improving Javelit! <span style="transform: scale(-1,1); display:inline-block;">🚡</span>  
 To start a discussion, open an [issue](https://github.com/javelit/javelit/issues) or a thread in the [forum](https://github.com/javelit/javelit/discussions).   
 For development, see [DEVELOPMENT.md](DEVELOPMENT.md).
+
+## Sponsors
+If you find Javelit useful, consider sponsoring the project:
+<p align="left">
+  <a href="https://github.com/sponsors/cyrilou242">
+    <img src="https://img.shields.io/badge/Become%20a%20Sponsor-%E2%9D%A4%EF%B8%8F-pink?style=for-the-badge" />
+  </a>
+</p>
+
+**Sponsors**:
+<p>
+  <a href="https://github.com/fpaupier">
+    <img src="https://github.com/fpaupier.png" width="60" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/louisephung">
+    <img src="https://github.com/louisephung.png" width="60" />
+  </a>
+</p>
 
 ## License
 Javelit is free and open-source, licensed under the [Apache 2.0 license](LICENSE).
