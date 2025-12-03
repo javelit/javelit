@@ -47,7 +47,6 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import io.methvin.watcher.DirectoryWatcher;
-import io.methvin.watcher.hashing.FileHash;
 import io.methvin.watcher.hashing.FileHasher;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -1077,13 +1076,6 @@ public final class Server implements StateManager.RenderServer {
     private final Path watchedFile;
     private DirectoryWatcher watcher;
     private CompletableFuture<Void> watcherFuture;
-    // only used on windows - we use .fileHasher(FileHasher.LAST_MODIFIED_TIME) for performance
-    //   because hashing files is too slow when there are a lot of files in the parent folder of the javelit app
-    //   and using the DEFAULT_FILE_HASHER is too slow (it reads all bytes of all files in the parent folder)
-    // but on windows multiple events are sent for the same file when a file is modified
-    // so we need to also compare hashes to dedup the events
-    // so we use FileHasher.DEFAULT_FILE_HASHER manually
-    private final Map<Path, FileHash> fileHashes = new ConcurrentHashMap<>();
 
     protected FileWatcher(final Path filePath) {
       this.watchedFile = filePath.toAbsolutePath();
@@ -1103,23 +1095,12 @@ public final class Server implements StateManager.RenderServer {
       watcher = DirectoryWatcher
           .builder()
           .path(directory)
-          .fileHasher(FileHasher.LAST_MODIFIED_TIME)
+          .fileHasher(FileHasher.DEFAULT_FILE_HASHER)
           .listener(event -> {
             final Path changedFile = event.path();
             boolean isJavaFile = changedFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".java");
             if (!isJavaFile) {
               return;
-            }
-            if (isWindows()) {
-              LOG.debug("running on windows {}", changedFile);
-              final FileHash lastHash = fileHashes.get(changedFile);
-              final FileHash currentHash = FileHasher.DEFAULT_FILE_HASHER.hash(changedFile);
-              if (lastHash != null && lastHash.equals(currentHash)) {
-                LOG.debug("Deduping windows file event for path {}", changedFile);
-                return;
-              } else {
-                fileHashes.put(changedFile, currentHash);
-              }
             }
             // Only respond to changes to .java files in the source tree
             switch (event.eventType()) {
@@ -1173,6 +1154,7 @@ public final class Server implements StateManager.RenderServer {
     }
 
     private static boolean isWindows() {
+      System.out.println(System.getProperty("os.name"));
       return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
     }
 
