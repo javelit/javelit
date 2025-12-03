@@ -1111,6 +1111,7 @@ public final class Server implements StateManager.RenderServer {
               return;
             }
             if (isWindows()) {
+              LOG.debug("running on windows {}", changedFile);
               final FileHash lastHash = fileHashes.get(changedFile);
               final FileHash currentHash = FileHasher.DEFAULT_FILE_HASHER.hash(changedFile);
               if (lastHash != null && lastHash.equals(currentHash)) {
