@@ -182,8 +182,7 @@ class FileReloader extends Reloader {
   // eg: MyLib$Utils.java, MyLib$Helper.java --> both will end up in the same group MyLib
   private static String clKey(final JavaFileObject classFile) {
     // App, App$Message, App$1Class, etc... should have the same key
-    final String name = classFile.getName().replace(".class", "");
-    // the name above always uses URI, so the '/' separator is always used even on windows
+    final String name = classFile.toUri().toString().replace(".class", "");
     final int fileNameStart = name.lastIndexOf('/');
     final int dollarIndex = name.indexOf("$", Math.max(fileNameStart, 0));
     if (dollarIndex == -1) {
