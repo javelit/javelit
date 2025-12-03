@@ -1117,7 +1117,7 @@ public final class Server implements StateManager.RenderServer {
                 LOG.debug("Deduping windows file event for path {}", changedFile);
                 return;
               } else {
-                fileHashes.put(changedFile, lastHash);
+                fileHashes.put(changedFile, currentHash);
               }
             }
             // Only respond to changes to .java files in the source tree
