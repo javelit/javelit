@@ -385,6 +385,7 @@ class FileReloader extends Reloader {
    */
   private static String classNameFor(final @Nonnull JavaFileObject classFile) {
     return COMPILATION_TARGET_DIR.toUri().relativize(classFile.toUri()).toString()
-                                 .replace(File.separatorChar, '.').replace(".class", "");
+                                 // '/' is always used as a sep by URI.toString(), whether on unix or windows
+                                 .replace('/', '.').replace(".class", "");
   }
 }
