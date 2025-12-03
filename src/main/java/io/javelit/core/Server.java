@@ -1130,8 +1130,6 @@ public final class Server implements StateManager.RenderServer {
                                                changedFile,
                                                event.eventType());
               }
-            } else {
-              return;
             }
           }).build();
 
@@ -1151,11 +1149,6 @@ public final class Server implements StateManager.RenderServer {
         throw new RuntimeException("Initializing file watch failed.", e);
       }
       LOG.info("File watch started successfully");
-    }
-
-    private static boolean isWindows() {
-      System.out.println(System.getProperty("os.name"));
-      return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
     }
 
     protected void stop() {
