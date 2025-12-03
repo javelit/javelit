@@ -438,11 +438,11 @@
                     <encoding>UTF-8</encoding>
                     <fork>true</fork>
                     <compilerArgs>
-                        <!-- on windows ErrorProne is complaining about misleading escaped space - disabling for the moment IDE is taking care of catching that too - TODO - but it back once we have resource to improve windows support -->
-                        <arg>-Xep:MisleadingEscapedSpace:OFF</arg>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
                         <arg>-Xplugin:ErrorProne</arg>
+                        <!-- on windows ErrorProne is complaining about misleading escaped space - disabling for the moment IDE is taking care of catching that too - TODO - but it back once we have resource to improve windows support -->
+                        <arg>-Xep:MisleadingEscapedSpace:OFF</arg>
                         <!-- see https://errorprone.info/docs/installation - to be future-proof -->
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
