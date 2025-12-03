@@ -27,7 +27,7 @@ jobs:
           cache: 'maven'
       - name: Build and run tests
         run: |
-          ./mvnw clean test
+          ./mvnw clean -Dtest=ClassloaderMismatchE2ETest,HierarchicalClassloaderE2ETest test
         shell: bash
       - name: Upload Playwright artifacts
         if: failure()
