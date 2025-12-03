@@ -440,7 +440,7 @@
                     <compilerArgs>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
-                        <!-- first part: run ErrorProne. second part: on windows ErrorProne is complaining about misleading escaped space - disabling for the moment IDE is taking care of catching that too - TODO - but it back once we have resource to improve windows support -->
+                        <!-- first part: run ErrorProne. second part: on windows ErrorProne is complaining about misleading escaped space - disabling for the moment IDE is taking care of catching that too - FIXME - put it back once we have resource to improve windows support -->
                         <arg>-Xplugin:ErrorProne -Xep:MisleadingEscapedSpace:OFF</arg>
                         <!-- see https://errorprone.info/docs/installation - to be future-proof -->
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
