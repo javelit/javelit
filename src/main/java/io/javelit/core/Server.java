@@ -1095,7 +1095,7 @@ public final class Server implements StateManager.RenderServer {
       watcher = DirectoryWatcher
           .builder()
           .path(directory)
-          .fileHasher(FileHasher.DEFAULT_FILE_HASHER)
+          .fileHasher(FileHasher.LAST_MODIFIED_TIME)
           .listener(event -> {
             final Path changedFile = event.path();
             boolean isJavaFile = changedFile.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".java");
