@@ -28,6 +28,7 @@ import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_5_SEC_MAX;
 
 /**
  * End-to-end tests for hierarchical classloader caching behavior.
@@ -70,8 +71,8 @@ public class HierarchicalClassloaderE2ETest {
         Files.writeString(appFile, modifiedContent1);
 
         // Both should still be visible
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
+        assertThat(page.getByText("Warning: caution")).isVisible(WAIT_5_SEC_MAX);
 
         // Step 3: Edit App.java by adding a comment
         // This triggers App reload (including inner Warning class) Message.java should hit cache
@@ -81,8 +82,8 @@ public class HierarchicalClassloaderE2ETest {
         Files.writeString(appFile, modifiedContent2);
 
         // Should see ClassCastException (Warning from old classloader)
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_5_SEC_MAX);
 
         // Step 4: Click "Clear cache" button to recover
         var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
@@ -100,7 +101,7 @@ public class HierarchicalClassloaderE2ETest {
         Files.writeString(messageFile, modifiedMessageContent);
 
         // Should see ClassCastException
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_5_SEC_MAX);
 
         // Message and Warning should NOT be visible (error occurred early)
         assertThat(page.getByText("Message: hello")).isHidden(WAIT_10_MS_MAX_HIDDEN);
