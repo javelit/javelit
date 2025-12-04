@@ -72,7 +72,7 @@ public class HierarchicalClassloaderE2ETest {
 
         // Both should still be visible
         // note: because nothing changes, it's hard to estimate when we should check that nothing changed - we should plug into logs or network events TODO
-        // assuming this wait is ok-is to begin with
+        // assuming this wait is ok-ish to begin with
         page.waitForTimeout(3000);
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
