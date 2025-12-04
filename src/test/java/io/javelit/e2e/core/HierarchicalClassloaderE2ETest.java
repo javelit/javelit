@@ -101,7 +101,7 @@ public class HierarchicalClassloaderE2ETest {
         // Step 5: Edit Message.java
         // This reloads Message.class - by hierarchy App and Warning should reload too
         final String messageContent = Files.readString(messageFile);
-        final String modifiedMessageContent = messageContent.replace("{\n}", "{\nstatic String NEW = null;\n}");
+        final String modifiedMessageContent = messageContent.replace("{", "{\nstatic String NEW = null;\n");
         Files.writeString(messageFile, modifiedMessageContent);
 
         // Should see ClassCastException
