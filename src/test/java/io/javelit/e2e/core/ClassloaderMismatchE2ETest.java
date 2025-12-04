@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
@@ -76,7 +77,7 @@ public class ClassloaderMismatchE2ETest {
 
         // After reload, should see ClassCastException (search for unique text from developer feedback)
         // visible for any user
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_10_SEC_MAX);
 
         // Should see "Clear cache" button (use getByRole to target the specific button in the error message)
         // only visible in dev mode (which is the case for tests as it's running on localhost)

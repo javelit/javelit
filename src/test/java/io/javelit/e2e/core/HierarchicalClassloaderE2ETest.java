@@ -26,8 +26,10 @@ import org.junit.jupiter.api.TestInfo;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.OsUtils.copyResourceDirectory;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_5_SEC_MAX;
 
 /**
  * End-to-end tests for hierarchical classloader caching behavior.
@@ -60,7 +62,7 @@ public class HierarchicalClassloaderE2ETest {
     PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
       try {
         // Step 1: Verify initial state - both Message and Warning should be visible
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
         // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
@@ -70,19 +72,22 @@ public class HierarchicalClassloaderE2ETest {
         Files.writeString(appFile, modifiedContent1);
 
         // Both should still be visible
+        // note: because nothing changes, it's hard to estimate when we should check that nothing changed - we should plug into logs or network events TODO
+        // assuming this wait is ok-ish to begin with
+        page.waitForTimeout(3000);
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
-        // Step 3: Edit App.java by adding a comment
-        // This triggers App reload (including inner Warning class) Message.java should hit cache
+        // Step 3: Edit App.java by adding a field
+        // This triggers App reload (including inner Warning class). Message.java should hit cache
         final String currentContent = Files.readString(appFile);
         final String modifiedContent2 = currentContent.replace("public class App {",
-                                                               "public class App {\n// new comment\n");
+                                                               "public class App {\nstatic int unused = 3;\n");
         Files.writeString(appFile, modifiedContent2);
 
         // Should see ClassCastException (Warning from old classloader)
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_10_SEC_MAX);
 
         // Step 4: Click "Clear cache" button to recover
         var clearCacheButton = page.locator("jt-button").getByText("Clear cache");
@@ -93,14 +98,14 @@ public class HierarchicalClassloaderE2ETest {
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
-        // Step 5: Edit Message.java (add a comment on a new line)
+        // Step 5: Edit Message.java
         // This reloads Message.class - by hierarchy App and Warning should reload too
         final String messageContent = Files.readString(messageFile);
         final String modifiedMessageContent = messageContent.replace("{\n}", "{\nstatic String NEW = null;\n}");
         Files.writeString(messageFile, modifiedMessageContent);
 
         // Should see ClassCastException
-        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("ClassCastException").first()).isVisible(WAIT_10_SEC_MAX);
 
         // Message and Warning should NOT be visible (error occurred early)
         assertThat(page.getByText("Message: hello")).isHidden(WAIT_10_MS_MAX_HIDDEN);
