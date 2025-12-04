@@ -77,11 +77,11 @@ public class HierarchicalClassloaderE2ETest {
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
-        // Step 3: Edit App.java by adding a comment
-        // This triggers App reload (including inner Warning class) Message.java should hit cache
+        // Step 3: Edit App.java by adding a field
+        // This triggers App reload (including inner Warning class). Message.java should hit cache
         final String currentContent = Files.readString(appFile);
         final String modifiedContent2 = currentContent.replace("public class App {",
-                                                               "public class App {\n// new comment\n");
+                                                               "public class App {\nstatic int unused = 3;\n");
         Files.writeString(appFile, modifiedContent2);
 
         // Should see ClassCastException (Warning from old classloader)
