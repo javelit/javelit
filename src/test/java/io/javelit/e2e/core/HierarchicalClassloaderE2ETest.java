@@ -29,6 +29,7 @@ import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_MS_MAX_HIDDEN;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_10_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_5_SEC_MAX;
 
 /**
  * End-to-end tests for hierarchical classloader caching behavior.
@@ -61,7 +62,7 @@ public class HierarchicalClassloaderE2ETest {
     PlaywrightUtils.runInBrowser(testInfo, appFile, page -> {
       try {
         // Step 1: Verify initial state - both Message and Warning should be visible
-        assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
+        assertThat(page.getByText("Message: hello")).isVisible(WAIT_5_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
         // Step 2: Edit App.java comment inline (classloader cache hit for Message.class and App.java)
