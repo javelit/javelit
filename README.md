@@ -40,7 +40,7 @@ You'll find a short version below. [Read the doc](https://docs.javelit.io/get-st
     jbang app install javelit@javelit
 
     # vanilla
-    curl -L -o javelit.jar https://repo1.maven.org/maven2/io/javelit/javelit/0.75.0/javelit-0.75.0-all.jar
+    curl -L -o javelit.jar https://repo1.maven.org/maven2/io/javelit/javelit/0.76.0/javelit-0.76.0-all.jar
     ```
 2. Validate the installation by running the Hello app:
    ```bash
@@ -67,7 +67,7 @@ Once you're ready to go further, look at the [fundamental concepts](https://docs
    <dependency>
        <groupId>io.javelit</groupId>
        <artifactId>javelit</artifactId>
-       <version>0.75.0</version>
+       <version>0.76.0</version>
    </dependency>
    ```
 2. Launch the server in your project
