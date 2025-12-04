@@ -47,6 +47,8 @@ public final class PlaywrightUtils {
       1000);
   public static final LocatorAssertions.IsVisibleOptions WAIT_5_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
       5000);
+  public static final LocatorAssertions.IsVisibleOptions WAIT_10_SEC_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
+      10000);
   public static final LocatorAssertions.IsVisibleOptions WAIT_100_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
       100);
   public static final LocatorAssertions.IsVisibleOptions WAIT_50_MS_MAX = new LocatorAssertions.IsVisibleOptions().setTimeout(
