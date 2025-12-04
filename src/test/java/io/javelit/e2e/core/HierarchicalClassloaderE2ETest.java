@@ -97,7 +97,7 @@ public class HierarchicalClassloaderE2ETest {
         assertThat(page.getByText("Message: hello")).isVisible(WAIT_1_SEC_MAX);
         assertThat(page.getByText("Warning: caution")).isVisible(WAIT_1_SEC_MAX);
 
-        // Step 5: Edit Message.java (add a comment on a new line)
+        // Step 5: Edit Message.java
         // This reloads Message.class - by hierarchy App and Warning should reload too
         final String messageContent = Files.readString(messageFile);
         final String modifiedMessageContent = messageContent.replace("{\n}", "{\nstatic String NEW = null;\n}");
