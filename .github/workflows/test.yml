@@ -15,14 +15,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        include:
+          - os: ubuntu-latest
+            jdk: 21
+          - os: ubuntu-latest
+            jdk: 25
+          - os: windows-latest
+            jdk: 21
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v5
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '${{ matrix.jdk }}'
           distribution: 'temurin'
           cache: 'maven'
       - name: Build and run tests
