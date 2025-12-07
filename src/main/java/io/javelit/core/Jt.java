@@ -16,6 +16,7 @@
 package io.javelit.core;
 
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -1188,6 +1189,23 @@ public final class Jt {
   // TODO add an example once image input is implemented
   public static ImageComponent.Builder image(final @Nonnull JtUploadedFile uploadedFile) {
     return ImageComponent.Builder.of(uploadedFile);
+  }
+
+  /**
+   * Display an image from a Base64 encoded string.
+   * <p>
+   * Handles both raw Base64 strings and Data URI strings (e.g. "data:image/png;base64,...").
+   *
+   * @param base64 The Base64 encoded image string.
+   */
+  public static ImageComponent.Builder imageFromBase64(final @Nonnull String base64) {
+    String cleanBase64 = base64;
+    // Remove the Data URI prefix if present: data:image/png;base64,...
+    if (base64.contains(",")) {
+      cleanBase64 = base64.substring(base64.indexOf(",") + 1);
+    }
+    byte[] decodedBytes = Base64.getDecoder().decode(cleanBase64);
+    return ImageComponent.Builder.of(decodedBytes);
   }
 
   /**
