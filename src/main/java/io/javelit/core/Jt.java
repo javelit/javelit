@@ -46,6 +46,7 @@ import io.javelit.components.media.ImageComponent;
 import io.javelit.components.media.PdfComponent;
 import io.javelit.components.multipage.PageLinkComponent;
 import io.javelit.components.status.CalloutComponent;
+import io.javelit.components.status.SpinnerComponent;
 import io.javelit.components.text.CodeComponent;
 import io.javelit.components.text.HtmlComponent;
 import io.javelit.components.text.MarkdownComponent;
@@ -1247,6 +1248,19 @@ public final class Jt {
    */
   public static PdfComponent.Builder pdf(final @Nonnull JtUploadedFile uploadedFile) {
     return PdfComponent.Builder.of(uploadedFile);
+  }
+
+    /**
+   * Display a spinner.
+   * <p>
+   * Examples:
+   * start spinner classic or in overlay mode
+   * {@snippet file = "SpinnerApp.java"}
+   *
+   */
+
+  public static SpinnerComponent.Builder spinner() {
+    return SpinnerComponent.builder().loading(true);
   }
 
   /**

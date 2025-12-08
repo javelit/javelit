@@ -1,0 +1,232 @@
+<script type="module">
+import {LitElement, html, css, unsafeHTML} from '{{ LIT_DEPENDENCY }}';
+
+class JtSpinner extends LitElement {
+  static get properties() {
+    return {
+      active: { type: Boolean },
+      message: { type: String },
+      showTime: { type: Boolean },
+      overlay: { type: Boolean },
+      _elapsed: { state: true }
+    };
+  }
+
+  static get styles() {
+    return css`
+      :host {
+        display: block;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      /* Utility for box-sizing */
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      /* Container */
+      .spinner-container {
+        display: flex;
+        align-items: center;
+        gap: var(--jt-spacing-sm);
+        border-radius: var(--jt-border-radius-lg);
+        padding: var(--jt-spacing-md);
+        background-color: white;
+        // border-radius: 8px;
+        // gap: 12px;
+        // padding: 16px;
+        // box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        // border: 1px solid #f3f4f6;
+        max-width: 100%;
+      }
+
+      /* Icon */
+      .spinner-icon {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .spinner-circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-width: 2px;
+        border-style: solid;
+        border-radius: 50%;
+      }
+
+      .spinner-circle-bg {
+        border-color: #e5e7eb;
+      }
+
+      .spinner-circle-spin {
+        border-color: #FF4B4B transparent transparent transparent;
+        animation: spin 1s linear infinite;
+      }
+
+      /* Text */
+      .spinner-text {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .spinner-message {
+            font-family: var(--jt-font-family);
+            font-size: var(--jt-font-size-base);
+            line-height: var(--jt-line-height-normal);
+            color: var(--jt-text-primary);
+            margin: 0;
+            padding: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            display: block;
+      }
+
+      .spinner-time {
+        color: #9ca3af;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1rem;
+      }
+
+      /* Responsive adjustments mimicking Tailwind md: breakpoint */
+      @media (min-width: 768px) {
+        .spinner-text {
+          flex-direction: row;
+          align-items: baseline;
+          gap: 8px;
+        }
+        .spinner-message {
+            font-size: 16px;
+         }
+        .spinner-time {
+          font-size: 14px;
+        }
+      }
+
+      /* Overlay Mode */
+      .overlay-wrapper {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .overlay-wrapper .spinner-container {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        animation: zoom-in 0.2s ease-out;
+      }
+
+      /* Inline Animation */
+      .inline-wrapper {
+        animation: slide-down 0.3s ease-out;
+      }
+
+      /* Keyframes */
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes zoom-in {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes slide-down {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `;
+  }
+
+  constructor() {
+    super();
+    this.active = false;
+    this.message = "Running...";
+    this.showTime = false;
+    this.overlay = false;
+    this._elapsed = 0;
+    this._startTime = null;
+    this._rafId = null;
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('active')) {
+      if (this.active) {
+        this._startTimer();
+      } else {
+        this._stopTimer();
+      }
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._stopTimer();
+  }
+
+  _startTimer() {
+    this._startTime = Date.now();
+    this._elapsed = 0;
+    const update = () => {
+      if (this._startTime !== null) {
+        this._elapsed = (Date.now() - this._startTime) / 1000;
+        this._rafId = requestAnimationFrame(update);
+        this.requestUpdate();
+      }
+    };
+    this._rafId = requestAnimationFrame(update);
+  }
+
+  _stopTimer() {
+    if (this._rafId) {
+      cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+    this._startTime = null;
+  }
+
+  render() {
+    if (!this.active) return html``;
+
+    const content = html`
+      <div class="spinner-container">
+        <div class="spinner-icon">
+          <div class="spinner-circle spinner-circle-bg"></div>
+          <div class="spinner-circle spinner-circle-spin"></div>
+        </div>
+        <div class="spinner-text">
+          <span class="spinner-message">${unsafeHTML(this.message)}</span>
+          ${this.showTime
+            ? html`<span class="spinner-time">${this._elapsed.toFixed(1)}s</span>`
+            : ''}
+        </div>
+      </div>
+    `;
+
+    if (this.overlay) {
+      return html`
+        <div class="overlay-wrapper">
+          ${content}
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="inline-wrapper">
+        ${content}
+      </div>
+    `;
+  }
+}
+customElements.define('jt-spinner', JtSpinner);
+</script>
