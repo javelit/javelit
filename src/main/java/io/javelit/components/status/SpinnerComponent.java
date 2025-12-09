@@ -35,6 +35,13 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
+/*
+* SpinnerComponent 
+*
+* A spinner component to indicate loading state.
+*
+* developed by bsorrentino (bartolomeo.sorrentino@gmail.com)
+*/
 public class SpinnerComponent extends JtComponent<JtContainer> {
     final Integer height;
     final Boolean border;
@@ -60,23 +67,17 @@ public class SpinnerComponent extends JtComponent<JtContainer> {
     }
 
     protected String register() {
-        if (this.currentValue == null) {
-            throw new IllegalStateException("Component has not been fully initialized yet. use() should be called before register().");
-        } else {
-            StringWriter writer = new StringWriter();
-            registerTemplate.execute(writer, this);
-            return writer.toString();
-        }
+        requireNonNull(this.currentValue, "Component has not been fully initialized yet. use() should be called before register().");
+        StringWriter writer = new StringWriter();
+        registerTemplate.execute(writer, this);
+        return writer.toString();
     }
 
     protected String render() {
-        if (this.currentValue == null) {
-            throw new IllegalStateException("Component has not been fully initialized yet. use() should be called before register().");
-        } else {
-            StringWriter writer = new StringWriter();
-            renderTemplate.execute(writer, this);
-            return writer.toString();
-        }
+        requireNonNull(this.currentValue,"Component has not been fully initialized yet. use() should be called before register().");
+        StringWriter writer = new StringWriter();
+        renderTemplate.execute(writer, this);
+        return writer.toString();
     }
 
     protected TypeReference<JtContainer> getTypeReference() {
@@ -260,8 +261,8 @@ class InternalSpinner<T> extends JtComponent<T> {
         this.message = markdownToHtml(builder.message, true);
         this.showTime = builder.showTime;
         this.overlay = builder.overlay;
-        this.onStart = requireNonNull(builder.onStart, "onStart cannot be null");
-        this.onComplete = requireNonNull(builder.onComplete, "onComplete cannot be null");
+        this.onStart = builder.onStart;
+        this.onComplete = builder.onComplete;
 
     }
 
@@ -287,19 +288,22 @@ class InternalSpinner<T> extends JtComponent<T> {
 
     @Override
     protected void afterUse(@NotNull JtContainer container) {
-        final var start = Instant.now();
 
-        var result = onStart.get();
+        if( onStart != null ) {
+            final var start = Instant.now();
 
-        super.setCurrentValue( result );
+            var result = onStart.get();
 
-        final var duration = Duration.between(start, Instant.now());
+            super.setCurrentValue(result);
 
-        var componentBuilder = onComplete.apply( result, duration );
+            if( onComplete != null ) {
+                final var duration = Duration.between(start, Instant.now());
 
-        componentBuilder.use( container );
+                var componentBuilder = onComplete.apply(result, duration);
 
+                componentBuilder.use(container);
+            }
+        }
 
     }
 }
-
