@@ -1260,7 +1260,7 @@ public final class Jt {
    */
 
   public static SpinnerComponent.Builder spinner() {
-    return SpinnerComponent.builder().loading(true);
+    return SpinnerComponent.builder();
   }
 
   /**
