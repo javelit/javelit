@@ -43,10 +43,59 @@ import static java.util.Objects.requireNonNull;
 * developed by bsorrentino (bartolomeo.sorrentino@gmail.com)
 */
 public class SpinnerComponent extends JtComponent<JtContainer> {
-    final Integer height;
-    final Boolean border;
     private static final Mustache registerTemplate;
     private static final Mustache renderTemplate;
+
+    static {
+        MustacheFactory mf = new DefaultMustacheFactory();
+        registerTemplate = mf.compile("components/layout/ContainerComponent.register.html.mustache");
+        renderTemplate = mf.compile("components/layout/ContainerComponent.render.html.mustache");
+    }
+
+    public static class Builder extends JtComponentBuilder<JtContainer, SpinnerComponent, Builder> {
+        @Nullable
+        private Integer height;
+        @Nullable
+        private Boolean border;
+        private @Language("markdown") String message;
+
+        public Builder() {
+        }
+
+        public Builder height(Integer height) {
+            this.height = height;
+            return this;
+        }
+
+        public Builder border(@Nullable Boolean border) {
+            this.border = border;
+            return this;
+        }
+
+        /**
+         * The message content to display.
+         * Markdown is supported.
+         */
+        public Builder message(final @Language("markdown") @Nonnull String message) {
+            this.message = message;
+            return this;
+        }
+
+        public SpinnerComponent build() {
+            if (this.border == null) {
+                this.border = this.height != null;
+            }
+
+            return new SpinnerComponent(this);
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    final Integer height;
+    final Boolean border;
     final InternalSpinner.Builder<?> spinnerComponent;
 
     @SuppressWarnings("unchecked")
@@ -58,12 +107,9 @@ public class SpinnerComponent extends JtComponent<JtContainer> {
         this.spinnerComponent = InternalSpinner.builder()
                 .key( getInternalKey() )
                 .message(builder.message)
-                .showTime(builder.showTime )
-                .overlay(builder.overlay)
-                .onStart((Supplier<Object>) builder.onStart)
-                .onComplete((BiFunction<Object, Duration, JtComponentBuilder<?, ?, ?>>) builder.onComplete)
-        ;
-
+                .showTime(true)
+                .overlay(false)
+            ;
     }
 
     protected String register() {
@@ -96,85 +142,6 @@ public class SpinnerComponent extends JtComponent<JtContainer> {
         spinnerComponent.use( currentValue);
     }
 
-    static {
-        MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("components/layout/ContainerComponent.register.html.mustache");
-        renderTemplate = mf.compile("components/layout/ContainerComponent.render.html.mustache");
-    }
-
-    public static class Builder extends JtComponentBuilder<JtContainer, SpinnerComponent, Builder> {
-        @Nullable
-        private Integer height;
-        @Nullable
-        private Boolean border;
-        private @Language("markdown") String message;
-        private Boolean showTime = false;
-        private Boolean overlay = false;
-        private Supplier<?> onStart;
-        private BiFunction<?,Duration,JtComponentBuilder<?,?,?>> onComplete;
-
-        public Builder() {
-        }
-
-        public Builder height(Integer height) {
-            this.height = height;
-            return this;
-        }
-
-        public Builder border(@Nullable Boolean border) {
-            this.border = border;
-            return this;
-        }
-
-        /**
-         * The message content to display.
-         * Markdown is supported.
-         */
-        public Builder message(final @Language("markdown") @Nonnull String message) {
-            this.message = message;
-            return this;
-        }
-
-        public <T> Builder onStart(Supplier<T> onStart ) {
-            this.onStart = onStart;
-            return this;
-        }
-
-        public <T> Builder onComplete(BiFunction<T, Duration,JtComponentBuilder<?,?,?>> onComplete ) {
-            this.onComplete = onComplete;
-            return this;
-        }
-
-        /**
-         * Whether to show the time.
-         * @param showTime true to show the time.
-         */
-        public Builder showTime(boolean showTime) {
-            this.showTime = showTime;
-            return this;
-        }
-
-        /**
-         * Whether to show the overlay.
-         * @param overlay true to show component as an overlay.
-         */
-        public Builder overlay(boolean overlay) {
-            this.overlay = overlay;
-            return this;
-        }
-
-        public SpinnerComponent build() {
-            if (this.border == null) {
-                this.border = this.height != null;
-            }
-
-            return new SpinnerComponent(this);
-        }
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
 }
 
 class InternalSpinner<T> extends JtComponent<T> {
@@ -184,27 +151,22 @@ class InternalSpinner<T> extends JtComponent<T> {
 
     static {
         final MustacheFactory mf = new DefaultMustacheFactory();
-        registerTemplate = mf.compile("InternalSpinner.register.html.mustache");
-        renderTemplate = mf.compile("InternalSpinner.render.html.mustache");
+        registerTemplate = mf.compile("components/status/InternalSpinner.register.html.mustache");
+        renderTemplate = mf.compile("components/status/InternalSpinner.render.html.mustache");
     }
 
     // visible to the template engine
     final String message;
     final boolean showTime;
     final boolean overlay;
-    final Supplier<T> onStart;
-    final BiFunction<T,Duration,JtComponentBuilder<?,?,?>> onComplete;
-
 
     /**
      * Builder for the spinner component.
      */
     static class Builder<T> extends JtComponentBuilder<T, InternalSpinner<T>, Builder<T>> {
         private @Language("markdown") String message;
-        private Boolean showTime = false;
+        private Boolean showTime = true;
         private Boolean overlay = false;
-        private Supplier<T> onStart;
-        private BiFunction<T,Duration,JtComponentBuilder<?,?,?>> onComplete;
         private JtContainer spinnerContainer;
 
         /**
@@ -213,16 +175,6 @@ class InternalSpinner<T> extends JtComponent<T> {
          */
         public Builder<T> message(final @Language("markdown") @Nonnull String message) {
             this.message = message;
-            return this;
-        }
-
-        public Builder<T> onStart(Supplier<T> onStart ) {
-            this.onStart = onStart;
-            return this;
-        }
-
-        public Builder<T> onComplete( BiFunction<T,Duration,JtComponentBuilder<?,?,?>> onComplete ) {
-            this.onComplete = onComplete;
             return this;
         }
 
@@ -261,9 +213,6 @@ class InternalSpinner<T> extends JtComponent<T> {
         this.message = markdownToHtml(builder.message, true);
         this.showTime = builder.showTime;
         this.overlay = builder.overlay;
-        this.onStart = builder.onStart;
-        this.onComplete = builder.onComplete;
-
     }
 
     @Override
@@ -282,28 +231,8 @@ class InternalSpinner<T> extends JtComponent<T> {
 
     @Override
     protected TypeReference<T> getTypeReference() {
-        return new TypeReference<T>() {
-        };
+        return new TypeReference<T>() {};
+    
     }
 
-    @Override
-    protected void afterUse(@NotNull JtContainer container) {
-
-        if( onStart != null ) {
-            final var start = Instant.now();
-
-            var result = onStart.get();
-
-            super.setCurrentValue(result);
-
-            if( onComplete != null ) {
-                final var duration = Duration.between(start, Instant.now());
-
-                var componentBuilder = onComplete.apply(result, duration);
-
-                componentBuilder.use(container);
-            }
-        }
-
-    }
 }
