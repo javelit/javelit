@@ -84,7 +84,7 @@ public class ClassificationPage {
           Sentiment sentiment = analyzer.analyzeSentimentOf(text);
 
           // Display result with color coding
-          Jt.markdown("### 🎯 Result").key("classi-result").use();
+          Jt.markdown("### 🎯 Result").use();
 
           String emoji = switch (sentiment) {
             case POSITIVE -> "😊";

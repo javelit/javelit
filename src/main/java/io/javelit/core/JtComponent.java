@@ -210,10 +210,26 @@ public abstract class JtComponent<T> {
     return currentValue;
   }
 
+  /**
+   * Note: this was previously implemented as an interface.
+   * It was the responsibility of the component implementer to mark T as implementing the NotAState interface, if necessary.
+   * This proved to be confusing. For the moment we put this back as an internal only logic, and hardcode what
+   * values are considered as not a state:
+   * - JtComponent.NONE
+   * - JtLayout
+   * - JtContainer
+   *
+   * See https://github.com/javelit/javelit/issues/57
+   */
   protected final boolean returnValueIsAState() {
-    // do not compute and store at instantiation - some components (eg layout/container components) start
-    // with a null value and have their actual value binded later
-    return !(currentValue instanceof JtComponent.NotAState);
+    // this looks like it could be set as a field at instantiation time but it cannot.
+    // some components (eg layout/container components) start with a null value and have their actual value binded later
+    // in their lifecycle, but before this method is called
+    return !(currentValue instanceof JtContainer) && !(currentValue instanceof JtLayout) && !(currentValue instanceof NONE);
+  }
+
+  protected final boolean requiresUniqueKey() {
+    return !(currentValue instanceof NONE);
   }
 
   protected final void resetToInitialValue() {
@@ -310,12 +326,20 @@ public abstract class JtComponent<T> {
   }
 
   /**
-   * identifies a T type of a JtComponent as not to be stored in the session state
-   * anything that is not a state should implement this interface
-   * see also [NONE]
+   * Used to optimize re-rendering.
+   * When the app is re-rendered, if the content at a given position is the same as the previous content at that position,
+   * re-rendering in the frontend is skipped.
+   *
+   * This method should be overriden if the render() method of the implementation is expensive.
+   * Instead of comparing the render() values, the component fields can be compared directly.
    */
-  public interface NotAState {
-
+  protected boolean contentEquals(@Nonnull JtComponent other) {
+    // Compare component type
+    if (!other.getClass().equals(this.getClass())) {
+      return false;
+    }
+    // Compare rendered HTML (simple approach - can be )
+    return other.render().equals(this.render());
   }
 
   /**
@@ -333,7 +357,7 @@ public abstract class JtComponent<T> {
   }
 
   // use this type to signify a component is not interactive and does not return anything
-  public enum NONE implements NotAState {
+  public enum NONE {
     NONE_VALUE
   }
 
@@ -346,7 +370,7 @@ public abstract class JtComponent<T> {
   }
 
   protected static @Language("html") String markdownToHtml(final @Language("markdown") @Nullable String markdown,
-                                         final boolean removeWrap) {
+                                                           final boolean removeWrap) {
     return MarkdownUtils.markdownToHtml(markdown, removeWrap);
   }
 

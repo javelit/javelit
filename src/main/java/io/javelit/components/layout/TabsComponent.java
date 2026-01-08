@@ -150,7 +150,7 @@ public final class TabsComponent extends JtComponent<TabsComponent.Tabs> {
   }
 
 
-  public static final class Tabs implements NotAState, JtLayout {
+  public static final class Tabs implements JtLayout {
     private final List<@NotNull String> tabNames;
     private final List<JtContainer> backing;
     private final JtContainer layoutContainer;

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInfo;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_COUNT;
 
 /**
  * End-to-end tests for DuplicateWidgetIDException handling.
@@ -49,6 +50,27 @@ public class DuplicateWidgetIdE2ETest {
   }
 
   @Test
+  void testDuplicateKeyAcceptedForDisplayOnlyComponents(TestInfo testInfo) {
+    // App with same component called twice without explicit key
+    // it's okay because the components are display-only components, not widgets
+    JtRunnable app = () -> {
+      Jt.text("Name").use();
+      Jt.text("Name").use(); // Same label, same params -> same auto-generated key
+      Jt.divider().use();
+      Jt.divider().use();
+      Jt.divider().key("mykey").use();
+      Jt.divider().key("mykey").use();
+    };
+
+    // Verify that error message appears mentioning duplicate widget
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Verify that error message appears mentioning duplicate widget
+      assertThat(page.locator("jt-text")).hasCount(2, WAIT_1_SEC_MAX_COUNT);
+      assertThat(page.locator("jt-markdown")).hasCount(4, WAIT_1_SEC_MAX_COUNT);
+    });
+  }
+
+  @Test
   void testDuplicateExplicitKey(TestInfo testInfo) {
     // App with two different components using same explicit key
     JtRunnable app = () -> {
@@ -60,6 +82,38 @@ public class DuplicateWidgetIdE2ETest {
     PlaywrightUtils.runInBrowser(testInfo, app, page -> {
       // Verify that error message appears mentioning duplicate widget
       assertThat(page.getByText("DuplicateWidgetIDException").first()).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
+
+  @Test
+  void testDuplicateExplicitKeyForJtLayoutComponent(TestInfo testInfo) {
+    // App with two different components using same explicit key
+    JtRunnable app = () -> {
+      Jt.columns(2).key("mykey").use();
+      Jt.columns(2).key("mykey").use();
+    };
+
+    // Verify that error message appears mentioning duplicate widget
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Verify that error message appears mentioning duplicate widget
+      assertThat(page.getByText("DuplicateWidgetIDException").first()).isVisible(WAIT_1_SEC_MAX);
+    });
+  }
+
+  @Test
+  void testDuplicateExplicitKeyForJtContainer(TestInfo testInfo) {
+    // App with two different components using same explicit key
+    JtRunnable app = () -> {
+      Jt.container().key("mykey").use();
+      Jt.container().key("mykey").use();
+      Jt.empty().key("myOtherkey").use();
+      Jt.empty().key("myOtherkey").use();
+    };
+
+    // Verify that error message appears mentioning duplicate widget
+    PlaywrightUtils.runInBrowser(testInfo, app, page -> {
+      // Verify that error message appears mentioning duplicate widget
+      assertThat(page.getByText("DuplicateWidgetIDException")).hasCount(2, WAIT_1_SEC_MAX_COUNT);
     });
   }
 
