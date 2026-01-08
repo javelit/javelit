@@ -338,7 +338,7 @@ public abstract class JtComponent<T> {
     if (!other.getClass().equals(this.getClass())) {
       return false;
     }
-    // Compare rendered HTML (simple approach - can be )
+    // Compare rendered HTML
     return other.render().equals(this.render());
   }
 
