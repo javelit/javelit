@@ -333,7 +333,7 @@ public abstract class JtComponent<T> {
    * This method should be overriden if the render() method of the implementation is expensive.
    * Instead of comparing the render() values, the component fields can be compared directly.
    */
-  protected boolean contentEquals(@Nonnull JtComponent other) {
+  protected boolean contentEquals(@Nonnull JtComponent<?> other) {
     // Compare component type
     if (!other.getClass().equals(this.getClass())) {
       return false;
