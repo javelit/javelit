@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public final class JtContainer implements JtComponent.NotAState {
+public final class JtContainer {
 
   public static final Set<String> RESERVED_PATHS = Set.of("main", "sidebar");
 

@@ -350,23 +350,25 @@ final class StateManager {
     final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
     checkState(currentExecution != null, "No active execution context. Please reach out to support.");
 
-    if (currentExecution.containerToComponents
-        .values()
-        .stream()
-        .anyMatch(components -> components.containsKey(component.getInternalKey()))) {
-      // a component with the same id was already registered while running the app top to bottom
-      throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
-    }
-    if (component.getUserKey() != null && currentExecution.containerToComponents
-        .values()
-        .stream()
-        .anyMatch(components ->
-                      components
-                          .values()
-                          .stream()
-                          .anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
-        )) {
-      throw DuplicateWidgetIDException.forDuplicateUserKey(component);
+    if (component.requiresUniqueKey()) {
+      if (currentExecution.containerToComponents
+          .values()
+          .stream()
+          .anyMatch(components -> components.containsKey(component.getInternalKey()))) {
+        // a component with the same id was already registered while running the app top to bottom
+        throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
+      }
+      if (component.getUserKey() != null && currentExecution.containerToComponents
+          .values()
+          .stream()
+          .anyMatch(components ->
+                        components
+                            .values()
+                            .stream()
+                            .anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
+          )) {
+        throw DuplicateWidgetIDException.forDuplicateUserKey(component);
+      }
     }
 
     final LinkedHashMap<String, JtComponent<?>> componentsMap = currentExecution
@@ -518,7 +520,7 @@ final class StateManager {
           component.resetIfNeeded();
           if (component.returnValueIsAState()) {
             checkState(entry.getKey().equals(component.getInternalKey()),
-                       "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
+                       "Implementation error. Please reach out to support"); // used to find bug quickly during state rewrite
             session.upsertComponentsState(component);
           }
         }
