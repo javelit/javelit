@@ -34,7 +34,8 @@
       "WebFetch(domain:www.w3.org)",
       "mcp__jetbrains__find_files_by_name_keyword",
       "WebFetch(domain:stackoverflow.com)",
-      "WebFetch(domain:undertow.io)"
+      "WebFetch(domain:undertow.io)",
+      "Bash(git log:*)"
     ],
     "deny": []
   }
