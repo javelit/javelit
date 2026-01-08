@@ -433,7 +433,7 @@ final class StateManager {
                                                                                      .toArray(new JtComponent<?>[0]);
       final JtComponent<?> previousAtIndex = previousComponents[currentExecution.containerToCurrentIndex.get(
           container)];
-      if (componentsEqual(previousAtIndex, component)) {
+      if (previousAtIndex.contentEquals(component)) {
         // skip sending - increment index by 1 for container
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
         return;
@@ -470,17 +470,6 @@ final class StateManager {
     if (component.returnValue() instanceof JtLayout) {
       currentExecution.clearedLayoutContainers.add(((JtLayout) component.returnValue()).layoutContainer());
     }
-  }
-
-  // Helper method to compare components for changes
-  private static boolean componentsEqual(JtComponent<?> prev, JtComponent<?> curr) {
-    // Compare component type
-    if (!prev.getClass().equals(curr.getClass())) {
-      return false;
-    }
-
-    // Compare rendered HTML (simple approach - could be optimized)
-    return prev.render().equals(curr.render());
   }
 
   /**

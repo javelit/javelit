@@ -310,6 +310,23 @@ public abstract class JtComponent<T> {
   }
 
   /**
+   * Used to optimize re-rendering.
+   * When the app is re-rendered, if the content at a given position is the same as the previous content at that position,
+   * re-rendering in the frontend is skipped.
+   *
+   * This method should be overriden if the render() method of the implementation is expensive.
+   * Instead of comparing the render() values, the component fields can be compared directly.
+   */
+  protected boolean contentEquals(@Nonnull JtComponent other) {
+    // Compare component type
+    if (!other.getClass().equals(this.getClass())) {
+      return false;
+    }
+    // Compare rendered HTML (simple approach - can be )
+    return other.render().equals(this.render());
+  }
+
+  /**
    * identifies a T type of a JtComponent as not to be stored in the session state
    * anything that is not a state should implement this interface
    * see also [NONE]
@@ -346,7 +363,7 @@ public abstract class JtComponent<T> {
   }
 
   protected static @Language("html") String markdownToHtml(final @Language("markdown") @Nullable String markdown,
-                                         final boolean removeWrap) {
+                                                           final boolean removeWrap) {
     return MarkdownUtils.markdownToHtml(markdown, removeWrap);
   }
 
