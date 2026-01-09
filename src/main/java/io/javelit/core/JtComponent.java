@@ -141,7 +141,7 @@ public abstract class JtComponent<T> {
   private final JtContainer defaultContainer;
   private final String usageRecordName;
 
-  protected JtComponent(final @Nonnull JtComponentBuilder builder,
+  protected JtComponent(final @Nonnull JtComponentBuilder<?, ?, ?> builder,
                         final T currentValue,
                         final @Nullable Consumer<T> callback,
                         final @Nonnull JtContainer defaultContainer) {
