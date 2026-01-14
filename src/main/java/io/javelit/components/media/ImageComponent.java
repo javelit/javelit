@@ -65,8 +65,10 @@ public final class ImageComponent extends JtComponent<JtComponent.NONE> {
       this.url = builder.url;
     } else if (builder.bytes != null) {
       this.url = registerMedia(new MediaEntry(builder.bytes, builder.format));
-    } else {
+    } else if (builder.svg != null) {
       this.url = convertSvgToUrl(builder.svg);
+    } else {
+      this.url = convertBase64ToUrl(builder.base64Img);
     }
     this.caption = markdownToHtml(builder.caption, true);
     this.width = builder.width;
@@ -79,7 +81,16 @@ public final class ImageComponent extends JtComponent<JtComponent.NONE> {
     // return "data:image/svg+xml;base64," + base64;
     final String encodedSvg = URLEncoder.encode(svgString, StandardCharsets.UTF_8).replace("+", "%20");
     return "data:image/svg+xml," + encodedSvg;
+  }
 
+  private static String convertBase64ToUrl(final @Nonnull String base64Img) {
+    // If the string already includes a data URI prefix, return as-is
+    if (base64Img.startsWith("data:image/")) {
+      return base64Img;
+    }
+    // Otherwise, assume PNG format (most common for Gen AI outputs) and build the data URI
+    // Users can prepend their own data URI prefix if they need a different format
+    return "data:image/png;base64," + base64Img;
   }
 
   public static class Builder extends JtComponentBuilder<NONE, ImageComponent, Builder> {
@@ -87,6 +98,7 @@ public final class ImageComponent extends JtComponent<JtComponent.NONE> {
     private @Nullable final String url;
     private @Nullable final byte[] bytes;
     private @Language("html") @Nullable final String svg;
+    private @Nullable final String base64Img;
     // mimeType
     private @Nullable String format;
     private @Language("markdown") @Nullable String caption;
@@ -95,22 +107,24 @@ public final class ImageComponent extends JtComponent<JtComponent.NONE> {
     public Builder(final @Nullable String url,
                    @Language("html") final @Nullable String svg,
                    final @Nullable byte[] bytes,
+                   final @Nullable String base64Img,
                    final @org.jetbrains.annotations.Nullable String format) {
       this.url = url;
       this.svg = svg;
       this.bytes = bytes;
+      this.base64Img = base64Img;
       // not used
       this.format = format;
     }
 
     public static Builder of(final @Nonnull String url) {
-      return new Builder(url, null, null, null);
+      return new Builder(url, null, null, null, null);
     }
 
     public static Builder of(final @Nonnull byte[] data) {
       try (final InputStream in = new ByteArrayInputStream(data)) {
         final String format = URLConnection.guessContentTypeFromStream(in);
-        return new Builder(null, null, data, format);
+        return new Builder(null, null, data, null, format);
       } catch (IOException e) {
         throw new RuntimeException("Failed to infer format (MIME type) from the first bytes of the input data",
                                    e);
@@ -122,14 +136,18 @@ public final class ImageComponent extends JtComponent<JtComponent.NONE> {
         final byte[] bytes = Files.readAllBytes(localFile);
         checkArgument(bytes.length > 0, "File " + localFile + " is empty");
         final String format = Files.probeContentType(localFile);
-        return new Builder(null, null, bytes, format);
+        return new Builder(null, null, bytes, null, format);
       } catch (IOException e) {
         throw new RuntimeException("Failed to read bytes from file" + e);
       }
     }
 
     public static Builder ofSvg(final @Language("html") @Nonnull String svg) {
-      return new Builder(null, svg, null, null);
+      return new Builder(null, svg, null, null, null);
+    }
+
+    public static Builder ofBase64(final @Nonnull String base64Img) {
+      return new Builder(null, null, null, base64Img, null);
     }
 
     public static Builder of(final @Nonnull JtUploadedFile uploadedFile) {
