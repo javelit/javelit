@@ -72,6 +72,8 @@ public final class PlaywrightUtils {
   public static final Locator.ClickOptions WAIT_1_SEC_MAX_CLICK = new Locator.ClickOptions().setTimeout(1000);
   public static final Locator.ClickOptions WAIT_100_MS_MAX_CLICK = new Locator.ClickOptions().setTimeout(100);
 
+  public static final LocatorAssertions.HasCountOptions WAIT_1_SEC_MAX_COUNT = new LocatorAssertions.HasCountOptions().setTimeout(1000);
+
   public static final Page.GetByTextOptions EXACT_MATCH = new Page.GetByTextOptions().setExact(true);
   public static final String TEST_PROXY_PREFIX = "/test_proxy";
 

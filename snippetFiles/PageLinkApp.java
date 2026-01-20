@@ -19,7 +19,7 @@ public class PageLinkApp {
         .hidden()
         .use();
 
-    Jt.divider("divider").use();
+    Jt.divider().use();
     Jt.pageLink("/page1").use();
     Jt.pageLink("/page2").use();
     Jt.pageLink("https://github.com/javelit/javelit", "Github project").icon(":link:").use();

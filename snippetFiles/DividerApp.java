@@ -5,7 +5,7 @@ public class DividerApp {
     Jt.title("Section 1").use();
     Jt.text("Content for section 1").use();
 
-    Jt.divider("div1").use();
+    Jt.divider().use();
 
     Jt.title("Section 2").use();
     Jt.text("Content for section 2").use();

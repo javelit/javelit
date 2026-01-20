@@ -303,21 +303,22 @@ public final class Jt {
 
   /**
    * Display a horizontal rule.
+   * <p>
+   * Examples:
+   * Basic section separator
+   * {@snippet file = "DividerApp.java" appUrl = "https://javelit-container-hru4-production.up.railway.app" appHeight = "350"}
    */
-  @Deprecated(forRemoval = true) // use divider(someKey)
   public static MarkdownComponent.Builder divider() {
     return new MarkdownComponent.Builder("---");
   }
 
   /**
    * Display a horizontal rule.
-   * <p>
-   * Examples:
-   * Basic section separator
-   * {@snippet file = "DividerApp.java" appUrl = "https://javelit-container-hru4-production.up.railway.app" appHeight = "350"}
+   * Deprecated. Use Jt.divider() instead. Passing unique keys is not necessary anymore.
    *
-   * @param key A unique key to avoid collisions when calling this method multiple times.
+   * @param key A custom key.
    */
+  @Deprecated(forRemoval = true) // use Jt.divider() instead. Passing unique keys is not necessary anymore.
   public static MarkdownComponent.Builder divider(final @Nonnull String key) {
     return new MarkdownComponent.Builder("---").key(key);
   }

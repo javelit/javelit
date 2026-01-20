@@ -199,7 +199,7 @@ public final class ColumnsComponent extends JtComponent<ColumnsComponent.Columns
   }
 
 
-  public static final class Columns implements NotAState, JtLayout {
+  public static final class Columns implements JtLayout {
     private final List<JtContainer> backing;
     private final JtContainer layoutContainer;
     // helper data structure for mustache templates

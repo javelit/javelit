@@ -350,23 +350,25 @@ final class StateManager {
     final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
     checkState(currentExecution != null, "No active execution context. Please reach out to support.");
 
-    if (currentExecution.containerToComponents
-        .values()
-        .stream()
-        .anyMatch(components -> components.containsKey(component.getInternalKey()))) {
-      // a component with the same id was already registered while running the app top to bottom
-      throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
-    }
-    if (component.getUserKey() != null && currentExecution.containerToComponents
-        .values()
-        .stream()
-        .anyMatch(components ->
-                      components
-                          .values()
-                          .stream()
-                          .anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
-        )) {
-      throw DuplicateWidgetIDException.forDuplicateUserKey(component);
+    if (component.requiresUniqueKey()) {
+      if (currentExecution.containerToComponents
+          .values()
+          .stream()
+          .anyMatch(components -> components.containsKey(component.getInternalKey()))) {
+        // a component with the same id was already registered while running the app top to bottom
+        throw DuplicateWidgetIDException.forDuplicateInternalKey(component);
+      }
+      if (component.getUserKey() != null && currentExecution.containerToComponents
+          .values()
+          .stream()
+          .anyMatch(components ->
+                        components
+                            .values()
+                            .stream()
+                            .anyMatch(c -> component.getUserKey().equals(c.getUserKey()))
+          )) {
+        throw DuplicateWidgetIDException.forDuplicateUserKey(component);
+      }
     }
 
     final LinkedHashMap<String, JtComponent<?>> componentsMap = currentExecution
@@ -433,7 +435,7 @@ final class StateManager {
                                                                                      .toArray(new JtComponent<?>[0]);
       final JtComponent<?> previousAtIndex = previousComponents[currentExecution.containerToCurrentIndex.get(
           container)];
-      if (componentsEqual(previousAtIndex, component)) {
+      if (previousAtIndex.contentEquals(component)) {
         // skip sending - increment index by 1 for container
         currentExecution.containerToCurrentIndex.merge(container, 1, Integer::sum);
         return;
@@ -470,17 +472,6 @@ final class StateManager {
     if (component.returnValue() instanceof JtLayout) {
       currentExecution.clearedLayoutContainers.add(((JtLayout) component.returnValue()).layoutContainer());
     }
-  }
-
-  // Helper method to compare components for changes
-  private static boolean componentsEqual(JtComponent<?> prev, JtComponent<?> curr) {
-    // Compare component type
-    if (!prev.getClass().equals(curr.getClass())) {
-      return false;
-    }
-
-    // Compare rendered HTML (simple approach - could be optimized)
-    return prev.render().equals(curr.render());
   }
 
   /**
@@ -529,7 +520,7 @@ final class StateManager {
           component.resetIfNeeded();
           if (component.returnValueIsAState()) {
             checkState(entry.getKey().equals(component.getInternalKey()),
-                       "Implementation error. Please reach out to support"); // used to find bug quicluy during state rewrite
+                       "Implementation error. Please reach out to support"); // used to find bug quickly during state rewrite
             session.upsertComponentsState(component);
           }
         }
