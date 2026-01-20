@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import io.javelit.components.layout.FormComponent;
 import io.javelit.components.layout.FormSubmitButtonComponent;
@@ -279,12 +280,11 @@ final class StateManager {
     final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
     checkState(currentExecution != null, "No active execution context. Please reach out to support.");
     final InternalSessionState sessionState = SESSIONS.get(currentExecution.sessionId);
-    final String hash = HF
-        .newHasher()
-        .putBytes(mediaEntry.bytes())
-        .putString(mediaEntry.format(), StandardCharsets.UTF_8)
-        .hash()
-        .toString();
+    final Hasher hasher = HF.newHasher().putBytes(mediaEntry.bytes());
+    if (mediaEntry.format() != null) {
+      hasher.putString(mediaEntry.format(), StandardCharsets.UTF_8);
+    }
+    final String hash = hasher.hash().toString();
     sessionState.getMedia().put(hash, mediaEntry);
 
     // /_/media/{hash}?sid={sessionId}

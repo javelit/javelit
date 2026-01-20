@@ -1197,11 +1197,15 @@ public final class Jt {
    * <p>
    * Only handles raw Base64 strings.
    * If you have a Data URI (e.g. "data:image/png;base64,..."), use {@link #image(String)} instead.
+   * <p>
+   * Examples:
+   * Image from base64 string
+   * {@snippet file = "Base64ImageApp.java"}
    *
    * @param base64 The Base64 encoded image string.
    */
   public static ImageComponent.Builder imageFromBase64(final @Nonnull String base64) {
-    byte[] decodedBytes = Base64.getDecoder().decode(base64);
+    final byte[] decodedBytes = Base64.getDecoder().decode(base64);
     return ImageComponent.Builder.of(decodedBytes);
   }
 

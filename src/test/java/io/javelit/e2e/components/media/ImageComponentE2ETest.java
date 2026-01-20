@@ -86,8 +86,8 @@ public class ImageComponentE2ETest {
         .use();
 
       // Test 8: Base64
-      byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
-      String base64 = Base64.getEncoder().encodeToString(imageBytes);
+      final byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
+      final String base64 = Base64.getEncoder().encodeToString(imageBytes);
       Jt.imageFromBase64(base64)
         .caption("Image from raw Base64")
         .use();
