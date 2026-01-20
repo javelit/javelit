@@ -1200,7 +1200,7 @@ public final class Jt {
    * <p>
    * Examples:
    * Image from base64 string
-   * {@snippet file = "Base64ImageApp.java"}
+   * {@snippet file = "Base64ImageApp.java" appUrl = "https://javelit-container-production-489a.up.railway.app/" appHeight = "550"}
    *
    * @param base64 The Base64 encoded image string.
    */
