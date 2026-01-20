@@ -1197,10 +1197,6 @@ public final class Jt {
    * <p>
    * Only handles raw Base64 strings.
    * If you have a Data URI (e.g. "data:image/png;base64,..."), use {@link #image(String)} instead.
-   * <p>
-   * Examples:
-   * Image from Base64 string
-   * {@snippet file = "Base64ImageApp.java" appUrl = "https://javelit-container-base64-production.up.railway.app" appHeight = "550"}
    *
    * @param base64 The Base64 encoded image string.
    */
