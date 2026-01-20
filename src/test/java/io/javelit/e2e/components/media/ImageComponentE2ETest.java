@@ -18,6 +18,7 @@ package io.javelit.e2e.components.media;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 
 import io.javelit.core.Jt;
 import io.javelit.core.JtRunnable;
@@ -83,6 +84,13 @@ public class ImageComponentE2ETest {
         .width(400)
         .caption("Fixed width: 400px")
         .use();
+
+      // Test 8: Base64
+      byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
+      String base64 = Base64.getEncoder().encodeToString(imageBytes);
+      Jt.imageFromBase64(base64)
+        .caption("Image from raw Base64")
+        .use();
     };
 
     PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
@@ -136,6 +144,14 @@ public class ImageComponentE2ETest {
 
       // Test 7: Width pixels
       assertThat(page.locator("#app jt-image").nth(6)).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+      // Test 8: Base64
+      assertThat(page.locator("#app jt-image").nth(7)).isVisible(WAIT_1_SEC_MAX);
+      String src8 = page.locator("#app jt-image").nth(7).locator("img").getAttribute("src");
+      assertTrue(src8.startsWith(pathPrefix + "/_/media/"),
+          "Base64 image src should start with " + pathPrefix + "/_/media/, got: " + src8);
+      assertThat(page.locator("#app jt-image").nth(7).locator(".caption")).hasText("Image from raw Base64",
+          WAIT_1_SEC_MAX_TEXT);
     });
   }
 
