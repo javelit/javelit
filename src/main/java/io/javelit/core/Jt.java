@@ -1195,17 +1195,17 @@ public final class Jt {
   /**
    * Display an image from a Base64 encoded string.
    * <p>
-   * Handles both raw Base64 strings and Data URI strings (e.g. "data:image/png;base64,...").
+   * Only handles raw Base64 strings.
+   * If you have a Data URI (e.g. "data:image/png;base64,..."), use {@link #image(String)} instead.
+   * <p>
+   * Examples:
+   * Image from Base64 string
+   * {@snippet file = "Base64ImageApp.java" appUrl = "https://javelit-container-base64-production.up.railway.app" appHeight = "550"}
    *
    * @param base64 The Base64 encoded image string.
    */
   public static ImageComponent.Builder imageFromBase64(final @Nonnull String base64) {
-    String cleanBase64 = base64;
-    // Remove the Data URI prefix if present: data:image/png;base64,...
-    if (base64.contains(",")) {
-      cleanBase64 = base64.substring(base64.indexOf(",") + 1);
-    }
-    byte[] decodedBytes = Base64.getDecoder().decode(cleanBase64);
+    byte[] decodedBytes = Base64.getDecoder().decode(base64);
     return ImageComponent.Builder.of(decodedBytes);
   }
 

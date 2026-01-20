@@ -84,6 +84,13 @@ public class ImageComponentE2ETest {
         .width(400)
         .caption("Fixed width: 400px")
         .use();
+
+      // Test 8: Base64
+      byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
+      String base64 = Base64.getEncoder().encodeToString(imageBytes);
+      Jt.imageFromBase64(base64)
+        .caption("Image from raw Base64")
+        .use();
     };
 
     PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
@@ -137,6 +144,14 @@ public class ImageComponentE2ETest {
 
       // Test 7: Width pixels
       assertThat(page.locator("#app jt-image").nth(6)).hasAttribute("width", "400", WAIT_1_SEC_MAX_ATTRIBUTE);
+
+      // Test 8: Base64
+      assertThat(page.locator("#app jt-image").nth(7)).isVisible(WAIT_1_SEC_MAX);
+      String src8 = page.locator("#app jt-image").nth(7).locator("img").getAttribute("src");
+      assertTrue(src8.startsWith(pathPrefix + "/_/media/"),
+          "Base64 image src should start with " + pathPrefix + "/_/media/, got: " + src8);
+      assertThat(page.locator("#app jt-image").nth(7).locator(".caption")).hasText("Image from raw Base64",
+          WAIT_1_SEC_MAX_TEXT);
     });
   }
 
@@ -197,46 +212,6 @@ public class ImageComponentE2ETest {
       // Verify caption
       assertThat(page.locator("#app jt-image .caption")).hasText("Programmatically generated hexagon (800x400)",
                                                                  WAIT_1_SEC_MAX_TEXT);
-    });
-  }
-
-  @ParameterizedTest
-  @ValueSource(booleans = {false, true})
-  void testImageFromBase64(final boolean proxied, final TestInfo testInfo) {
-    final JtRunnable app = () -> {
-      byte[] imageBytes = Files.readAllBytes(Path.of("examples/image/mountains.jpg"));
-      String base64 = Base64.getEncoder().encodeToString(imageBytes);
-
-      // Test 1: Raw Base64 string
-      Jt.imageFromBase64(base64)
-          .caption("Image from raw Base64")
-          .use();
-
-      // Test 2: Data URI Base64 string
-      String dataUri = "data:image/jpeg;base64," + base64;
-      Jt.imageFromBase64(dataUri)
-          .caption("Image from Data URI Base64")
-          .use();
-    };
-
-    PlaywrightUtils.runInBrowser(testInfo, app, true, proxied, page -> {
-      final String pathPrefix = proxied ? TEST_PROXY_PREFIX : "";
-
-      // Verify images are rendered
-      assertThat(page.locator("#app jt-image").nth(0)).isVisible(WAIT_1_SEC_MAX);
-      assertThat(page.locator("#app jt-image").nth(1)).isVisible(WAIT_1_SEC_MAX);
-
-      // Verify src contains media hash (starts with /_/media/) and check captions
-      for (int i = 0; i < 2; i++) {
-        String src = page.locator("#app jt-image img").nth(i).getAttribute("src");
-        assertTrue(src.startsWith(pathPrefix + "/_/media/"),
-            "Image src should start with " + pathPrefix + "/_/media/, got: " + src);
-      }
-
-      assertThat(page.locator("#app jt-image .caption").nth(0))
-          .hasText("Image from raw Base64", WAIT_1_SEC_MAX_TEXT);
-      assertThat(page.locator("#app jt-image .caption").nth(1))
-          .hasText("Image from Data URI Base64", WAIT_1_SEC_MAX_TEXT);
     });
   }
 }
