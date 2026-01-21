@@ -343,7 +343,8 @@ public class JsonDoclet implements Doclet {
   private static final Map<String, String> METHOD_ALIASES = Map.of(
       "Jt.tableFromListColumns", "Jt.table",
       "Jt.tableFromArrayColumns", "Jt.table",
-      "Jt.imageFromSvg", "Jt.image"
+      "Jt.imageFromSvg", "Jt.image",
+      "Jt.imageFromBase64", "Jt.image"
   );
 
   @Override
