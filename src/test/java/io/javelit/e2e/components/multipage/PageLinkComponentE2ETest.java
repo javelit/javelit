@@ -57,6 +57,9 @@ public class PageLinkComponentE2ETest {
       // External link
       Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
 
+      // External link
+      Jt.pageLink("https://example.target.com", "External Self Link").icon("🌐").target("_self").use();
+
       // Disabled link
       Jt.pageLink("/about").disabled(true).use();
     };
@@ -99,6 +102,12 @@ public class PageLinkComponentE2ETest {
       assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
           .hasAttribute("target", "_blank");
 
+      // Test external link has correct attributes
+      assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Self Link")))
+          .hasAttribute("href", "https://example.target.com");
+      assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Self Link")))
+          .hasAttribute("target", "_self");
+
       // Test disabled link
       assertThat(page.locator("jt-page-link[disabled]")).isVisible(WAIT_1_SEC_MAX);
     });
@@ -113,6 +122,8 @@ public class PageLinkComponentE2ETest {
     Jt.text("About page content").use();
     Jt.pageLink("/home").use();
   }
+
+
 
   @ParameterizedTest
   @ValueSource(booleans = {false, true})
