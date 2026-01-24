@@ -37,6 +37,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
   final @Nonnull String label;
   final @Nonnull String url;
   final boolean isExternal;
+  final String target;
   final String icon;
   final String help;
   final boolean disabled;
@@ -60,6 +61,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
     this.label = markdownToHtml(builder.label, true);
     this.url = builder.url;
     this.isExternal = builder.isExternal;
+    this.target = builder.target;
     this.icon = builder.icon;
     this.help = builder.help;
     this.disabled = builder.disabled;
@@ -84,6 +86,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
     private String icon;
     private String help;
     private boolean disabled;
+    private String target = "_blank";
     private String width = "content"; // content, stretch, or pixel value
 
     // Constructor for internal page links
@@ -169,6 +172,15 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
         throw new IllegalArgumentException("Width in pixels must be non-negative. Got: " + widthPixels);
       }
       this.width = String.valueOf(widthPixels);
+      return this;
+    }
+
+    /**
+     * The target of the link. Use {@code "_blank"} to open in a new tab, {@code "_self"} to open in the same tab, or a custom target.
+     */
+    public Builder target(final @Nonnull String target) {
+      checkArgument(!target.isBlank(), "Target cannot be null or empty");
+      this.target = target;
       return this;
     }
 

@@ -141,6 +141,7 @@
             label: {type: String},
             url: {type: String},
             isExternal: {type: Boolean, attribute: 'is-external'},
+            target: {type: String},
             icon: {type: String},
             help: {type: String},
             disabled: {type: Boolean},
@@ -155,6 +156,7 @@
             this.disabled = false;
             this.width = 'content';
             this.isActive = false;
+            this.target = '_blank';
         }
 
         isEmoji(str) {
@@ -245,7 +247,7 @@
                     html`<a
                             class="${linkClass}"
                             href="${this.url}"
-                            target="_blank"
+                            target="${this.target}"
                             rel="noopener noreferrer"
                             style="${widthStyle}"
                             @click="${this.handleClick}">
