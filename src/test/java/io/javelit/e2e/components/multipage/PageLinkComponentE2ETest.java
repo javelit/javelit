@@ -30,6 +30,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static io.javelit.e2e.helpers.PlaywrightUtils.EXACT_MATCH;
 import static io.javelit.e2e.helpers.PlaywrightUtils.TEST_PROXY_PREFIX;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX;
+import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_ATTRIBUTE;
 import static io.javelit.e2e.helpers.PlaywrightUtils.WAIT_1_SEC_MAX_CLICK;
 
 /**
@@ -58,7 +59,7 @@ public class PageLinkComponentE2ETest {
       Jt.pageLink("https://example.com", "External Link").icon("🌐").use();
 
       // External link
-      Jt.pageLink("https://example.target.com", "External Self Link").icon("🌐").target("_self").use();
+      Jt.pageLink("https://target.example.com", "External Self Link").icon("🌐").target("_self").use();
 
       // Disabled link
       Jt.pageLink("/about").disabled(true).use();
@@ -98,15 +99,15 @@ public class PageLinkComponentE2ETest {
 
       // Test external link has correct attributes
       assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
-          .hasAttribute("href", "https://example.com");
+          .hasAttribute("href", "https://example.com", WAIT_1_SEC_MAX_ATTRIBUTE);
       assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Link")))
-          .hasAttribute("target", "_blank");
+          .hasAttribute("target", "_blank", WAIT_1_SEC_MAX_ATTRIBUTE);
 
       // Test external link has correct attributes
       assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Self Link")))
-          .hasAttribute("href", "https://example.target.com");
+          .hasAttribute("href", "https://target.example.com", WAIT_1_SEC_MAX_ATTRIBUTE);
       assertThat(page.getByRole(AriaRole.LINK).filter(new Locator.FilterOptions().setHasText("External Self Link")))
-          .hasAttribute("target", "_self");
+          .hasAttribute("target", "_self", WAIT_1_SEC_MAX_ATTRIBUTE);
 
       // Test disabled link
       assertThat(page.locator("jt-page-link[disabled]")).isVisible(WAIT_1_SEC_MAX);

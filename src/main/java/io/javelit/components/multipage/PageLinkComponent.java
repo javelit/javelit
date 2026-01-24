@@ -68,7 +68,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
     this.width = builder.width;
     this.isHomePage = builder.isHomePage;
 
-    // Determine if this link is active (current page matches target)
+    // Determine if this link is active (current page matches link url)
     if (disabled || isExternal) {
       this.isActive = false;
     } else {
@@ -176,7 +176,7 @@ public final class PageLinkComponent extends JtComponent<JtComponent.NONE> {
     }
 
     /**
-     * The target of the link. Use {@code "_blank"} to open in a new tab, {@code "_self"} to open in the same tab, or a custom target.
+     * The target of the link. Use {@code "_blank"} (default) to open in a new tab, {@code "_self"} to open in the same tab, or a custom target.
      */
     public Builder target(final @Nonnull String target) {
       checkArgument(!target.isBlank(), "Target cannot be null or empty");
