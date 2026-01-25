@@ -1,5 +1,5 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.79.0
+//DEPS io.javelit:javelit:0.80.0
 
 
 import java.util.Arrays;
