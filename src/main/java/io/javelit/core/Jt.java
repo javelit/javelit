@@ -87,6 +87,8 @@ import static com.google.common.base.Preconditions.checkState;
 @SuppressWarnings("JavadocReference")
 public final class Jt {
 
+  public static final String SESSION_LOGGED_IN_KEY = "logged_in";
+  public static final String SESSION_USER_KEY = "user";
   public static final JtContainer SIDEBAR = JtContainer.SIDEBAR;
 
   /**
@@ -1299,6 +1301,10 @@ public final class Jt {
    */
   public static void rerun() {
     Jt.rerun(false);
+  }
+
+  public static boolean isLoggedIn() {
+    return Jt.sessionState().computeIfAbsentBoolean(SESSION_LOGGED_IN_KEY, k -> false);
   }
 
   private Jt() {
