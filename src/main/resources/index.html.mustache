@@ -438,6 +438,15 @@
     const statusWidget = document.getElementById('status-widget');
     const settingsContent = document.querySelector('jt-settings-content');
     const mainLayout = document.querySelector('.main-layout');
+    // Logging utility with timestamps
+    const logger = (() => {
+        return {
+            log: (...args) => console.log(new Date().toISOString(), ...args),
+            error: (...args) => console.error(new Date().toISOString(), ...args),
+            warn: (...args) => console.warn(new Date().toISOString(), ...args),
+            debug: (...args) => console.debug(new Date().toISOString(), ...args)
+        };
+    })();
 
     // Track if this is the first message to clear connecting text
     let isFirstDelta = true;
@@ -630,7 +639,7 @@
                     value: value
                 }));
             } else {
-                console.log("Failed to send update to backend. Connection to backend is not available.");
+                logger.log("Failed to send update to backend. Connection to backend is not available.");
             }
         },
         sendPathUpdate: function () {
@@ -665,7 +674,7 @@
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify(message));
             } else {
-                console.log("Failed to send message to backend. Connection to backend is not available.");
+                logger.log("Failed to send message to backend. Connection to backend is not available.");
             }
         },
         prependBasePath: function (url) {
@@ -692,7 +701,7 @@
             ws = new WebSocket(wsUrl);
 
             ws.onclose = () => {
-                console.log('WebSocket closed');
+                logger.log('WebSocket closed');
                 handleConnectionLoss();
             };
 
@@ -701,17 +710,17 @@
             ws.onopen = () => {
                 window.javelit.sendPathUpdate();
                 connectionState = 'connected';
-                console.log('WebSocket connected');
+                logger.log('WebSocket connected');
                 connectionModal.show = false;
                 otherErrorModal.show = false;
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                logger.error('WebSocket error:', error);
             };
 
         } catch (error) {
-            console.error('Failed to create WebSocket:', error);
+            logger.error('Failed to create WebSocket:', error);
             handleConnectionLoss();
         }
     }
@@ -726,7 +735,7 @@
         }
         connectionState = 'reconnecting';
         setTimeout(() => {
-            console.log('Attempting to reconnect...');
+            logger.log('Attempting to reconnect...');
             createWebSocketConnection();
         }, 5000);
 
@@ -1001,7 +1010,7 @@
                 applySettings(config);
             }
         } catch (e) {
-            console.warn('Failed to load settings on startup:', e);
+            logger.warn('Failed to load settings on startup:', e);
         }
     }
 
