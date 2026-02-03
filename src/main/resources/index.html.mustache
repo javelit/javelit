@@ -823,25 +823,30 @@
         }
 
         registrations.forEach((registration) => {
-            // Parse the registration HTML safely
-            const template = document.createElement('template');
-            template.innerHTML = registration;
-            const fragment = template.content;
+            try {
+                // Parse the registration HTML safely
+                const template = document.createElement('template');
+                template.innerHTML = registration;
+                const fragment = template.content;
 
-            // Execute all <script> tags inside the fragment
-            fragment.querySelectorAll('script').forEach((script) => {
-                const newScript = document.createElement('script');
-                if (script.type) newScript.type = script.type;
-                if (script.src) {
-                    newScript.src = script.src;
-                } else {
-                    newScript.textContent = script.textContent;
-                }
-                document.head.appendChild(newScript);
-            });
+                // Execute all <script> tags inside the fragment
+                fragment.querySelectorAll('script').forEach((script) => {
+                    const newScript = document.createElement('script');
+                    if (script.type) newScript.type = script.type;
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    document.head.appendChild(newScript);
+                });
 
-            // Inject the rest of the HTML (custom elements etc.)
-            container.appendChild(fragment);
+                // Inject the rest of the HTML (custom elements etc.)
+                container.appendChild(fragment);
+            } catch (error) {
+                // log and attempt to continue to proceed
+                logger.error(`Failed to register component:`, error);
+            }
         });
     }
 
