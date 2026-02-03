@@ -40,12 +40,15 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.methvin.watcher.DirectoryWatcher;
 import io.methvin.watcher.hashing.FileHasher;
 import io.undertow.Handlers;
@@ -125,6 +128,11 @@ public final class Server implements StateManager.RenderServer {
 
   private static final Mustache indexTemplate;
   private static final Mustache SAFARI_WARNING_TEMPLATE;
+
+  private final ExecutorService reloadExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                                                                                   .setNameFormat(
+                                                                                       "javelit-dev-reload-thread-%d")
+                                                                                   .build());
 
   static {
     final MustacheFactory mf = new DefaultMustacheFactory();
@@ -343,13 +351,11 @@ public final class Server implements StateManager.RenderServer {
       lastCompilationErrorMessage = e.getMessage();
       session2WsChannel
           .keySet()
-          .forEach(sessionId -> sendCompilationError(sessionId, lastCompilationErrorMessage));
+          .forEach(sessionId -> reloadExecutor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage)));
       return;
     }
 
-    for (final String sessionId : session2WsChannel.keySet()) {
-      appRunner.runApp(sessionId);
-    }
+    session2WsChannel.keySet().forEach(sessionId -> reloadExecutor.submit(() -> appRunner.runApp(sessionId)));
   }
 
   private class IndexHandler implements HttpHandler {
