@@ -123,16 +123,12 @@ public final class Server implements StateManager.RenderServer {
 
   private Undertow server;
   private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
+  private final Map<String, ExecutorService> session2Executor = new ConcurrentHashMap<>();
   private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
   private final String customHeaders;
 
   private static final Mustache indexTemplate;
   private static final Mustache SAFARI_WARNING_TEMPLATE;
-
-  private final ExecutorService reloadExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-                                                                                   .setNameFormat(
-                                                                                       "javelit-dev-reload-thread-%d")
-                                                                                   .build());
 
   static {
     final MustacheFactory mf = new DefaultMustacheFactory();
@@ -349,13 +345,21 @@ public final class Server implements StateManager.RenderServer {
         LOG.error("Unknown error type: {}", e.getClass(), e);
       }
       lastCompilationErrorMessage = e.getMessage();
-      session2WsChannel
-          .keySet()
-          .forEach(sessionId -> reloadExecutor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage)));
+      for (final String sessionId: session2WsChannel.keySet()) {
+        final ExecutorService sessionExecutor = session2Executor.get(sessionId);
+        if (sessionExecutor != null) {
+          sessionExecutor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage));
+        }
+      }
       return;
     }
 
-    session2WsChannel.keySet().forEach(sessionId -> reloadExecutor.submit(() -> appRunner.runApp(sessionId)));
+    for (final String sessionId: session2WsChannel.keySet()) {
+      final ExecutorService sessionExecutor = session2Executor.get(sessionId);
+      if (sessionExecutor != null) {
+        sessionExecutor.submit(() -> appRunner.runApp(sessionId));
+      }
+    }
   }
 
   private class IndexHandler implements HttpHandler {
@@ -788,6 +792,13 @@ public final class Server implements StateManager.RenderServer {
     @Override
     public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
       final String sessionId = UUID.randomUUID().toString();
+      // onConnect, onFullTextMessage and onClose run sequentially, in order on IO threads
+      // we introduce an appSession thread to not block. The single thread ensures messages are processed in order.
+      // the same thread is used in dev-mode reload to ensure total ordering of messages
+      // FIXME - this is unbounded - we need to put a bound on the number of executors, and refuse connection if server is full
+      final ExecutorService appSessionExecutor = Executors.newSingleThreadExecutor(
+          new ThreadFactoryBuilder().setNameFormat("javelit-app-session-runner-thread-%d-" + sessionId).build());
+      session2Executor.put(sessionId, appSessionExecutor);
       session2WsChannel.put(sessionId, channel);
       if (isLocalClient(channel.getSourceAddress())) {
         StateManager.registerDeveloperSession(sessionId);
@@ -813,8 +824,14 @@ public final class Server implements StateManager.RenderServer {
         protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
           try {
             final String data = message.getData();
-            final FrontendMessage msg = Shared.OBJECT_MAPPER.readValue(data, FrontendMessage.class);
-            handleMessage(sessionId, msg);
+            appSessionExecutor.submit(() -> {
+              try {
+              final FrontendMessage msg = Shared.OBJECT_MAPPER.readValue(data, FrontendMessage.class);
+              handleMessage(sessionId, msg);
+              } catch (Exception e) {
+                LOG.error("Error handling message", e);
+              }
+            });
           } catch (Exception e) {
             LOG.error("Error handling message", e);
           }
@@ -822,9 +839,13 @@ public final class Server implements StateManager.RenderServer {
 
         @Override
         protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-          session2WsChannel.remove(sessionId);
-          session2Xsrf.remove(sessionId);
-          StateManager.clearSession(sessionId);
+          session2Executor.remove(sessionId);
+          appSessionExecutor.execute(() -> {
+            session2WsChannel.remove(sessionId);
+            session2Xsrf.remove(sessionId);
+            StateManager.clearSession(sessionId);
+                          });
+          appSessionExecutor.shutdown();
         }
       });
       // No initial render - wait for path_update message from frontend
