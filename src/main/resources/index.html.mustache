@@ -698,7 +698,14 @@
             const basePath = window.javelit.baseUrlPath;
             const wsUrl = new URL(basePath + '/_/ws', window.location.origin);
             wsUrl.protocol = protocol;
+            if (window.javelit.sessionId != null && window.javelit.xsrfToken != null) {
+                // used to attempt to recover a disconnected session that is still in memory of the server
+                wsUrl.searchParams.set('{{ SESSION_RECOVER_ID_KEY }}', window.javelit.sessionId);
+            }
             ws = new WebSocket(wsUrl);
+            if (window.javelit.isDevMode) {
+                window.javelit.debug_ws = ws
+            }
 
             ws.onclose = () => {
                 logger.log('WebSocket closed');
@@ -748,6 +755,7 @@
         if (message.type === 'session_init') {
             // Store WebSocket session ID for POST/PUT requests - eg file uploads
             window.javelit.sessionId = message.sessionId;
+            isFirstDelta = true;  // Trigger clear on next delta - necessary in case of reconnection
         } else if (message.type === 'delta') {
             handleDeltaMessage(message);
         } else if (message.type === 'modal_error') {
@@ -860,7 +868,9 @@
 
         // Clear initial "Connecting..." message on first delta
         if (isFirstDelta) {
-            mainContainer.innerHTML = '';
+            layoutContainers.forEach(container => {
+                container.innerHTML = '';
+            });
             isFirstDelta = false;
         }
 

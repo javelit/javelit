@@ -27,21 +27,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -111,6 +117,7 @@ public final class Server implements StateManager.RenderServer {
   static final String SESSION_ID_QUERY_PARAM = "sid";
 
   private static final Logger LOG = LoggerFactory.getLogger(Server.class);
+  public static final String SESSION_RECOVER_ID_KEY = "recoverSessionId";
   @VisibleForTesting public final int port;
   private final @Nonnull AppRunner appRunner;
   private final @Nullable FileWatcher fileWatcher;
@@ -124,10 +131,47 @@ public final class Server implements StateManager.RenderServer {
   private Undertow server;
 
   // an application level session (1 session per tab) - do not confuse with HTTP session (1 per browser)
-  private record AppSession(WebSocketChannel channel, String xsrf, ExecutorService executor) {
+  private static final class AppSession {
+    @Nullable private final WebSocketChannel channel;
+    private final String xsrf;
+    private final ExecutorService executor;
+    private final ArrayBlockingQueue<Map<String, Object>> undeliveredMessages;
+    private final @Nullable Instant disconnectTime;
+
+    // only use in the methods of this class - use of() static builder outside
+    private AppSession(@Nullable WebSocketChannel channel, String xsrf, ExecutorService executor,
+                       ArrayBlockingQueue<Map<String, Object>> undeliveredMessages, @Nullable Instant disconnectTime) {
+      this.channel = channel;
+      this.xsrf = xsrf;
+      this.executor = executor;
+      this.undeliveredMessages = undeliveredMessages;
+      this.disconnectTime = disconnectTime;
+    }
+
+    private static AppSession of(@Nullable WebSocketChannel channel, String xsrf, ExecutorService executor) {
+      int undeliveredCapacity = 5000; // magic number, to tune
+      return new AppSession(channel, xsrf, executor, new ArrayBlockingQueue<>(undeliveredCapacity), null);
+    }
+
+    private AppSession disconnect() {
+      return new AppSession(null, xsrf, executor, undeliveredMessages, Instant.now());
+    }
+
+    private AppSession reconnect(final WebSocketChannel newChannel) {
+      return new AppSession(newChannel, xsrf, executor, undeliveredMessages, null);
+    }
+
+    public boolean isExpired() {
+      // TODO make this time limit configurable
+      return disconnectTime != null && disconnectTime.isBefore(Instant.now().minus(Duration.ofMinutes(10)));
+    }
   }
   // session id to AppSession
   private final Map<String, AppSession> sessions = new ConcurrentHashMap<>();
+  private final ScheduledExecutorService sessionsCleaner = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                                                                                                          .setNameFormat("javelit-session-cleaner")
+                                                                                                          .setDaemon(true)
+                                                                                                          .build());
   private final String customHeaders;
 
   private static final Mustache indexTemplate;
@@ -238,6 +282,35 @@ public final class Server implements StateManager.RenderServer {
     this.ready = false;
     this.originalUrl = builder.originalUrl;
     this.basePath = builder.basePath == null ? null : cleanBasePath(builder.basePath);
+
+    sessionsCleaner.scheduleAtFixedRate(() -> {
+      try {
+        final Iterator<Map.Entry<String, AppSession>> it = sessions.entrySet().iterator();
+        while (it.hasNext()) {
+          final Map.Entry<String, AppSession> entry = it.next();
+          final AppSession session = entry.getValue();
+          if (session.isExpired()) {
+            it.remove();
+            final String sessionId = entry.getKey();
+            try {
+              session.executor.execute(() -> StateManager.clearSession(sessionId));
+            } catch (RejectedExecutionException e) {
+              LOG.error("Failed to run cleanup task for session {}. Executor does not accept tasks. Forcing clean-up", sessionId);
+              StateManager.clearSession(sessionId); // running out of app thread but that's ok in this case
+            }
+            session.executor.shutdown();
+            if (!session.executor.awaitTermination(5, TimeUnit.SECONDS)) {
+              // session is expired and still running forever - force closing app session
+              LOG.warn("Graceful clean-up of disconnected session failed. Forcing clean-up.");
+              StateManager.clearSession(sessionId); // running out of app thread but that's ok in this case
+              session.executor.shutdownNow();
+            }
+          }
+        }
+      } catch (Throwable t) {
+        LOG.error("Session cleanup task failed. Please reach out to support.", t);
+      }
+    }, 1, 1, TimeUnit.MINUTES);
   }
 
   private static @Nonnull String cleanBasePath(final @Nonnull String path) {
@@ -329,6 +402,7 @@ public final class Server implements StateManager.RenderServer {
     if (server != null) {
       server.stop();
     }
+    sessionsCleaner.shutdown();
   }
 
   private static HttpHandler resource(final @Nonnull ResourceManager resourceManager) {
@@ -348,7 +422,6 @@ public final class Server implements StateManager.RenderServer {
         LOG.error("Unknown error type: {}", e.getClass(), e);
       }
       lastCompilationErrorMessage = e.getMessage();
-
       sessions.forEach((sessionId, session) -> {
         if (session.executor != null) {
           session.executor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage));
@@ -795,6 +868,64 @@ public final class Server implements StateManager.RenderServer {
 
     @Override
     public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
+      final String sessionId = createOrRecoverSession(exchange, channel);
+      final AppSession session = sessions.get(sessionId);
+      checkState(session != null, "Session state lost during connection creation. Please reach out to support.");
+
+      channel.getReceiveSetter().set(new AbstractReceiveListener() {
+        @Override
+        protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
+          try {
+            final String data = message.getData();
+            session.executor.submit(() -> {
+              try {
+              final FrontendMessage msg = Shared.OBJECT_MAPPER.readValue(data, FrontendMessage.class);
+              handleMessage(sessionId, msg);
+              } catch (Exception e) {
+                LOG.error("Error handling message", e);
+              }
+            });
+          } catch (Exception e) {
+            LOG.error("Error handling message", e);
+          }
+        }
+
+        @Override
+        protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
+          sessions.computeIfPresent(sessionId, (k, appSession) -> appSession.disconnect());
+        }
+      });
+      // No initial render - wait for path_update message from frontend
+      channel.resumeReceives();
+    }
+
+    private @Nonnull String createOrRecoverSession(final @Nonnull WebSocketHttpExchange exchange,
+                                                   final @Nonnull WebSocketChannel channel) {
+      Map<String, List<String>> params = exchange.getRequestParameters();
+      final String previousSessionId = optional(params.get(SESSION_RECOVER_ID_KEY)).filter(l -> !l.isEmpty())
+                                                                                   .map(List::getFirst).orElse(null);
+      final String previousXsrf = optional(exchange.getRequestHeader("Cookie"))
+          .map(cookieHeader -> parseCookie(cookieHeader, XSRF_COOKIE_KEY))
+          .orElse(null);
+      if (previousSessionId != null && previousXsrf != null) {
+        final AppSession existingSession = sessions.get(previousSessionId);
+        if (existingSession != null && previousXsrf.equals(existingSession.xsrf)) {
+          LOG.info("Recovering session from closed websocket connection.");
+          sessions.put(previousSessionId, existingSession.reconnect(channel));
+          // send undelivered messages
+          Map<String, Object> message;
+          while ((message = existingSession.undeliveredMessages.poll()) != null) {
+            LOG.debug("Delivering queued message for session {}", previousSessionId);
+            sendMessage(channel, message);
+          }
+          return previousSessionId;
+        } else {
+          LOG.warn("Session recovery failed for sessionId={}: {}. App will be reloaded.",
+                    previousSessionId,
+                    existingSession == null ? "session not found" : "session found, xsrf mismatch");
+        }
+      }
+      // create new session
       final String sessionId = UUID.randomUUID().toString();
       // onConnect, onFullTextMessage and onClose run sequentially, in order, on the same IO thread
       // we introduce an appSession executor to not block. The single thread ensures messages are processed in order.
@@ -810,8 +941,7 @@ public final class Server implements StateManager.RenderServer {
       if (xsrf == null) {
         throw new RuntimeException("Session did not provide a valid xsrf token: " + sessionId);
       }
-      sessions.put(sessionId, new AppSession(channel, xsrf, appSessionExecutor));
-
+      sessions.put(sessionId, AppSession.of(channel, xsrf, appSessionExecutor));
       if (isLocalClient(channel.getSourceAddress())) {
         StateManager.registerDeveloperSession(sessionId);
       }
@@ -820,34 +950,21 @@ public final class Server implements StateManager.RenderServer {
       sessionInitMessage.put("type", "session_init");
       sessionInitMessage.put("sessionId", sessionId);
       sendMessage(channel, sessionInitMessage);
+      return sessionId;
+    }
 
-      channel.getReceiveSetter().set(new AbstractReceiveListener() {
-        @Override
-        protected void onFullTextMessage(final WebSocketChannel channel, final BufferedTextMessage message) {
-          try {
-            final String data = message.getData();
-            appSessionExecutor.submit(() -> {
-              try {
-              final FrontendMessage msg = Shared.OBJECT_MAPPER.readValue(data, FrontendMessage.class);
-              handleMessage(sessionId, msg);
-              } catch (Exception e) {
-                LOG.error("Error handling message", e);
-              }
-            });
-          } catch (Exception e) {
-            LOG.error("Error handling message", e);
-          }
+    // caution, AI-generated
+    private @Nullable String parseCookie(final @Nullable String cookieHeader, final @Nonnull String cookieName) {
+      if (cookieHeader == null || cookieHeader.isBlank()) {
+        return null;
+      }
+      for (String cookie : cookieHeader.split(";")) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(cookieName + "=")) {
+          return cookie.substring((cookieName + "=").length());
         }
-
-        @Override
-        protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-          sessions.remove(sessionId);
-          appSessionExecutor.execute(() -> StateManager.clearSession(sessionId));
-          appSessionExecutor.shutdown();
-        }
-      });
-      // No initial render - wait for path_update message from frontend
-      channel.resumeReceives();
+      }
+      return null;
     }
 
     @SuppressWarnings("StringSplitter")
@@ -1001,8 +1118,11 @@ public final class Server implements StateManager.RenderServer {
     } else if (session.channel != null) {
       sendMessage(session.channel, message);
     } else {
-      // TODO - will be used to queue messages with broken connections
-      throw new IllegalStateException("session with no channel");
+      final boolean inserted = session.undeliveredMessages.offer(message);
+      LOG.debug("A message that cannot be delivered was stored in undelivered queue for session {}", sessionId);
+      if (!inserted) {
+        LOG.warn("Messages lost for a disconnected session: {}.", sessionId);
+      }
     }
   }
 
@@ -1055,7 +1175,8 @@ public final class Server implements StateManager.RenderServer {
                                             generateRailwayDeployUrl(appPath, originalUrl) :
                                             ""),
                               Map.entry("ENCODED_CURRENT_URL", encodedCurrentUrl),
-                              Map.entry("BASE_URL_PATH", basePath)
+                              Map.entry("BASE_URL_PATH", basePath),
+                              Map.entry("SESSION_RECOVER_ID_KEY", SESSION_RECOVER_ID_KEY)
                           )
     );
     return writer.toString();
