@@ -1,7 +1,7 @@
 
 
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS io.javelit:javelit:0.80.0
+//DEPS io.javelit:javelit:0.81.0
 
 import io.javelit.core.Jt;
 import model.Car;
