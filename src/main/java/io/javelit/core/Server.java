@@ -122,9 +122,12 @@ public final class Server implements StateManager.RenderServer {
   private boolean ready;
 
   private Undertow server;
-  private final Map<String, WebSocketChannel> session2WsChannel = new ConcurrentHashMap<>();
-  private final Map<String, ExecutorService> session2Executor = new ConcurrentHashMap<>();
-  private final Map<String, String> session2Xsrf = new ConcurrentHashMap<>();
+
+  // an application level session (1 session per tab) - do not confuse with HTTP session (1 per browser)
+  private record AppSession(WebSocketChannel channel, String xsrf, ExecutorService executor) {
+  }
+  // session id to AppSession
+  private final Map<String, AppSession> sessions = new ConcurrentHashMap<>();
   private final String customHeaders;
 
   private static final Mustache indexTemplate;
@@ -345,21 +348,20 @@ public final class Server implements StateManager.RenderServer {
         LOG.error("Unknown error type: {}", e.getClass(), e);
       }
       lastCompilationErrorMessage = e.getMessage();
-      for (final String sessionId: session2WsChannel.keySet()) {
-        final ExecutorService sessionExecutor = session2Executor.get(sessionId);
-        if (sessionExecutor != null) {
-          sessionExecutor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage));
+
+      sessions.forEach((sessionId, session) -> {
+        if (session.executor != null) {
+          session.executor.submit(() -> sendCompilationError(sessionId, lastCompilationErrorMessage));
         }
-      }
+      });
       return;
     }
 
-    for (final String sessionId: session2WsChannel.keySet()) {
-      final ExecutorService sessionExecutor = session2Executor.get(sessionId);
-      if (sessionExecutor != null) {
-        sessionExecutor.submit(() -> appRunner.runApp(sessionId));
+    sessions.forEach((sessionId, session) -> {
+      if (session.executor != null) {
+        session.executor.submit(() -> appRunner.runApp(sessionId));
       }
-    }
+    });
   }
 
   private class IndexHandler implements HttpHandler {
@@ -499,14 +501,15 @@ public final class Server implements StateManager.RenderServer {
           return;
         }
 
-        final String pageSessionId = exchange.getRequestHeaders().getFirst("X-Session-ID");
-        if (pageSessionId == null || !session2WsChannel.containsKey(pageSessionId)) {
+        final String appSessionId = exchange.getRequestHeaders().getFirst("X-Session-ID");
+        if (appSessionId == null || !sessions.containsKey(appSessionId)) {
           exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
           exchange.getResponseSender().send("Invalid session");
           return;
         }
         // Verify XSRF token matches the one stored for this WebSocket session
-        final String sessionXsrf = session2Xsrf.get(pageSessionId);
+        final AppSession session = sessions.get(appSessionId);
+        final String sessionXsrf = optional(session).map(e -> e.xsrf).orElse(null);
         if (sessionXsrf == null || !sessionXsrf.equals(providedToken)) {
           exchange.setStatusCode(StatusCodes.FORBIDDEN);
           exchange.getResponseSender().send("XSRF token mismatch");
@@ -701,7 +704,8 @@ public final class Server implements StateManager.RenderServer {
           .map(Cookie::getValue)
           .orElse(null);
 
-      final String sessionXsrf = session2Xsrf.get(sessionId);
+      final AppSession session = sessions.get(sessionId);
+      final String sessionXsrf = optional(session).map(e -> e.xsrf).orElse(null);
       if (sessionXsrf == null || !sessionXsrf.equals(cookieProvidedToken)) {
         exchange.setStatusCode(StatusCodes.FORBIDDEN);
         exchange.getResponseSender().send("XSRF token mismatch");
@@ -792,32 +796,30 @@ public final class Server implements StateManager.RenderServer {
     @Override
     public void onConnect(final WebSocketHttpExchange exchange, final WebSocketChannel channel) {
       final String sessionId = UUID.randomUUID().toString();
-      // onConnect, onFullTextMessage and onClose run sequentially, in order on IO threads
-      // we introduce an appSession thread to not block. The single thread ensures messages are processed in order.
+      // onConnect, onFullTextMessage and onClose run sequentially, in order, on the same IO thread
+      // we introduce an appSession executor to not block. The single thread ensures messages are processed in order.
       // the same thread is used in dev-mode reload to ensure total ordering of messages
-      // FIXME - this is unbounded - we need to put a bound on the number of executors, and refuse connection if server is full
+      // FIXME - this is unbounded - we need to put a bound on the number of app sessions, and refuse connection if server is full
       final ExecutorService appSessionExecutor = Executors.newSingleThreadExecutor(
           new ThreadFactoryBuilder().setNameFormat("javelit-app-session-runner-thread-%d-" + sessionId).build());
-      session2Executor.put(sessionId, appSessionExecutor);
-      session2WsChannel.put(sessionId, channel);
+      final Session currentHttpSession = getHttpSessionFromWebSocket(exchange);
+      if (currentHttpSession == null) {
+        throw new RuntimeException("No session found for sessionId: " + sessionId);
+      }
+      final @Nullable String xsrf = (String) currentHttpSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
+      if (xsrf == null) {
+        throw new RuntimeException("Session did not provide a valid xsrf token: " + sessionId);
+      }
+      sessions.put(sessionId, new AppSession(channel, xsrf, appSessionExecutor));
+
       if (isLocalClient(channel.getSourceAddress())) {
         StateManager.registerDeveloperSession(sessionId);
       }
-
       // Send session ID to frontend immediately
       final Map<String, Object> sessionInitMessage = new HashMap<>();
       sessionInitMessage.put("type", "session_init");
       sessionInitMessage.put("sessionId", sessionId);
       sendMessage(channel, sessionInitMessage);
-      final Session currentSession = getHttpSessionFromWebSocket(exchange);
-      if (currentSession == null) {
-        throw new RuntimeException("No session found for sessionId: " + sessionId);
-      }
-      final @Nullable String xsrf = (String) currentSession.getAttribute(SESSION_XSRF_ATTRIBUTE);
-      if (xsrf == null) {
-        throw new RuntimeException("Session did not provide a valid xsrf token: " + sessionId);
-      }
-      session2Xsrf.put(sessionId, xsrf);
 
       channel.getReceiveSetter().set(new AbstractReceiveListener() {
         @Override
@@ -839,12 +841,8 @@ public final class Server implements StateManager.RenderServer {
 
         @Override
         protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-          session2Executor.remove(sessionId);
-          appSessionExecutor.execute(() -> {
-            session2WsChannel.remove(sessionId);
-            session2Xsrf.remove(sessionId);
-            StateManager.clearSession(sessionId);
-                          });
+          sessions.remove(sessionId);
+          appSessionExecutor.execute(() -> StateManager.clearSession(sessionId));
           appSessionExecutor.shutdown();
         }
       });
@@ -997,11 +995,14 @@ public final class Server implements StateManager.RenderServer {
   }
 
   private void sendMessage(final String sessionId, final Map<String, Object> message) {
-    final WebSocketChannel channel = session2WsChannel.get(sessionId);
-    if (channel != null) {
-      sendMessage(channel, message);
-    } else {
+    final AppSession session = sessions.get(sessionId);
+    if (session == null) {
       LOG.error("Error sending message. Unknown sessionId: {}", sessionId);
+    } else if (session.channel != null) {
+      sendMessage(session.channel, message);
+    } else {
+      // TODO - will be used to queue messages with broken connections
+      throw new IllegalStateException("session with no channel");
     }
   }
 
@@ -1137,7 +1138,7 @@ public final class Server implements StateManager.RenderServer {
                     LOG.warn(
                         "The main app file {} was deleted. You may want to stop this server. If the app file is created anew, the server will attempt to load from this new file.",
                         watchedFile);
-                    session2WsChannel
+                    sessions
                         .keySet()
                         .forEach(id -> sendCompilationError(id, "App file was deleted."));
                   }
