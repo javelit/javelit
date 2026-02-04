@@ -132,6 +132,8 @@ public final class Server implements StateManager.RenderServer {
 
   // an application level session (1 session per tab) - do not confuse with HTTP session (1 per browser)
   private static final class AppSession {
+    // magic number, to tune
+    public static final int UNDELIVERED_CAPACITY = 2000;
     @Nullable private final WebSocketChannel channel;
     private final String xsrf;
     private final ExecutorService executor;
@@ -149,21 +151,24 @@ public final class Server implements StateManager.RenderServer {
     }
 
     private static AppSession of(@Nullable WebSocketChannel channel, String xsrf, ExecutorService executor) {
-      int undeliveredCapacity = 5000; // magic number, to tune
-      return new AppSession(channel, xsrf, executor, new ArrayBlockingQueue<>(undeliveredCapacity), null);
+      return new AppSession(channel, xsrf, executor, new ArrayBlockingQueue<>(UNDELIVERED_CAPACITY), null);
     }
 
-    private AppSession disconnect() {
+    private AppSession disconnected() {
       return new AppSession(null, xsrf, executor, undeliveredMessages, Instant.now());
     }
 
-    private AppSession reconnect(final WebSocketChannel newChannel) {
+    private AppSession reconnected(final WebSocketChannel newChannel) {
       return new AppSession(newChannel, xsrf, executor, undeliveredMessages, null);
     }
 
-    public boolean isExpired() {
+    private boolean isExpired() {
       // TODO make this time limit configurable
       return disconnectTime != null && disconnectTime.isBefore(Instant.now().minus(Duration.ofMinutes(10)));
+    }
+
+    private boolean overflowed() {
+      return undeliveredMessages.size() >= UNDELIVERED_CAPACITY;
     }
   }
   // session id to AppSession
@@ -892,7 +897,7 @@ public final class Server implements StateManager.RenderServer {
 
         @Override
         protected void onCloseMessage(final CloseMessage cm, final WebSocketChannel channel) {
-          sessions.computeIfPresent(sessionId, (k, appSession) -> appSession.disconnect());
+          sessions.computeIfPresent(sessionId, (k, appSession) -> appSession.disconnected());
         }
       });
       // No initial render - wait for path_update message from frontend
@@ -910,15 +915,19 @@ public final class Server implements StateManager.RenderServer {
       if (previousSessionId != null && previousXsrf != null) {
         final AppSession existingSession = sessions.get(previousSessionId);
         if (existingSession != null && previousXsrf.equals(existingSession.xsrf)) {
-          LOG.info("Recovering session from closed websocket connection.");
-          sessions.put(previousSessionId, existingSession.reconnect(channel));
-          // send undelivered messages
-          Map<String, Object> message;
-          while ((message = existingSession.undeliveredMessages.poll()) != null) {
-            LOG.debug("Delivering queued message for session {}", previousSessionId);
-            sendMessage(channel, message);
+          if (!existingSession.overflowed()) {
+            LOG.info("Recovering session from closed websocket connection.");
+            sessions.put(previousSessionId, existingSession.reconnected(channel));
+            // send undelivered messages
+            Map<String, Object> message;
+            while ((message = existingSession.undeliveredMessages.poll()) != null) {
+              LOG.debug("Delivering queued message for session {}", previousSessionId);
+              sendMessage(channel, message);
+            }
+            return previousSessionId;
+          } else {
+            LOG.warn("Session recovery failed for sessionId={}. Session was valid but undelivered messages overflowed. App will be reloaded.", previousSessionId);
           }
-          return previousSessionId;
         } else {
           LOG.warn("Session recovery failed for sessionId={}: {}. App will be reloaded.",
                     previousSessionId,
@@ -953,7 +962,7 @@ public final class Server implements StateManager.RenderServer {
       return sessionId;
     }
 
-    // caution, AI-generated
+    // note: does not support the cookie format spec entirely - should be fine for the moment, known clients send cookies with this format
     private @Nullable String parseCookie(final @Nullable String cookieHeader, final @Nonnull String cookieName) {
       if (cookieHeader == null || cookieHeader.isBlank()) {
         return null;
@@ -969,19 +978,12 @@ public final class Server implements StateManager.RenderServer {
 
     @SuppressWarnings("StringSplitter")
     // see https://errorprone.info/bugpattern/StringSplitter - checking for blank string should be enough here
-    private @Nullable Session getHttpSessionFromWebSocket(WebSocketHttpExchange exchange) {
+    private @Nullable Session getHttpSessionFromWebSocket(final WebSocketHttpExchange exchange) {
       final String cookieHeader = exchange.getRequestHeader("Cookie");
-      if (cookieHeader != null) {
-        // Parse javelit-session-id cookie
-        final String[] cookies = cookieHeader.isBlank() ? new String[]{} : cookieHeader.split(";");
-        for (String cookie : cookies) {
-          cookie = cookie.trim();
-          if (cookie.startsWith("javelit-session-id=")) {
-            String sessionId = cookie.substring("javelit-session-id=".length());
-            SessionManager sessionManager = exchange.getAttachment(SessionManager.ATTACHMENT_KEY);
-            return sessionManager.getSession(sessionId);
-          }
-        }
+      final String sessionId = parseCookie(cookieHeader, "javelit-session-id");
+      if (sessionId != null) {
+        SessionManager sessionManager = exchange.getAttachment(SessionManager.ATTACHMENT_KEY);
+        return sessionManager.getSession(sessionId);
       }
       return null;
     }
