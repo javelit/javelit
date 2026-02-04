@@ -692,7 +692,7 @@
     };
 
     // Connection management functions
-    function createWebSocketConnection() {
+    function createWebSocketConnection(firstConnection) {
         try {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const basePath = window.javelit.baseUrlPath;
@@ -715,7 +715,9 @@
             ws.onmessage = handleWebSocketMessage;
 
             ws.onopen = () => {
-                window.javelit.sendPathUpdate();
+                if (firstConnection) {
+                    window.javelit.sendPathUpdate();
+                }
                 connectionState = 'connected';
                 logger.log('WebSocket connected');
                 connectionModal.show = false;
@@ -743,7 +745,7 @@
         connectionState = 'reconnecting';
         setTimeout(() => {
             logger.log('Attempting to reconnect...');
-            createWebSocketConnection();
+            createWebSocketConnection(false);
         }, 5000);
 
         // Clear websocket references
@@ -753,9 +755,13 @@
     async function handleWebSocketMessage(event) {
         const message = JSON.parse(event.data);
         if (message.type === 'session_init') {
-            // Store WebSocket session ID for POST/PUT requests - eg file uploads
+            const sessionChanged = window.javelit.sessionId && window.javelit.sessionId !== message.sessionId;
             window.javelit.sessionId = message.sessionId;
-            isFirstDelta = true;  // Trigger clear on next delta - necessary in case of reconnection
+            isFirstDelta = true;
+            if (sessionChanged) {
+                // Server could not recover previous session - send path to trigger a re-run
+                window.javelit.sendPathUpdate();
+            }
         } else if (message.type === 'delta') {
             handleDeltaMessage(message);
         } else if (message.type === 'modal_error') {
@@ -1039,7 +1045,7 @@
     // Initialize sidebar, settings, and connection
     loadAndApplySettings();
     initializeSidebar();
-    createWebSocketConnection();
+    createWebSocketConnection(true);
 </script>
 </body>
 </html>
