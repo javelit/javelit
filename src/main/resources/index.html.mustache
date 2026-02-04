@@ -692,13 +692,20 @@
     };
 
     // Connection management functions
-    function createWebSocketConnection() {
+    function createWebSocketConnection(firstConnection) {
         try {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const basePath = window.javelit.baseUrlPath;
             const wsUrl = new URL(basePath + '/_/ws', window.location.origin);
             wsUrl.protocol = protocol;
+            if (window.javelit.sessionId != null && window.javelit.xsrfToken != null) {
+                // used to attempt to recover a disconnected session that is still in memory of the server
+                wsUrl.searchParams.set('{{ SESSION_RECOVER_ID_KEY }}', window.javelit.sessionId);
+            }
             ws = new WebSocket(wsUrl);
+            if (window.javelit.isDevMode) {
+                window.javelit.debug_ws = ws
+            }
 
             ws.onclose = () => {
                 logger.log('WebSocket closed');
@@ -708,7 +715,9 @@
             ws.onmessage = handleWebSocketMessage;
 
             ws.onopen = () => {
-                window.javelit.sendPathUpdate();
+                if (firstConnection) {
+                    window.javelit.sendPathUpdate();
+                }
                 connectionState = 'connected';
                 logger.log('WebSocket connected');
                 connectionModal.show = false;
@@ -736,7 +745,7 @@
         connectionState = 'reconnecting';
         setTimeout(() => {
             logger.log('Attempting to reconnect...');
-            createWebSocketConnection();
+            createWebSocketConnection(false);
         }, 5000);
 
         // Clear websocket references
@@ -746,8 +755,13 @@
     async function handleWebSocketMessage(event) {
         const message = JSON.parse(event.data);
         if (message.type === 'session_init') {
-            // Store WebSocket session ID for POST/PUT requests - eg file uploads
+            const sessionChanged = window.javelit.sessionId && window.javelit.sessionId !== message.sessionId;
             window.javelit.sessionId = message.sessionId;
+            isFirstDelta = true;
+            if (sessionChanged) {
+                // Server could not recover previous session - send path to trigger a re-run
+                window.javelit.sendPathUpdate();
+            }
         } else if (message.type === 'delta') {
             handleDeltaMessage(message);
         } else if (message.type === 'modal_error') {
@@ -860,7 +874,9 @@
 
         // Clear initial "Connecting..." message on first delta
         if (isFirstDelta) {
-            mainContainer.innerHTML = '';
+            layoutContainers.forEach(container => {
+                container.innerHTML = '';
+            });
             isFirstDelta = false;
         }
 
@@ -1029,7 +1045,7 @@
     // Initialize sidebar, settings, and connection
     loadAndApplySettings();
     initializeSidebar();
-    createWebSocketConnection();
+    createWebSocketConnection(true);
 </script>
 </body>
 </html>
