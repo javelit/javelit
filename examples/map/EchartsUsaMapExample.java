@@ -1,6 +1,6 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
 
-//DEPS io.javelit:javelit:0.81.0
+//DEPS io.javelit:javelit:0.84.0
 // NOTE: this example is a work in progress - the echarts-java project support for maps is limited at the moment
 package map;
 
