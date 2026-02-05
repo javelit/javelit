@@ -29,6 +29,7 @@ public class ChatApp {
     // Accept user input
     String prompt = Jt
         .textInput("What is up?")
+        .clearOnEnter()
         .labelVisibility(JtComponent.LabelVisibility.COLLAPSED)
         .placeholder("What is up?")
         .use();

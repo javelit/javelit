@@ -60,5 +60,12 @@ public class TextInputExample {
           .key("t6")
           .use();
     }
+
+    String text8 = Jt.textInput("Input box that clears on enter. Useful for chatbots.").clearOnEnter().use();
+    if (text8.isBlank()) {
+      Jt.text("text is blank").use();
+    } else {
+      Jt.text("text is: " + text8).use();
+    }
   }
 }
