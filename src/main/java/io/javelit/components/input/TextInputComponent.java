@@ -295,6 +295,6 @@ public final class TextInputComponent extends JtComponent<String> {
     if (clearOnEnter && isLastFrontendUpdate()) {
       return initialValue;
     }
-    return value;
+    return currentValue;
   }
 }
