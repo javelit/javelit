@@ -76,6 +76,7 @@ final class InternalSessionState {
 
   // whether this is a developer session
   private boolean isDeveloper;
+  private String lastFrontendUpdate;
 
   void clearStates() {
     userState.clear();
@@ -143,6 +144,7 @@ final class InternalSessionState {
       final String prefixedUserKey = internalKeyToUserKey.get(componentKey);
       userVisibleComponentsState.put(prefixedUserKey, updatedValue);
     }
+    lastFrontendUpdate = componentKey;
   }
 
   void updateAllComponentsState(final Map<@NotNull String, @Nullable Object> componentKeyToUpdatedValue) {
@@ -194,5 +196,9 @@ final class InternalSessionState {
 
   public Map<String, MediaEntry> getMedia() {
     return media;
+  }
+
+  public String getLastFrontendUpdate() {
+    return lastFrontendUpdate;
   }
 }

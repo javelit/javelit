@@ -136,7 +136,7 @@ public abstract class JtComponent<T> {
   private final @Nullable String userKey;
   private final boolean noPersist;
   protected T currentValue;
-  private T initialValue;
+  protected T initialValue;
   protected @Nullable Consumer<T> callback;
   private final JtContainer defaultContainer;
   private final String usageRecordName;
@@ -392,6 +392,10 @@ public abstract class JtComponent<T> {
 
   protected static String registerMedia(final @Nonnull MediaEntry mediaEntry) {
     return StateManager.registerMedia(mediaEntry);
+  }
+
+  protected boolean isLastFrontendUpdate() {
+    return StateManager.isLastFrontendUpdate(internalKey);
   }
   // end of StateManager wrappers
 }

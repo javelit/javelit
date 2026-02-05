@@ -15,7 +15,7 @@
 }}
 <jt-text-input
         label="{{label}}"
-        value="{{currentValue}}"
+        value="{{displayText}}"
     {{#maxChars}}
         max-chars="{{maxChars}}"
     {{/maxChars}}
@@ -37,5 +37,8 @@
         icon="{{icon}}"
     {{/icon}}
         width="{{width}}"
+    {{#clearOnEnter}}
+        clear-on-enter
+    {{/clearOnEnter}}
         component-key="{{getInternalKey}}"
 ></jt-text-input>

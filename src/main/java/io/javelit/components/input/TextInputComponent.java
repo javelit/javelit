@@ -27,6 +27,7 @@ import io.javelit.core.JtComponentBuilder;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
 
 public final class TextInputComponent extends JtComponent<String> {
   final @Nonnull String label;
@@ -40,6 +41,7 @@ public final class TextInputComponent extends JtComponent<String> {
   final LabelVisibility labelVisibility;
   final @Nullable String icon;
   final String width;
+  final boolean clearOnEnter;
 
   private static final Mustache registerTemplate;
   private static final Mustache renderTemplate;
@@ -64,6 +66,7 @@ public final class TextInputComponent extends JtComponent<String> {
     this.labelVisibility = builder.labelVisibility;
     this.icon = builder.icon;
     this.width = builder.width;
+    this.clearOnEnter = builder.clearOnEnter;
   }
 
   @SuppressWarnings("unused")
@@ -79,6 +82,7 @@ public final class TextInputComponent extends JtComponent<String> {
     private LabelVisibility labelVisibility = LabelVisibility.VISIBLE;
     private @Nullable String icon;
     private String width = "stretch";
+    private boolean clearOnEnter;
     private @Nullable Consumer<String> onChange;
 
     public Builder(@Language("markdown") @Nonnull String label) {
@@ -198,6 +202,17 @@ public final class TextInputComponent extends JtComponent<String> {
     }
 
     /**
+     * If enabled, the input text is sent and cleared when the user presses Enter.
+     * Sending the input text by clicking outside the input box is disabled.
+     * This feature is designed for standalone text inputs (e.g., chatbot, search boxes).
+     * Do not use inside forms. Use the Form's {@code clearOnSubmit()} feature instead.
+     */
+    public Builder clearOnEnter() {
+      this.clearOnEnter = true;
+      return this;
+    }
+
+    /**
      * An optional callback invoked when the text input's value changes.
      * The value passed in the callback is the previous value of the component.
      */
@@ -257,5 +272,29 @@ public final class TextInputComponent extends JtComponent<String> {
     }
 
     return value != null ? value : "";
+  }
+
+  @Override
+  protected boolean contentEquals(@NotNull JtComponent<?> other) {
+    if (clearOnEnter && isLastFrontendUpdate()) {
+      // always repaint
+      return false;
+    }
+    return super.contentEquals(other);
+  }
+
+  @Override
+  protected void resetIfNeeded() {
+    if (clearOnEnter && isLastFrontendUpdate()) {
+      resetToInitialValue();
+    }
+  }
+
+  // visible for render template
+  String getDisplayText() {
+    if (clearOnEnter && isLastFrontendUpdate()) {
+      return initialValue;
+    }
+    return value;
   }
 }

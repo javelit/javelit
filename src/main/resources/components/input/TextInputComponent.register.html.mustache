@@ -188,6 +188,7 @@
             labelVisibility: {type: String, attribute: 'label-visibility'},
             icon: {type: String},
             width: {type: String},
+            clearOnEnter: {type: Boolean, attribute: 'clear-on-enter'},
             componentKey: {type: String, attribute: 'component-key'},
             hasIcon: {type: Boolean, attribute: 'has-icon', reflect: true},
             hasChanged: {type: Boolean, state: true},
@@ -290,7 +291,8 @@
             this.isFocused = false;
 
             // Submit value if it has changed
-            if (this.hasChanged) {
+            // when clearOnEnter is enabled, blur does not trigger a submit
+            if (this.hasChanged && !this.clearOnEnter) {
                 this.submitValue();
             }
 
