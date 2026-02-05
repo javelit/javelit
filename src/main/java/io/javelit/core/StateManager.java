@@ -220,6 +220,13 @@ final class StateManager {
     return rerun;
   }
 
+  static boolean isLastFrontendUpdate(final @Nonnull String componentKey) {
+    final AppExecution currentExecution = CURRENT_EXECUTION_IN_THREAD.get();
+    checkState(currentExecution != null, "No active execution context.");
+    final InternalSessionState session = SESSIONS.get(currentExecution.sessionId);
+    return componentKey.equals(session.getLastFrontendUpdate());
+  }
+
   static TypedMap getCache() {
     return CACHE;
   }
