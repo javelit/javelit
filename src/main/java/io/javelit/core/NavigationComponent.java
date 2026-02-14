@@ -25,6 +25,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
+
+import io.javelit.core.helpers.OAuth2Configuration;
+import io.javelit.core.helpers.OAuth2Workflow;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +40,8 @@ public final class NavigationComponent extends JtComponent<JtPage> {
   final List<JtPage> pages;
   final JtPage home;
   NavigationPosition position;
+
+  final OAuth2Configuration oAuth2Configuration;
 
   public enum NavigationPosition {
     SIDEBAR,
@@ -53,9 +58,27 @@ public final class NavigationComponent extends JtComponent<JtPage> {
   private NavigationComponent(final Builder builder) {
     super(builder, null, // set later in this constructor
           null, builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
-    final List<JtPage.Builder> homePages = builder.pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
+
+    this.oAuth2Configuration = builder.oAuth2Configuration;
+    List<JtPage.Builder> pageBuilders = builder.pageBuilders;
+    if(this.oAuth2Configuration != null) {
+      if(!Jt.isLoggedIn()){
+        pageBuilders = new OAuth2Workflow(oAuth2Configuration).getLoginPages();
+        builder.hidden();
+      } else {
+        Jt.text( "Welcome " + OAuth2Workflow.getCurrentUser().name()).use(builder.position == NavigationPosition.HIDDEN ? JtContainer.MAIN : JtContainer.SIDEBAR);
+        pageBuilders.add(JtPage.builder("/logout", () -> {
+          Jt.sessionState().clear();
+          Jt.rerun(true);
+        } ));
+      }
+    
+    }
+
+    final List<JtPage.Builder> homePages = pageBuilders.stream().filter(JtPage.Builder::isHome).toList();
+
     if (homePages.isEmpty()) {
-      JtPage.Builder firstPageBuilder = builder.pageBuilders.getFirst();
+      JtPage.Builder firstPageBuilder = pageBuilders.getFirst();
       firstPageBuilder.home();
     } else if (homePages.size() > 1) {
       throw new IllegalArgumentException(
@@ -64,7 +87,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
               homePages.stream().filter(JtPage.Builder::isHome).map(JtPage.Builder::urlPath).toList())));
 
     }
-    this.pages = builder.pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
+    this.pages = pageBuilders.stream().map(JtPage.Builder::build).collect(Collectors.toList());
     this.home = this.pages
         .stream()
         .filter(JtPage::isHome)
@@ -81,6 +104,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
     }
 
     this.currentValue = page;
+    
   }
 
   private static @NotNull JtPage build404(String currentPath) {
@@ -118,6 +142,7 @@ public final class NavigationComponent extends JtComponent<JtPage> {
 
     private final List<JtPage.Builder> pageBuilders = new ArrayList<>();
     private NavigationPosition position;
+    private OAuth2Configuration oAuth2Configuration;
 
     public Builder(JtPage.Builder... pages) {
       this.userKey = JtComponent.UNIQUE_NAVIGATION_COMPONENT_KEY;
@@ -138,6 +163,11 @@ public final class NavigationComponent extends JtComponent<JtPage> {
      */
     public Builder hidden() {
       position = NavigationComponent.NavigationPosition.HIDDEN;
+      return this;
+    }
+
+    public Builder withOauth2(final @NotNull OAuth2Configuration.Builder oAuth2ConfigurationBuilder) {
+      this.oAuth2Configuration = oAuth2ConfigurationBuilder.build();
       return this;
     }
 
