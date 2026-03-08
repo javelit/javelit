@@ -119,6 +119,7 @@ public final class Server implements StateManager.RenderServer {
   private static final Logger LOG = LoggerFactory.getLogger(Server.class);
   public static final String SESSION_RECOVER_ID_KEY = "recoverSessionId";
   @VisibleForTesting public final int port;
+  @VisibleForTesting public final String host;
   private final @Nonnull AppRunner appRunner;
   private final @Nullable FileWatcher fileWatcher;
   private final @Nonnull BuildSystem buildSystem;
@@ -171,11 +172,14 @@ public final class Server implements StateManager.RenderServer {
       return undeliveredMessages.size() >= UNDELIVERED_CAPACITY;
     }
   }
+
   // session id to AppSession
   private final Map<String, AppSession> sessions = new ConcurrentHashMap<>();
   private final ScheduledExecutorService sessionsCleaner = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                                                                                                          .setNameFormat("javelit-session-cleaner")
-                                                                                                          .setDaemon(true)
+                                                                                                          .setNameFormat(
+                                                                                                              "javelit-session-cleaner")
+                                                                                                          .setDaemon(
+                                                                                                              true)
                                                                                                           .build());
   private final String customHeaders;
 
@@ -203,6 +207,7 @@ public final class Server implements StateManager.RenderServer {
     // this is not necessary if the proxy sets the X-Forwarded-Prefix header properly
     // this is not the root path, this is only used to build media, ws and pages urls properly
     private @Nullable String basePath;
+    private @Nullable String host;
 
     private Builder(final @Nonnull Path appPath, final int port) {
       this.appPath = appPath;
@@ -250,6 +255,11 @@ public final class Server implements StateManager.RenderServer {
       return this;
     }
 
+    public Builder host(final @Nonnull String host) {
+      this.host = host;
+      return this;
+    }
+
     public void originalUrl(final @Nonnull String originalUrl) {
       this.originalUrl = originalUrl;
     }
@@ -257,6 +267,9 @@ public final class Server implements StateManager.RenderServer {
     public Server build() {
       if (buildSystem == null) {
         buildSystem = BuildSystem.inferBuildSystem();
+      }
+      if (host == null) {
+        host = "0.0.0.0";
       }
       return new Server(this);
     }
@@ -278,6 +291,7 @@ public final class Server implements StateManager.RenderServer {
 
   private Server(final Builder builder) {
     this.port = builder.port;
+    this.host = builder.host;
     this.customHeaders = loadCustomHeaders(builder.headersFile);
     this.appRunner = new AppRunner(builder, this);
     this.appPath = builder.appPath;
@@ -300,7 +314,8 @@ public final class Server implements StateManager.RenderServer {
             try {
               session.executor.execute(() -> StateManager.clearSession(sessionId));
             } catch (RejectedExecutionException e) {
-              LOG.error("Failed to run cleanup task for session {}. Executor does not accept tasks. Forcing clean-up", sessionId);
+              LOG.error("Failed to run cleanup task for session {}. Executor does not accept tasks. Forcing clean-up",
+                        sessionId);
               StateManager.clearSession(sessionId); // running out of app thread but that's ok in this case
             }
             session.executor.shutdown();
@@ -357,7 +372,7 @@ public final class Server implements StateManager.RenderServer {
                                        //.setDomain()
     );
     server = Undertow.builder().setServerOption(UndertowOptions.MAX_ENTITY_SIZE, 200 * 1024 * 1024L)// 200Mb
-                     .addHttpListener(port, "0.0.0.0").setHandler(app).build();
+                     .addHttpListener(port, host).setHandler(app).build();
 
     try {
       server.start();
@@ -366,8 +381,8 @@ public final class Server implements StateManager.RenderServer {
         // yes this is not good practice to match on string but dev experience is important for this one
         if (e.getMessage().contains("Address already in use")) {
           throw new RuntimeException(
-              "Failed to launch the server. Port %s is already in use ? Try changing the port. In standalone mode, use --port <PORT>".formatted(
-                  port),
+              "Failed to launch the server. Port %s on host %s is already in use? Try changing the port. In standalone mode, use --port <PORT>".formatted(
+                  port, host),
               e);
         }
       }
@@ -381,7 +396,7 @@ public final class Server implements StateManager.RenderServer {
       }
     }
     ready = true;
-    LOG.info("Javelit server started on http://localhost:{}", port);
+    LOG.info("Javelit server started on http://{}:{}", "0.0.0.0".equals(host) ? "localhost" : host, port);
   }
 
   private @Nullable ResourceManager buildStaticResourceManager() {

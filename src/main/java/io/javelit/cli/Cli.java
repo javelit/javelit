@@ -71,6 +71,12 @@ public class Cli implements Callable<Integer> {
         description = "Port to run server on",
         defaultValue = "8080") private int port;
 
+    @SuppressWarnings("unused")
+    @Option(names = {"--host"},
+        description = "Host to bind server to. Default: 0.0.0.0 (all interfaces). Use 127.0.0.1 to restrict to localhost only.",
+        defaultValue = "0.0.0.0")
+    private String host;
+
     @SuppressWarnings("unused") @Option(names = {"--no-browser"},
         description = "Don't open browser automatically") private boolean noBrowser;
 
@@ -132,6 +138,7 @@ public class Cli implements Callable<Integer> {
       // Create server
       final Server.Builder builder = Server
           .builder(javaFilePath, port)
+          .host(host)
           .additionalClasspath(classpath)
           .headersFile(headersFile);
       if (isUrl) {
@@ -144,7 +151,9 @@ public class Cli implements Callable<Integer> {
       final Server server = builder.build();
 
       // Start everything
-      final String url = "http://localhost:" + port + (basePath != null ? "?ignoreBasePath=true" : "");
+      // For browser launch, use localhost if bound to 0.0.0.0 (can't determine actual IP)
+      final String browserHost = "0.0.0.0".equals(host) ? "localhost" : host;
+      final String url = "http://" + browserHost + ":" + port + (basePath != null ? "?ignoreBasePath=true" : "");
       try {
         server.start();
         LOG.info("Press Ctrl+C to stop");
