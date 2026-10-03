@@ -17,7 +17,6 @@ package io.javelit.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -142,10 +141,7 @@ class FileReloader extends Reloader {
       }
       final String name = classNameFor(mainClassFile);
       final Class<?> mainClass = hierarchicalClassLoader.loadClass(name);
-      Method main = mainClass.getMethod("main", String[].class);
-      return AppEntrypoint.of(main, hierarchicalClassLoader);
-    } catch (NoSuchMethodException e) {
-      throw new CompilationException(e);
+      return AppEntrypoint.of(mainClass, hierarchicalClassLoader);
     } catch (ClassNotFoundException e) {
       LOG.error("Implementation error. Please reach out to support.", e);
       throw new CompilationException(e);

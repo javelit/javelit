@@ -15,8 +15,6 @@
  */
 package io.javelit.core;
 
-import java.lang.reflect.Method;
-
 import static com.google.common.base.Preconditions.checkArgument;
 
 // use RunnableReloader instead
@@ -35,14 +33,13 @@ public class ClassReloader extends Reloader {
   AppEntrypoint reload() {
     // Resolve the class using the current context ClassLoader - should make the logic compatible with SpringBoot live reload
     final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    final Method method;
+    final Class<?> appClass;
     try {
-      final Class<?> appClass = Class.forName(appClassName, true, cl);
-      method = appClass.getMethod("main", String[].class);
-    } catch (ClassNotFoundException | NoSuchMethodException e) {
+      appClass = Class.forName(appClassName, true, cl);
+    } catch (ClassNotFoundException e) {
       throw new CompilationException(e);
     }
 
-    return AppEntrypoint.of(method, cl);
+    return AppEntrypoint.of(appClass, cl);
   }
 }
